@@ -9,6 +9,7 @@ import (
 // Exposer provide common interfaces for services
 type Exposer struct {
 	RPCServer     sgrpc.RPCServer
+	RPCClient     sgrpc.RPCClient
 	Configuration configuration.Configuration
 	Logger        logger.Logger
 }
