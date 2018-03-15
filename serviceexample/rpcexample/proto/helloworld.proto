@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package hw;
+
+message HelloWorldRequest {
+    string name = 1;
+}
+
+message HelloWorldResponse {
+    string echo = 2;
+}
+
+service HelloWorld {
+    rpc HelloWorld(HelloWorldRequest) returns (HelloWorldResponse) {}
+}
+
