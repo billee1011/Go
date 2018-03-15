@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"net"
 	"steve/serviceexample/rpcexample/proto"
 	"steve/structs"
 	"steve/structs/service"
@@ -22,17 +21,12 @@ func (hws *HelloWorldService) HelloWorld(ctx context.Context, req *hw.HelloWorld
 }
 
 func (res *RPCExampleService) Start(e *structs.Exposer, param ...string) error {
-	rpcServer := e.RPCMgr.NewRPCServer()
+	rpcServer := e.RPCServer
 	err := rpcServer.RegisterService(hw.RegisterHelloWorldServer, &HelloWorldService{})
 	if err != nil {
 		return err
 	}
-	lis, err := net.Listen("tcp", "0.0.0.0:7878")
-	if err != nil {
-		return err
-	}
-	err = rpcServer.StartServer(lis)
-	return err
+	return nil
 }
 
 func GetService() service.Service {
