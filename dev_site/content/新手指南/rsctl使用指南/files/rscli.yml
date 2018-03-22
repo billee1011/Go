@@ -1,0 +1,4 @@
+server_addr: rsctl.fz.stevegame.red:6565
+db_file: /root/.rscli/rscli.db
+ca_file: /root/.rscli/rscli_ca.crt
+server_name: stevegame.red
