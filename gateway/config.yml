@@ -1,0 +1,8 @@
+log_level: debug 
+log_dir: ./log
+log_file: gateway
+log_stderr: true 
+# rpc_addr: 127.0.0.1
+# rpc_port: 8081
+# rpc_server_name: exampleservice
+
