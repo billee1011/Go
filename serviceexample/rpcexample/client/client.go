@@ -13,12 +13,12 @@ type RPCExampleClient struct {
 }
 
 func (rec *RPCExampleClient) Start(e *structs.Exposer, param ...string) error {
-	cc, err := e.RPCClient.GetClientConnByServerName("example_service")
+	cc, err := e.RPCClient.GetClientConnByServerName("exampleservice")
 	if err != nil {
 		return fmt.Errorf("Get client connection failed:%v", err)
 	}
 	if cc == nil {
-		return errors.New("no service named example_service. ensure your consul agent is running and configed example_service")
+		return errors.New("no service named exampleservice. ensure your consul agent is running and configed exampleservice")
 	}
 	client := hw.NewHelloWorldClient(cc)
 	resp, err := client.HelloWorld(context.Background(), &hw.HelloWorldRequest{

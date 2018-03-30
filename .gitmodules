@@ -1,0 +1,3 @@
+[submodule "proto"]
+	path = proto
+	url = ssh://git@gitlab.fz.stevegame.red:2222/anjiawei/steve.proto.git
