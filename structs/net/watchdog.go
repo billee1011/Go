@@ -42,3 +42,12 @@ type WatchDog interface {
 	BroadPackage(clientIDs []uint64, header *steve_proto_base.Header, bodyMsg proto.Message) error
 	Disconnect(clientID uint64) error
 }
+
+// WatchDogFactory 用来创建 WatchDog
+type WatchDogFactory interface {
+
+	// 创建 WatchDog 对象。alloc 为客户端 ID 分配器， 为空时，将使用默认的 ID 分配器
+	// msgObserver 用来观察客户端消息事件
+	// connObserver 用来观察客户端连接事件
+	NewWatchDog(alloc IDAllocator, msgObserver MessageObserver, connObserver ConnectObserver) WatchDog
+}
