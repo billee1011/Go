@@ -7,5 +7,3 @@ import "steve/structs"
 type Service interface {
 	Start(e *structs.Exposer, param ...string) error
 }
-
-type GetServiceFuncType func() Service

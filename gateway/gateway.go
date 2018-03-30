@@ -3,6 +3,8 @@ package main
 import (
 	"steve/structs"
 	"steve/structs/service"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type gateway struct{}
@@ -10,6 +12,7 @@ type gateway struct{}
 var _ service.Service = new(gateway)
 
 func (gate *gateway) Start(e *structs.Exposer, param ...string) error {
+	logrus.Debug("启动服务")
 	return nil
 }
 
