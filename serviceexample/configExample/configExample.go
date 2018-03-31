@@ -5,12 +5,25 @@ import (
 	"steve/structs"
 	"steve/structs/configuration"
 	"steve/structs/service"
+
+	"github.com/Sirupsen/logrus"
 )
 
-type configExampleService struct{}
+type configExampleService struct {
+	e *structs.Exposer
+}
 
-func (res *configExampleService) Start(e *structs.Exposer, param ...string) error {
-	c := e.Configuration
+func (res *configExampleService) Init(e *structs.Exposer, param ...string) error {
+	res.e = e
+
+	return nil
+}
+
+func (res *configExampleService) Start() error {
+	c := res.e.Configuration
+
+	logrus.WithField("configuration", c).Debug("config")
+
 	version, err := c.GetConfigVer(configuration.Product)
 	if err != nil {
 		return err
@@ -40,6 +53,7 @@ func (res *configExampleService) Start(e *structs.Exposer, param ...string) erro
 	return nil
 }
 
+// GetService 提供给 serviceloader 的接口
 func GetService() service.Service {
 	return &configExampleService{}
 }

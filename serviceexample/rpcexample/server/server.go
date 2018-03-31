@@ -8,6 +8,7 @@ import (
 )
 
 type RPCExampleService struct {
+	e *structs.Exposer
 }
 
 type HelloWorldService struct {
@@ -20,12 +21,16 @@ func (hws *HelloWorldService) HelloWorld(ctx context.Context, req *hw.HelloWorld
 	return
 }
 
-func (res *RPCExampleService) Start(e *structs.Exposer, param ...string) error {
+func (res *RPCExampleService) Init(e *structs.Exposer, param ...string) error {
 	rpcServer := e.RPCServer
 	err := rpcServer.RegisterService(hw.RegisterHelloWorldServer, &HelloWorldService{})
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (res *RPCExampleService) Start() error {
 	return nil
 }
 
