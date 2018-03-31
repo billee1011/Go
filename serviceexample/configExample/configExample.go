@@ -25,6 +25,7 @@ func (res *configExampleService) Start() error {
 	logrus.WithField("configuration", c).Debug("config")
 
 	version, err := c.GetConfigVer(configuration.Product)
+
 	if err != nil {
 		return err
 	}

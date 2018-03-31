@@ -2,6 +2,7 @@ package structs
 
 import (
 	"steve/structs/configuration"
+	"steve/structs/exchanger"
 	"steve/structs/net"
 	"steve/structs/sgrpc"
 )
@@ -12,4 +13,5 @@ type Exposer struct {
 	RPCClient       sgrpc.RPCClient
 	Configuration   configuration.Configuration
 	WatchDogFactory net.WatchDogFactory
+	Exchanger       exchanger.Exchanger
 }
