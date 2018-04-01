@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package steve.proto.msg;
+
+enum MsgID {
+    // hall_begin 所有大厅消息放在 hall_begin - hall_end 之间
+    hall_begin = 0x10000;
+
+    // hall_login 登录消息
+    hall_login = 0x10001;
+
+    // hall_end 所有大厅消息放在 hall_begin - hall_end 之间
+    hall_end = 0x20000;
+}

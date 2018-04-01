@@ -12,6 +12,10 @@ var gServerMessageRange = map[string]messageRange{
 		minMsgID: 0x0000,
 		maxMsgID: 0xffff,
 	},
+	"hall": messageRange{
+		minMsgID: 0x10000,
+		maxMsgID: 0x1ffff,
+	},
 }
 
 // GetMessageServer 获取消息处理服务名字
