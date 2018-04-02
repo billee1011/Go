@@ -1,0 +1,9 @@
+log_level: debug 
+log_dir: ./log
+log_file: hall
+log_stderr: true 
+
+rpc_addr: 127.0.0.1
+rpc_port: 37001
+rpc_server_name: hall
+

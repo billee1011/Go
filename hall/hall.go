@@ -1,7 +1,7 @@
 package main
 
 import (
-	"steve/gateway/core"
+	"steve/hall/core"
 	"steve/structs/service"
 )
 

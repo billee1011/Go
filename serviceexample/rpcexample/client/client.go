@@ -10,10 +10,16 @@ import (
 )
 
 type RPCExampleClient struct {
+	e *structs.Exposer
 }
 
-func (rec *RPCExampleClient) Start(e *structs.Exposer, param ...string) error {
-	cc, err := e.RPCClient.GetClientConnByServerName("exampleservice")
+func (rec *RPCExampleClient) Init(e *structs.Exposer, param ...string) error {
+	rec.e = e
+	return nil
+}
+
+func (rec *RPCExampleClient) Start() error {
+	cc, err := rec.e.RPCClient.GetClientConnByServerName("exampleservice")
 	if err != nil {
 		return fmt.Errorf("Get client connection failed:%v", err)
 	}

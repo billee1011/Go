@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+package steve.proto.msg;
+
+// LoginReq 登录请求
+message LoginReq {
+    // user_name 用户名
+    optional string user_name = 1;
+}
+
+// LoginResult 登录结果
+enum LoginResult {
+    // ok 登录成功
+    ok = 1;
+}
+
+// LoginRsp 登录回复
+message LoginRsp {
+    // result 登录结果
+    optional LoginResult result = 1;
+
+    // user_id 用户 ID
+    optional uint64 user_id = 2;
+}
+
