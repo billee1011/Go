@@ -10,13 +10,13 @@ import (
 
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/google/gofuzz"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLogin(t *testing.T) {
 
-	COUNT := 200
+	COUNT := 1
 	var wg sync.WaitGroup
 	wg.Add(COUNT)
 
@@ -24,13 +24,19 @@ func TestLogin(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			c := connect.NewTestClient("127.0.0.1:36001", "1.0")
+
+			f := fuzz.New()
+			var userName string
+			f.NilChance(.0)
+			f.Fuzz(&userName)
+
 			assert.NotNil(t, c)
 			rsp, err := c.Request(connect.SendHead{
 				Head: connect.Head{
 					MsgID: uint32(steve_proto_msg.MsgID_hall_login),
 				},
 			}, &steve_proto_msg.LoginReq{
-				UserName: proto.String("Adam"),
+				UserName: &userName,
 			}, time.Second*5)
 			assert.Nil(t, err)
 			assert.NotNil(t, rsp)
