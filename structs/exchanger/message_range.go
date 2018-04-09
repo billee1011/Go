@@ -1,6 +1,9 @@
 package exchanger
 
-import "fmt"
+import (
+	"fmt"
+	"steve/structs/common"
+)
 
 type messageRange struct {
 	minMsgID uint32
@@ -8,11 +11,11 @@ type messageRange struct {
 }
 
 var gServerMessageRange = map[string]messageRange{
-	"room": messageRange{
+	common.RoomServiceName: messageRange{
 		minMsgID: 0x0000,
 		maxMsgID: 0xffff,
 	},
-	"hall": messageRange{
+	common.HallServiceName: messageRange{
 		minMsgID: 0x10000,
 		maxMsgID: 0x1ffff,
 	},
