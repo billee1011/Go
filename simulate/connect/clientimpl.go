@@ -153,6 +153,7 @@ func (c *client) Request(header SendHead, body proto.Message, timeOut time.Durat
 		return nil, fmt.Errorf("请求超时")
 	}
 }
+
 func (c *client) GetResponse(msgID uint32, index int) (*Response, error) {
 	return nil, nil
 }
@@ -362,7 +363,7 @@ func (c *client) intercept(header *steve_proto_base.Header, body []byte) {
 		}
 
 		if v, ok := c.interceptors.Load(header.GetMsgId()); ok {
-			if v.(*interceptor).rspSeq == header.GetSendSeq() {
+			if v.(*interceptor).rspSeq == header.GetRspSeq() {
 				v.(*interceptor).responseChan <- response
 				c.interceptors.Delete(header.GetMsgId())
 			}

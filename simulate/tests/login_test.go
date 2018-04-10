@@ -1,8 +1,10 @@
 package tests
 
 import (
+	"fmt"
 	"steve/structs/proto/msg"
 	"sync"
+	"unsafe"
 
 	"steve/simulate/connect"
 
@@ -13,6 +15,11 @@ import (
 	"github.com/google/gofuzz"
 	"github.com/stretchr/testify/assert"
 )
+
+type stringHeader struct {
+	Data unsafe.Pointer
+	Len  int
+}
 
 func TestLogin(t *testing.T) {
 
@@ -40,7 +47,11 @@ func TestLogin(t *testing.T) {
 			}, time.Second*5)
 			assert.Nil(t, err)
 			assert.NotNil(t, rsp)
-			assert.Equal(t, steve_proto_msg.ErrorCode_err_OK, rsp.Body.(*steve_proto_msg.LoginRsp).GetResult())
+
+			loginRsp := rsp.Body.(*steve_proto_msg.LoginRsp)
+			assert.Equal(t, steve_proto_msg.ErrorCode_err_OK, loginRsp.GetResult())
+			fmt.Println(loginRsp)
+			assert.NotEqual(t, 0, loginRsp.GetUserId())
 		}()
 	}
 	wg.Wait()

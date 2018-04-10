@@ -55,7 +55,7 @@ func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Heade
 	header.RspSeq = header.SendSeq
 
 	for _, rspData := range respDatas {
-		if err := o.core.dog.SendPackage(clientID, header, rspData); err != nil {
+		if err := o.core.dog.SendPackage(clientID, header, rspData.GetValue()); err != nil {
 			logEntry.WithError(err).Error("回复数据失败")
 			return
 		}
