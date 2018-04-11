@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/structs"
 	"steve/structs/net"
+	"steve/structs/proto/gate_rpc"
 	"steve/structs/service"
 
 	"github.com/Sirupsen/logrus"
@@ -23,11 +24,21 @@ func NewService() service.Service {
 
 func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 	c.e = e
-	return nil
+	return c.registSender()
+	// if err := c.registSender(); err != nil {
+	// 	return err
+	// }
+	// return nil
 }
 
 func (c *gatewayCore) Start() error {
 	return c.startWatchDog()
+}
+
+func (c *gatewayCore) registSender() error {
+	return c.e.RPCServer.RegisterService(steve_proto_gaterpc.RegisterMessageSenderServer, &messageSenderServer{
+		core: c,
+	})
 }
 
 func (c *gatewayCore) startWatchDog() error {

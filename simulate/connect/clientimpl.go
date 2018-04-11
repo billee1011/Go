@@ -1,17 +1,20 @@
 package connect
 
 import (
+	"steve/base/socket"
+	"steve/structs/proto/base"
+	"sync/atomic"
+
 	"container/list"
 	"fmt"
 	"io"
 	"reflect"
-	"steve/base/socket"
-	"steve/structs/proto/base"
 	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/net/context"
 )
 
 // sendingData 发送的数据
@@ -22,9 +25,23 @@ type sendingData struct {
 }
 
 type interceptor struct {
-	msgID        uint32
-	rspSeq       uint64
-	responseChan chan *Response
+	msgID         uint32
+	rspSeq        uint64
+	sendTimestamp int64
+	responseChan  chan *Response
+}
+
+// 检测是否为拦截的消息
+func (it *interceptor) check(resp *Response) bool {
+	if it.msgID == resp.Head.MsgID {
+		if it.rspSeq != 0 {
+			// 需要验证响应序号
+			return it.rspSeq == resp.Head.RspSeq
+		}
+		// 不需要验证响应序号,验证发送时时间
+		return it.sendTimestamp < resp.Head.RecvTimestamp
+	}
+	return false
 }
 
 // handler 消息处理器
@@ -59,9 +76,6 @@ type client struct {
 	// 最大发送的消息序号
 	maxSeq uint64
 
-	// maxSeq 的读写锁
-	seqMutex sync.RWMutex
-
 	// 处理函数
 	handlerMap sync.Map
 
@@ -70,6 +84,9 @@ type client struct {
 
 	// 响应消息拦截器
 	interceptors sync.Map
+
+	// 消息拦截锁
+	interceptorMutex sync.Mutex
 }
 
 var _ Client = new(client)
@@ -114,6 +131,7 @@ func (c *client) Stop() error {
 
 func (c *client) SendPackage(header SendHead, body proto.Message) (result *SendResult, err error) {
 	sendSeq := c.allocSeq()
+	sendTimestamp := time.Now().UnixNano()
 
 	c.sendingChan <- sendingData{
 		header:  header,
@@ -121,7 +139,8 @@ func (c *client) SendPackage(header SendHead, body proto.Message) (result *SendR
 		sendSeq: sendSeq,
 	}
 	return &SendResult{
-		SendSeq: sendSeq,
+		SendSeq:       sendSeq,
+		SendTimestamp: sendTimestamp,
 	}, nil
 }
 
@@ -154,17 +173,52 @@ func (c *client) Request(header SendHead, body proto.Message, timeOut time.Durat
 	}
 }
 
-func (c *client) GetResponse(msgID uint32, index int) (*Response, error) {
-	return nil, nil
+func (c *client) WaitMessage(ctx context.Context, msgID uint32, timestamp int64) (*Response, error) {
+	ch := make(chan *Response)
+	it := &interceptor{
+		msgID:         msgID,
+		sendTimestamp: timestamp,
+		responseChan:  ch,
+	}
+
+	go func() {
+		c.interceptorMutex.Lock()
+		defer c.interceptorMutex.Unlock()
+
+		// 先消息缓存里找
+		var find bool
+		e := c.reponseList.Back()
+		for e != nil && e.Value != nil {
+			// 最新接收的消息时间戳小鱼期望时间,提前退出
+			if e.Value.(*Response).Head.RecvTimestamp < it.sendTimestamp {
+				break
+			}
+			if it.check(e.Value.(*Response)) {
+				find = true
+				ch <- e.Value.(*Response)
+				break
+			}
+			e = e.Prev()
+		}
+
+		// 没找到注册消息拦截器
+		if !find {
+			c.interceptors.Store(it.msgID, it)
+		}
+
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case response := <-ch:
+		return response, nil
+	}
 }
 
 // allocSeq 分配发送序号
 func (c *client) allocSeq() uint64 {
-	defer c.seqMutex.Unlock()
-	c.seqMutex.Lock()
-
-	c.maxSeq++
-	return c.maxSeq
+	return atomic.AddUint64(&c.maxSeq, 1)
 }
 
 func (c *client) RegisterHandle(msgID uint32, handlerFunc interface{}) error {
@@ -232,6 +286,7 @@ func (c *client) recvLoop() {
 			entry.WithError(err).Errorln("收包失败")
 			return
 		}
+
 		if len(data) == 0 {
 			entry.Errorln("收到的包长度为0")
 			break
@@ -258,7 +313,6 @@ func (c *client) recvLoop() {
 			}).Errorln("消息体大小错误")
 			break
 		}
-
 		c.intercept(header, data[1+headsz:])
 		c.dispatch(header, data[1+headsz:])
 	}
@@ -323,8 +377,6 @@ func (c *client) send(data sendingData) error {
 		return fmt.Errorf("总包长超过 2 字节")
 	}
 
-	fmt.Println(totalSize)
-
 	wholeData := make([]byte, totalSize)
 
 	wholeData[0] = byte((totalSize & 0xff00) >> 8)
@@ -341,9 +393,10 @@ func (c *client) send(data sendingData) error {
 }
 
 func (c *client) intercept(header *steve_proto_base.Header, body []byte) {
+	c.interceptorMutex.Lock()
+	defer c.interceptorMutex.Unlock()
 	entry := logrus.WithField("name", "client.intercept")
-
-	// 检测是否存在该消息的拦截设置
+	// 是否注册了该消息
 	if meta, ok := metaByID[*header.MsgId]; ok {
 		msg := reflect.New(meta.Type).Interface()
 		if err := proto.Unmarshal(body, msg.(proto.Message)); err != nil {
@@ -353,8 +406,9 @@ func (c *client) intercept(header *steve_proto_base.Header, body []byte) {
 			Head: Head{
 				MsgID: header.GetMsgId(),
 			},
-			RspSeq:        header.GetRspSeq(),
+			RspSeq:        header.GetSendSeq(),
 			ServerVersion: header.GetVersion(),
+			RecvTimestamp: time.Now().UnixNano(),
 		}
 
 		response := &Response{
@@ -362,8 +416,9 @@ func (c *client) intercept(header *steve_proto_base.Header, body []byte) {
 			Body: msg.(proto.Message),
 		}
 
+		// 检测是否存在该消息的拦截设置
 		if v, ok := c.interceptors.Load(header.GetMsgId()); ok {
-			if v.(*interceptor).rspSeq == header.GetRspSeq() {
+			if v.(*interceptor).check(response) { // 匹配拦截
 				v.(*interceptor).responseChan <- response
 				c.interceptors.Delete(header.GetMsgId())
 			}

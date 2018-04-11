@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/net/context"
 )
 
 // Head 公用消息头
@@ -20,7 +21,8 @@ type SendHead struct {
 
 // SendResult 发包结果
 type SendResult struct {
-	SendSeq uint64 // 发送序号
+	SendSeq       uint64 // 发送序号
+	SendTimestamp int64  // 发送时间戳
 }
 
 // RecvHead 收包消息头
@@ -28,6 +30,7 @@ type RecvHead struct {
 	Head
 	RspSeq        uint64 // 服务器的回复序号
 	ServerVersion string // 服务器版本号
+	RecvTimestamp int64  // 接收时间戳
 }
 
 // Response 服务端推送消息
@@ -61,8 +64,9 @@ type Client interface {
 	// Request 发送一个请求,阻塞返回响应消息
 	Request(header SendHead, body proto.Message, timeOut time.Duration) (*Response, error)
 
-	// GetResponse 获取服务端发送消息
-	GetResponse(msgID uint32, index int) (*Response, error)
+	// WaitMessage 等服务端的某条消息
+	// timestamp 客户端发送某条消息的时间戳,纳秒
+	WaitMessage(ctx context.Context, msgID uint32, timestamp int64) (*Response, error)
 }
 
 // NewClient 创建客户端接口
