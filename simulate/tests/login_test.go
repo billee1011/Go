@@ -23,7 +23,7 @@ type stringHeader struct {
 
 func TestLogin(t *testing.T) {
 
-	COUNT := 1
+	COUNT := 5
 	var wg sync.WaitGroup
 	wg.Add(COUNT)
 
