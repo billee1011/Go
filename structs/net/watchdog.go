@@ -2,8 +2,6 @@ package net
 
 import (
 	"steve/structs/proto/base"
-
-	"github.com/golang/protobuf/proto"
 )
 
 // ServerType 服务类型
@@ -38,8 +36,8 @@ type IDAllocator interface {
 type WatchDog interface {
 	Start(addr string, serverType ServerType) error
 	Stop(serverType ServerType) error
-	SendPackage(clientID uint64, header *steve_proto_base.Header, bodyMsg proto.Message) error
-	BroadPackage(clientIDs []uint64, header *steve_proto_base.Header, bodyMsg proto.Message) error
+	SendPackage(clientID uint64, header *steve_proto_base.Header, body []byte) error
+	BroadPackage(clientIDs []uint64, header *steve_proto_base.Header, body []byte) error
 	Disconnect(clientID uint64) error
 }
 

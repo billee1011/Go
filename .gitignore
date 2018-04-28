@@ -3,3 +3,4 @@ serviceloader/
 .vscode/
 log/
 *.so
+debug.test

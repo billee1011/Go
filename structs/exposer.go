@@ -15,3 +15,16 @@ type Exposer struct {
 	WatchDogFactory net.WatchDogFactory
 	Exchanger       exchanger.Exchanger
 }
+
+var gExposer *Exposer
+
+// GetGlobalExposer 获取全局 exposer 对象
+// 全局对象在 servieloader 调用 Init 函数之前设置
+func GetGlobalExposer() *Exposer {
+	return gExposer
+}
+
+// SetGlobalExposer 设置全局 exposer
+func SetGlobalExposer(e *Exposer) {
+	gExposer = e
+}

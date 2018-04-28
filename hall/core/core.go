@@ -2,7 +2,6 @@ package core
 
 import (
 	"steve/structs"
-	"steve/structs/net"
 	"steve/structs/service"
 
 	"github.com/Sirupsen/logrus"
@@ -10,8 +9,6 @@ import (
 
 type hallCore struct {
 	e *structs.Exposer
-
-	dog net.WatchDog
 }
 
 // NewService 创建服务
