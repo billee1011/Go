@@ -4,6 +4,7 @@ import (
 	"steve/structs/configuration"
 	"steve/structs/exchanger"
 	"steve/structs/net"
+	"steve/structs/redisfactory"
 	"steve/structs/sgrpc"
 )
 
@@ -14,6 +15,7 @@ type Exposer struct {
 	Configuration   configuration.Configuration
 	WatchDogFactory net.WatchDogFactory
 	Exchanger       exchanger.Exchanger
+	RedisFactory    redisfactory.RedisFactory
 }
 
 var gExposer *Exposer

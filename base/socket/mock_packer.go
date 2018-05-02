@@ -4,8 +4,9 @@
 package socket
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	io "io"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // Mock of Unpacker interface

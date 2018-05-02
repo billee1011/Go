@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package majong;
+
+import "common.proto";
+
+// EventID 事件 ID 
+enum EventID {
+    event_invalid = 0;                  // 无效事件
+    event_start_game = 1;               // 开始游戏事件
+    event_xipai_finish = 2;             // 洗牌完成事件
+    event_fapai_finish = 3;             // 发牌完成事件
+    event_huansanzhang_request = 4;     // 换三张请求事件
+    event_dingque_request = 5;          // 定缺请求事件
+    event_peng_request = 6;             // 碰请求事件
+    event_gang_request = 7;             // 杠请求事件
+    event_hu_request = 8;               // 胡请求事件
+    event_qi_request = 9;               // 弃请求事件
+    event_chupai_finish = 10;           // 出牌完成事件
+    event_angang_finish = 11;           // 暗杠完成事件
+    event_zimo_finish = 12;             // 自摸完成事件
+    event_chupai_request = 13;          // 出牌请求事件
+    event_gang_finish = 14;             // 杠完成事件
+    event_hu_finish = 15;               // 胡完成事件
+    event_mopai_finish = 16;            // 摸牌完成事件
+    event_zimo_request = 17;            // 自摸请求事件
+    event_angang_request = 18;          // 暗杠请求事件
+    event_bugang_request = 19;          // 补杠请求事件
+    event_bugang_finish = 20;           // 补杠完成事件
+    event_qiangganghu_request = 21;     // 抢杠胡请求事件
+    event_qiqiangganghu_request = 22;   // 放弃抢杠胡请求事件
+    event_qiangganghu_finish = 23;      // 抢杠胡完成事件
+    event_wenxun_overtime = 24;         // 问询超时事件
+}
+
+// RequestEventHead 请求事件通用头
+message RequestEventHead {
+    uint64 player_id = 1;   // 请求者 ID 
+}
+
+// StartGameEvent 开始游戏事件
+message StartGameEvent {}
+
+// XipaiFinishEvent 洗牌完成事件
+message XipaiFinishEvent {}
+
+// FapaiFinishEvent 发牌完成事件
+message FapaiFinishEvent {}
+
+// HuansanzhangRequestEvent 换三张请求事件
+message HuansanzhangRequestEvent {
+    RequestEventHead head = 1;  // 请求头
+    repeated Card cards = 2;    // 换三张牌型
+}
+
+// DingqueRequestEvent 定缺请求事件
+message DingqueRequestEvent {
+    RequestEventHead head = 1;  // 请求头
+    CardColor color = 3;        // 定缺颜色
+}
+
