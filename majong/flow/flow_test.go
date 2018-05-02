@@ -47,7 +47,7 @@ func Test_flow_ProcessEvent(t *testing.T) {
 	mOldState.EXPECT().ProcessEvent(EVENTID, gomock.Any(), &f).Return(NEWSTATEID, nil).Times(1)
 
 	// 验证新状态和旧状态是否存在转换
-	mTransitionValidator.EXPECT().Valid(OLDSTATEID, NEWSTATEID, EVENTID).Return(nil).Times(1)
+	mTransitionValidator.EXPECT().Valid(OLDSTATEID, NEWSTATEID, EVENTID, &f).Return(nil).Times(1)
 
 	// 旧状态的 OnExit 方法会被调用 1 次
 	mOldState.EXPECT().OnExit(&f).Times(1)
@@ -175,7 +175,7 @@ func Test_flow_ProcessEvent_NewStateCreateFail(t *testing.T) {
 	mOldState.EXPECT().ProcessEvent(EVENTID, gomock.Any(), &f).Return(NEWSTATEID, nil).Times(1)
 
 	// 验证新状态和旧状态是否存在转换
-	mTransitionValidator.EXPECT().Valid(OLDSTATEID, NEWSTATEID, EVENTID).Return(nil).Times(1)
+	mTransitionValidator.EXPECT().Valid(OLDSTATEID, NEWSTATEID, EVENTID, &f).Return(nil).Times(1)
 
 	// 处理事件
 	assert.Equal(t, errCreateNewState, f.ProcessEvent(EVENTID, nil))
