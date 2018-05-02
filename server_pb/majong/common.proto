@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package majong;
+
+
+enum CardColor {
+    ColorWan = 0;       // 万
+    ColorTong = 1;      // 筒
+    ColorTiao = 2;      // 条
+    ColorFeng = 3;      // 风
+}
+
+// Card 卡牌结构
+message Card {
+    CardColor color = 1;    // 卡牌花色
+    int32 point = 2;    // 卡牌点数
+}
