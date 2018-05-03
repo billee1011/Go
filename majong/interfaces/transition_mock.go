@@ -29,12 +29,43 @@ func (_m *MockTransitionValidator) EXPECT() *_MockTransitionValidatorRecorder {
 	return _m.recorder
 }
 
-func (_m *MockTransitionValidator) Valid(oldState majong.StateID, newState majong.StateID, event majong.EventID) error {
-	ret := _m.ctrl.Call(_m, "Valid", oldState, newState, event)
+func (_m *MockTransitionValidator) Valid(oldState majong.StateID, newState majong.StateID, event majong.EventID, f MajongFlow) error {
+	ret := _m.ctrl.Call(_m, "Valid", oldState, newState, event, f)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockTransitionValidatorRecorder) Valid(arg0, arg1, arg2 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Valid", arg0, arg1, arg2)
+func (_mr *_MockTransitionValidatorRecorder) Valid(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Valid", arg0, arg1, arg2, arg3)
+}
+
+// Mock of TransitionValidatorFactory interface
+type MockTransitionValidatorFactory struct {
+	ctrl     *gomock.Controller
+	recorder *_MockTransitionValidatorFactoryRecorder
+}
+
+// Recorder for MockTransitionValidatorFactory (not exported)
+type _MockTransitionValidatorFactoryRecorder struct {
+	mock *MockTransitionValidatorFactory
+}
+
+func NewMockTransitionValidatorFactory(ctrl *gomock.Controller) *MockTransitionValidatorFactory {
+	mock := &MockTransitionValidatorFactory{ctrl: ctrl}
+	mock.recorder = &_MockTransitionValidatorFactoryRecorder{mock}
+	return mock
+}
+
+func (_m *MockTransitionValidatorFactory) EXPECT() *_MockTransitionValidatorFactoryRecorder {
+	return _m.recorder
+}
+
+func (_m *MockTransitionValidatorFactory) CreateTransitionValidator(gameID int) TransitionValidator {
+	ret := _m.ctrl.Call(_m, "CreateTransitionValidator", gameID)
+	ret0, _ := ret[0].(TransitionValidator)
+	return ret0
+}
+
+func (_mr *_MockTransitionValidatorFactoryRecorder) CreateTransitionValidator(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateTransitionValidator", arg0)
 }
