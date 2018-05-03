@@ -1,0 +1,258 @@
+syntax = "proto2";
+package clientpb;
+
+
+// Description: Action标识
+enum ActionID {
+	UnKnowAction = 0; // 未知操作
+    Chi        	 = 1; // 吃
+    Peng         = 2; // 碰
+    AnGang       = 3; // 暗杠
+    BuGang       = 4; // 补杠
+    MingGang     = 5; // 明杠
+    Qi           = 6; // 弃
+    Hu           = 7; // 胡
+    ZiMo         = 8; // 自摸
+    DianPao      = 9; // 点炮
+    MutiHu       = 10;// 一炮多响
+}
+
+// Flow: client <- server
+// Description: 洗牌
+message GameXiPaiRsp {
+	optional uint32 dice        = 1; // 高四位表示一个骰子  低四位表示一个骰子
+	optional uint32 totalCards  = 2; // 牌总数 
+}
+
+//Description: 玩家手牌信息
+message PlayerCardInfo {
+	optional uint64 pid     = 1; // 玩家id
+	repeated uint32 cards   = 2; // 玩家手牌
+}
+	
+// Flow: client <- server
+// Description: 发牌
+message GameFaPaiRsp {
+	optional uint64         nextPid     = 1; // 下一个玩家id，庄家id
+	repeated PlayerCardInfo playCards   = 2; // 玩家手牌
+}
+
+//Description:换三张方向
+enum HSZDirection {
+	DirClockwise        = 0; // 表示顺时针
+	DirOpposite         = 1; // 表示对面互换
+	DirAnticlockwise    = 2; // 表示逆时针
+}
+
+// Flow: client <- server
+// Description:换三张通知
+message GameHuanSanZhangNoticeRsp {
+    
+}
+
+// Flow: client -> server
+// Description: 换三张请求
+message GameHuanSanZhangReq {
+    optional uint64 pid     = 1; // 用户id
+    optional bool   sure    = 2; // 换三张结果是否确定
+	repeated uint32 cards   = 3; // 换三张的牌
+}
+
+// Flow: client <- server 
+// Description: 换三张响应,可以用于显示已经选定换三张的玩家
+message GameHuanSanZhangRsp {
+	optional uint64 pid = 1; // 用户ID
+}
+
+// Flow: client <- server
+// Description: 换三张结果
+message GameHuanSanZhangResultRsp {
+	optional HSZDirection   direction   = 1; // 换牌方向  
+	repeated uint32         cards       = 2; // 换三张得到的牌  
+}
+
+//Description:定缺公共消息
+message DingQueStruct {
+	optional uint64 pid     = 1; // 玩家id
+	optional uint32 color   = 2; // 定缺的类型
+}
+
+// Flow: client <- server
+// Description: 定缺通知
+message GameDingQueNotcieRsp {
+
+}
+
+// Flow: client -> server
+// Description: 定缺
+message GameDingQueReq
+{
+	optional DingQueStruct DingQueMsg = 1;
+}
+
+// Flow: client <- server
+// Description: 定缺结果
+message GameDingQueResp {
+	repeated DingQueStruct dingQueResults = 1;// 牌桌上的玩家定缺的类型
+}
+
+// 听牌结构
+message TingCardInfo {
+	optional uint32 card        = 1; // 牌值
+	optional int32  multiple    = 2; // 倍数
+}
+
+// 听牌列表
+message TingCardList {
+	repeated TingCardInfo cards = 1;
+}
+
+// Flow: client -> server 
+// Description: 摸牌
+message GameMoPaiRsp {
+    optional uint64         pid     = 1; // 玩家ID
+    optional uint32         card    = 2; // 牌
+    repeated TingCardList   tings   = 3; // 听牌列表
+}
+
+// Flow: client -> server 
+// Description: 出牌提示
+message GameChuPaiNoticeRsp {
+    optional uint64 pid = 1; // 用户ID
+}
+
+// Flow: client -> server 
+// Description: 出牌
+message GameChuPaiReq {
+    optional uint64 pid     = 1; // 玩家ID
+    optional uint32 card    = 2; // 牌
+}
+
+// Flow: client -> server
+// Description: 出牌响应
+message GameChuPaiRsp {
+    optional uint64 pid     = 1; // 玩家ID
+    optional uint32 card    = 2; // 牌
+}
+
+// 几张牌
+message CardList {
+    repeated uint32 cards = 1;
+}
+
+//Description:服务器通知客户端的动作内容
+message ActionInfo {
+	optional ActionID       actionID    = 1; // 动作ID
+	repeated uint32         actionCards = 2; // 动作牌列表
+	repeated CardList       eductCards  = 3; // 可选动作牌列表(如选择哪几张牌吃)                             
+    optional uint64         fromPid     = 4; // 引发者
+    optional uint64         pid         = 5; // 操作者   
+}
+
+// Description: 玩家操作详细信息
+message ActionResult {
+	optional uint64 pid         = 1; // 玩家ID
+	repeated uint32 cards       = 2; // 玩家操作的牌
+	optional uint64 fromPid     = 3; // 引发者
+	repeated uint32 fromCards   = 4; // 引发的牌型
+}
+
+// Description: 抢杠胡需要的额外字段
+enum QGangHuStage {
+    QGangHuStage_Normal     = 0; // 普通补杠
+    QGangHuStage_GangFore   = 1; // 抢杠胡前的抢杠结果,用于推到牌
+    QGangHuStage_GangRes    = 2; // 抢杠胡后抢杠结果,用于展示刮风下雨
+    QGangHuStage_HuRes      = 3; // 抢杠胡后胡结果,用于移除杠下的牌
+} 
+
+// Flow: client <- server
+// Description: 服务端推送玩家可执行的操作
+message GameActionNoticeRsp {
+	repeated ActionInfo actions = 1; //动作列表
+}
+
+// Flow: client -> server
+// Description: 玩家执行操作
+message GameActionReq{
+    optional ActionInfo action = 1;
+}
+
+// Flow: client <- server
+// Description: 服务端推送玩家已经执行的操作
+message GameActionRsp{
+	optional ActionID       actionID        = 1; // 玩家执行的动作
+	optional bool           hasNextAction   = 2; // 当前玩家是否有询问 一般是杠后检查
+	repeated ActionResult   result          = 3; //
+	optional QGangHuStage   QGHRes          = 4; // 用于抢杠胡的判断,抢杠胡时,在杠中和弃胡的的结果通知中带上此字段来标识是否展示刮风下雨动画等
+}
+
+
+// Description: 麻将组类型
+enum CardsGroupType {
+    CardGroupType_Hand      = 0; // 手牌
+    CardGroupType_Chi       = 1; // 吃牌
+    CardGroupType_Peng      = 2; // 碰牌
+    CardGroupType_MingGang  = 3; // 明杠牌
+    CardGroupType_AnGang    = 4; // 暗杠牌
+    CardGroupType_BuGang    = 5; // 补杠牌
+    CardGroupType_Hu        = 6; // 胡的牌
+    CardGroupType_Hua       = 7; // 花牌
+}
+
+// 麻将组
+message CardsGroup
+{
+	repeated uint32         cards   = 1; // 牌
+	optional CardsGroupType type    = 2; // 麻将组类型
+	optional uint64         pid     = 3; // 吃碰杠谁的牌
+}
+
+// 本局游戏结束 client <- server
+message GameOverRsp {
+	repeated CardsGroup handCards = 1; // 玩家手牌,推倒牌墙用 key=pid
+}
+
+// 玩家清单
+message BalancePlayerInfo
+{
+	optional uint64     pid             = 1; // 玩家ID
+	optional int64      gold            = 2; // 输赢的钱数
+	optional string     name            = 3; // 玩家昵称
+	optional int32      multiple        = 4; // 赢取倍数
+	repeated CardsGroup cardsGroupList  = 5; // 玩家牌型
+	optional int64      currentGold     = 6; // 玩家当前钱数
+}
+
+// Description: 胡牌类型
+enum BalanceType {
+	GangBalance 		= 0; // 杠结算
+	HuBalance 			= 1; // 胡结算
+	FlowerBarBalance 	= 2; // 杠上开花结算
+	SeaMouthBalance 	= 3; // 海底捞结算
+	TransferBalance 	= 4; // 呼叫转移结算
+	RefundBalance 		= 5; // 退税结算
+	CheckPigBalance 	= 6; // 查花猪
+	CheckShoutBalance 	= 7; // 查大叫
+}
+
+// 结算清单
+message BillingList
+{
+	optional string type            = 1; // 胡牌牌型
+	optional int32  times           = 2; // 倍数
+	optional int64  gold            = 3; // 输赢的钱数
+	repeated uint64 relatedPlayers  = 4; // 输赢的玩家ID
+}
+
+// 玩家单局结算信息返回 client <- server
+message BalanceInfosRsp{
+	repeated BillingList        clearList   = 1; // 结算清单
+	repeated BalancePlayerInfo  playerList  = 2; // 玩家结算信息
+}
+
+// 实时结算消息返回 client <- server
+message SettleInstantRsp {
+	optional BalanceType 		balanceType = 4; // 结算类型
+	repeated BalancePlayerInfo 	balanceInfo	= 5; // 结算详情
+
+}

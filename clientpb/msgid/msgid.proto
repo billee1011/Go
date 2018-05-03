@@ -1,0 +1,26 @@
+syntax = "proto2";
+package msgid;
+
+enum MsgID {
+	// 房间
+    RoomLogin 			= 0x0001;
+    RoomRelogin 		= 0x0002;
+    RoomJoin 			= 0x0011;
+    RoomSitdown			= 0x0012;
+    RoomChange	 		= 0x0013;
+	RoomContinue 		= 0x0014;
+	
+	// 游戏逻辑
+	GameHuansanzhang	= 0x0101; //换三张
+	GameDingQue 		= 0x0102; //定缺
+	GameMoPai			= 0x0103; //摸牌
+	GameChuPaiNotice   	= 0x0104; //出牌提示  
+	GameChuPai			= 0x0105; //出牌
+	GameActionNotice	= 0x0106; //操作提示
+	GameAction			= 0x0107; //玩家操作,碰,杠,胡,吃
+	GameOver			= 0x0108; //单局结算
+	
+	// 结算推送
+	GameSettleInstant	= 0x0201; //实时结算消息
+	GameSettleFinally 	= 0x0202; //单局总结算消息
+}

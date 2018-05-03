@@ -20,12 +20,12 @@ func (s *MoPaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 		if len(wallCards) == 0 {
 			return majongpb.StateID_state_gameover, nil
 		}
-		return majongpb.StateID_state_zixun, s.mopai(flow)
+		return s.mopai(flow)
 	}
 	return majongpb.StateID_state_mopai, errInvalidEvent
 }
 
-func (s *MoPaiState) mopai(flow interfaces.MajongFlow) error {
+func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
 	context := flow.GetMajongContext()
 	players := context.GetPlayers()
 	activePlayer := utils.GetPlayerByID(players, context.ActivePlayer)
@@ -34,7 +34,7 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) error {
 	context.WallCards = context.WallCards[1:]
 	//将这张牌添加到手牌中
 	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
-	return nil
+	return majongpb.StateID_state_zixun, nil
 }
 
 // OnEntry 进入状态
