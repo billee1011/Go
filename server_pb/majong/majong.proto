@@ -6,15 +6,72 @@ import "common.proto";
 import "states.proto";
 import "events.proto";
 
+// 玩家操作
+enum Action {
+    action_peng         = 0;  // 碰
+    action_zimo         = 1;  // 自摸
+    action_dianpao      = 2;  // 点炮
+    action_qiangganghu  = 3;  // 抢杠胡
+    action_bugang       = 4;  // 补杠
+    action_minggang     = 5;  // 明杠
+    action_angang       = 6;  // 暗杠
+    action_qi           = 7;  // 弃
+}
+
+// 杠的类型
+enum GangType {
+    gang_angang     = 0;    // 暗杠
+    gang_minggang   = 1;    // 明杠
+    gang_bugang     = 2;    // 补杠
+}
+
+// 杠牌数据
+message GangCard {
+    Card        card = 1;  // 杠的牌
+    GangType    type = 2;  // 杠类型
+    uint64      src_player = 3;  // 杠牌来源玩家
+}
+
+// 碰牌数据
+message PengCard {
+    Card    card = 1; // 碰的牌
+    uint64  src_player = 2;  // 碰牌来源玩家
+}
+
+// 胡类型
+enum HuType {
+    hu_zimo = 0;        // 自摸
+    hu_dianpao = 1;     // 点炮
+    hu_qiangganghu = 2; // 抢杠胡
+}
+
+// 胡牌数据
+message HuCard {
+    Card card = 1; // 胡的牌
+    uint64 src_player = 2;  // 胡牌来源玩家
+    HuType type = 3;    // 胡牌类型
+}
+
+// 吃牌数据
+message ChiCard {
+    repeated Card cards = 1;    // 牌列表
+    Card opr_card = 2;  // 吃的牌
+    uint64 src_player = 3; // 吃牌来源玩家
+}
+
 // Player 玩家数据
 message Player {
-    uint64 palyer_id = 1;               // 玩家 ID 
-    repeated Card hand_cards = 2;       // 玩家手牌
-    repeated Card out_cards = 3;        // 玩家打出的牌
-    repeated Card chi_cards = 4;        // 玩家吃的牌
-    repeated Card peng_cards = 5;       // 玩家碰的牌
-    repeated Card hu_cards = 6;         // 玩家胡的牌
-    repeated Card gang_cards = 7;       // 玩家杠的牌
+    uint64 palyer_id = 1;                   // 玩家 ID 
+    repeated Card hand_cards = 2;           // 玩家手牌
+    repeated Card out_cards = 3;            // 玩家打出的牌
+    repeated ChiCard chi_cards = 4;         // 玩家吃的牌
+    repeated PengCard peng_cards = 5;       // 玩家碰的牌
+    repeated HuCard hu_cards = 6;           // 玩家胡的牌
+    repeated GangCard gang_cards = 7;       // 玩家杠的牌
+    repeated Action possible_actions = 8;   // 可选操作
+    Action selected_action = 9;             // 玩家选择的操作
+    CardColor dingque_color = 10;           // 定缺花色
+    repeated Card huansanzhang_cards = 11;       // 换三张的牌
 }
 
 // AutoEvent 自动事件
@@ -23,12 +80,31 @@ message AutoEvent {
     bytes event_context = 2;    // 事件现场
 }
 
+// SettleType 结算类型
+enum SettleType {
+    settle_angang = 0;  // 暗杠
+    settle_bugang = 1;  // 补杠
+    settle_mingang = 2; // 明杠
+    settle_dianpao = 3; // 点炮
+    settle_zimo = 4;    // 自摸
+    settle_qiangganghu = 5; // 抢杠胡
+}
+
+// SettleInfo 结算信息
+message SettleInfo {
+    uint64 id = 1; // 结算 id 
+    map<uint64, int64> scores = 2; // 玩家结算分数
+    SettleType settle_type = 3; // 结算类型
+}
+
 // MajongContext 麻将现场
 message MajongContext {
     int32 game_id = 1;              // 游戏 ID 
     StateID cur_state = 2;          // 当前状态
     repeated Player players = 3;    // 玩家列表
     uint64 active_player = 4;       // 当前轮次的玩家 ID
-    AutoEvent auto_event = 5;       // 需要自动触发的事件
+    repeated Card wall_cards = 5;   // 墙牌
+    repeated SettleInfo settle_infos = 6;   // 结算信息表
+    repeated uint64 revert_settles = 7; // 退税结算 ids
+    Card last_out_card = 8;   // 最后一次出的牌
 }
-
