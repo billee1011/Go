@@ -51,7 +51,7 @@ func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	if newStateID == f.context.CurState {
 		return nil
 	}
-	if err := f.transitionValidator.Valid(f.context.CurState, newStateID, eventID); err != nil {
+	if err := f.transitionValidator.Valid(f.context.CurState, newStateID, eventID, f); err != nil {
 		entry.WithError(err).Error(errTransitionNotExist)
 		return errTransitionNotExist
 	}
