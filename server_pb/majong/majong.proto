@@ -108,4 +108,16 @@ message MajongContext {
     repeated uint64 revert_settles = 7; // 退税结算 ids
     Card last_out_card = 8;   // 最后一次出的牌
     uint32 zhuangjia_index = 9; // 庄家索引
+    MajongCommonOption option = 10; // 麻将通用玩法选项
+    bytes majong_option = 11;   // 某个麻将特有的玩法选项
+}
+
+// MajongCommonOption 麻将通用玩法选项
+message MajongCommonOption {
+
+}
+
+// SichuanxueliuOption 四川血流麻将玩法
+message SichuanxueliuOption {
+    bool open_huansanzhang = 1;
 }
