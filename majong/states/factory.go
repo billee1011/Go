@@ -18,6 +18,10 @@ func (f *factory) CreateState(gameID int, stateID majongpb.StateID) interfaces.M
 	switch stateID {
 	case majongpb.StateID_state_init:
 		return new(InitState)
+	case majongpb.StateID_state_xipai:
+		return new(XipaiState)
+	case majongpb.StateID_state_fapai:
+		return new(FapaiState)
 	default:
 		return nil
 	}

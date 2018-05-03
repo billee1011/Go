@@ -21,4 +21,5 @@ enum StateID {
     state_waitqiangganghu = 14; // 等待抢杠胡状态
     state_qiangganghu = 15;     // 抢杠胡状态
     state_chupaiwenxun = 16;    // 出牌问询状态
+    state_gameover = 17;        // 游戏结束状态
 }
