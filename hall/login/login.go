@@ -2,8 +2,6 @@ package login
 
 import (
 	"steve/structs"
-	"steve/structs/proto/gate_rpc"
-	"steve/structs/proto/msg"
 
 	"github.com/golang/protobuf/proto"
 

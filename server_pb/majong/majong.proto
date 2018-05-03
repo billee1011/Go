@@ -30,5 +30,6 @@ message MajongContext {
     repeated Player players = 3;    // 玩家列表
     uint64 active_player = 4;       // 当前轮次的玩家 ID
     AutoEvent auto_event = 5;       // 需要自动触发的事件
+    repeated Card wall_cards = 6;   // 墙牌
 }
 

@@ -2,7 +2,6 @@ package connect
 
 import (
 	"reflect"
-	"steve/structs/proto/msg"
 
 	"github.com/Sirupsen/logrus"
 )

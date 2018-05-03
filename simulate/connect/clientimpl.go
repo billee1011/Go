@@ -2,7 +2,6 @@ package connect
 
 import (
 	"steve/base/socket"
-	"steve/structs/proto/base"
 	"sync/atomic"
 
 	"container/list"
