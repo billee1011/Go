@@ -107,4 +107,5 @@ message MajongContext {
     repeated SettleInfo settle_infos = 6;   // 结算信息表
     repeated uint64 revert_settles = 7; // 退税结算 ids
     Card last_out_card = 8;   // 最后一次出的牌
+    uint32 zhuangjia_index = 9; // 庄家索引
 }
