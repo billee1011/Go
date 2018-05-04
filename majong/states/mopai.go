@@ -2,7 +2,6 @@ package states
 
 import (
 	"steve/majong/interfaces"
-	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 )
 
@@ -20,21 +19,9 @@ func (s *MoPaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 		if len(wallCards) == 0 {
 			return majongpb.StateID_state_gameover, nil
 		}
-		return s.mopai(flow)
+		return majongpb.StateID_state_zixun, nil
 	}
 	return majongpb.StateID_state_mopai, errInvalidEvent
-}
-
-func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
-	context := flow.GetMajongContext()
-	players := context.GetPlayers()
-	activePlayer := utils.GetPlayerByID(players, context.ActivePlayer)
-	//从墙牌中移除一张牌
-	drowCard := context.WallCards[0]
-	context.WallCards = context.WallCards[1:]
-	//将这张牌添加到手牌中
-	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
-	return majongpb.StateID_state_zixun, nil
 }
 
 // OnEntry 进入状态

@@ -15,6 +15,17 @@ func GetPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 	return nil
 }
 
+//GetNextPlayerByID 根据玩家id获取下个玩家
+func GetNextPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
+	for k, player := range players {
+		if player.PalyerId == id {
+			index := (k + 1) % len(players)
+			return players[index]
+		}
+	}
+	return nil
+}
+
 //CheckHasDingQueCard 检查牌里面是否含有定缺的牌
 func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool {
 	for _, card := range cards {
