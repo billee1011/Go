@@ -1,0 +1,12 @@
+log_level: debug 
+log_dir: ./log
+log_file: gateway
+log_stderr: true 
+
+# rpc_addr: 127.0.0.1
+# rpc_port: 36002
+# rpc_server_name: gate
+
+lis_client_addr: 127.0.0.1
+lis_client_port: 36001
+

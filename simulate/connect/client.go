@@ -57,12 +57,13 @@ type Client interface {
 	// SendPackage 发送数据包
 	SendPackage(header SendHead, body proto.Message) (*SendResult, error)
 
-	// RegisterHandle 注册消息处理函数
-	// handler 为处理函数，声明类型必须是： func (head RecvHead, body YourProtoType)
-	RegisterHandle(msgID uint32, handler interface{}) error
-
 	// Request 发送一个请求,阻塞返回响应消息
-	Request(header SendHead, body proto.Message, timeOut time.Duration) (*Response, error)
+	// header: 发送的序号
+	// body: 发送的消息体
+	// timeOut: 超时事件
+	// rspMsgID: 期望收到的响应消息 ID
+	// rspBody: 收到的消息将反序列化到此接口中
+	Request(header SendHead, body proto.Message, timeOut time.Duration, rspMsgID uint32, rspBody proto.Message) error
 
 	// WaitMessage 等服务端的某条消息
 	// timestamp 客户端发送某条消息的时间戳,纳秒
