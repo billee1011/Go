@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"steve/room/playermgr"
 	"steve/room/registers"
 	"steve/structs"
 	"steve/structs/net"
@@ -25,6 +26,8 @@ func NewService() service.Service {
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	logrus.Info("room init")
+	// 初始化用户管理器
+	playermgr.SetupPlayerMgr()
 	c.e = e
 	registers.RegisterHandlers(&c.exchanger)
 	return nil

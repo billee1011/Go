@@ -63,6 +63,10 @@ func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Heade
 			logEntry.WithField("ret_msg_id", retMessage.MsgID).Errorln("消息反序列化失败")
 			continue
 		}
+		if bodyData == nil {
+			logEntry.Panic("bodyData nil")
+		}
+
 		o.core.dog.SendPackage(clientID, &responseHeader, bodyData)
 	}
 
