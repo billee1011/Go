@@ -2,7 +2,8 @@ package connect
 
 import (
 	"reflect"
-	"steve/structs/proto/msg"
+	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -26,5 +27,5 @@ func RegisterResponseMessageMeta(msgID uint32, msgType reflect.Type) {
 }
 
 func init() {
-	RegisterResponseMessageMeta(uint32(steve_proto_msg.MsgID_hall_login), reflect.TypeOf((*steve_proto_msg.LoginRsp)(nil)).Elem())
+	RegisterResponseMessageMeta(uint32(msgid.MsgID_room_login_req), reflect.TypeOf((*room.RoomLoginReq)(nil)).Elem())
 }

@@ -6,11 +6,17 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// ResponseMsg 消息处理器的回复消息
+type ResponseMsg struct {
+	MsgID uint32
+	Body  proto.Message
+}
+
 // Exchanger 与客户端交互接口
 type Exchanger interface {
 
 	// RegisterHandle 注册指定消息 ID 的回调函数， 当收到消息时， 会回调 handler 处理
-	// handler 的声明必须是 func(clientID uint64, head *steve_proto_gaterpc.Header, body YourProtoType) []proto.Message
+	// handler 的声明必须是 func(clientID uint64, head *steve_proto_gaterpc.Header, body YourProtoType) []ResponseMsg
 	// 		handler 的参数中 clientID 为客户端连接 ID， head 为消息头， YourProtoType 可以为任意 proto 类型,
 	// 		handler 的返回值 []proto.Message 表示需要回复的数据， 为 nil 或者空切片时则表示不需要回复， 此时服务仍可以通过 SendPackage 或者 BroadcastPackage 来回复消息
 	// 通过返回值和通过 SendPackage 方法回复消息的区别：

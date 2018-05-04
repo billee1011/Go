@@ -1,35 +1,39 @@
 
-ROOT=../../proto 
-DEST=.
+protoc -I ../../client_pb/base --go_out=plugins=grpc:./base/ ../../client_pb/base/*.proto
+protoc -I ../../server_pb/gate_rpc --go_out=plugins=grpc:./gate_rpc/ ../../server_pb/gate_rpc/*.proto
 
-function makeProto() {
-    local dirName=$1
-    local relativeDirName=${dirName#$ROOT/}
 
-    if [ -z "`ls $dirName | grep .*\.proto`" ]; then 
-        echo $dirName "不包含proto文件"
-    else 
-        echo 正在处理: $dirName 
+# ROOT=../../proto 
+# DEST=.
 
-        # $ROOT/.. 表示 ROOT 目录的父目录， 默认将该目录加入 import 搜索列表
-        protoc -I $dirName -I $ROOT/.. --go_out=plugins=grpc:$DEST/$relativeDirName $dirName/*.proto
+# function makeProto() {
+#     local dirName=$1
+#     local relativeDirName=${dirName#$ROOT/}
 
-        # 替换 import xxx "proto/yyy" 为  import xxx "steve/structs/proto/yyy"
-        sed -i 's/"proto\//"steve\/structs\/proto\//g' $DEST/$relativeDirName/*.go 
-    fi 
+#     if [ -z "`ls $dirName | grep .*\.proto`" ]; then 
+#         echo $dirName "不包含proto文件"
+#     else 
+#         echo 正在处理: $dirName 
 
-    for file in $dirName/*
-    do 
-        if test -d $file 
-        then 
-            local subDir=${file#$ROOT/}
-            if !(test -d $subDir)
-            then 
-                mkdir $DEST/$subDir
-            fi 
-            makeProto $file 
-        fi 
-    done 
-}
+#         # $ROOT/.. 表示 ROOT 目录的父目录， 默认将该目录加入 import 搜索列表
+#         protoc -I $dirName -I $ROOT/.. --go_out=plugins=grpc:$DEST/$relativeDirName $dirName/*.proto
 
-makeProto $ROOT
+#         # 替换 import xxx "proto/yyy" 为  import xxx "steve/structs/proto/yyy"
+#         sed -i 's/"proto\//"steve\/structs\/proto\//g' $DEST/$relativeDirName/*.go 
+#     fi 
+
+#     for file in $dirName/*
+#     do 
+#         if test -d $file 
+#         then 
+#             local subDir=${file#$ROOT/}
+#             if !(test -d $subDir)
+#             then 
+#                 mkdir $DEST/$subDir
+#             fi 
+#             makeProto $file 
+#         fi 
+#     done 
+# }
+
+# makeProto $ROOT
