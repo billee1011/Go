@@ -1,12 +1,12 @@
 package core
 
 import (
-	"context"
+	"errors"
 	"fmt"
 	"reflect"
-	"steve/structs"
-	"steve/structs/common"
 	iexchanger "steve/structs/exchanger"
+	"steve/structs/net"
+	"steve/structs/proto/base"
 	"steve/structs/proto/gate_rpc"
 	"sync"
 
@@ -27,6 +27,9 @@ type exchangerImpl struct {
 	// key 为消息 ID uint32
 	// value 为消息处理器 wrapHandler
 	handleMap sync.Map
+
+	// watchDog
+	watchDog net.WatchDog
 }
 
 var _ iexchanger.Exchanger = new(exchangerImpl)
@@ -81,39 +84,16 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 		"msg_id":    head.MsgId,
 	})
 
-	g := structs.GetGlobalExposer()
-	if g == nil {
-		entry.Error("获取全局对象失败")
-		return fmt.Errorf("获取全局对象失败")
+	header := steve_proto_base.Header{
+		MsgId: proto.Uint32(head.MsgId),
 	}
-	// TODO 网关服务绑定， 不同的网关分开发送
-	cc, err := g.RPCClient.GetClientConnByServerName(common.GateServiceName)
-	if err != nil {
-		entry.WithError(err).Warn("获取客户端连接失败")
-		return fmt.Errorf("获取客户端连接失败： %v", err)
+	bodyData := []byte{}
+	if err := proto.Unmarshal(bodyData, body); err != nil {
+		var errUnmarshal = errors.New("序列化消息体失败")
+		entry.WithError(err).Errorln(errUnmarshal)
+		return errUnmarshal
 	}
-
-	data, err := proto.Marshal(body)
-	if err != nil {
-		entry.WithError(err).Warn("消息序列化失败")
-		return fmt.Errorf("消息序列化失败： %v", err)
-	}
-
-	mc := steve_proto_gaterpc.NewMessageSenderClient(cc)
-	r, err := mc.SendMessage(context.Background(), &steve_proto_gaterpc.SendMessageRequest{
-		ClientId: clientIDs,
-		Header:   head,
-		Data:     data,
-	})
-
-	if err != nil || r == nil {
-		entry.WithError(err).Error("调用 RPC 接口失败")
-		return fmt.Errorf("调用 RPC 接口失败: %v", err)
-	}
-	if !r.GetOk() {
-		entry.Info("网关发消息返回失败")
-		return fmt.Errorf("网关发送消息返回失败")
-	}
+	e.watchDog.BroadPackage(clientIDs, &header, bodyData)
 	return nil
 }
 
