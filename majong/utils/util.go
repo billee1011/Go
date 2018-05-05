@@ -2,7 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"steve/client_pb/room"
 	majongpb "steve/server_pb/majong"
+
+	"github.com/golang/protobuf/proto"
 )
 
 //GetPlayerByID 根据玩家id获取玩家
@@ -158,6 +161,35 @@ func IntToCard(cardValue int32) (*majongpb.Card, error) {
 	return &majongpb.Card{
 		Color: color,
 		Point: value,
+	}, nil
+}
+
+//IntToRoomCard int32类型转room.Card类型
+func IntToRoomCard(cardValue int32) (*room.Card, error) {
+	colorValue := cardValue / 10
+	value := cardValue % 10
+	var color room.CardColor
+	switch colorValue {
+	case 1:
+		color = room.CardColor_ColorWan
+	case 2:
+		color = room.CardColor_ColorTiao
+	case 3:
+		color = room.CardColor_ColorTong
+	default:
+		return nil, fmt.Errorf("cant trans card %d", cardValue)
+	}
+	return &room.Card{
+		Color: color.Enum(),
+		Point: proto.Int32(value),
+	}, nil
+}
+
+//CardToRoomCard majongpb.card类型转room.Card类型
+func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
+	return &room.Card{
+		Color: room.CardColor(card.Color).Enum(),
+		Point: proto.Int32(card.Point),
 	}, nil
 }
 

@@ -1,6 +1,7 @@
 package connect
 
 import (
+	"errors"
 	"steve/base/socket"
 	"sync/atomic"
 
@@ -43,10 +44,12 @@ func (it *interceptor) check(resp *Response) bool {
 	return false
 }
 
-// handler 消息处理器
-type handler struct {
-	bodyType reflect.Type
-	f        interface{}
+// requestInfo 请求信息
+type requestInfo struct {
+	sendSeq  uint64        // 发送序号
+	rspMsgID uint32        // 回复的消息 ID
+	rspBody  proto.Message // 回复的消息体
+	rspChan  chan error
 }
 
 type client struct {
@@ -86,6 +89,9 @@ type client struct {
 
 	// 消息拦截锁
 	interceptorMutex sync.Mutex
+
+	// requestInfos 请求表
+	requestInfos sync.Map
 }
 
 var _ Client = new(client)
@@ -143,33 +149,33 @@ func (c *client) SendPackage(header SendHead, body proto.Message) (result *SendR
 	}, nil
 }
 
-func (c *client) Request(header SendHead, body proto.Message, timeOut time.Duration) (*Response, error) {
-	entry := logrus.WithField("name", "client.Request")
-	sendSeq := c.allocSeq()
-	ch := make(chan *Response)
-	it := &interceptor{
-		msgID:        header.MsgID,
-		rspSeq:       sendSeq,
-		responseChan: ch,
+func (c *client) Request(header SendHead, body proto.Message, timeOut time.Duration, rspMsgID uint32, rspBody proto.Message) error {
+	sendResult, err := c.SendPackage(header, body)
+	if err != nil {
+		return err
 	}
-
-	// 增加一个消息拦截器
-	c.interceptors.Store(header.MsgID, it)
-
-	c.sendingChan <- sendingData{
-		header:  header,
-		body:    body,
-		sendSeq: sendSeq,
+	reqInfo := requestInfo{
+		sendSeq:  sendResult.SendSeq,
+		rspMsgID: rspMsgID,
+		rspBody:  rspBody,
+		rspChan:  make(chan error),
 	}
+	c.requestInfos.Store(sendResult.SendSeq, &reqInfo)
+	defer c.requestInfos.Delete(sendResult.SendSeq)
 
 	timer := time.NewTimer(timeOut)
+
 	select {
-	case response := <-ch:
-		return response, nil
+	case err := <-reqInfo.rspChan:
+		{
+			return err
+		}
 	case <-timer.C:
-		entry.Error("请求超时")
-		return nil, fmt.Errorf("请求超时")
+		{
+			return errors.New("请求超时")
+		}
 	}
+	return nil
 }
 
 func (c *client) WaitMessage(ctx context.Context, msgID uint32, timestamp int64) (*Response, error) {
@@ -220,28 +226,6 @@ func (c *client) allocSeq() uint64 {
 	return atomic.AddUint64(&c.maxSeq, 1)
 }
 
-func (c *client) RegisterHandle(msgID uint32, handlerFunc interface{}) error {
-	ft := reflect.TypeOf(handlerFunc)
-	if ft.Kind() != reflect.Func {
-		return fmt.Errorf("handler 需要是一个函数")
-	}
-	if ft.NumIn() != 2 {
-		return fmt.Errorf("handler 需要接收 2 个参数")
-	}
-	if ft.In(0) != reflect.TypeOf(RecvHead{}) {
-		return fmt.Errorf("handler 的第一个参数需要是 RecvHead 类型")
-	}
-	bodyType := ft.In(1)
-	if _, ok := reflect.New(bodyType).Interface().(proto.Message); !ok {
-		return fmt.Errorf("handler 的第 2 个参数需要可以转换为 proto.Message")
-	}
-	c.handlerMap.Store(msgID, handler{
-		f:        handlerFunc,
-		bodyType: bodyType,
-	})
-	return nil
-}
-
 func (c *client) sendLoop() {
 	entry := logrus.WithField("name", "client.sendLoop")
 
@@ -266,6 +250,23 @@ forstart:
 		}
 	}
 	entry.Infoln("发送循环完成")
+}
+
+func (c *client) checkRequests(header *steve_proto_base.Header, body []byte) {
+	rspSeq := header.GetRspSeq()
+	d, ok := c.requestInfos.Load(rspSeq)
+	if !ok {
+		return
+	}
+	reqInfo := d.(*requestInfo)
+	if reqInfo.rspMsgID != header.GetMsgId() {
+		return
+	}
+	if err := proto.Unmarshal(body, reqInfo.rspBody); err != nil {
+		reqInfo.rspChan <- fmt.Errorf("消息反序列化失败： %v", err)
+	} else {
+		reqInfo.rspChan <- nil
+	}
 }
 
 func (c *client) recvLoop() {
@@ -312,41 +313,9 @@ func (c *client) recvLoop() {
 			}).Errorln("消息体大小错误")
 			break
 		}
+		c.checkRequests(header, data[1+headsz:])
 		c.intercept(header, data[1+headsz:])
-		c.dispatch(header, data[1+headsz:])
 	}
-}
-
-func (c *client) dispatch(header *steve_proto_base.Header, body []byte) {
-	entry := logrus.WithFields(logrus.Fields{
-		"name":   "client.dispatch",
-		"msg_id": header.GetMsgId(),
-	})
-	h, ok := c.handlerMap.Load(header.GetMsgId())
-	if !ok {
-		entry.Warn("未处理的消息")
-		return
-	}
-	hh := h.(handler)
-	paramHeader := RecvHead{
-		Head: Head{
-			MsgID: header.GetMsgId(),
-		},
-		RspSeq:        header.GetRspSeq(),
-		ServerVersion: header.GetVersion(),
-	}
-
-	msg := reflect.New(hh.bodyType).Interface()
-	if err := proto.Unmarshal(body, msg.(proto.Message)); err != nil {
-		entry.Error("消息体反序列化失败")
-		return
-	}
-
-	f := reflect.ValueOf(hh.f)
-	f.Call([]reflect.Value{
-		reflect.ValueOf(paramHeader),
-		reflect.ValueOf(msg).Elem(),
-	})
 }
 
 func (c *client) send(data sendingData) error {

@@ -1,7 +1,8 @@
 package states
 
 import (
-	"steve/clientpb"
+	"steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -23,9 +24,15 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		card := context.GetLastOutCard()
 		var hasChupaiwenxun bool
 		for _, player := range players {
-			actionInfos := checkActions(context, player, card)
-			if len(actionInfos) > 0 {
-				//TODO暂时不广播
+			ntf, need := checkActions(context, player, card)
+			if need {
+				playersID := make([]uint64, 0, 0)
+				playersID = append(playersID, player.GetPalyerId())
+				toClientMessage := interfaces.ToClientMessage{
+					MsgID: int(msgid.MsgID_room_chupaiwenxun_ntf),
+					Msg:   ntf,
+				}
+				flow.PushMessages(playersID, toClientMessage)
 				hasChupaiwenxun = true
 			}
 		}
@@ -39,26 +46,32 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 }
 
 //checkActions 检查玩家可以有哪些操作
-func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) []*clientpb.ActionInfo {
-	actionInfos := []*clientpb.ActionInfo{}
-	canMingGang, mingGangInfo := checkMingGang(context, player, card)
+func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
+	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
+	canMingGang := checkMingGang(context, player, card)
+	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
-		actionInfos = append(actionInfos, mingGangInfo)
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_minggang)
 	}
-	canDianPao, dianPaoInfo := checkDianPao(context, player, card)
+	canDianPao := checkDianPao(context, player, card)
+	chupaiWenxunNtf.EnableDianpao = proto.Bool(canDianPao)
 	if canDianPao {
-		actionInfos = append(actionInfos, dianPaoInfo)
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_dianpao)
 	}
-	return actionInfos
+	canPeng := checkPeng(context, player, card)
+	chupaiWenxunNtf.EnablePeng = proto.Bool(canPeng)
+	if canPeng {
+		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
+	}
+	chupaiWenxunNtf.EnableQi = proto.Bool(true)
+	return chupaiWenxunNtf, canDianPao || canMingGang || canPeng
 }
 
 //checkMingGang 查明杠
-func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (bool, *clientpb.ActionInfo) {
+func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	// 没有墙牌不能明杠
 	if len(context.WallCards) == 0 {
-		return false, nil
+		return false
 	}
 	cpPlayerID := context.GetActivePlayer()
 	cpPlayer := utils.GetPlayerByID(context.GetPlayers(), cpPlayerID)
@@ -66,7 +79,7 @@ func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, car
 	color := player.GetDingqueColor()
 	//定缺牌不查
 	if outCard.Color == color {
-		return false, nil
+		return false
 	}
 	if cpPlayer.PalyerId != player.PalyerId {
 		cards := player.HandCards
@@ -89,56 +102,57 @@ func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, car
 				laizi := make(map[utils.Card]bool)
 				huCards := utils.FastCheckTingV2(cardsI, laizi)
 				if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(player.HuCards)) {
-					//暂时不广播消息
-					cardToClient, _ := utils.CardToInt(*outCard)
-					actionInfo := &clientpb.ActionInfo{
-						ActionID:    clientpb.ActionID_MingGang.Enum(),
-						ActionCards: []uint32{uint32(*cardToClient)},
-						FromPid:     proto.Uint64(cpPlayer.GetPalyerId()),
-						Pid:         proto.Uint64(player.GetPalyerId()),
-					}
-					return true, actionInfo
+					return true
 				}
 			} else {
-				//暂时不广播消息
-				cardToClient, _ := utils.CardToInt(*outCard)
-				actionInfo := &clientpb.ActionInfo{
-					ActionID:    clientpb.ActionID_MingGang.Enum(),
-					ActionCards: []uint32{uint32(*cardToClient)},
-					FromPid:     proto.Uint64(cpPlayer.GetPalyerId()),
-					Pid:         proto.Uint64(player.GetPalyerId()),
-				}
-				return true, actionInfo
+				return true
 			}
 		}
 	}
-	return false, &clientpb.ActionInfo{}
+	return false
+}
+
+//checkPeng 查碰
+func checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
+	color := player.GetDingqueColor()
+	//胡牌后不能碰了
+	if len(player.GetHuCards()) > 0 || card.Color == color {
+		return false
+	}
+	if context.ActivePlayer != player.PalyerId {
+		handCards := player.HandCards
+		num := 0
+		for _, handCard := range handCards {
+			if utils.CardEqual(handCard, card) {
+				num++
+			}
+		}
+		if num >= 2 {
+			player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
+			return true
+		}
+	}
+	return false
 }
 
 //checkDianPao 查点炮
-func checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (bool, *clientpb.ActionInfo) {
+func checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	cpPlayer := utils.GetPlayerByID(context.GetPlayers(), context.ActivePlayer)
 	cpCard := context.GetLastOutCard()
 	if cpPlayer.PalyerId != player.PalyerId {
 		color := player.GetDingqueColor()
 		hasDingQueCard := utils.CheckHasDingQueCard(player.HandCards, color)
 		if hasDingQueCard {
-			return false, nil
+			return false
 		}
 		handCard := player.GetHandCards() // 当前点炮胡玩家手牌
 		cardI, _ := utils.CardToInt(*cpCard)
 		flag := utils.CheckHu(handCard, uint32(*cardI))
 		if flag {
-			actionInfo := &clientpb.ActionInfo{
-				ActionID:    clientpb.ActionID_DianPao.Enum(),
-				ActionCards: []uint32{uint32(*cardI)},
-				FromPid:     proto.Uint64(cpPlayer.PalyerId),
-				Pid:         proto.Uint64(player.PalyerId),
-			}
-			return true, actionInfo
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
 //mopai 摸牌处理
