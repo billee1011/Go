@@ -76,7 +76,6 @@ func (s *ZiXunState) angang(flow interfaces.MajongFlow, message *majongpb.Angang
 		for _, player := range context.Players {
 			playerIDs = append(playerIDs, player.GetPalyerId())
 		}
-		cardToClient, _ := utils.CardToInt(*card)
 		angangCard, _ := utils.CardToRoomCard(card)
 		angang := &room.RoomAngangNtf{
 			Player: proto.Uint64(activePlayer.PalyerId),
@@ -404,8 +403,6 @@ func (s *ZiXunState) checkZiMo(context *majongpb.MajongContext) bool {
 	flag := utils.CheckHu(handCard, 0)
 	if flag {
 		activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_zimo)
-		zimoCard := handCard[len(handCard)-1]
-		card, _ := utils.CardToInt(*zimoCard)
 	}
 	return flag
 }
