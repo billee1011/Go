@@ -5,7 +5,6 @@ import (
 	_ "steve/room/desks"
 	_ "steve/room/playermgr"
 	_ "steve/room/req_event_translator"
-	_ "steve/room/room_req"
 	_ "steve/room/settle"
 	"steve/structs/service"
 )
