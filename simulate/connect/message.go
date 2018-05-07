@@ -2,8 +2,8 @@ package connect
 
 import (
 	"reflect"
-	msgid "steve/majong_pb/msgId"
-	"steve/majong_pb/room"
+	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
 )

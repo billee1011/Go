@@ -30,6 +30,7 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	cards := s.genOriginCards(flow)
 	rand.Seed(time.Now().Unix())
 	rand.Shuffle(len(cards), func(i, j int) {
+		cards[i], cards[j] = cards[j], cards[i]
 		tmp := cards[i]
 		cards[i] = cards[j]
 		cards[j] = tmp
