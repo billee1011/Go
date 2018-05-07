@@ -4,6 +4,8 @@ import (
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"sync"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type playerMgr struct {
@@ -45,10 +47,7 @@ func (pm *playerMgr) GetPlayerByClientID(clientID uint64) interfaces.Player {
 
 var setupOnce = sync.Once{}
 
-// SetupPlayerMgr 初始化玩家管理器
-func SetupPlayerMgr() {
-	setupOnce.Do(func() {
-		pm := &playerMgr{}
-		global.SetPlayerMgr(pm)
-	})
+func init() {
+	global.SetPlayerMgr(&playerMgr{})
+	logrus.Debugln("设置用户管理器")
 }
