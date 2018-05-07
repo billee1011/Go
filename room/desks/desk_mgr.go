@@ -8,8 +8,6 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
-
-	"github.com/golang/protobuf/proto"
 )
 
 type deskMgr struct {
@@ -89,7 +87,7 @@ func (dm *deskMgr) deskFinish(desk interfaces.Desk) func() {
 }
 
 // HandlePlayerRequest 处理玩家请求
-func (dm *deskMgr) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message) {
+func (dm *deskMgr) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":  "deskMgr.HandlePlayerRequest",
 		"player_id":  playerID,
@@ -109,7 +107,7 @@ func (dm *deskMgr) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterp
 		return
 	}
 	desk := iDesk.(interfaces.Desk)
-	desk.PushRequest(playerID, head, body)
+	desk.PushRequest(playerID, head, bodyData)
 }
 
 func init() {
