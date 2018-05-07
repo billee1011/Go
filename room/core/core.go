@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"steve/room/interfaces/global"
 	"steve/room/playermgr"
 	"steve/room/registers"
 	"steve/structs"
@@ -29,6 +30,10 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	// 初始化用户管理器
 	playermgr.SetupPlayerMgr()
 	c.e = e
+	e.Exchanger = &c.exchanger
+	structs.SetGlobalExposer(c.e)
+	global.SetMessageSender(&c.exchanger)
+
 	registers.RegisterHandlers(&c.exchanger)
 	return nil
 }
@@ -52,6 +57,8 @@ func (c *roomCore) startWatchDog() error {
 	co := &connectObserver{}
 
 	c.dog = c.e.WatchDogFactory.NewWatchDog(nil, mo, co)
+	c.exchanger.watchDog = c.dog
+
 	if c.dog == nil {
 		logEntry.Error("创建 watchdog 失败")
 		return fmt.Errorf("创建 watchdog 失败")
