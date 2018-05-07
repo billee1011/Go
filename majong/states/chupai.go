@@ -40,14 +40,18 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			return majongpb.StateID_state_chupaiwenxun, nil
 		}
 		s.mopai(flow)
-		return majongpb.StateID_state_chupai, nil
+		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID_state_init, errInvalidEvent
 }
 
 //checkActions 检查玩家可以有哪些操作
 func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
+	if player.PalyerId == context.ActivePlayer {
+		return nil, false
+	}
 	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
+	chupaiWenxunNtf.Card, _ = utils.CardToRoomCard(card)
 	canMingGang := checkMingGang(context, player, card)
 	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
@@ -128,7 +132,7 @@ func checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *m
 			}
 		}
 		if num >= 2 {
-			player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
+			// player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
 			return true
 		}
 	}
