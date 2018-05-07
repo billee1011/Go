@@ -83,15 +83,27 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 		"client_id": clientIDs,
 		"msg_id":    head.MsgId,
 	})
-
-	header := steve_proto_base.Header{
-		MsgId: proto.Uint32(head.MsgId),
-	}
 	bodyData := []byte{}
 	if err := proto.Unmarshal(bodyData, body); err != nil {
 		var errUnmarshal = errors.New("序列化消息体失败")
 		entry.WithError(err).Errorln(errUnmarshal)
 		return errUnmarshal
+	}
+	e.BroadcastPackageBare(clientIDs, head, bodyData)
+	return nil
+}
+
+// SendPackage 发送消息给指定客户端 clientID
+// head 为消息头
+// body 为任意 序列化 消息
+func (e *exchangerImpl) SendPackageBare(clientID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) error {
+	return e.BroadcastPackageBare([]uint64{clientID}, head, bodyData)
+}
+
+// BraodcastPackage 和 SendPackage 类似， 但将消息发给多个用户。 clientIDs 为客户端连接 ID 数组
+func (e *exchangerImpl) BroadcastPackageBare(clientIDs []uint64, head *steve_proto_gaterpc.Header, bodyData []byte) error {
+	header := steve_proto_base.Header{
+		MsgId: proto.Uint32(head.MsgId),
 	}
 	e.watchDog.BroadPackage(clientIDs, &header, bodyData)
 	return nil
