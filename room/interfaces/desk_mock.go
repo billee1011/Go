@@ -5,7 +5,6 @@ package interfaces
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	proto "github.com/golang/protobuf/proto"
 	room "steve/client_pb/room"
 	gate_rpc "steve/structs/proto/gate_rpc"
 )
@@ -71,8 +70,8 @@ func (_mr *_MockDeskRecorder) Start(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Start", arg0)
 }
 
-func (_m *MockDesk) PushRequest(playerID uint64, head *gate_rpc.Header, body proto.Message) {
-	_m.ctrl.Call(_m, "PushRequest", playerID, head, body)
+func (_m *MockDesk) PushRequest(playerID uint64, head *gate_rpc.Header, bodyData []byte) {
+	_m.ctrl.Call(_m, "PushRequest", playerID, head, bodyData)
 }
 
 func (_mr *_MockDeskRecorder) PushRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
@@ -110,8 +109,8 @@ func (_mr *_MockDeskMgrRecorder) RunDesk(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "RunDesk", arg0)
 }
 
-func (_m *MockDeskMgr) HandlePlayerRequest(playerID uint64, head *gate_rpc.Header, body proto.Message) {
-	_m.ctrl.Call(_m, "HandlePlayerRequest", playerID, head, body)
+func (_m *MockDeskMgr) HandlePlayerRequest(playerID uint64, head *gate_rpc.Header, bodyData []byte) {
+	_m.ctrl.Call(_m, "HandlePlayerRequest", playerID, head, bodyData)
 }
 
 func (_mr *_MockDeskMgrRecorder) HandlePlayerRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
