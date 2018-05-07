@@ -59,3 +59,31 @@ message DingqueRequestEvent {
     CardColor color = 3;        // 定缺颜色
 }
 
+// AngangRequestEvent 暗杠请求事件
+message AngangRequestEvent{
+     RequestEventHead head = 1;  // 请求头
+     Card cards = 2;    // 暗杠的牌
+     uint64 pid = 3;    // 请求暗杠的玩家
+}
+
+// BugangRequestEvent 补杠请求事件
+message BugangRequestEvent{
+     RequestEventHead head = 1;  // 请求头
+     Card cards = 2;    // 补杠的牌
+     uint64 pid = 3;    // 请求补杠的玩家
+}
+
+// ZimoRequestEvent 自摸请求事件
+message ZimoRequestEvent{
+     RequestEventHead head = 1;  // 请求头
+     Card cards = 2;    // 自摸胡的牌
+     uint64 pid = 3;    // 请求自摸的玩家
+}
+
+// ChupaiRequestEvent 出牌请求事件
+message ChupaiRequestEvent{
+     RequestEventHead head = 1;  // 请求头
+     Card cards = 2;    // 出的牌
+     uint64 pid = 3;    // 请求出牌的玩家
+}
+

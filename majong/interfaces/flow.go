@@ -8,8 +8,8 @@ import (
 
 // ToClientMessage 要发送给客户端的消息
 type ToClientMessage struct {
-	msgID int
-	msg   proto.Message
+	MsgID int
+	Msg   proto.Message
 }
 
 // MajongFlow 麻将逻辑
