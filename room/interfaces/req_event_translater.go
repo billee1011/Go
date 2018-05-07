@@ -9,5 +9,5 @@ import (
 
 // ReqEventTranslator 请求到事件的转换器
 type ReqEventTranslator interface {
-	Translate(playerID uint64, header *steve_proto_gaterpc.Header, body proto.Message) (eventID server_pb.EventID, eventContext []byte, err error)
+	Translate(playerID uint64, header *steve_proto_gaterpc.Header, bodyData []byte) (eventID server_pb.EventID, eventContext proto.Message, err error)
 }

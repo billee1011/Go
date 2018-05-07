@@ -54,9 +54,11 @@ func (e *exchangerImpl) RegisterHandle(msgID uint32, handler interface{}) error 
 		return fmt.Errorf("处理函数的第 2 个参数必须是 *exchanger.MessageHeader")
 	}
 	msgType := funcType.In(2)
-	msg := reflect.New(msgType)
-	if _, ok := msg.Interface().(proto.Message); !ok {
-		return fmt.Errorf("处理函数的第 3 个参数必须是 proto.Message 类型")
+	if reflect.TypeOf([]byte{}) != msgType {
+		msg := reflect.New(msgType)
+		if _, ok := msg.Interface().(proto.Message); !ok {
+			return fmt.Errorf("处理函数的第 3 个参数必须是 proto.Message 类型或者 []byte")
+		}
 	}
 
 	retType := funcType.Out(0)

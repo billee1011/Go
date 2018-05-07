@@ -162,7 +162,7 @@ func (d *desk) Start(finish func()) error {
 }
 
 // PushRequest 压入玩家请求
-func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message) {
+func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":  "desk.PushRequest",
 		"desk_uid":   d.deskUID,
@@ -172,15 +172,19 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	})
 
 	trans := global.GetReqEventTranslator()
-	eventID, eventContext, err := trans.Translate(playerID, head, body)
+	eventID, eventContext, err := trans.Translate(playerID, head, bodyData)
 	if err != nil {
 		logEntry.WithError(err).Errorln("消息转事件失败")
 		return
 	}
+	eventConetxtByte, err := proto.Marshal(eventContext)
+	if err != nil {
+		logEntry.WithError(err).Errorln("序列化事件现场失败")
+	}
 
 	d.event <- deskEvent{
 		eventID:      eventID,
-		eventContext: eventContext,
+		eventContext: eventConetxtByte,
 	}
 }
 

@@ -49,3 +49,23 @@ func (_m *MockMessageSender) BroadcastPackage(clientIDs []uint64, head *gate_rpc
 func (_mr *_MockMessageSenderRecorder) BroadcastPackage(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "BroadcastPackage", arg0, arg1, arg2)
 }
+
+func (_m *MockMessageSender) SendPackageBare(clientID uint64, head *gate_rpc.Header, bodyData []byte) error {
+	ret := _m.ctrl.Call(_m, "SendPackageBare", clientID, head, bodyData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockMessageSenderRecorder) SendPackageBare(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "SendPackageBare", arg0, arg1, arg2)
+}
+
+func (_m *MockMessageSender) BroadcastPackageBare(clientIDs []uint64, head *gate_rpc.Header, bodyData []byte) error {
+	ret := _m.ctrl.Call(_m, "BroadcastPackageBare", clientIDs, head, bodyData)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockMessageSenderRecorder) BroadcastPackageBare(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "BroadcastPackageBare", arg0, arg1, arg2)
+}

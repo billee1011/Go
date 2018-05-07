@@ -149,3 +149,35 @@ func (_m *MockDeskFactory) CreateDesk(players []uint64, gameID int, opt CreateDe
 func (_mr *_MockDeskFactoryRecorder) CreateDesk(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateDesk", arg0, arg1, arg2)
 }
+
+// Mock of DeskIDAllocator interface
+type MockDeskIDAllocator struct {
+	ctrl     *gomock.Controller
+	recorder *_MockDeskIDAllocatorRecorder
+}
+
+// Recorder for MockDeskIDAllocator (not exported)
+type _MockDeskIDAllocatorRecorder struct {
+	mock *MockDeskIDAllocator
+}
+
+func NewMockDeskIDAllocator(ctrl *gomock.Controller) *MockDeskIDAllocator {
+	mock := &MockDeskIDAllocator{ctrl: ctrl}
+	mock.recorder = &_MockDeskIDAllocatorRecorder{mock}
+	return mock
+}
+
+func (_m *MockDeskIDAllocator) EXPECT() *_MockDeskIDAllocatorRecorder {
+	return _m.recorder
+}
+
+func (_m *MockDeskIDAllocator) AllocDeskID() (uint64, error) {
+	ret := _m.ctrl.Call(_m, "AllocDeskID")
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDeskIDAllocatorRecorder) AllocDeskID() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "AllocDeskID")
+}
