@@ -1,5 +1,6 @@
 package transition
 
+// TODO 改成使用工具从 yaml 配置文件中生成此文件
 var transitionCfg = `
 - 
   game_id: 1

@@ -5,7 +5,6 @@ package interfaces
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	proto "github.com/golang/protobuf/proto"
 	majong "steve/server_pb/majong"
 )
 
@@ -48,6 +47,16 @@ func (_mr *_MockMajongFlowRecorder) SetAutoEvent(arg0 interface{}) *gomock.Call 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "SetAutoEvent", arg0)
 }
 
+func (_m *MockMajongFlow) GetAutoEvent() *majong.AutoEvent {
+	ret := _m.ctrl.Call(_m, "GetAutoEvent")
+	ret0, _ := ret[0].(*majong.AutoEvent)
+	return ret0
+}
+
+func (_mr *_MockMajongFlowRecorder) GetAutoEvent() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAutoEvent")
+}
+
 func (_m *MockMajongFlow) ProcessEvent(eventID majong.EventID, eventContext []byte) error {
 	ret := _m.ctrl.Call(_m, "ProcessEvent", eventID, eventContext)
 	ret0, _ := ret[0].(error)
@@ -81,9 +90,9 @@ func (_mr *_MockMajongFlowRecorder) PushMessages(arg0 interface{}, arg1 ...inter
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "PushMessages", _s...)
 }
 
-func (_m *MockMajongFlow) GetMessages() []proto.Message {
+func (_m *MockMajongFlow) GetMessages() []majong.ReplyClientMessage {
 	ret := _m.ctrl.Call(_m, "GetMessages")
-	ret0, _ := ret[0].([]proto.Message)
+	ret0, _ := ret[0].([]majong.ReplyClientMessage)
 	return ret0
 }
 
