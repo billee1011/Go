@@ -48,3 +48,8 @@ type DeskFactory interface {
 	// CreateDesk 创建牌桌
 	CreateDesk(players []uint64, gameID int, opt CreateDeskOptions) (CreateDeskResult, error)
 }
+
+// DeskIDAllocator 牌桌 ID 分配器
+type DeskIDAllocator interface {
+	AllocDeskID() (uint64, error)
+}
