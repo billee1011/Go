@@ -3,10 +3,13 @@ package flow
 import (
 	"errors"
 	"steve/majong/interfaces"
+	"steve/majong/states"
+	"steve/majong/transition"
 	majongpb "steve/server_pb/majong"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type flow struct {
@@ -14,6 +17,19 @@ type flow struct {
 	autoEvent           *majongpb.AutoEvent
 	stateFactory        interfaces.MajongStateFactory
 	transitionValidator interfaces.TransitionValidator
+	msgs                []majongpb.ReplyClientMessage
+}
+
+// NewFlow 创建 Flow
+func NewFlow(mjContext majongpb.MajongContext) interfaces.MajongFlow {
+	transitionFactory := transition.NewFactory()
+
+	return &flow{
+		context:             mjContext,
+		stateFactory:        states.NewFactory(),
+		transitionValidator: transitionFactory.CreateTransitionValidator(int(mjContext.GetGameId())),
+		msgs:                make([]majongpb.ReplyClientMessage, 0),
+	}
 }
 
 func (f *flow) GetMajongContext() *majongpb.MajongContext {
@@ -74,10 +90,30 @@ func (f *flow) GetSettler(settlerType interfaces.SettlerType) interfaces.Settler
 }
 
 func (f *flow) PushMessages(playerIDs []uint64, msgs ...interfaces.ToClientMessage) {
-	logrus.Warn("TODO")
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "flow.PushMessages",
+		"players":   playerIDs,
+	})
+
+	for _, msg := range msgs {
+
+		bodyData, err := proto.Marshal(msg.Msg)
+		if err != nil {
+			logEntry.WithField("msg_id", msg.MsgID).WithError(err).Errorln("消息序列化失败")
+			continue
+		}
+		f.msgs = append(f.msgs, majongpb.ReplyClientMessage{
+			Players: playerIDs,
+			MsgId:   int32(msg.MsgID),
+			Msg:     bodyData,
+		})
+	}
 }
 
-func (f *flow) GetMessages() []proto.Message {
-	logrus.Warn("TODO")
-	return nil
+func (f *flow) GetMessages() []majongpb.ReplyClientMessage {
+	return f.msgs
+}
+
+func (f *flow) GetAutoEvent() *majongpb.AutoEvent {
+	return f.autoEvent
 }

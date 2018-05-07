@@ -16,8 +16,9 @@ type ToClientMessage struct {
 type MajongFlow interface {
 	GetMajongContext() *majongpb.MajongContext
 	SetAutoEvent(autoEvent majongpb.AutoEvent)
+	GetAutoEvent() *majongpb.AutoEvent
 	ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	GetSettler(settlerType SettlerType) Settler
 	PushMessages(playerIDs []uint64, msgs ...ToClientMessage)
-	GetMessages() []proto.Message
+	GetMessages() []majongpb.ReplyClientMessage
 }

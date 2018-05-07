@@ -5,6 +5,8 @@ import (
 	"errors"
 	"runtime/debug"
 	"steve/client_pb/room"
+	majong_initial "steve/majong/export/initial"
+	majong_process "steve/majong/export/process"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	server_pb "steve/server_pb/majong"
@@ -30,14 +32,15 @@ type deskEvent struct {
 }
 
 type desk struct {
-	deskUID   uint64
-	gameID    int
-	mjContext server_pb.MajongContext
-	settler   interfaces.DeskSettler   // 结算器
-	players   map[uint32]deskPlayer    // Seat -> player
-	event     chan deskEvent           // 牌桌事件通道
-	autoEvent chan server_pb.AutoEvent // 自动事件通道
-	cancel    context.CancelFunc       // 取消事件处理
+	deskUID      uint64
+	gameID       int
+	createOption interfaces.CreateDeskOptions // 创建选项
+	mjContext    server_pb.MajongContext
+	settler      interfaces.DeskSettler   // 结算器
+	players      map[uint32]deskPlayer    // Seat -> player
+	event        chan deskEvent           // 牌桌事件通道
+	autoEvent    chan server_pb.AutoEvent // 自动事件通道
+	cancel       context.CancelFunc       // 取消事件处理
 }
 
 func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]deskPlayer, error) {
@@ -77,18 +80,15 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 	if err != nil {
 		return
 	}
-	// TODO: mjOption
-	mjContext := server_pb.MajongContext{}
-
 	return interfaces.CreateDeskResult{
 		Desk: &desk{
-			deskUID:   id,
-			gameID:    gameID,
-			mjContext: mjContext,
-			settler:   global.GetDeskSettleFactory().CreateDeskSettler(gameID),
-			players:   deskPlayers,
-			event:     make(chan deskEvent, 16),
-			autoEvent: make(chan server_pb.AutoEvent, 1),
+			deskUID:      id,
+			gameID:       gameID,
+			createOption: opt,
+			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
+			players:      deskPlayers,
+			event:        make(chan deskEvent, 16),
+			autoEvent:    make(chan server_pb.AutoEvent, 1),
 		},
 	}, nil
 }
@@ -185,7 +185,23 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 }
 
 func (d *desk) initMajongContext() error {
-	return nil // TODO
+	players := make([]uint64, len(d.players))
+
+	for seat, player := range d.players {
+		players[seat] = player.playerID
+	}
+
+	param := server_pb.InitMajongContextParams{
+		GameId:       int32(d.gameID),
+		Players:      players,
+		Option:       &server_pb.MajongCommonOption{},
+		MajongOption: []byte{},
+	}
+	var err error
+	if d.mjContext, err = majong_initial.InitMajongContext(param); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *desk) processEvents(ctx context.Context) {
@@ -227,11 +243,12 @@ func (d *desk) processEvents(ctx context.Context) {
 // step 4. 如果有自动事件， 将自动事件写入自动事件通道
 // step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
 func (d *desk) processEvent(event *deskEvent) {
-	// TODO
-	var mjContext server_pb.MajongContext
-	var autoEvent *server_pb.AutoEvent
-
-	// TODO 发送消息给玩家
+	mjContext, autoEvent, replyMsgs, succeed := majong_process.HandleMajongEvent(d.mjContext, event.eventID, event.eventContext)
+	if !succeed {
+		return
+	}
+	// 发送消息给玩家
+	d.reply(replyMsgs)
 
 	d.mjContext = mjContext
 	d.settler.Settle(d, d.mjContext)
@@ -242,5 +259,24 @@ func (d *desk) processEvent(event *deskEvent) {
 	// 游戏结束
 	if d.mjContext.GetCurState() == server_pb.StateID_state_gameover {
 		d.cancel()
+	}
+}
+
+func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
+	if replyMsgs == nil {
+		return
+	}
+	msgSender := global.GetMessageSender()
+	playerMgr := global.GetPlayerMgr()
+	for _, msg := range replyMsgs {
+
+		clientIDs := []uint64{}
+		for _, playerID := range msg.GetPlayers() {
+			player := playerMgr.GetPlayer(playerID)
+			clientIDs = append(clientIDs, player.GetClientID())
+		}
+		msgSender.BroadcastPackageBare(clientIDs, &steve_proto_gaterpc.Header{
+			MsgId: uint32(msg.GetMsgId()),
+		}, msg.GetMsg())
 	}
 }
