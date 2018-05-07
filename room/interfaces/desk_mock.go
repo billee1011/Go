@@ -5,7 +5,6 @@ package interfaces
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	proto "github.com/golang/protobuf/proto"
 	room "steve/client_pb/room"
 	gate_rpc "steve/structs/proto/gate_rpc"
 )
@@ -71,8 +70,8 @@ func (_mr *_MockDeskRecorder) Start(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Start", arg0)
 }
 
-func (_m *MockDesk) PushRequest(playerID uint64, head *gate_rpc.Header, body proto.Message) {
-	_m.ctrl.Call(_m, "PushRequest", playerID, head, body)
+func (_m *MockDesk) PushRequest(playerID uint64, head *gate_rpc.Header, bodyData []byte) {
+	_m.ctrl.Call(_m, "PushRequest", playerID, head, bodyData)
 }
 
 func (_mr *_MockDeskRecorder) PushRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
@@ -110,8 +109,8 @@ func (_mr *_MockDeskMgrRecorder) RunDesk(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "RunDesk", arg0)
 }
 
-func (_m *MockDeskMgr) HandlePlayerRequest(playerID uint64, head *gate_rpc.Header, body proto.Message) {
-	_m.ctrl.Call(_m, "HandlePlayerRequest", playerID, head, body)
+func (_m *MockDeskMgr) HandlePlayerRequest(playerID uint64, head *gate_rpc.Header, bodyData []byte) {
+	_m.ctrl.Call(_m, "HandlePlayerRequest", playerID, head, bodyData)
 }
 
 func (_mr *_MockDeskMgrRecorder) HandlePlayerRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
@@ -148,4 +147,36 @@ func (_m *MockDeskFactory) CreateDesk(players []uint64, gameID int, opt CreateDe
 
 func (_mr *_MockDeskFactoryRecorder) CreateDesk(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateDesk", arg0, arg1, arg2)
+}
+
+// Mock of DeskIDAllocator interface
+type MockDeskIDAllocator struct {
+	ctrl     *gomock.Controller
+	recorder *_MockDeskIDAllocatorRecorder
+}
+
+// Recorder for MockDeskIDAllocator (not exported)
+type _MockDeskIDAllocatorRecorder struct {
+	mock *MockDeskIDAllocator
+}
+
+func NewMockDeskIDAllocator(ctrl *gomock.Controller) *MockDeskIDAllocator {
+	mock := &MockDeskIDAllocator{ctrl: ctrl}
+	mock.recorder = &_MockDeskIDAllocatorRecorder{mock}
+	return mock
+}
+
+func (_m *MockDeskIDAllocator) EXPECT() *_MockDeskIDAllocatorRecorder {
+	return _m.recorder
+}
+
+func (_m *MockDeskIDAllocator) AllocDeskID() (uint64, error) {
+	ret := _m.ctrl.Call(_m, "AllocDeskID")
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDeskIDAllocatorRecorder) AllocDeskID() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "AllocDeskID")
 }

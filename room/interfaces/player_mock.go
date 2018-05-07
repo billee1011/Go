@@ -58,6 +58,14 @@ func (_mr *_MockPlayerRecorder) GetClientID() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetClientID")
 }
 
+func (_m *MockPlayer) SetCoin(coin uint64) {
+	_m.ctrl.Call(_m, "SetCoin", coin)
+}
+
+func (_mr *_MockPlayerRecorder) SetCoin(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "SetCoin", arg0)
+}
+
 // Mock of PlayerMgr interface
 type MockPlayerMgr struct {
 	ctrl     *gomock.Controller

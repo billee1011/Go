@@ -2,9 +2,7 @@ package transition
 
 import (
 	"errors"
-	"io/ioutil"
 
-	"github.com/Sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -26,12 +24,12 @@ var errReadFile = errors.New("读取文件失败")
 
 func loadTransition(fileName string) ([]transition, error) {
 	tt := []transition{}
-	data, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		logrus.WithError(err).Error(errOpenFile)
-		return nil, errOpenFile
-	}
-	if err := yaml.Unmarshal([]byte(data), &tt); err != nil {
+	// data, err := ioutil.ReadFile(fileName)
+	// if err != nil {
+	// 	logrus.WithError(err).Error(errOpenFile)
+	// 	return nil, errOpenFile
+	// }
+	if err := yaml.Unmarshal([]byte(transitionCfg), &tt); err != nil {
 		return nil, err
 	}
 	return tt, nil

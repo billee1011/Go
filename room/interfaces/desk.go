@@ -3,8 +3,6 @@ package interfaces
 import (
 	"steve/client_pb/room"
 	"steve/structs/proto/gate_rpc"
-
-	"github.com/golang/protobuf/proto"
 )
 
 // Desk 牌桌
@@ -23,7 +21,7 @@ type Desk interface {
 	Start(finish func()) error
 
 	// PushRequest 压入玩家请求
-	PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message)
+	PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
 }
 
 // DeskMgr 牌桌管理器
@@ -32,7 +30,7 @@ type DeskMgr interface {
 	RunDesk(desk Desk) error
 
 	// HandlePlayerRequest 处理玩家请求
-	HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message)
+	HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
 }
 
 // CreateDeskOptions 创建牌桌选项
@@ -47,4 +45,9 @@ type CreateDeskResult struct {
 type DeskFactory interface {
 	// CreateDesk 创建牌桌
 	CreateDesk(players []uint64, gameID int, opt CreateDeskOptions) (CreateDeskResult, error)
+}
+
+// DeskIDAllocator 牌桌 ID 分配器
+type DeskIDAllocator interface {
+	AllocDeskID() (uint64, error)
 }

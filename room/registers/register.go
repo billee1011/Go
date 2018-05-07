@@ -2,6 +2,7 @@ package registers
 
 import (
 	"steve/client_pb/msgId"
+	"steve/room/desks"
 	"steve/room/login"
 	"steve/structs/exchanger"
 )
@@ -15,6 +16,8 @@ func RegisterHandlers(e exchanger.Exchanger) {
 		}
 	}
 
-	registe(msgid.MsgID_room_login_req, login.HandleLogin)     // 登录请求
-	registe(msgid.MsgID_room_join_desk_req, login.HandleLogin) // 加入牌桌请求
+	registe(msgid.MsgID_room_login_req, login.HandleLogin)               // 登录请求
+	registe(msgid.MsgID_room_join_desk_req, desks.HandleRoomJoinDeskReq) // 加入牌桌请求
+
+	RegisterRoomReqHandlers(e)
 }

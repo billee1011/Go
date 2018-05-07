@@ -5,6 +5,7 @@ type Player interface {
 	GetID() uint64
 	GetCoin() uint64
 	GetClientID() uint64
+	SetCoin(coin uint64)
 }
 
 // PlayerMgr 玩家管理器
