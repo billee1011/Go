@@ -24,14 +24,20 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 		{
 			// message := &clientpb.GameActionReq{}
 			message := &majongpb.AngangRequestEvent{}
-			proto.Unmarshal(eventContext, message)
+			err := proto.Unmarshal(eventContext, message)
+			if err != nil {
+				return majongpb.StateID_state_zixun, errInvalidEvent
+			}
 			return s.angang(flow, message)
 		}
 	case majongpb.EventID_event_zimo_request:
 		{
 			// message := &clientpb.GameActionReq{}
 			message := &majongpb.ZimoRequestEvent{}
-			proto.Unmarshal(eventContext, message)
+			err := proto.Unmarshal(eventContext, message)
+			if err != nil {
+				return majongpb.StateID_state_zixun, errInvalidEvent
+			}
 			return s.zimo(flow, message)
 
 		}
@@ -39,14 +45,20 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 		{
 			// message := &clientpb.GameChuPaiReq{}
 			message := &majongpb.ChupaiRequestEvent{}
-			proto.Unmarshal(eventContext, message)
+			err := proto.Unmarshal(eventContext, message)
+			if err != nil {
+				return majongpb.StateID_state_zixun, errInvalidEvent
+			}
 			return s.chupai(flow, message)
 		}
 	case majongpb.EventID_event_bugang_request:
 		{
 			// message := &clientpb.GameActionReq{}
 			message := &majongpb.BugangRequestEvent{}
-			proto.Unmarshal(eventContext, message)
+			err := proto.Unmarshal(eventContext, message)
+			if err != nil {
+				return majongpb.StateID_state_zixun, errInvalidEvent
+			}
 			return s.bugang(flow, message)
 		}
 	default:
