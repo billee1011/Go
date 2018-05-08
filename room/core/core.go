@@ -10,6 +10,11 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	_ "steve/room/desks"
+	_ "steve/room/playermgr"
+	_ "steve/room/req_event_translator"
+	_ "steve/room/settle"
 )
 
 type roomCore struct {

@@ -151,6 +151,7 @@ func (d *desk) Start(finish func()) error {
 
 	go func() {
 		d.processEvents(ctx)
+		logEntry.Infoln("处理事件完成")
 		finish()
 	}()
 
@@ -221,21 +222,24 @@ func (d *desk) processEvents(ctx context.Context) {
 		}
 	}()
 
-	select {
-	case <-ctx.Done():
-		{
-			return
-		}
-	case autoEvent := <-d.autoEvent: // 需要确保 autoEvent 通道有 1 个缓冲区
-		{
-			d.processEvent(&deskEvent{
-				eventID:      autoEvent.GetEventId(),
-				eventContext: autoEvent.GetEventContext(),
-			})
-		}
-	case event := <-d.event:
-		{
-			d.processEvent(&event)
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				logEntry.Infoln("done")
+				return
+			}
+		case autoEvent := <-d.autoEvent: // 需要确保 autoEvent 通道有 1 个缓冲区
+			{
+				d.processEvent(&deskEvent{
+					eventID:      autoEvent.GetEventId(),
+					eventContext: autoEvent.GetEventContext(),
+				})
+			}
+		case event := <-d.event:
+			{
+				d.processEvent(&event)
+			}
 		}
 	}
 }
@@ -247,8 +251,15 @@ func (d *desk) processEvents(ctx context.Context) {
 // step 4. 如果有自动事件， 将自动事件写入自动事件通道
 // step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
 func (d *desk) processEvent(event *deskEvent) {
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "desk.ProcessEvent",
+		"event_id":  event.eventID,
+	})
+
 	mjContext, autoEvent, replyMsgs, succeed := majong_process.HandleMajongEvent(d.mjContext, event.eventID, event.eventContext)
 	if !succeed {
+		logEntry.Debugln("处理事件不成功")
 		return
 	}
 	// 发送消息给玩家
@@ -262,6 +273,7 @@ func (d *desk) processEvent(event *deskEvent) {
 
 	// 游戏结束
 	if d.mjContext.GetCurState() == server_pb.StateID_state_gameover {
+		logEntry.Infoln("游戏结束状态")
 		d.cancel()
 	}
 }

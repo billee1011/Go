@@ -36,7 +36,7 @@ func (pm *playerMgr) getPlayer(playerID uint64) interfaces.Player {
 
 func (pm *playerMgr) GetPlayerByClientID(clientID uint64) interfaces.Player {
 	pm.mu.RLock()
-	defer pm.mu.RLock()
+	defer pm.mu.RUnlock()
 	v, ok := pm.clientMap.Load(clientID)
 	if !ok {
 		return nil

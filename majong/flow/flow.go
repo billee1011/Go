@@ -65,6 +65,7 @@ func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	entry = entry.WithField("new_state_id", newStateID)
 
 	if newStateID == f.context.CurState {
+		entry.Debugln("保留为原状态")
 		return nil
 	}
 	if err := f.transitionValidator.Valid(f.context.CurState, newStateID, eventID, f); err != nil {
@@ -81,6 +82,8 @@ func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	oldState.OnExit(f)
 	f.context.CurState = newStateID
 	newState.OnEntry(f)
+
+	entry.Debugln("切换到新状态完成")
 	return nil
 }
 
