@@ -14,7 +14,7 @@ func FmtPlayerInfo(player *majongpb.Player) string {
 	results += fmt.Sprintf("possibleActions: %v\n", player.PossibleActions)
 	results += fmt.Sprintf("gangCard: %v\n", FmtGangCards(player.GangCards))
 	results += fmt.Sprintf("huCard: %v\n", FmtHuCards(player.HuCards))
-	results += fmt.Sprintf("pengCard: %v", FmtPengCards(player.PengCards))
+	results += fmt.Sprintf("pengCard: %v\n", FmtPengCards(player.PengCards))
 	results += fmt.Sprintf("outCard: %v\n", FmtMajongpbCards(player.OutCards))
 
 	return results

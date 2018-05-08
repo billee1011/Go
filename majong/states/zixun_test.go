@@ -79,24 +79,6 @@ func TestZixunState_angang(t *testing.T) {
 func TestZixunState_zimo(t *testing.T) {
 	mc := gomock.NewController(t)
 	flow := interfaces.NewMockMajongFlow(mc)
-
-	// playersID := []uint64{1}
-	// ntf := &room.RoomZimoNtf{
-	// 	Player: proto.Uint64(1),
-	// 	Card: &room.Card{
-	// 		Color: room.CardColor_ColorWan.Enum(),
-	// 		Point: proto.Int32(4),
-	// 	},
-	// }
-	// toClientMessage := interfaces.ToClientMessage{
-	// 	MsgID: int(msgid.MsgID_room_zimo_ntf),
-	// 	Msg:   ntf,
-	// }
-	// flow.EXPECT().PushMessages(playersID, toClientMessage).DoAndReturn(
-	// 	func(playerIDs []uint64, msgs ...interfaces.ToClientMessage) {
-
-	// 	},
-	// )
 	flow.EXPECT().PushMessages(gomock.Any(), gomock.Any()).AnyTimes()
 	flow.EXPECT().GetMajongContext().Return(
 		&majongpb.MajongContext{
