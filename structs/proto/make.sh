@@ -1,5 +1,8 @@
 
+mkdir base 
 protoc -I ../../client_pb/base --go_out=plugins=grpc:./base/ ../../client_pb/base/*.proto
+
+mkdir gate_rpc 
 protoc -I ../../server_pb/gate_rpc --go_out=plugins=grpc:./gate_rpc/ ../../server_pb/gate_rpc/*.proto
 
 

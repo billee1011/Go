@@ -40,10 +40,12 @@ message PengCard {
 }
 
 // 胡类型
-enum HuType {
+enum HuType { 
     hu_zimo = 0;        // 自摸
     hu_dianpao = 1;     // 点炮
     hu_qiangganghu = 2; // 抢杠胡
+    hu_gangkai = 3;     // 杠开
+    hu_ganghoupao = 4;  // 杠后炮 
 }
 
 // 胡牌数据

@@ -204,6 +204,28 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	}, nil
 }
 
+// CardsToRoomCards 将Card转换为room package中的Card
+func CardsToRoomCards(cards []*majongpb.Card) []*room.Card {
+	var rCards []*room.Card
+	for i := 0; i < len(cards); i++ {
+		rCards = append(rCards, &room.Card{
+			Color: room.CardColor(cards[i].Color).Enum(),
+			Point: &cards[i].Point,
+		})
+	}
+	return rCards
+}
+
+// ContainCard 验证card是否存在于玩家手牌中，存在返回true,否则返回false
+func ContainCard(cards []*majongpb.Card, card *majongpb.Card) bool {
+	for i := 0; i < len(cards); i++ {
+		if CardEqual(cards[i], card) {
+			return true
+		}
+	}
+	return false
+}
+
 //IntToUtilCard uint32类型的数组强转成类型
 func IntToUtilCard(cards []int32) []Card {
 	cardsCard := make([]Card, 0, 0)
