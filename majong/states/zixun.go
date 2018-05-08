@@ -188,12 +188,13 @@ func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.ZimoRequ
 	if can {
 		ctx := flow.GetMajongContext()
 		//自摸决策通过后，移除胡的那张牌，并且添加到胡的牌中
-		activePlayer := utils.GetPlayerByID(ctx.Players, message.GetPid())
+		head := message.GetHead()
+		activePlayer := utils.GetPlayerByID(ctx.Players, head.GetPlayerId())
 		card := message.GetCards()
 		activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
 		huCard := &majongpb.HuCard{
 			Card:      card,
-			SrcPlayer: message.GetPid(),
+			SrcPlayer: message.GetHead().GetPlayerId(),
 			Type:      majongpb.HuType_hu_zimo,
 		}
 		activePlayer.HuCards = append(activePlayer.HuCards, huCard)
@@ -221,7 +222,7 @@ func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.ZimoRequ
 func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.ChupaiRequestEvent) (majongpb.StateID, error) {
 	//检查玩家收牌中是否包含出的牌
 	context := flow.GetMajongContext()
-	pid := message.GetPid()
+	pid := message.GetHead().GetPlayerId()
 	if context.GetActivePlayer() != pid {
 		return majongpb.StateID_state_zixun, fmt.Errorf("未到玩家：%v 出牌，当前应该出牌的玩家是：%v", pid, context.GetActivePlayer())
 	}
@@ -267,7 +268,7 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Ang
 	if len(wallCards) == 0 {
 		return false, fmt.Errorf("墙牌为0，不允许暗杠")
 	}
-	if message.Pid != mjContext.ActivePlayer {
+	if message.GetHead().GetPlayerId() != mjContext.ActivePlayer {
 		return false, fmt.Errorf("当前玩家不是可执行玩家，不予操作")
 	}
 	//检查手牌中是否有足够的暗杠牌
@@ -309,7 +310,7 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Bug
 		return false, fmt.Errorf("墙牌为0时，不予补杠")
 	}
 	//判断是否轮到当前玩家操作
-	if activePlayer.PalyerId != message.Pid {
+	if activePlayer.PalyerId != message.GetHead().GetPlayerId() {
 		return false, fmt.Errorf("当前玩家不允许操作")
 	}
 	bugangCard := message.GetCards()
@@ -357,7 +358,7 @@ func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.ZimoR
 	context := flow.GetMajongContext()
 	activePlayer := utils.GetPlayerByID(context.Players, context.ActivePlayer)
 	//判断是否轮到当前玩家操作
-	if activePlayer.PalyerId != message.Pid {
+	if activePlayer.PalyerId != message.GetHead().GetPlayerId() {
 		return false, fmt.Errorf("当前玩家不允许操作")
 	}
 	handCard := activePlayer.GetHandCards()

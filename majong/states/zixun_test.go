@@ -56,7 +56,6 @@ func TestZixunState_angang(t *testing.T) {
 			PlayerId: 1,
 		},
 		Cards: &Card1W,
-		Pid:   1,
 	}
 	requestEvent, err := proto.Marshal(angangRequestEvent)
 	assert.Nil(t, err)
@@ -102,7 +101,6 @@ func TestZixunState_zimo(t *testing.T) {
 			PlayerId: 1,
 		},
 		Cards: &Card4W,
-		Pid:   1,
 	}
 	requestEvent, err := proto.Marshal(zimoRequestEvent)
 	context := flow.GetMajongContext()
@@ -168,7 +166,6 @@ func TestZixunState_bugang(t *testing.T) {
 			PlayerId: 1,
 		},
 		Cards: &Card1W,
-		Pid:   1,
 	}
 	requestEvent, err := proto.Marshal(bugangRequestEvent)
 	context := flow.GetMajongContext()
@@ -234,7 +231,6 @@ func TestZixunState_chupai(t *testing.T) {
 			PlayerId: 1,
 		},
 		Cards: &Card1W,
-		Pid:   1,
 	}
 	requestEvent, err := proto.Marshal(bugangRequestEvent)
 	context := flow.GetMajongContext()
