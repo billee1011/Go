@@ -51,6 +51,7 @@ message FapaiFinishEvent {}
 message HuansanzhangRequestEvent {
     RequestEventHead head = 1;  // 请求头
     repeated Card cards = 2;    // 换三张牌型
+    bool sure = 3;     // 是否确认 
 }
 
 // DingqueRequestEvent 定缺请求事件
