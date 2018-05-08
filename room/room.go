@@ -2,10 +2,7 @@ package main
 
 import (
 	"steve/room/core"
-	_ "steve/room/desks"
-	_ "steve/room/playermgr"
-	_ "steve/room/req_event_translator"
-	_ "steve/room/settle"
+
 	"steve/structs/service"
 )
 

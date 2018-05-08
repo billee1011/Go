@@ -117,8 +117,9 @@ message MajongContext {
     repeated uint64 revert_settles = 7; // 退税结算 ids
     Card last_out_card = 8;   // 最后一次出的牌
     uint32 zhuangjia_index = 9; // 庄家索引
-    MajongCommonOption option = 10; // 麻将通用玩法选项
-    bytes majong_option = 11;   // 某个麻将特有的玩法选项
+    bool fix_zhuangjia_index = 10;  // 是否固定庄家位置
+    MajongCommonOption option = 254; // 麻将通用玩法选项
+    bytes majong_option = 255;   // 某个麻将特有的玩法选项
 }
 
 // MajongCommonOption 麻将通用玩法选项
@@ -138,6 +139,7 @@ message InitMajongContextParams {
     MajongCommonOption option = 3;  // 麻将通用玩法选项
     bytes majong_option = 4;        // 和具体游戏相关的麻将玩法选项
     uint32 zhuang_index = 5;        // 庄家玩家索引
+    bool fix_zhuang_index = 6;      // 是否固定庄家位置
 }
 
 // ReplyClientMessage 回复给客户端的消息

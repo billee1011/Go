@@ -50,6 +50,7 @@ func (jam *joinApplyManager) checkMatch() {
 
 	for {
 		playerID, ok := <-ch
+		logEntry.WithField("player_id", playerID).Debugln("accept player")
 		if !ok {
 			break
 		}

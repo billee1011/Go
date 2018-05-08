@@ -3,46 +3,25 @@ package connect
 import (
 	"errors"
 	"steve/base/socket"
+	msgid "steve/client_pb/msgId"
+	"steve/simulate/interfaces"
 	"steve/structs/proto/base"
 	"sync/atomic"
 
-	"container/list"
 	"fmt"
 	"io"
-	"reflect"
 	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"golang.org/x/net/context"
 )
 
 // sendingData 发送的数据
 type sendingData struct {
-	header  SendHead
+	header  interfaces.SendHead
 	body    proto.Message
 	sendSeq uint64 // 发送序号
-}
-
-type interceptor struct {
-	msgID         uint32
-	rspSeq        uint64
-	sendTimestamp int64
-	responseChan  chan *Response
-}
-
-// 检测是否为拦截的消息
-func (it *interceptor) check(resp *Response) bool {
-	if it.msgID == resp.Head.MsgID {
-		if it.rspSeq != 0 {
-			// 需要验证响应序号
-			return it.rspSeq == resp.Head.RspSeq
-		}
-		// 不需要验证响应序号,验证发送时时间
-		return it.sendTimestamp < resp.Head.RecvTimestamp
-	}
-	return false
 }
 
 // requestInfo 请求信息
@@ -51,6 +30,36 @@ type requestInfo struct {
 	rspMsgID uint32        // 回复的消息 ID
 	rspBody  proto.Message // 回复的消息体
 	rspChan  chan error
+}
+
+// messageExpector 消息期望
+type messageExpector struct {
+	ch     chan []byte
+	closer func()
+}
+
+func (me *messageExpector) Recv(timeOut time.Duration, body proto.Message) error {
+	timer := time.NewTimer(timeOut)
+	select {
+	case <-timer.C:
+		{
+			return errors.New("等待超时")
+		}
+	case bodyData, ok := <-me.ch:
+		{
+			if !ok {
+				return errors.New("已经被关闭")
+			}
+			if err := proto.Unmarshal(bodyData, body); err != nil {
+				return fmt.Errorf("消息反序列化失败： %v", err)
+			}
+			return nil
+		}
+	}
+}
+
+func (me *messageExpector) Close() {
+	me.closer()
 }
 
 type client struct {
@@ -79,23 +88,12 @@ type client struct {
 	// 最大发送的消息序号
 	maxSeq uint64
 
-	// 处理函数
-	handlerMap sync.Map
-
-	// 服务端返回消息缓存, 按接收顺序存储
-	reponseList *list.List
-
-	// 响应消息拦截器
-	interceptors sync.Map
-
-	// 消息拦截锁
-	interceptorMutex sync.Mutex
-
 	// requestInfos 请求表
 	requestInfos sync.Map
-}
 
-var _ Client = new(client)
+	// expectInfos 期望表
+	expectInfos sync.Map
+}
 
 func (c *client) Start(addr string, version string) error {
 	c.version = version
@@ -135,7 +133,7 @@ func (c *client) Stop() error {
 	return c.sock.Close()
 }
 
-func (c *client) SendPackage(header SendHead, body proto.Message) (result *SendResult, err error) {
+func (c *client) SendPackage(header interfaces.SendHead, body proto.Message) (result *interfaces.SendResult, err error) {
 	sendSeq := c.allocSeq()
 	sendTimestamp := time.Now().UnixNano()
 
@@ -144,13 +142,13 @@ func (c *client) SendPackage(header SendHead, body proto.Message) (result *SendR
 		body:    body,
 		sendSeq: sendSeq,
 	}
-	return &SendResult{
+	return &interfaces.SendResult{
 		SendSeq:       sendSeq,
 		SendTimestamp: sendTimestamp,
 	}, nil
 }
 
-func (c *client) Request(header SendHead, body proto.Message, timeOut time.Duration, rspMsgID uint32, rspBody proto.Message) error {
+func (c *client) Request(header interfaces.SendHead, body proto.Message, timeOut time.Duration, rspMsgID uint32, rspBody proto.Message) error {
 	sendResult, err := c.SendPackage(header, body)
 	if err != nil {
 		return err
@@ -176,50 +174,20 @@ func (c *client) Request(header SendHead, body proto.Message, timeOut time.Durat
 			return errors.New("请求超时")
 		}
 	}
-	return nil
 }
 
-func (c *client) WaitMessage(ctx context.Context, msgID uint32, timestamp int64) (*Response, error) {
-	ch := make(chan *Response)
-	it := &interceptor{
-		msgID:         msgID,
-		sendTimestamp: timestamp,
-		responseChan:  ch,
+func (c *client) ExpectMessage(msgID msgid.MsgID) (interfaces.MessageExpector, error) {
+	me := messageExpector{
+		closer: func() {
+			c.expectInfos.Delete(msgID)
+		},
+		ch: make(chan []byte, 256),
 	}
-
-	go func() {
-		c.interceptorMutex.Lock()
-		defer c.interceptorMutex.Unlock()
-
-		// 先消息缓存里找
-		var find bool
-		e := c.reponseList.Back()
-		for e != nil && e.Value != nil {
-			// 最新接收的消息时间戳小鱼期望时间,提前退出
-			if e.Value.(*Response).Head.RecvTimestamp < it.sendTimestamp {
-				break
-			}
-			if it.check(e.Value.(*Response)) {
-				find = true
-				ch <- e.Value.(*Response)
-				break
-			}
-			e = e.Prev()
-		}
-
-		// 没找到注册消息拦截器
-		if !find {
-			c.interceptors.Store(it.msgID, it)
-		}
-
-	}()
-
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case response := <-ch:
-		return response, nil
+	_, loaded := c.expectInfos.LoadOrStore(msgID, me)
+	if loaded {
+		return nil, errors.New("已经存在该消息的期望")
 	}
+	return &me, nil
 }
 
 // allocSeq 分配发送序号
@@ -315,7 +283,19 @@ func (c *client) recvLoop() {
 			break
 		}
 		c.checkRequests(header, data[1+headsz:])
-		c.intercept(header, data[1+headsz:])
+		c.checkExpects(header, data[1+headsz:])
+	}
+}
+
+func (c *client) checkExpects(header *steve_proto_base.Header, bodyData []byte) {
+	msgID := header.GetMsgId()
+	iExpector, ok := c.expectInfos.Load(msgid.MsgID(msgID))
+	if iExpector == nil || !ok {
+		return
+	}
+	me := iExpector.(messageExpector)
+	select {
+	case me.ch <- bodyData:
 	}
 }
 
@@ -361,40 +341,17 @@ func (c *client) send(data sendingData) error {
 	return nil
 }
 
-func (c *client) intercept(header *steve_proto_base.Header, body []byte) {
-	c.interceptorMutex.Lock()
-	defer c.interceptorMutex.Unlock()
-	entry := logrus.WithField("name", "client.intercept")
-	// 是否注册了该消息
-	if meta, ok := metaByID[*header.MsgId]; ok {
-		msg := reflect.New(meta.Type).Interface()
-		if err := proto.Unmarshal(body, msg.(proto.Message)); err != nil {
-			entry.Error(err)
-		}
-		recvHead := RecvHead{
-			Head: Head{
-				MsgID: header.GetMsgId(),
-			},
-			RspSeq:        header.GetSendSeq(),
-			ServerVersion: header.GetVersion(),
-			RecvTimestamp: time.Now().UnixNano(),
-		}
+// NewClient 创建客户端接口
+func NewClient() (interfaces.Client, error) {
+	c := &client{}
+	return c, nil
+}
 
-		response := &Response{
-			Head: recvHead,
-			Body: msg.(proto.Message),
-		}
-
-		// 检测是否存在该消息的拦截设置
-		if v, ok := c.interceptors.Load(header.GetMsgId()); ok {
-			if v.(*interceptor).check(response) { // 匹配拦截
-				v.(*interceptor).responseChan <- response
-				c.interceptors.Delete(header.GetMsgId())
-			}
-		}
-		c.reponseList.PushBack(response)
-	} else {
-		entry.Warningln("响应消息未注册")
+// NewTestClient 创建测试客户端
+func NewTestClient(target, version string) interfaces.Client {
+	c, _ := NewClient()
+	if err := c.Start(target, version); err != nil {
+		panic(err)
 	}
-
+	return c
 }
