@@ -187,8 +187,19 @@ func IntToRoomCard(cardValue int32) (*room.Card, error) {
 
 //CardToRoomCard majongpb.card类型转room.Card类型
 func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
+	var color room.CardColor
+	if card.Color.String() == room.CardColor_ColorWan.String() {
+		color = room.CardColor_ColorWan
+	}
+	if card.Color.String() == room.CardColor_ColorTiao.String() {
+		color = room.CardColor_ColorTiao
+	}
+	if card.Color.String() == room.CardColor_ColorTong.String() {
+		color = room.CardColor_ColorTong
+	}
+
 	return &room.Card{
-		Color: room.CardColor(card.Color).Enum(),
+		Color: color.Enum(),
 		Point: proto.Int32(card.Point),
 	}, nil
 }
