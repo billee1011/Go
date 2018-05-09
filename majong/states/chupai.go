@@ -47,6 +47,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 
 //checkActions 检查玩家可以有哪些操作
 func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
+	player.PossibleActions = player.PossibleActions[:0]
 	if player.PalyerId == context.ActivePlayer {
 		return nil, false
 	}

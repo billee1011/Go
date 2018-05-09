@@ -82,7 +82,7 @@ func (s *ZiXunState) angang(flow interfaces.MajongFlow, message *majongpb.Angang
 		activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
 		activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
 		activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
-		activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
+		// activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
 		angangType := &majongpb.GangCard{
 			Card:      card,
 			Type:      majongpb.GangType_gang_angang,
@@ -122,6 +122,7 @@ func (s *ZiXunState) bugang(flow interfaces.MajongFlow, message *majongpb.Bugang
 	cardI, _ := utils.CardToInt(*card)
 	var hasQGanghu bool
 	for _, player := range ctx.GetPlayers() {
+		player.PossibleActions = player.PossibleActions[:0]
 		if player.GetPalyerId() != ctx.ActivePlayer {
 			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
 			if flag {
@@ -155,7 +156,7 @@ func (s *ZiXunState) bugang(flow interfaces.MajongFlow, message *majongpb.Bugang
 			Type:      majongpb.GangType_gang_bugang,
 			SrcPlayer: activePlayer.PalyerId,
 		})
-		activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
+		// activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
 		if hasQGanghu {
 			return majongpb.StateID_state_waitqiangganghu, nil
 		}
@@ -198,7 +199,7 @@ func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.ZimoRequ
 			Type:      majongpb.HuType_hu_zimo,
 		}
 		activePlayer.HuCards = append(activePlayer.HuCards, huCard)
-		activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
+		// activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
 		toclientCard, _ := utils.CardToRoomCard(card)
 		playersID := make([]uint64, 0, 0)
 		for _, player := range flow.GetMajongContext().GetPlayers() {
@@ -253,7 +254,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 			},
 		}
 		flow.PushMessages(playersID, toClientMessage)
-		activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
+		// activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
 		return majongpb.StateID_state_chupai, nil
 	}
 	return majongpb.StateID_state_zixun, errInvalidEvent
