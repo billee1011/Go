@@ -65,8 +65,9 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	dqPlayer.HasDingque = true
 	// 定缺所有玩家ID
 	playerAllID := []uint64{}
-	// 遍历其他玩家是否都已经定缺,并设置广播通知定缺完成
+	// 所有定缺玩家通知
 	playerDqColors := make([]*room.RoomDingqueFinishNtf_PlayerDingqueColor,0)
+	// 遍历其他玩家是否都已经定缺,并设置广播通知定缺完成
 	for i := 0; i < len(players); i++ {
 		if dqPlayer.PalyerId != players[i].PalyerId && !players[i].HasDingque {
 			return false, nil

@@ -146,7 +146,7 @@ func CallDivertSettle(huType majongpb.HuType, palyerAll, winPalyers []*majongpb.
 		// 玩家ID对应的输赢分
 		settleInfoMap := make(map[uint64]int64)
 		// di底分
-		var di int64
+		var di int64 = 1
 
 		// 判断输家是否有杠牌，防止数组越界
 		gangSum := len(loserPlayer.GangCards)

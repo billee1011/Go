@@ -5,6 +5,8 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var players = make([]*majongpb.Player, 4)
@@ -517,7 +519,328 @@ func TestTaxRebateSettleF(t *testing.T) {
 	fmt.Println(settleInfos)
 }
 
-//呼叫转移
+//呼叫转移,明杠，一人胡
 func TestCallDivertSettle(t *testing.T) {
-	// CallDivertSettle()
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_minggang,
+		SrcPlayer: uint64(2),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[0].PalyerId] = 2
+	settleInfoMap[players[1].PalyerId] = -2
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := []*majongpb.SettleInfo{yellSettleInfo}
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,明杠，2人胡,包含点明人玩家
+func TestCallDivertSettleB(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_minggang,
+		SrcPlayer: uint64(1),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0], players[2]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[0].PalyerId] = 2
+	settleInfoMap[players[1].PalyerId] = -2
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,明杠，2人胡,不包含点明人玩家
+func TestCallDivertSettleC(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_minggang,
+		SrcPlayer: uint64(1),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[3], players[2]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[2].PalyerId] = 1
+	settleInfoMap[players[3].PalyerId] = 1
+	settleInfoMap[players[1].PalyerId] = -2
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,明杠，3人胡,包含点明人玩家
+func TestCallDivertSettleD(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_minggang,
+		SrcPlayer: uint64(1),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0], players[2],players[3]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[0].PalyerId] = 2
+	settleInfoMap[players[1].PalyerId] = -2
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,补杠，1人胡
+func TestCallDivertSettleE(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_bugang,
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[0].PalyerId] = 3
+	settleInfoMap[players[1].PalyerId] = -3
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,补杠，2人胡,第一个胡玩家多一分
+func TestCallDivertSettleF(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_bugang,
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0],players[2]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[2].PalyerId] = 2
+	settleInfoMap[players[0].PalyerId] = 1
+	settleInfoMap[players[1].PalyerId] = -3
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,补杠，3人胡,第一个胡玩家多一分
+func TestCallDivertSettleG(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_bugang,
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0],players[2],players[3]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[3].PalyerId] = 1
+	settleInfoMap[players[2].PalyerId] = 1
+	settleInfoMap[players[0].PalyerId] = 1
+	settleInfoMap[players[1].PalyerId] = -3
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+
+//呼叫转移,暗杠，1人胡
+func TestCallDivertSettleH(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_bugang,
+		SrcPlayer: uint64(1),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[0].PalyerId] = 6
+	settleInfoMap[players[1].PalyerId] = -6
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+
+//呼叫转移,暗杠，2人胡
+func TestCallDivertSettleI(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_bugang,
+		SrcPlayer: uint64(1),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0],players[2]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[2].PalyerId] = 3
+	settleInfoMap[players[0].PalyerId] = 3
+	settleInfoMap[players[1].PalyerId] = -6
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
+}
+
+//呼叫转移,暗杠，3人胡
+func TestCallDivertSettleJ(t *testing.T) {
+	// 1W
+	mG := &majongpb.GangCard{
+		Card:      &majongpb.Card{Color: majongpb.CardColor_ColorWan, Point: 1},
+		Type:      majongpb.GangType_gang_bugang,
+		SrcPlayer: uint64(1),
+	}
+	players[1].GangCards = []*majongpb.GangCard{mG}
+	winPlayers := []*majongpb.Player{players[0],players[2],players[3]}
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, winPlayers, players[1])
+	assert.Nil(t, err)
+
+	settleInfoMap := make(map[uint64]int64)
+	settleInfoMap[players[3].PalyerId] = 2
+	settleInfoMap[players[2].PalyerId] = 2
+	settleInfoMap[players[0].PalyerId] = 2
+	settleInfoMap[players[1].PalyerId] = -6
+	yellSettleInfo := &majongpb.SettleInfo{
+		Id:     players[1].PalyerId,
+		Scores: settleInfoMap,
+	}
+	settleInfos2 := append(settleInfos[:0], yellSettleInfo)
+	assert.Equal(t, len(settleInfos), len(settleInfos2))
+	for k, settleInfo := range settleInfos {
+		assert.Equal(t, settleInfo.Id, settleInfos2[k].Id)
+		for ID, Score := range settleInfos[k].Scores {
+			assert.Equal(t, Score, settleInfos2[k].Scores[ID])
+		}
+	}
+	fmt.Println(settleInfos2)
+	fmt.Println(settleInfos)
 }
