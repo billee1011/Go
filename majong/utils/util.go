@@ -267,3 +267,183 @@ func CheckHu(cards []*majongpb.Card, huCard uint32) bool {
 	}
 	return flag
 }
+
+//CheckHuCardsToHandCards 将胡牌的Cards转为玩家手牌的类型
+func CheckHuCardsToHandCards(cards []Card) ([]*majongpb.Card, error) {
+	handCards := make([]*majongpb.Card, 0)
+	for i := 0; i < len(cards); i++ {
+		handCard, err := IntToCard(int32(cards[i]))
+		if err != nil {
+			return []*majongpb.Card{}, err
+		}
+		handCards = append(handCards, handCard)
+	}
+	return handCards, nil
+}
+
+//SeekCardSum 相同的牌的数量
+func SeekCardSum(cards []*majongpb.Card, targetCard *majongpb.Card) int {
+	count := 0
+	for i := 0; i < len(cards); i++ {
+		if CardEqual(cards[i], targetCard) {
+			count++
+		}
+	}
+	return count
+}
+
+//GetHuEdPlayers 获取胡过牌玩家
+func GetHuEdPlayers(players []*majongpb.Player) []*majongpb.Player {
+	huEdPlayers := make([]*majongpb.Player, 0)
+	for i := 0; i < len(players); i++ {
+		if len(players[i].HuCards) > 0 {
+			huEdPlayers = append(huEdPlayers, players[i])
+		}
+	}
+	return huEdPlayers
+}
+
+//GetBustedHandPlayers 获取未听玩家,包括花猪,isIncludeFlower-是否包含花猪，true 包含，false 不包含
+func GetBustedHandPlayers(players []*majongpb.Player, isIncludeFlower bool) ([]*majongpb.Player, error) {
+	bustedHandPlayers := make([]*majongpb.Player, 0)
+	for i := 0; i < len(players); i++ {
+		// 胡过的不算
+		if len(players[i].HuCards) > 0 {
+			continue
+		}
+		//查听
+		isTing, _, err := IsCanTingAndGetMultiple(players[i])
+		if err != nil {
+			return []*majongpb.Player{}, err
+		}
+		// 不能听
+		if !isTing && (isIncludeFlower || !IsFlowerPig(players[i])) {
+			bustedHandPlayers = append(bustedHandPlayers, players[i])
+		}
+	}
+	return bustedHandPlayers, nil
+}
+
+//GetFlowerPigPlayers 获取花猪玩家
+func GetFlowerPigPlayers(players []*majongpb.Player) []*majongpb.Player {
+	flowerPigPlayers := make([]*majongpb.Player, 0)
+	for i := 0; i < len(players); i++ {
+		if IsFlowerPig(players[i]) {
+			flowerPigPlayers = append(flowerPigPlayers, players[i])
+		}
+	}
+	return flowerPigPlayers
+}
+
+//IsOutNoDingQueColorCard 玩家properties中的key，代表玩家是否出过非定缺颜色的牌
+const IsOutNoDingQueColorCard = "isoutnodingquecolorcard"
+
+//IsFlowerPig 判断玩家是否是花猪 TODO
+func IsFlowerPig(bustedHandPlayer *majongpb.Player) bool {
+	//在出牌逻辑设置玩家一旦出过非定缺颜色的牌，[]byte{1}, 玩家是否出过非定缺的牌 TODO
+	if len(bustedHandPlayer.Properties[IsOutNoDingQueColorCard]) != 0 {
+		// 玩家手牌中是否存在花牌
+		return CheckHasDingQueCard(bustedHandPlayer.HandCards, bustedHandPlayer.DingqueColor)
+	}
+	return false
+}
+
+//GetTingPlayerIDAndMultiple 获取所有听玩家,和返回每个听玩家最大倍数
+func GetTingPlayerIDAndMultiple(players []*majongpb.Player) (map[uint64]int64, error) {
+	tingPlayers := make(map[uint64]int64, 0)
+	for i := 0; i < len(players); i++ {
+		// 胡过的不算
+		if len(players[i].HuCards) > 0 {
+			continue
+		}
+		// 查不能听，能听，返回能胡最大倍数，及ID
+		isTing, multiple, err := IsCanTingAndGetMultiple(players[i])
+		if err != nil {
+			return nil, err
+		}
+		if isTing {
+			tingPlayers[players[i].GetPalyerId()] = multiple
+		}
+	}
+	return tingPlayers, nil
+}
+
+//IsCanTingAndGetMultiple 判断玩家是否能听,和返回能听玩家的最大倍数 TODO
+//未上听者需赔上听者最大可能番数（杠后炮、杠上开花、抢杠胡、海底捞、海底炮不参与）的牌型钱。注：查大叫时，
+//若上听者牌型中有根，则根也要未上听者包给上听者。
+func IsCanTingAndGetMultiple(player *majongpb.Player) (bool, int64, error) {
+	var max int64
+	handCardSum := len(player.HandCards)
+	//只差1张牌就能胡，并且玩家手牌不存在花牌
+	if handCardSum%3 == 1 && !CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
+		tingCards, err := GetTingCards(player.HandCards)
+		if err != nil {
+			return false, 0, err
+		}
+		handCards := player.GetHandCards()
+		for i := 0; i < len(tingCards); i++ {
+			handCards = append(handCards, tingCards[i])
+			// TODO 获取最大番型
+			mult := int64(2)
+			if max < mult {
+				max = mult
+			}
+			handCards = player.GetHandCards()
+		}
+	}
+	return max > 0, max, nil
+}
+
+//GetTingCards 获取玩家能胡的牌,必须是缺一张
+func GetTingCards(handCards []*majongpb.Card) ([]*majongpb.Card, error) {
+	if len(handCards)%3 != 1 {
+		return []*majongpb.Card{}, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
+	}
+	cardsCard := CardsToUtilCards(handCards)
+	laizi := make(map[Card]bool)
+	// 推倒胡
+	huCards := FastCheckTingV2(cardsCard, laizi)
+	// 七对
+	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
+	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
+	// 合并去重复
+	tingCards := MergeAndNoRepeat(huCards, qiCards)
+	newTingCards, err := CheckHuCardsToHandCards(tingCards)
+	return newTingCards, err
+}
+
+//MergeAndNoRepeat 合并去重复UtilCard
+func MergeAndNoRepeat(srcCards1 []Card, srcCards2 []Card) []Card {
+	newCards := make([]Card, 0)
+	newCards = append(newCards, srcCards1...)
+	for _, card2 := range srcCards2 {
+		flag := true
+		for _, card1 := range srcCards1 {
+			if card2 == card1 {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			newCards = append(newCards, card2)
+		}
+	}
+	return newCards
+}
+
+//GetFirstHuPlayerByID 获取第一个胡的玩家,winPlayers源数组， loserPlayerID输家ID
+func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerID uint64) *majongpb.Player {
+	// 获取输家的下家
+	nextPlayer := GetNextPlayerByID(playerAll, loserPlayerID)
+	for nextPlayer != nil {
+		// 判断赢家里面是否有输家的下家
+		for i := 0; i < len(winPlayers); i++ {
+			if winPlayers[i].PalyerId == nextPlayer.PalyerId {
+				return winPlayers[i]
+			}
+		}
+		// 获取输家的下家的下家
+		nextPlayer = GetNextPlayerByID(playerAll, nextPlayer.PalyerId)
+	}
+	return nil
+}
