@@ -19,14 +19,7 @@ var _ interfaces.MajongState = new(MoPaiState)
 // ProcessEvent 处理事件
 func (s *MoPaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_mopai_finish {
-		mjContext := flow.GetMajongContext()
-		wallCards := mjContext.GetWallCards()
-		if len(wallCards) == 0 {
-			return majongpb.StateID_state_gameover, nil
-		}
-		//进入自询状态，需要查当前玩家可以有的特殊操作
-		s.checkActions(flow)
-		return majongpb.StateID_state_zixun, nil
+		return s.mopai(flow)
 	}
 	return majongpb.StateID_state_mopai, errInvalidEvent
 }
@@ -168,6 +161,25 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room
 	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_bugang)
 	// }
 	return len(enableBugangCards) > 0, enableBugangCards
+}
+
+//mopai 摸牌处理
+func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	context := flow.GetMajongContext()
+	players := context.GetPlayers()
+	activePlayer := utils.GetNextPlayerByID(players, context.ActivePlayer)
+	//TODO：目前只在这个地方改变操作玩家（感觉碰，明杠，点炮这三种情况也需要改变activePlayer）
+	context.ActivePlayer = activePlayer.GetPalyerId()
+	if len(context.WallCards) == 0 {
+		return majongpb.StateID_state_gameover, nil
+	}
+	//从墙牌中移除一张牌
+	drowCard := context.WallCards[0]
+	context.WallCards = context.WallCards[1:]
+	//将这张牌添加到手牌中
+	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
+	s.checkActions(flow)
+	return majongpb.StateID_state_zixun, nil
 }
 
 // OnEntry 进入状态
