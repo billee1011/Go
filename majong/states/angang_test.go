@@ -27,9 +27,9 @@ func TestAnGangState_MoPai(t *testing.T) {
 	logrus.WithFields(logrus.Fields{
 		"状态": start,
 	}).Info("前")
-	// 暗杠状态接受到摸牌消息
+	// 暗杠状态接受到暗杠完成消息
 	gangState := new(AnGangState)
-	newStateID, err := gangState.ProcessEvent(majongpb.EventID_event_mopai_finish, nil, flow)
+	newStateID, err := gangState.ProcessEvent(majongpb.EventID_event_angang_finish, nil, flow)
 	if newStateID == majongpb.StateID_state_mopai {
 		start = "摸牌状态"
 	}

@@ -57,8 +57,9 @@ func TestDingQueState_WeiWangCheng(t *testing.T) {
 		"DingqueColor":mjContext.Players[1].DingqueColor,
 		"HasDingque":mjContext.Players[1].HasDingque,
 	}).Info("后")
-	assert.Nil(t, err)
-	assert.Equal(t, majongpb.StateID_state_dingque, newStateID)
+	assert.Equal(t, mjContext.Players[1].DingqueColor, majongpb.CardColor_ColorTiao,"定缺")
+	assert.Equal(t, mjContext.Players[1].HasDingque, true,"定缺")
+	assert.Equal(t, majongpb.StateID_state_dingque, newStateID,"定缺")
 }
 
 // 测试定缺状态完成，进入自询状态
@@ -112,10 +113,14 @@ func TestDingQueState_WangCheng_ZiXun(t *testing.T) {
 		}).Info("后")
 
 		assert.Nil(t, err)
-		if i == 3 {
-			assert.Equal(t, majongpb.StateID_state_zixun, newStateID)
+		if newStateID == majongpb.StateID_state_zixun {
+			assert.Equal(t, mjContext.Players[i].DingqueColor, majongpb.CardColor_ColorTong,"定缺转自询")
+			assert.Equal(t, mjContext.Players[i].HasDingque, true,"定缺转自询")
+			assert.Equal(t, majongpb.StateID_state_zixun, newStateID,"定缺转自询")
 		} else {
-			assert.Equal(t, majongpb.StateID_state_dingque, newStateID)
+			assert.Equal(t, mjContext.Players[i].DingqueColor, majongpb.CardColor_ColorTong,"定缺")
+			assert.Equal(t, mjContext.Players[i].HasDingque, true,"定缺")
+			assert.Equal(t, majongpb.StateID_state_dingque, newStateID,"定缺")
 		}
 	}
 

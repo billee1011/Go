@@ -110,7 +110,6 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 
 // OnEntry 进入状态
 func (s *PengState) OnEntry(flow interfaces.MajongFlow) {
-
 }
 
 // OnExit 退出状态

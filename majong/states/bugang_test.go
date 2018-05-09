@@ -27,9 +27,9 @@ func TestBuGangState(t *testing.T) {
 	logrus.WithFields(logrus.Fields{
 		"状态": start,
 	}).Info("前")
-	// 补杠状态接受到摸牌消息
+	// 补杠状态接受到补杠完成消息
 	gangState := new(BuGangState)
-	newStateID, err := gangState.ProcessEvent(majongpb.EventID_event_mopai_finish, nil, flow)
+	newStateID, err := gangState.ProcessEvent(majongpb.EventID_event_bugang_finish, nil, flow)
 	if newStateID == majongpb.StateID_state_mopai {
 		start = "摸牌状态"
 	}

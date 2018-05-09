@@ -13,7 +13,7 @@ var _ interfaces.MajongState = new(BuGangState)
 
 // ProcessEvent 处理事件
 func (s *BuGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
-	if eventID == majongpb.EventID_event_mopai_finish {
+	if eventID == majongpb.EventID_event_bugang_finish {
 		return majongpb.StateID(majongpb.StateID_state_mopai), nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_bugang), nil
@@ -22,7 +22,7 @@ func (s *BuGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 // OnEntry 进入状态
 func (s *BuGangState) OnEntry(flow interfaces.MajongFlow) {
 	flow.SetAutoEvent(majongpb.AutoEvent{
-		EventId:      majongpb.EventID_event_mopai_finish,
+		EventId:      majongpb.EventID_event_bugang_finish,
 		EventContext: nil,
 	})
 }

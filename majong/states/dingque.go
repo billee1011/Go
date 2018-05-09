@@ -87,11 +87,11 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 		Msg:   dqNtf,
 	}
 	// 推送消息
-	flow.PushMessages(playerAllID, toClient)
+	// flow.PushMessages(playerAllID, toClient)
 	// 日志
 	logrus.WithFields(logrus.Fields{
 		"playerAllID": playerAllID,
-		"dqNtf":      dqNtf,
+		"toClient":toClient,
 	}).Info("定缺成功")
 	return true, nil
 }

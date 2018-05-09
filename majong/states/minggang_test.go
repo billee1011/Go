@@ -5,9 +5,9 @@ import (
 	majongpb "steve/server_pb/majong"
 	"testing"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/Sirupsen/logrus"
 )
 
 // 测试明杠状态接收到非摸牌消息
@@ -27,9 +27,9 @@ func TestMingGangState_MoPai(t *testing.T) {
 	logrus.WithFields(logrus.Fields{
 		"状态": start,
 	}).Info("前")
-	// 明杠状态接受到摸牌消息
+	// 明杠状态接受到明杠完成消息
 	gangState := new(MingGangState)
-	newStateID, err := gangState.ProcessEvent(majongpb.EventID_event_mopai_finish, nil, flow)
+	newStateID, err := gangState.ProcessEvent(majongpb.EventID_event_gang_finish, nil, flow)
 	if newStateID == majongpb.StateID_state_mopai {
 		start = "摸牌状态"
 	}
