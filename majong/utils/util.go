@@ -268,8 +268,8 @@ func CheckHu(cards []*majongpb.Card, huCard uint32) bool {
 	return flag
 }
 
-//CheckHuCardsToHandCards 将胡牌的Cards转为玩家手牌的类型
-func CheckHuCardsToHandCards(cards []Card) ([]*majongpb.Card, error) {
+//CheckHuUtilCardsToHandCards 将推到胡工具的util.Card转为玩家手牌的类型
+func CheckHuUtilCardsToHandCards(cards []Card) ([]*majongpb.Card, error) {
 	handCards := make([]*majongpb.Card, 0)
 	for i := 0; i < len(cards); i++ {
 		handCard, err := IntToCard(int32(cards[i]))
@@ -408,7 +408,7 @@ func GetTingCards(handCards []*majongpb.Card) ([]*majongpb.Card, error) {
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
 	// 合并去重复
 	tingCards := MergeAndNoRepeat(huCards, qiCards)
-	newTingCards, err := CheckHuCardsToHandCards(tingCards)
+	newTingCards, err := CheckHuUtilCardsToHandCards(tingCards)
 	return newTingCards, err
 }
 
