@@ -58,7 +58,7 @@ func TestZixunState_angang(t *testing.T) {
 		Card: &Card1W,
 	}
 
-	requestEvent, err := proto.Marshal(gangRequestEvent)
+	requestEvent, err := proto.Marshal(&gangRequestEvent)
 	assert.Nil(t, err)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
