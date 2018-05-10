@@ -12,6 +12,8 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// TODO 结算
+
 //AnGangState 暗杠状态 @Author:wuhongwei
 type AnGangState struct {
 }
