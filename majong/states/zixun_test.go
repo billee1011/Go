@@ -51,13 +51,14 @@ func TestZixunState_angang(t *testing.T) {
 	).AnyTimes()
 
 	s := ZiXunState{}
-	angangRequestEvent := &majongpb.AngangRequestEvent{
+	gangRequestEvent := majongpb.GangRequestEvent{
 		Head: &majongpb.RequestEventHead{
 			PlayerId: 1,
 		},
-		Cards: &Card1W,
+		Card: &Card1W,
 	}
-	requestEvent, err := proto.Marshal(angangRequestEvent)
+
+	requestEvent, err := proto.Marshal(gangRequestEvent)
 	assert.Nil(t, err)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
@@ -65,8 +66,7 @@ func TestZixunState_angang(t *testing.T) {
 	beforeResults += fmt.Sprintln("before暗杠：")
 	beforeResults += FmtPlayerInfo(player)
 	logrus.Info(beforeResults)
-	stateID, err := s.ProcessEvent(majongpb.EventID_event_angang_request, requestEvent, flow)
-	// stateID, err := s.angang(flow, angangRequestEvent)
+	stateID, err := s.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_angang, stateID, "执行暗杠操作成功后，状态应该为暗杠状态")
 	results := ""
@@ -96,21 +96,21 @@ func TestZixunState_zimo(t *testing.T) {
 	).AnyTimes()
 
 	s := ZiXunState{}
-	zimoRequestEvent := &majongpb.ZimoRequestEvent{
+	huRequestEvent := &majongpb.HuRequestEvent{
 		Head: &majongpb.RequestEventHead{
 			PlayerId: 1,
 		},
-		Cards: &Card4W,
 	}
-	requestEvent, err := proto.Marshal(zimoRequestEvent)
+
+	requestEvent, err := proto.Marshal(huRequestEvent)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
 	beforeResults := ""
 	beforeResults += fmt.Sprintln("before自摸：")
 	beforeResults += FmtPlayerInfo(player)
 	logrus.Info(beforeResults)
-	// stateID, err := s.zimo(flow, zimoRequestEvent)
-	stateID, err := s.ProcessEvent(majongpb.EventID_event_zimo_request, requestEvent, flow)
+
+	stateID, err := s.ProcessEvent(majongpb.EventID_event_hu_request, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_zimo, stateID, "执行自摸操作成功后，状态应该为自摸状态")
 	results := ""
@@ -161,21 +161,20 @@ func TestZixunState_bugang(t *testing.T) {
 	).AnyTimes()
 
 	s := ZiXunState{}
-	bugangRequestEvent := &majongpb.BugangRequestEvent{
+	gangRequestEvent := &majongpb.BugangRequestEvent{
 		Head: &majongpb.RequestEventHead{
 			PlayerId: 1,
 		},
 		Cards: &Card1W,
 	}
-	requestEvent, err := proto.Marshal(bugangRequestEvent)
+	requestEvent, err := proto.Marshal(gangRequestEvent)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
 	beforeResults := ""
 	beforeResults += fmt.Sprintln("before补杠：")
 	beforeResults += FmtPlayerInfo(player)
 	logrus.Info(beforeResults)
-	// stateID, err := s.bugang(flow, bugangRequestEvent)
-	stateID, err := s.ProcessEvent(majongpb.EventID_event_bugang_request, requestEvent, flow)
+	stateID, err := s.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_bugang, stateID, "执行补杠操作成功后，状态应该为补杠状态")
 	results := ""
