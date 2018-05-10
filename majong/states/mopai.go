@@ -48,9 +48,9 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 		MsgID: int(msgid.MsgID_room_zixun_ntf),
 		Msg:   zixunNtf,
 	}
-	if canAnGang || canBuGang || canZiMo {
-		flow.PushMessages(playerIDs, toClient)
-	}
+	// if canAnGang || canBuGang || canZiMo {
+	flow.PushMessages(playerIDs, toClient)
+	// }
 }
 
 //checkZiMo 查自摸
