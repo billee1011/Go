@@ -30,13 +30,13 @@ func TestPengState_chupai(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		mjContext.Players = append(mjContext.Players, &majongpb.Player{
 			PalyerId:  uint64(i),
-			HandCards: []*majongpb.Card{&Card1W, &Card1T, &Card1B, &Card2W},
+			HandCards: []*majongpb.Card{&Card1W, &Card1T, &Card1B, &Card2W,&Card3W},
 		})
 	}
 	// 序列化消息
 	chupaiEvent := &majongpb.ChupaiRequestEvent{
 		Head:  &majongpb.RequestEventHead{PlayerId: 1},
-		Cards: &Card1W,
+		Cards: &Card3W,
 	}
 
 	eventContext, err := proto.Marshal(chupaiEvent)
@@ -65,9 +65,9 @@ func TestPengState_chupai(t *testing.T) {
 	}).Info("后")
 	assert.Nil(t, err)
 	// 手牌中是否删除了1W
-	assert.Equal(t, mjContext.Players[1].HandCards, []*majongpb.Card{&Card1T, &Card1B, &Card2W})
+	assert.Equal(t, mjContext.Players[1].HandCards, []*majongpb.Card{&Card1W, &Card1T, &Card1B, &Card2W})
 	// 玩家出牌数组中是否添加1W
-	assert.Equal(t, mjContext.Players[1].GetOutCards()[len(mjContext.Players[1].GetOutCards())-1], &Card1W)
+	assert.Equal(t, mjContext.Players[1].GetOutCards()[len(mjContext.Players[1].GetOutCards())-1], &Card3W)
 	// 返回是否是出牌状态ID
 	assert.Equal(t, majongpb.StateID_state_chupai, newStateID)
 }

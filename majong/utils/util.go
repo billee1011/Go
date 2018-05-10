@@ -268,7 +268,6 @@ func CheckHu(cards []*majongpb.Card, huCard uint32) bool {
 	return flag
 }
 
-
 //CheckHuUtilCardsToHandCards 将推到胡工具的util.Card转为玩家手牌的类型
 func CheckHuUtilCardsToHandCards(cards []Card) ([]*majongpb.Card, error) {
 	handCards := make([]*majongpb.Card, 0)
@@ -357,7 +356,7 @@ func GetTingPlayerIDAndMultiple(players []*majongpb.Player) (map[uint64]int64, e
 		if len(players[i].HuCards) > 0 {
 			continue
 		}
-		// 查不能听，能听，返回能胡最大倍数，及ID
+		// 查能不能听，能听，返回返回最大番型，及ID
 		isTing, multiple, err := IsCanTingAndGetMultiple(players[i])
 		if err != nil {
 			return nil, err

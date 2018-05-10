@@ -37,7 +37,7 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	// 序列化
 	chupaiEvent := new(majongpb.ChupaiRequestEvent)
 	if err := proto.Unmarshal(eventContext, chupaiEvent); err != nil {
-		return fmt.Errorf("出牌事件反序列化失败: %v", err)
+		return fmt.Errorf("出牌 : %v", errUnmarshalEvent)
 	}
 	//麻将牌局现场
 	mjContext := flow.GetMajongContext()
@@ -54,15 +54,24 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	// 获取出的牌
 	outCard := chupaiEvent.Cards
 	// 判断出的牌是否存在
+	isExist := false
 	handCard := outCardPlayer.GetHandCards()
-	if utils.SeekCardSum(handCard, outCard) == 0 {
-		return fmt.Errorf("出牌事件失败-牌不存在: %v", outCard)
+	for _,card := range handCard {
+		if utils.CardEqual(card,outCard) {
+			isExist = true
+			 break
+		}
 	}
+	if !isExist {
+		return fmt.Errorf("出牌事件失败-请求出的牌不存在：%v" ,outCard)
+	}
+
 	// 删除手中要出牌
 	handCards, flag := utils.DeleteCardFromLast(handCard, outCard)
 	if !flag {
 		return fmt.Errorf("出牌事件-删除牌失败: %v", outCard)
 	}
+	
 	// 修改玩家手牌
 	outCardPlayer.HandCards = handCards
 	// 将出的牌添加到玩家出牌数组中
@@ -83,15 +92,14 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	if err != nil {
 		return fmt.Errorf("出牌事件-outCard to roomCard - 失败: %v", outCard)
 	}
-	chupaiNtf := &room.RoomChupaiNtf{
-		Player: &outCardPlayer.PalyerId,
-		Card:   roomCard,
-	}
 	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_room_peng_ntf),
-		Msg:   chupaiNtf,
+		MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
+		Msg: &room.RoomChupaiNtf{
+			Player: proto.Uint64(outCardPlayer.PalyerId),
+			Card:   roomCard,
+		},
 	}
-	flow.PushMessages(playerIDs,toClient)
+	flow.PushMessages(playerIDs, toClient)
 
 	// 出过非定缺颜色的牌 TODO
 	if len(outCardPlayer.Properties[utils.IsOutNoDingQueColorCard]) == 0 && outCard.Color != outCardPlayer.DingqueColor {

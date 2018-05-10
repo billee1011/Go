@@ -64,22 +64,22 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 			result := false
 			for i, player := range players { // 根据不同方向处理换三张
 				var pairPlayer *majongpb.Player
-				if towards == int(room.RoomHuansanzhangFinishNtf_ClockWise) {
+				if towards == int(room.Direction_ClockWise) {
 					result = processHuansanzhang(player, players[(i+l-1)%l])
 					pairPlayer = players[(i+l-1)%l]
 
-				} else if towards == int(room.RoomHuansanzhangFinishNtf_AntiClockWise) {
+				} else if towards == int(room.Direction_AntiClockWise) {
 					result = processHuansanzhang(player, players[(i+l+1)%l])
 					pairPlayer = players[(i+l+1)%l]
 
-				} else if towards == int(room.RoomHuansanzhangFinishNtf_Opposite) {
+				} else if towards == int(room.Direction_Opposite) {
 					result = processHuansanzhang(player, players[(i+l+2)%l])
 					pairPlayer = players[(i+l+2)%l]
 				}
 				huansanzhangFinishNtf := room.RoomHuansanzhangFinishNtf{
 					InCards:   utils.CardsToRoomCards(pairPlayer.HuansanzhangCards),
 					OutCards:  utils.CardsToRoomCards(player.HuansanzhangCards),
-					Direction: room.RoomHuansanzhangFinishNtf_Direction(towards).Enum(),
+					Direction: room.Direction(towards).Enum(),
 				}
 				if result {
 					//TODO
