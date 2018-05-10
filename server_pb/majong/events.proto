@@ -23,12 +23,12 @@ enum EventID {
     event_gang_finish = 14;             // 杠完成事件
     event_hu_finish = 15;               // 胡完成事件
     event_mopai_finish = 16;            // 摸牌完成事件
-    event_zimo_request = 17;            // 自摸请求事件
-    event_angang_request = 18;          // 暗杠请求事件
-    event_bugang_request = 19;          // 补杠请求事件
+    // event_zimo_request = 17;            // 自摸请求事件
+    // event_angang_request = 18;          // 暗杠请求事件
+    // event_bugang_request = 19;          // 补杠请求事件
     event_bugang_finish = 20;           // 补杠完成事件
-    event_qiangganghu_request = 21;     // 抢杠胡请求事件
-    event_qiqiangganghu_request = 22;   // 放弃抢杠胡请求事件
+    // event_qiangganghu_request = 21;     // 抢杠胡请求事件
+    // event_qiqiangganghu_request = 22;   // 放弃抢杠胡请求事件
     event_qiangganghu_finish = 23;      // 抢杠胡完成事件
     event_wenxun_overtime = 24;         // 问询超时事件
 }
@@ -60,23 +60,12 @@ message DingqueRequestEvent {
     CardColor color = 3;        // 定缺颜色
 }
 
-// AngangRequestEvent 暗杠请求事件
-message AngangRequestEvent{
-     RequestEventHead head = 1;  // 请求头
-     Card cards = 2;    // 暗杠的牌
-}
-
 // BugangRequestEvent 补杠请求事件
 message BugangRequestEvent{
      RequestEventHead head = 1;  // 请求头
      Card cards = 2;    // 补杠的牌
 }
 
-// ZimoRequestEvent 自摸请求事件
-message ZimoRequestEvent{
-     RequestEventHead head = 1;  // 请求头
-     Card cards = 2;    // 自摸胡的牌
-}
 
 // ChupaiRequestEvent 出牌请求事件
 message ChupaiRequestEvent{
@@ -93,6 +82,7 @@ message PengRequestEvent {
 // GangRequestEvent 明杠请求事件
 message GangRequestEvent {
     RequestEventHead head = 1;  // 请求头
+    Card card = 2; // 要杠的牌
 }
 
 // HuRequestEvent 胡请求事件

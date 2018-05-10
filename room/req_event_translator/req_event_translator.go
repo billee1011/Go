@@ -111,9 +111,8 @@ func (t *translator) addTranslator(msgID msgid.MsgID, f interface{}) {
 func (t *translator) addTranslators() {
 	// TODO 添加所有请求转事件表
 	t.addTranslator(msgid.MsgID_ROOM_HUANSANZHANG_REQ, translateHuansanzhangReq)
-	t.addTranslator(msgid.MsgID_ROOM_HU_REQ, translateZimoReq)
-	t.addTranslator(msgid.MsgID_ROOM_GANG_REQ, translateBugangReq)
-	t.addTranslator(msgid.MsgID_ROOM_GANG_REQ, translateAngangReq)
+	t.addTranslator(msgid.MsgID_ROOM_HU_REQ, translateHuRequest)
+	t.addTranslator(msgid.MsgID_ROOM_GANG_REQ, translateGangReq)
 	t.addTranslator(msgid.MsgID_ROOM_CHUPAI_REQ, translateChupaiReq)
 	t.addTranslator(msgid.MsgID_ROOM_DINGQUE_REQ, translateDingqueReq)
 }
