@@ -19,7 +19,7 @@ var _ interfaces.MajongState = new(ZimoState)
 // ProcessEvent 处理事件
 func (s *ZimoState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_zimo_finish {
-		// s.mopai(flow)
+		s.zimo(flow)
 		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID_state_zimo, errInvalidEvent
@@ -59,7 +59,6 @@ func (s *ZimoState) zimo(flow interfaces.MajongFlow) {
 
 // OnEntry 进入状态
 func (s *ZimoState) OnEntry(flow interfaces.MajongFlow) {
-	s.zimo(flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_zimo_finish,
 		EventContext: nil,

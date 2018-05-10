@@ -18,10 +18,32 @@ func Test_HuState_hu(t *testing.T) {
 	flow := interfaces.NewMockMajongFlow(mc)
 	flow.EXPECT().GetMajongContext().Return(
 		&majongpb.MajongContext{
-			GameId:       1,
-			WallCards:    []*majongpb.Card{&Card1W},
-			Players:      []*majongpb.Player{&majongpb.Player{PalyerId: 1}, &majongpb.Player{PalyerId: 2}},
-			ActivePlayer: 1,
+			GameId:    1,
+			WallCards: []*majongpb.Card{&Card1W},
+			Players: []*majongpb.Player{
+				&majongpb.Player{
+					PalyerId:        1,
+					HandCards:       []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
+					DingqueColor:    majongpb.CardColor_ColorTiao,
+					OutCards:        []*majongpb.Card{&Card1T},
+					PossibleActions: []majongpb.Action{},
+				},
+				&majongpb.Player{
+					PalyerId:        2,
+					HandCards:       []*majongpb.Card{&Card1T, &Card1T, &Card1B, &Card1B, &Card2B, &Card2B, &Card2B, &Card2B, &Card3B, &Card3B, &Card3B, &Card3B, &Card4B},
+					DingqueColor:    majongpb.CardColor_ColorTong,
+					PossibleActions: []majongpb.Action{},
+				},
+				&majongpb.Player{
+					PalyerId:        3,
+					HandCards:       []*majongpb.Card{&Card2T, &Card3T, &Card5T, &Card5T, &Card5T, &Card6T, &Card6T, &Card6T, &Card7T, &Card7T, &Card7T, &Card8T, &Card8T},
+					DingqueColor:    majongpb.CardColor_ColorWan,
+					PossibleActions: []majongpb.Action{},
+				},
+			},
+			LastChupaiPlayer: 1,
+			LastOutCard:      &Card1T,
+			LastHuPlayers:    []uint64{2},
 		},
 	).AnyTimes()
 

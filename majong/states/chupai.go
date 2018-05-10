@@ -57,12 +57,12 @@ func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card
 	canMingGang := checkMingGang(context, player, card)
 	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
-		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_minggang)
+		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_gang)
 	}
 	canDianPao := checkDianPao(context, player, card)
 	chupaiWenxunNtf.EnableDianpao = proto.Bool(canDianPao)
 	if canDianPao {
-		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_dianpao)
+		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 	}
 	canPeng := checkPeng(context, player, card)
 	chupaiWenxunNtf.EnablePeng = proto.Bool(canPeng)
