@@ -4,4 +4,3 @@ log/
 *.so
 debug.test
 client_pb
-.idea/

@@ -13,10 +13,10 @@ func translateAngangReq(playerID uint64, header *steve_proto_gaterpc.Header,
 
 	eventHeader := translateHeader(playerID, header, &req)
 
-	// card := translateCard(*req.GetCard())
+	card := translateCard(*req.GetCard())
 	eventContext = &server_pb.AngangRequestEvent{
 		Head:  &eventHeader,
-		// Cards: &card,
+		Cards: &card,
 	}
 	eventID = server_pb.EventID_event_angang_request
 	return
