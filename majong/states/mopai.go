@@ -48,9 +48,7 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
 		Msg:   zixunNtf,
 	}
-	// if canAnGang || canBuGang || canZiMo {
 	flow.PushMessages(playerIDs, toClient)
-	// }
 }
 
 //checkZiMo 查自摸
@@ -66,9 +64,6 @@ func (s *MoPaiState) checkZiMo(context *majongpb.MajongContext) bool {
 		return false
 	}
 	flag := utils.CheckHu(handCard, 0)
-	// if flag {
-	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_zimo)
-	// }
 	return flag
 }
 
@@ -114,9 +109,6 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room
 			}
 		}
 	}
-	// if len(enableAngangCards) > 0 {
-	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_angang)
-	// }
 	return len(enableAngangCards) > 0, enableAngangCards
 }
 
@@ -157,9 +149,6 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room
 			}
 		}
 	}
-	// if len(enableBugangCards) > 0 {
-	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_bugang)
-	// }
 	return len(enableBugangCards) > 0, enableBugangCards
 }
 
@@ -178,6 +167,7 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	context.WallCards = context.WallCards[1:]
 	//将这张牌添加到手牌中
 	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
+	context.LastMopaiPlayer = context.MopaiPlayer
 	s.checkActions(flow)
 	return majongpb.StateID_state_zixun, nil
 }

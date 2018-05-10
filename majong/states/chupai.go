@@ -39,7 +39,8 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		if hasChupaiwenxun {
 			return majongpb.StateID_state_chupaiwenxun, nil
 		}
-		// s.mopai(flow)
+		player := utils.GetNextPlayerByID(context.GetPlayers(), context.GetLastChupaiPlayer())
+		context.MopaiPlayer = player.GetPalyerId()
 		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID_state_init, errInvalidEvent

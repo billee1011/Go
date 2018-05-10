@@ -51,7 +51,7 @@ func TestZixunState_angang(t *testing.T) {
 	).AnyTimes()
 
 	s := ZiXunState{}
-	gangRequestEvent := majongpb.GangRequestEvent{
+	gangRequestEvent := &majongpb.GangRequestEvent{
 		Head: &majongpb.RequestEventHead{
 			PlayerId: 1,
 		},
