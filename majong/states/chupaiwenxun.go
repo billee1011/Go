@@ -92,8 +92,8 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 	// 从 map 中查找对应的 action
 	action, ok := map[majongpb.EventID]majongpb.Action{
 		majongpb.EventID_event_peng_request: majongpb.Action_action_peng,
-		majongpb.EventID_event_gang_request: majongpb.Action_action_minggang,
-		majongpb.EventID_event_hu_request:   majongpb.Action_action_dianpao,
+		majongpb.EventID_event_gang_request: majongpb.Action_action_gang,
+		majongpb.EventID_event_hu_request:   majongpb.Action_action_hu,
 		majongpb.EventID_event_qi_request:   majongpb.Action_action_qi,
 	}[eventID]
 	if !ok {
@@ -166,9 +166,9 @@ func (s *ChupaiwenxunState) onActionRequestEvent(eventID majongpb.EventID, event
 func (s *ChupaiwenxunState) getActionPriority(action majongpb.Action) int {
 	// priorityMap 行为的优先级， 数字越大代表优先级越高
 	var priorityMap = map[majongpb.Action]int{
-		majongpb.Action_action_dianpao:  100,
-		majongpb.Action_action_minggang: 90,
-		majongpb.Action_action_peng:     80,
+		majongpb.Action_action_hu:   100,
+		majongpb.Action_action_gang: 90,
+		majongpb.Action_action_peng: 80,
 	}
 	if p, ok := priorityMap[action]; ok {
 		return p
@@ -269,10 +269,10 @@ func (s *ChupaiwenxunState) doAction(flow interfaces.MajongFlow, action majongpb
 	type actionFunc func(interfaces.MajongFlow, []uint64) (newState majongpb.StateID, err error)
 
 	f, ok := map[majongpb.Action]actionFunc{
-		majongpb.Action_action_peng:     s.doPeng,
-		majongpb.Action_action_minggang: s.doGang,
-		majongpb.Action_action_dianpao:  s.doHu,
-		majongpb.Action_action_qi:       s.doQi,
+		majongpb.Action_action_peng: s.doPeng,
+		majongpb.Action_action_gang: s.doGang,
+		majongpb.Action_action_hu:   s.doHu,
+		majongpb.Action_action_qi:   s.doQi,
 	}[action]
 
 	if !ok {
