@@ -91,7 +91,7 @@ func notifyDeskCreate(desk interfaces.Desk) {
 		Players: desk.GetPlayers(),
 	}
 	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid.MsgID_room_desk_created_ntf)}
+		MsgId: uint32(msgid.MsgID_ROOM_DESK_CREATED_NTF)}
 	ms := global.GetMessageSender()
 
 	ms.BroadcastPackage(clientIDs, head, &ntf)
@@ -108,7 +108,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_room_join_desk_rsp),
+			MsgID: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
 			Body:  rsp,
 		},
 	}

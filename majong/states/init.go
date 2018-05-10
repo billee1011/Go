@@ -25,7 +25,7 @@ func (s *InitState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, 
 
 // notifyPlayers 通知玩家游戏开始
 func (s *InitState) notifyPlayers(flow interfaces.MajongFlow) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_room_start_game_ntf, &room.RoomStartGameNtf{})
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_START_GAME_NTF, &room.RoomStartGameNtf{})
 }
 
 // OnEntry 进入状态

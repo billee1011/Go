@@ -45,7 +45,7 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, context.ActivePlayer)
 	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_room_zixun_ntf),
+		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
 		Msg:   zixunNtf,
 	}
 	if canAnGang || canBuGang || canZiMo {

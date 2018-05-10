@@ -86,10 +86,10 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 		Card:   roomCard,
 	}
 	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_room_peng_ntf),
+		MsgID: int(msgid.MsgID_ROOM_PENG_NTF),
 		Msg:   chupaiNtf,
 	}
-	flow.PushMessages(playerIDs,toClient)
+	flow.PushMessages(playerIDs, toClient)
 
 	// 出过非定缺颜色的牌 TODO
 	if len(outCardPlayer.Properties[utils.IsOutNoDingQueColorCard]) == 0 && outCard.Color != outCardPlayer.DingqueColor {
