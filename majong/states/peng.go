@@ -110,9 +110,47 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 
 // OnEntry 进入状态
 func (s *PengState) OnEntry(flow interfaces.MajongFlow) {
+	s.doPeng(flow)
 }
 
 // OnExit 退出状态
 func (s *PengState) OnExit(flow interfaces.MajongFlow) {
 
+}
+
+// doPeng 执行碰操作
+func (s *PengState) doPeng(flow interfaces.MajongFlow) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "PengState.doPeng",
+	})
+
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	pengPlayer := mjContext.GetLastPengPlayer()
+
+	player := utils.GetMajongPlayer(pengPlayer, mjContext)
+
+	card := mjContext.GetLastOutCard()
+	logEntry = logEntry.WithFields(logrus.Fields{
+		"peng_player_id": pengPlayer,
+	})
+
+	newCards, ok := utils.RemoveCards(player.GetHandCards(), card, 2)
+	if !ok {
+		logEntry.Errorln("移除玩家手牌失败")
+		return
+	}
+	player.HandCards = newCards
+
+	s.addPengCard(card, player, mjContext.GetActivePlayer())
+	return
+}
+
+// addPengCard 添加碰的牌
+func (s *PengState) addPengCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
+	player.PengCards = append(player.GetPengCards(), &majongpb.PengCard{
+		Card:      card,
+		SrcPlayer: srcPlayerID,
+	})
 }
