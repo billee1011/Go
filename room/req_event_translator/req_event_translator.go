@@ -114,6 +114,8 @@ func (t *translator) addTranslators() {
 	t.addTranslator(msgid.MsgID_room_zimo_req, translateZimoReq)
 	t.addTranslator(msgid.MsgID_room_bugang_req, translateBugangReq)
 	t.addTranslator(msgid.MsgID_room_angang_req, translateAngangReq)
+	t.addTranslator(msgid.MsgID_room_chupai_req, translateChupaiReq)
+	t.addTranslator(msgid.MsgID_room_dingque_req, translateDingqueReq)
 }
 
 func init() {
