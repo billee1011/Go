@@ -9,7 +9,7 @@ import (
 )
 
 func translateZimoReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomZimoReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+	req room.RoomHuReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 	card := translateCard(*req.GetCard())

@@ -78,10 +78,10 @@ func (f *FapaiState) fapai(flow interfaces.MajongFlow) {
 func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 
-	playerCardCount := []*room.RoomFapaiNtf_PlayerCardCount{}
+	playerCardCount := []*room.PlayerCardCount{}
 
 	for _, player := range mjContext.Players {
-		playerCardCount = append(playerCardCount, &room.RoomFapaiNtf_PlayerCardCount{
+		playerCardCount = append(playerCardCount, &room.PlayerCardCount{
 			PlayerId:  proto.Uint64(player.GetPalyerId()),
 			CardCount: proto.Uint32(uint32(len(player.GetHandCards()))),
 		})
@@ -93,7 +93,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 			PlayerCardCounts: playerCardCount,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_room_fapai_ntf),
+			MsgID: int(msgid.MsgID_ROOM_FAPAI_NTF),
 			Msg:   msg,
 		})
 	}

@@ -29,7 +29,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 				playersID := make([]uint64, 0, 0)
 				playersID = append(playersID, player.GetPalyerId())
 				toClientMessage := interfaces.ToClientMessage{
-					MsgID: int(msgid.MsgID_room_chupaiwenxun_ntf),
+					MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
 					Msg:   ntf,
 				}
 				flow.PushMessages(playersID, toClientMessage)
