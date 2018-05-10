@@ -193,12 +193,12 @@ var transitionCfg = `
         - 
           # 玩家自摸请求事件 转移到 自摸状态
           events: 
-            - event_zimo_request
+            - event_hu_request
           next_state: state_zimo    
         - 
-          # 玩家暗杠请求事件 转移到 暗杠状态
+          # 玩家杠请求事件 转移到 暗杠状态
           events: 
-            - event_angang_request
+            - event_gang_request
           next_state: state_angang   
         - 
           # 玩家出牌请求事件 转移到 出牌
@@ -206,14 +206,14 @@ var transitionCfg = `
             - event_chupai_request
           next_state: state_chupai    
         - 
-          # 玩家补杠请求事件 转移到 补杠状态
+          # 玩家杠请求事件 转移到 补杠状态
           events: 
-            - event_bugang_request
+            - event_gang_request
           next_state: state_bugang     
         - 
-          # 玩家补杠请求事件 转移到 等待抢杠胡状态
+          # 玩家杠请求事件 转移到 等待抢杠胡状态
           events: 
-            - event_bugang_request
+            - event_gang_request
           next_state: state_waitqiangganghu     
     - 
       # 补杠状态
@@ -233,19 +233,19 @@ var transitionCfg = `
         - 
           # 玩家请求抢杠胡事件 或者 放弃抢杠胡请求事件 转移到 等待抢杠胡
           events: 
-            - event_qiangganghu_request
-            - event_qiqiangganghu_request
+            - event_hu_request
+            - event_qi_request
           next_state: state_waitqiangganghu   
         - 
           # 玩家请求抢杠胡事件  或者 放弃抢杠胡请求事件 转移到 抢杠胡
           events: 
-            - event_qiangganghu_request
-            - event_qiqiangganghu_request
+            - event_hu_request
+            - event_qi_request
           next_state: state_qiangganghu   
         - 
           # 玩家放弃抢杠胡请求事件 转移到 补杠
           events: 
-            - event_qiqiangganghu_request
+            - event_qi_request
           next_state: state_bugang    
     - 
       # 抢杠胡状态

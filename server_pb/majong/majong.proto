@@ -125,6 +125,7 @@ message MajongContext {
     uint64 mopai_player = 15;  // 需要摸牌的玩家，进入摸牌状态前设置
     uint64 last_mopai_player = 16;  // 上一个摸牌的玩家
     Card last_mopai_card = 17;    // 上一次摸的牌
+    Card gang_card = 18;        // 杠的牌
 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
