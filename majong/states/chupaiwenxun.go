@@ -42,22 +42,12 @@ func (s *ChupaiwenxunState) OnExit(flow interfaces.MajongFlow) {
 
 // getMajongPlayer 获取玩家对象
 func (s *ChupaiwenxunState) getMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
-	for _, player := range mjContext.GetPlayers() {
-		if player.GetPalyerId() == playerID {
-			return player
-		}
-	}
-	return nil
+	return utils.GetMajongPlayer(playerID, mjContext)
 }
 
 // existAction 玩家是否存在对应的可选操作
 func (s *ChupaiwenxunState) existAction(action majongpb.Action, player *majongpb.Player) bool {
-	for _, a := range player.GetPossibleActions() {
-		if a == action {
-			return true
-		}
-	}
-	return false
+	return utils.ExistPossibleAction(player, action)
 }
 
 // getPengRequestPlayer 获取碰请求的玩家
@@ -294,34 +284,12 @@ func (s *ChupaiwenxunState) doAction(flow interfaces.MajongFlow, action majongpb
 }
 
 // removePlayerCards 从玩家的手牌中移除指定数量的某张牌
-// TODO : 改成用工具函数
 func (s *ChupaiwenxunState) removePlayerCards(card *majongpb.Card, count int, player *majongpb.Player) bool {
-	newCards := []*majongpb.Card{}
-	removeCount := 0
-	curCards := player.GetHandCards()
-	for index, c := range curCards {
-		if c.GetColor() == card.GetColor() && c.GetPoint() == card.GetPoint() {
-			removeCount++
-			if removeCount == count {
-				newCards = append(newCards, curCards[index+1:]...)
-			}
-		} else {
-			newCards = append(newCards, c)
-		}
+	newCards, ok := utils.RemoveCards(player.GetHandCards(), card, count)
+	if ok {
+		player.HandCards = newCards
 	}
-	if removeCount != count {
-		return false
-	}
-	player.HandCards = newCards
-	return true
-}
-
-// addPengCard 添加碰的牌
-func (s *ChupaiwenxunState) addPengCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
-	player.PengCards = append(player.GetPengCards(), &majongpb.PengCard{
-		Card:      card,
-		SrcPlayer: srcPlayerID,
-	})
+	return ok
 }
 
 // doPeng 执行碰操作
@@ -340,16 +308,8 @@ func (s *ChupaiwenxunState) doPeng(flow interfaces.MajongFlow, playerIDs []uint6
 		return majongpb.StateID_state_chupaiwenxun, err
 	}
 	playerID := playerIDs[0]
-	player := s.getMajongPlayer(playerID, mjContext)
 
-	card := mjContext.GetLastOutCard()
-	if !s.removePlayerCards(card, 2, player) {
-		err := errors.New("玩家没有 2 张对应的牌")
-		logEntry.Errorln(err)
-		return majongpb.StateID_state_chupaiwenxun, err
-	}
-	s.addPengCard(card, player, mjContext.GetActivePlayer())
-	mjContext.LastPengPlayer = player.GetPalyerId()
+	mjContext.LastPengPlayer = playerID
 	return
 }
 

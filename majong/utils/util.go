@@ -143,6 +143,26 @@ func DeleteCardFromLast(cards []*majongpb.Card, targetCard *majongpb.Card) ([]*m
 	return cards, index != -1
 }
 
+// RemoveCards 从玩家的手牌中移除指定数量的某张牌
+func RemoveCards(cards []*majongpb.Card, card *majongpb.Card, count int) ([]*majongpb.Card, bool) {
+	newCards := []*majongpb.Card{}
+	removeCount := 0
+	for index, c := range cards {
+		if CardEqual(c, card) {
+			removeCount++
+			if removeCount == count {
+				newCards = append(newCards, cards[index+1:]...)
+			}
+		} else {
+			newCards = append(newCards, c)
+		}
+	}
+	if removeCount != count {
+		return cards, false
+	}
+	return newCards, true
+}
+
 //IntToCard int32类型转majongpb.Card类型
 func IntToCard(cardValue int32) (*majongpb.Card, error) {
 	colorValue := cardValue / 10
