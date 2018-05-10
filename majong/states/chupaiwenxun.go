@@ -1,0 +1,446 @@
+package states
+
+import (
+	"errors"
+	"fmt"
+	"steve/majong/interfaces"
+	"steve/majong/utils"
+	majongpb "steve/server_pb/majong"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
+)
+
+// ChupaiwenxunState 出牌问询状态
+type ChupaiwenxunState struct{}
+
+// ProcessEvent 处理事件
+func (s *ChupaiwenxunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+	switch eventID {
+	case majongpb.EventID_event_hu_request,
+		majongpb.EventID_event_gang_request,
+		majongpb.EventID_event_peng_request,
+		majongpb.EventID_event_qi_request:
+		{
+			return s.onActionRequestEvent(eventID, eventContext, flow)
+		}
+	}
+	return majongpb.StateID_state_chupaiwenxun, errInvalidEvent
+}
+
+// OnEntry 进入状态
+func (s *ChupaiwenxunState) OnEntry(flow interfaces.MajongFlow) {
+	for _, player := range flow.GetMajongContext().GetPlayers() {
+		player.HasSelected = false
+	}
+}
+
+// OnExit 退出状态
+func (s *ChupaiwenxunState) OnExit(flow interfaces.MajongFlow) {
+
+}
+
+// getMajongPlayer 获取玩家对象
+func (s *ChupaiwenxunState) getMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
+	for _, player := range mjContext.GetPlayers() {
+		if player.GetPalyerId() == playerID {
+			return player
+		}
+	}
+	return nil
+}
+
+// existAction 玩家是否存在对应的可选操作
+func (s *ChupaiwenxunState) existAction(action majongpb.Action, player *majongpb.Player) bool {
+	for _, a := range player.GetPossibleActions() {
+		if a == action {
+			return true
+		}
+	}
+	return false
+}
+
+// getPengRequestPlayer 获取碰请求的玩家
+func (s *ChupaiwenxunState) getPengRequestPlayer(eventContext []byte) (uint64, error) {
+	pengRequest := majongpb.PengRequestEvent{}
+	if err := proto.Unmarshal(eventContext, &pengRequest); err != nil {
+		return 0, fmt.Errorf("反序列化失败: %v", err)
+	}
+	return pengRequest.GetHead().GetPlayerId(), nil
+}
+
+// getGangRequestPlayer 获取杠请求的玩家
+func (s *ChupaiwenxunState) getGangRequestPlayer(eventContext []byte) (uint64, error) {
+	gangRequest := majongpb.GangRequestEvent{}
+	if err := proto.Unmarshal(eventContext, &gangRequest); err != nil {
+		return 0, fmt.Errorf("反序列化失败: %v", err)
+	}
+	return gangRequest.GetHead().GetPlayerId(), nil
+}
+
+// getHuRequestPlayer 获取胡请求的玩家
+func (s *ChupaiwenxunState) getHuRequestPlayer(eventContext []byte) (uint64, error) {
+	huRequest := majongpb.HuRequestEvent{}
+	if err := proto.Unmarshal(eventContext, &huRequest); err != nil {
+		return 0, fmt.Errorf("反序列化失败: %v", err)
+	}
+	return huRequest.GetHead().GetPlayerId(), nil
+}
+
+// getQiRequestPlayer 获取弃请求的玩家
+func (s *ChupaiwenxunState) getQiRequestPlayer(eventContext []byte) (uint64, error) {
+	qiRequest := majongpb.QiRequestEvent{}
+	if err := proto.Unmarshal(eventContext, &qiRequest); err != nil {
+		return 0, fmt.Errorf("反序列化失败: %v", err)
+	}
+	return qiRequest.GetHead().GetPlayerId(), nil
+}
+
+// getRequestInfo 根据请求事件获取请求的基础信息
+func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContext []byte, mjContext *majongpb.MajongContext) (
+	player *majongpb.Player, action majongpb.Action, err error) {
+	// 从 map 中查找对应的 action
+	action, ok := map[majongpb.EventID]majongpb.Action{
+		majongpb.EventID_event_peng_request: majongpb.Action_action_peng,
+		majongpb.EventID_event_gang_request: majongpb.Action_action_minggang,
+		majongpb.EventID_event_hu_request:   majongpb.Action_action_dianpao,
+		majongpb.EventID_event_qi_request:   majongpb.Action_action_qi,
+	}[eventID]
+	if !ok {
+		err = errInvalidEvent
+		return
+	}
+
+	// 从 map 中查找和调用对应的方法
+	type getPlayerFunc func(eventContext []byte) (uint64, error)
+	f, ok := map[majongpb.EventID]getPlayerFunc{
+		majongpb.EventID_event_peng_request: s.getPengRequestPlayer,
+		majongpb.EventID_event_gang_request: s.getGangRequestPlayer,
+		majongpb.EventID_event_hu_request:   s.getHuRequestPlayer,
+		majongpb.EventID_event_qi_request:   s.getHuRequestPlayer,
+	}[eventID]
+	if !ok {
+		err = errInvalidEvent
+		return
+	}
+	playerID, err := f(eventContext)
+	if err != nil {
+		return
+	}
+	player = s.getMajongPlayer(playerID, mjContext)
+	if player == nil {
+		err = errInvalidRequestPlayer
+		return
+	}
+	return
+}
+
+// canPlayerAction 检测玩家是否可以执行指定行为
+func (s *ChupaiwenxunState) canPlayerAction(player *majongpb.Player, action majongpb.Action) error {
+	if !s.existAction(action, player) {
+		err := errors.New("当前玩家不能执行碰操作")
+		return err
+	}
+	if player.GetHasSelected() {
+		err := errors.New("玩家已经选择过了")
+		return err
+	}
+	return nil
+}
+
+// onActionRequestEvent 处理玩家 action 请求事件
+func (s *ChupaiwenxunState) onActionRequestEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_chupaiwenxun, nil
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "ChupaiwenxunState.onActionRequestEvent",
+		"event_id":  eventID,
+	})
+
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	player, action, err := s.getRequestInfo(eventID, eventContext, mjContext)
+	if err != nil {
+		logEntry.WithError(err).Infoln("获取请求信息失败")
+		return
+	}
+	logEntry = logEntry.WithField("player_id", player.GetPalyerId())
+	if err = s.canPlayerAction(player, action); err != nil {
+		logEntry.WithError(err).Infoln("玩家不能执行该行为")
+		return
+	}
+	player.HasSelected, player.SelectedAction = true, action
+	return s.makeDecision(flow)
+}
+
+func (s *ChupaiwenxunState) getActionPriority(action majongpb.Action) int {
+	// priorityMap 行为的优先级， 数字越大代表优先级越高
+	var priorityMap = map[majongpb.Action]int{
+		majongpb.Action_action_dianpao:  100,
+		majongpb.Action_action_minggang: 90,
+		majongpb.Action_action_peng:     80,
+	}
+	if p, ok := priorityMap[action]; ok {
+		return p
+	}
+	return 0
+}
+
+// getMaxSelectedAction 获取选择的最高优先级 action， 以及选择的玩家列表
+func (s *ChupaiwenxunState) getMaxSelectedAction(players []*majongpb.Player) (bool, majongpb.Action, []uint64) {
+	hasMaxSelectedAction := false
+	var maxSelectedAction majongpb.Action
+	selectedPlayers := []uint64{}
+
+	for _, player := range players {
+		if !player.GetHasSelected() {
+			continue
+		}
+		selectedAction := player.GetSelectedAction()
+		selectedPriority := s.getActionPriority(selectedAction)
+
+		if !hasMaxSelectedAction || selectedPriority > s.getActionPriority(maxSelectedAction) {
+			hasMaxSelectedAction = true
+			maxSelectedAction = selectedAction
+			selectedPlayers = []uint64{player.GetPalyerId()}
+			continue
+		}
+		if selectedPriority == s.getActionPriority(maxSelectedAction) {
+			selectedPlayers = append(selectedPlayers, player.GetPalyerId())
+		}
+	}
+	return hasMaxSelectedAction, maxSelectedAction, selectedPlayers
+}
+
+// getMaxNotSelectedAction 获取未选择的最高优先级 action
+func (s *ChupaiwenxunState) getMaxNotSelectedAction(players []*majongpb.Player) (bool, majongpb.Action) {
+	has := false
+	var maxAction majongpb.Action
+
+	for _, player := range players {
+		possibles := player.GetPossibleActions()
+		if len(possibles) == 0 || player.GetHasSelected() {
+			continue
+		}
+		for _, a := range possibles {
+			if !has || s.getActionPriority(a) > s.getActionPriority(maxAction) {
+				has = true
+				maxAction = a
+			}
+		}
+	}
+	return has, maxAction
+}
+
+// makeDecision 作决策
+// step 1. 在没有选择的玩家中，找到他们之中能执行的最高优先级的动作， 称为动作 A
+// step 2. 在已经选择的玩家中，查找到他们之中选择的最高优先级的动作， 称为动作 B，以及选择执行这个动作的玩家列表， 称为玩家列表 L
+// step 3. 如果动作 A 的优先级不低于动作 B， 返回出牌问询状态。 否则对所有在 L 中的玩家执行 B， 并且返回对应的状态
+func (s *ChupaiwenxunState) makeDecision(flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "ChupaiwenxunState.makeDecision",
+	})
+	newState, err = majongpb.StateID_state_chupaiwenxun, nil
+
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+	players := mjContext.GetPlayers()
+
+	hasMaxSelected, maxSelected, maxSelPlayers := s.getMaxSelectedAction(players)
+	hasMaxNotSelected, maxNotSelected := s.getMaxNotSelectedAction(players)
+
+	if !hasMaxSelected && !hasMaxNotSelected {
+		logEntry.WithField("players", players).Errorln("没有问询但是进入了问询状态")
+		return
+	}
+	if !hasMaxSelected && hasMaxNotSelected {
+		return
+	}
+	if hasMaxSelected && !hasMaxNotSelected {
+		return s.doAction(flow, maxSelected, maxSelPlayers)
+	}
+	if hasMaxSelected && hasMaxNotSelected {
+		if s.getActionPriority(maxSelected) > s.getActionPriority(maxNotSelected) {
+			return s.doAction(flow, maxSelected, maxSelPlayers)
+		}
+	}
+	return
+}
+
+// doAction 执行特定行为
+func (s *ChupaiwenxunState) doAction(flow interfaces.MajongFlow, action majongpb.Action, playerIDs []uint64) (newState majongpb.StateID, err error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":      "ChupaiwenxunState.doAction",
+		"action":         action,
+		"action_players": playerIDs,
+	})
+	newState, err = majongpb.StateID_state_chupaiwenxun, nil
+
+	type actionFunc func(interfaces.MajongFlow, []uint64) (newState majongpb.StateID, err error)
+
+	f, ok := map[majongpb.Action]actionFunc{
+		majongpb.Action_action_peng:     s.doPeng,
+		majongpb.Action_action_minggang: s.doGang,
+		majongpb.Action_action_dianpao:  s.doHu,
+		majongpb.Action_action_qi:       s.doQi,
+	}[action]
+
+	if !ok {
+		err = errors.New("不支持的 action")
+		logEntry.Errorln(err)
+		return
+	}
+	return f(flow, playerIDs)
+}
+
+// removePlayerCards 从玩家的手牌中移除指定数量的某张牌
+// TODO : 改成用工具函数
+func (s *ChupaiwenxunState) removePlayerCards(card *majongpb.Card, count int, player *majongpb.Player) bool {
+	newCards := []*majongpb.Card{}
+	removeCount := 0
+	curCards := player.GetHandCards()
+	for index, c := range curCards {
+		if c.GetColor() == card.GetColor() && c.GetPoint() == card.GetPoint() {
+			removeCount++
+			if removeCount == count {
+				newCards = append(newCards, curCards[index+1:]...)
+			}
+		} else {
+			newCards = append(newCards, c)
+		}
+	}
+	if removeCount != count {
+		return false
+	}
+	player.HandCards = newCards
+	return true
+}
+
+// addPengCard 添加碰的牌
+func (s *ChupaiwenxunState) addPengCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
+	player.PengCards = append(player.GetPengCards(), &majongpb.PengCard{
+		Card:      card,
+		SrcPlayer: srcPlayerID,
+	})
+}
+
+// doPeng 执行碰操作
+func (s *ChupaiwenxunState) doPeng(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_peng, nil
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "ChupaiwenxunState.doPeng",
+	})
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	if len(playerIDs) != 1 {
+		err := errors.New("执行碰的玩家数不为 1")
+		logEntry.Errorln(err)
+		return majongpb.StateID_state_chupaiwenxun, err
+	}
+	playerID := playerIDs[0]
+	player := s.getMajongPlayer(playerID, mjContext)
+
+	card := mjContext.GetLastOutCard()
+	if !s.removePlayerCards(card, 2, player) {
+		err := errors.New("玩家没有 2 张对应的牌")
+		logEntry.Errorln(err)
+		return majongpb.StateID_state_chupaiwenxun, err
+	}
+	s.addPengCard(card, player, mjContext.GetActivePlayer())
+	mjContext.LastPengPlayer = player.GetPalyerId()
+	return
+}
+
+// addGangCard 添加碰的牌
+func (s *ChupaiwenxunState) addGangCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
+	player.GangCards = append(player.GetGangCards(), &majongpb.GangCard{
+		Card:      card,
+		Type:      majongpb.GangType_gang_minggang,
+		SrcPlayer: srcPlayerID,
+	})
+}
+
+// doGang 执行杠操作
+func (s *ChupaiwenxunState) doGang(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_gang, nil
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "ChupaiwenxunState.doGang",
+	})
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	if len(playerIDs) != 1 {
+		err := errors.New("执行杠的玩家数不为 1")
+		logEntry.Errorln(err)
+		return majongpb.StateID_state_chupaiwenxun, err
+	}
+	playerID := playerIDs[0]
+	player := s.getMajongPlayer(playerID, mjContext)
+
+	card := mjContext.GetLastOutCard()
+	if !s.removePlayerCards(card, 3, player) {
+		err := errors.New("玩家没有 3 张对应的牌")
+		logEntry.Errorln(err)
+		return majongpb.StateID_state_chupaiwenxun, err
+	}
+	s.addGangCard(card, player, mjContext.GetLastChupaiPlayer())
+	mjContext.LastGangPlayer = player.GetPalyerId()
+	return
+}
+
+// addHuCard 添加胡的牌
+func (s *ChupaiwenxunState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
+	player.HuCards = append(player.GetHuCards(), &majongpb.HuCard{
+		Card:      card,
+		Type:      majongpb.HuType_hu_dianpao, // TODO: 还需要考虑杠后炮
+		SrcPlayer: srcPlayerID,
+	})
+}
+
+// doHu 执行胡牌操作
+func (s *ChupaiwenxunState) doHu(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_hu, nil
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":  "ChupaiwenxunState.doHu",
+		"hu_players": playerIDs,
+	})
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	for _, playerID := range playerIDs {
+		player := s.getMajongPlayer(playerID, mjContext)
+		card := mjContext.GetLastOutCard()
+		s.addHuCard(card, player, playerID)
+	}
+	mjContext.LastHuPlayers = playerIDs
+	return
+}
+
+// doQi 执行弃操作。 切换到下家摸牌状态
+func (s *ChupaiwenxunState) doQi(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_mopai, nil
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":  "ChupaiwenxunState.doHu",
+		"hu_players": playerIDs,
+	})
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+	lastOutCardPlayer := mjContext.GetLastChupaiPlayer()
+
+	players := mjContext.GetPlayers()
+	for index, player := range players {
+		if player.GetPalyerId() == lastOutCardPlayer {
+			mopaiIndex := (index + 1) % (len(players))
+			mjContext.MopaiPlayer = players[mopaiIndex].GetPalyerId()
+			return
+		}
+	}
+	err = errors.New("出牌玩家不存在")
+	logEntry.Errorln(err)
+	return
+}

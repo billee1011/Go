@@ -111,13 +111,19 @@ message MajongContext {
     int32 game_id = 1;              // 游戏 ID 
     StateID cur_state = 2;          // 当前状态
     repeated Player players = 3;    // 玩家列表
-    uint64 active_player = 4;       // 当前轮次的玩家 ID
+    uint64 active_player = 4;       // 当前轮次的玩家 ID (可能要废弃，含义不明确)
     repeated Card wall_cards = 5;   // 墙牌
     repeated SettleInfo settle_infos = 6;   // 结算信息表
     repeated uint64 revert_settles = 7; // 退税结算 ids
     Card last_out_card = 8;   // 最后一次出的牌
     uint32 zhuangjia_index = 9; // 庄家索引
     bool fix_zhuangjia_index = 10;  // 是否固定庄家位置
+    repeated uint64 last_hu_players = 11; // 最近一次执行胡操作的玩家列表
+    uint64 last_peng_player = 12; // 最近一次执行碰操作的玩家
+    uint64 last_gang_player = 13;   // 最近一次执行杠操作的玩家
+    uint64 last_chupai_player = 14; // 最近一次出牌的玩家
+    uint64 mopai_player = 15;  // 需要摸牌的玩家，进入摸牌状态前设置
+
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
 }
