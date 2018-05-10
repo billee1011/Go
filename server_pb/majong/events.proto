@@ -84,3 +84,23 @@ message ChupaiRequestEvent{
      Card cards = 2;    // 出的牌
 }
 
+
+// PengRequestEvent 碰请求事件
+message PengRequestEvent {
+    RequestEventHead head = 1;  // 请求头
+}
+
+// GangRequestEvent 明杠请求事件
+message GangRequestEvent {
+    RequestEventHead head = 1;  // 请求头
+}
+
+// HuRequestEvent 胡请求事件
+message HuRequestEvent {
+    RequestEventHead head = 1;  // 请求头    
+}
+
+// QiRequestEvent 弃请求事件
+message QiRequestEvent {
+    RequestEventHead head = 1; // 请求头
+}

@@ -95,12 +95,12 @@ func (s *ZiXunState) angang(flow interfaces.MajongFlow, message *majongpb.Angang
 			playerIDs = append(playerIDs, player.GetPalyerId())
 		}
 		angangCard, _ := utils.CardToRoomCard(card)
-		angang := &room.RoomAngangNtf{
-			Player: proto.Uint64(activePlayer.PalyerId),
-			Card:   angangCard,
+		angang := &room.RoomGangNtf{
+			ToPlayerId: proto.Uint64(activePlayer.PalyerId),
+			Card:       angangCard,
 		}
 		toClient := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_room_angang_ntf),
+			MsgID: int(msgid.MsgID_ROOM_GANG_NTF),
 			Msg:   angang,
 		}
 		flow.PushMessages(playerIDs, toClient)
@@ -134,7 +134,7 @@ func (s *ZiXunState) bugang(flow interfaces.MajongFlow, message *majongpb.Bugang
 					Card: qianggangCard,
 				}
 				toClientMessage := interfaces.ToClientMessage{
-					MsgID: int(msgid.MsgID_room_wait_qiangganghu_ntf),
+					MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
 					Msg:   angang,
 				}
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qiangganghu)
@@ -166,12 +166,12 @@ func (s *ZiXunState) bugang(flow interfaces.MajongFlow, message *majongpb.Bugang
 			playerIDs = append(playerIDs, player.GetPalyerId())
 		}
 		bugangCard, _ := utils.CardToRoomCard(card)
-		bugang := &room.RoomBugangNtf{
-			Player: proto.Uint64(activePlayer.PalyerId),
-			Card:   bugangCard,
+		bugang := &room.RoomGangNtf{
+			ToPlayerId: proto.Uint64(activePlayer.PalyerId),
+			Card:       bugangCard,
 		}
 		toClient := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_room_bugang_ntf),
+			MsgID: int(msgid.MsgID_ROOM_GANG_NTF),
 			Msg:   bugang,
 		}
 		flow.PushMessages(playerIDs, toClient)
@@ -205,12 +205,12 @@ func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.ZimoRequ
 		for _, player := range flow.GetMajongContext().GetPlayers() {
 			playersID = append(playersID, player.PalyerId)
 		}
-		ntf := &room.RoomZimoNtf{
-			Player: proto.Uint64(activePlayer.PalyerId),
-			Card:   toclientCard,
+		ntf := &room.RoomHuNtf{
+			Players: []uint64{activePlayer.PalyerId},
+			Card:    toclientCard,
 		}
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_room_zimo_ntf),
+			MsgID: int(msgid.MsgID_ROOM_HU_NTF),
 			Msg:   ntf,
 		}
 		flow.PushMessages(playersID, toClientMessage)
@@ -247,7 +247,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		}
 		cardToClient, _ := utils.CardToRoomCard(card)
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_room_chupai_ntf),
+			MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
 			Msg: &room.RoomChupaiNtf{
 				Player: proto.Uint64(activePlayer.GetPalyerId()),
 				Card:   cardToClient,

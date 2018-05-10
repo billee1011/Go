@@ -9,7 +9,7 @@ import (
 )
 
 func translateBugangReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomBugangReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+	req room.RoomGangReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 

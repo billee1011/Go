@@ -8,15 +8,16 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func translateZimoReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomHuReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+func translateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.RoomChupaiReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
+
 	card := translateCard(*req.GetCard())
-	eventContext = &server_pb.ZimoRequestEvent{
+	eventContext = &server_pb.ChupaiRequestEvent{
 		Head:  &eventHeader,
 		Cards: &card,
 	}
-	eventID = server_pb.EventID_event_zimo_request
+	eventID = server_pb.EventID_event_chupai_request
 	return
 }

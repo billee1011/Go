@@ -64,7 +64,7 @@ func HandleLogin(clientID uint64, header *steve_proto_gaterpc.Header, req room.R
 	playerMgr.AddPlayer(p)
 	return []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_room_login_rsp),
+			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_RSP),
 			Body: &room.RoomLoginRsp{
 				PlayerId: proto.Uint64(p.GetID()),
 				Coin:     proto.Uint64(p.GetCoin()),
