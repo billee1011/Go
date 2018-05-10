@@ -1,6 +1,9 @@
 package utils
 
-import majongpb "steve/server_pb/majong"
+import (
+	"errors"
+	majongpb "steve/server_pb/majong"
+)
 
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家
 func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
@@ -20,4 +23,14 @@ func ExistPossibleAction(player *majongpb.Player, action majongpb.Action) bool {
 		}
 	}
 	return false
+}
+
+// GetPlayerIndex 获取玩家索引
+func GetPlayerIndex(playerID uint64, players []*majongpb.Player) (int, error) {
+	for index, player := range players {
+		if player.GetPalyerId() == playerID {
+			return index, nil
+		}
+	}
+	return 0, errors.New("not exists")
 }

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/gogo/protobuf/proto"
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
 
