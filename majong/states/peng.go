@@ -69,6 +69,8 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	outCardPlayer.OutCards = append(outCardPlayer.OutCards, outCard)
 	// 修改麻将牌局现场最后出的牌
 	mjContext.LastOutCard = outCard
+	// 设置最后出牌玩家ID
+	mjContext.LastChupaiPlayer = outCardPlayer.PalyerId
 	// 清空玩家可能动作
 	outCardPlayer.PossibleActions = outCardPlayer.PossibleActions[:0]
 

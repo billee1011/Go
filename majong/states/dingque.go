@@ -8,9 +8,10 @@ import (
 
 	"steve/client_pb/room"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/Sirupsen/logrus"
 	"steve/client_pb/msgId"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 //DingqueState 定缺状态 @Author:wuhongwei
@@ -66,33 +67,36 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	// 定缺所有玩家ID
 	playerAllID := []uint64{}
 	// 所有定缺玩家通知
-	playerDqColors := make([]*room.RoomDingqueFinishNtf_PlayerDingqueColor,0)
-	// 遍历其他玩家是否都已经定缺,并设置广播通知定缺完成
+	playerDqColors := make([]*room.RoomDingqueFinishNtf_PlayerDingqueColor, 0)
+	// 遍历所有玩家是否都已经定缺,并设置广播通知定缺完成
 	for i := 0; i < len(players); i++ {
-		if dqPlayer.PalyerId != players[i].PalyerId && !players[i].HasDingque {
+		if !players[i].HasDingque {
 			return false, nil
-		}  
-			playerAllID = append(playerAllID,players[i].PalyerId)
-			playerDQ := &room.RoomDingqueFinishNtf_PlayerDingqueColor{
-				PlayerId: &players[i].PalyerId,
-				Color:    room.CardColor(players[i].DingqueColor).Enum(),
-			}
-			playerDqColors = append(playerDqColors, playerDQ)	
+		}
+		// 所有玩家ID
+		playerAllID = append(playerAllID, players[i].PalyerId)
+		// 房间定缺完成通知的玩家定缺消息
+		playerNtfDQ := &room.RoomDingqueFinishNtf_PlayerDingqueColor{
+			PlayerId: &players[i].PalyerId,
+			Color:    room.CardColor(players[i].DingqueColor).Enum(),
+		}
+		playerDqColors = append(playerDqColors, playerNtfDQ)
 	}
 	// 定缺完成通知
 	dqNtf := &room.RoomDingqueFinishNtf{
 		PlayerDingqueColor: playerDqColors,
 	}
+	// 房间消息转客户端消息
 	toClient := interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_room_dingque_finish_ntf),
 		Msg:   dqNtf,
 	}
 	// 推送消息
-	// flow.PushMessages(playerAllID, toClient)
+	flow.PushMessages(playerAllID, toClient)
 	// 日志
 	logrus.WithFields(logrus.Fields{
 		"playerAllID": playerAllID,
-		"toClient":toClient,
+		"toClient":    toClient,
 	}).Info("定缺成功")
 	return true, nil
 }

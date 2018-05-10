@@ -45,22 +45,21 @@ var card3util = []utils.Card{31, 31, 32, 32, 33, 33, 34, 34, 35, 35, 36, 37, 38}
 
 // 初始化玩家,默认玩家0是花猪，玩家1是未听玩家，玩家2是听玩家，玩家3是胡玩家
 func init() {
-	prop := map[string][]byte{utils.IsOutNoDingQueColorCard: []byte{1}}
 
-	player0.Properties = prop
 	player0.HandCards, _ = utils.CheckHuUtilCardsToHandCards(card0util)
+	player0.OutCards = []*majongpb.Card{&Card1T}
 	player0.DingqueColor = majongpb.CardColor_ColorWan
 
-	player1.Properties = prop
 	player1.HandCards, _ = utils.CheckHuUtilCardsToHandCards(card1util)
+	player1.OutCards = []*majongpb.Card{&Card2T}
 	player1.DingqueColor = majongpb.CardColor_ColorTong
 
-	player2.Properties = prop
 	player2.HandCards, _ = utils.CheckHuUtilCardsToHandCards(card2util)
+	player2.OutCards = []*majongpb.Card{&Card1W}
 	player2.DingqueColor = majongpb.CardColor_ColorTiao
 
-	player3.Properties = prop
 	player3.HandCards, _ = utils.CheckHuUtilCardsToHandCards(card3util)
+	player3.OutCards = []*majongpb.Card{&Card1B}
 	player3.DingqueColor = majongpb.CardColor_ColorWan
 
 	players = append(players, player0, player1, player2, player3)
@@ -104,6 +103,244 @@ func TestCheckYellSettleA(t *testing.T) {
 	fmt.Println(settleInfos)
 }
 
+// 明杠后炮呼叫转移，1人胡
 func TestCallDivertSettle(t *testing.T) {
-	// CallDivertSettle
+	player0.GangCards = append(player0.GangCards, mingGang1w)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 明杠转移2分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -2,
+		player3.PalyerId: 2,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 明杠后炮呼叫转移，2人胡,胡家不包含明杠
+func TestCallDivertSettleB(t *testing.T) {
+	mingGang1w.SrcPlayer = uint64(1)
+	player0.GangCards = append(player0.GangCards, mingGang1w)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 明杠转移2分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -2,
+		player3.PalyerId: 1,
+		player2.PalyerId: 1,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 明杠后炮呼叫转移，2人胡,胡家包含明杠
+func TestCallDivertSettleC(t *testing.T) {
+	mingGang1w.SrcPlayer = uint64(2)
+	player0.GangCards = append(player0.GangCards, mingGang1w)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 明杠转移2分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -2,
+		player2.PalyerId: 2,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 明杠后炮呼叫转移，3人胡,胡家包含明杠
+func TestCallDivertSettleD(t *testing.T) {
+	mingGang1w.SrcPlayer = uint64(2)
+	player0.GangCards = append(player0.GangCards, mingGang1w)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2, player1}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 明杠转移2分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -2,
+		player2.PalyerId: 2,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 补杠后炮呼叫转移，1人胡
+func TestCallDivertSettleE(t *testing.T) {
+	player0.GangCards = append(player0.GangCards, buGang1b)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -3,
+		player3.PalyerId: 3,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 补杠后炮呼叫转移，2人胡,不够分，第一个胡家，多赢一分
+func TestCallDivertSettleF(t *testing.T) {
+	player0.GangCards = append(player0.GangCards, buGang1b)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -3,
+		player2.PalyerId: 2,
+		player3.PalyerId: 1,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 补杠后炮呼叫转移，2人胡,不够分，第一个胡家，多赢一分
+func TestCallDivertSettleK(t *testing.T) {
+	player3.GangCards = append(player3.GangCards, buGang1b)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player1, player2}, player3)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player3.PalyerId: -3,
+		player1.PalyerId: 2,
+		player2.PalyerId: 1,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(3))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 补杠后炮呼叫转移，3人胡
+func TestCallDivertSettleG(t *testing.T) {
+	player0.GangCards = append(player0.GangCards, buGang1b)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2, player1}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -3,
+		player2.PalyerId: 1,
+		player3.PalyerId: 1,
+		player1.PalyerId: 1,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 暗杠后炮呼叫转移，1人胡
+func TestCallDivertSettleH(t *testing.T) {
+	player0.GangCards = append(player0.GangCards, anGang1t)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -6,
+		player3.PalyerId: 6,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 暗杠后炮呼叫转移，2人胡
+func TestCallDivertSettleI(t *testing.T) {
+	player0.GangCards = append(player0.GangCards, anGang1t)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -6,
+		player3.PalyerId: 3,
+		player2.PalyerId: 3,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
+}
+
+// 暗杠后炮呼叫转移，3人胡
+func TestCallDivertSettleJ(t *testing.T) {
+	player0.GangCards = append(player0.GangCards, anGang1t)
+	// player3为胡家，player0输家-明杠
+	settleInfos, err := CallDivertSettle(majongpb.HuType_hu_ganghoupao, players, []*majongpb.Player{player3, player2, player1}, player0)
+	assert.Nil(t, err)
+	assert.Equal(t, len(settleInfos), 1)
+	// 补杠转移3分
+	scoreMap := map[uint64]int64{
+		player0.PalyerId: -6,
+		player3.PalyerId: 2,
+		player2.PalyerId: 2,
+		player1.PalyerId: 2,
+	}
+	for k := range settleInfos {
+		assert.Equal(t, settleInfos[k].Id, uint64(0))
+		for ID, score := range settleInfos[k].Scores {
+			assert.Equal(t, score, scoreMap[ID])
+		}
+	}
+	fmt.Println(settleInfos)
 }
