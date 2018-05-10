@@ -42,7 +42,7 @@ func TestZixunState_angang(t *testing.T) {
 				&majongpb.Player{
 					PalyerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
-					PossibleActions: []majongpb.Action{majongpb.Action_action_angang, majongpb.Action_action_zimo},
+					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 				},
 			},
 			ActivePlayer: 1,
@@ -86,7 +86,7 @@ func TestZixunState_zimo(t *testing.T) {
 				&majongpb.Player{
 					PalyerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
-					PossibleActions: []majongpb.Action{majongpb.Action_action_angang, majongpb.Action_action_zimo},
+					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
 				},
 			},
@@ -145,7 +145,7 @@ func TestZixunState_bugang(t *testing.T) {
 				&majongpb.Player{
 					PalyerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
-					PossibleActions: []majongpb.Action{majongpb.Action_action_bugang, majongpb.Action_action_zimo},
+					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
 					PengCards: []*majongpb.PengCard{
 						&majongpb.PengCard{
@@ -209,7 +209,7 @@ func TestZixunState_chupai(t *testing.T) {
 				&majongpb.Player{
 					PalyerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
-					PossibleActions: []majongpb.Action{majongpb.Action_action_bugang, majongpb.Action_action_zimo},
+					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
 					PengCards: []*majongpb.PengCard{
 						&majongpb.PengCard{
