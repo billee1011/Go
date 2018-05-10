@@ -67,7 +67,7 @@ func (s *MoPaiState) checkZiMo(context *majongpb.MajongContext) bool {
 	}
 	flag := utils.CheckHu(handCard, 0)
 	// if flag {
-	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_zimo)
+	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_hu)
 	// }
 	return flag
 }
@@ -115,7 +115,7 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room
 		}
 	}
 	// if len(enableAngangCards) > 0 {
-	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_angang)
+	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_gang)
 	// }
 	return len(enableAngangCards) > 0, enableAngangCards
 }
@@ -158,7 +158,7 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room
 		}
 	}
 	// if len(enableBugangCards) > 0 {
-	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_bugang)
+	// 	activePlayer.PossibleActions = append(activePlayer.PossibleActions, majongpb.Action_action_gang)
 	// }
 	return len(enableBugangCards) > 0, enableBugangCards
 }

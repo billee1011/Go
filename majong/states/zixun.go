@@ -152,7 +152,7 @@ func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequ
 // 					MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
 // 					Msg:   angang,
 // 				}
-// 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qiangganghu)
+// 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 // 				flow.PushMessages(playersID, toClientMessage)
 // 			}
 // 		}

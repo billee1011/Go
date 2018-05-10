@@ -61,7 +61,7 @@ func (s *WaitQiangganghuState) onHuRequest(eventContext []byte, flow interfaces.
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 
 	player := utils.GetMajongPlayer(playerID, mjContext)
-	if !utils.ExistPossibleAction(player, majongpb.Action_action_dianpao) {
+	if !utils.ExistPossibleAction(player, majongpb.Action_action_hu) {
 		logEntry.Infoln("该玩家不能抢杠胡")
 		return
 	}
@@ -69,7 +69,7 @@ func (s *WaitQiangganghuState) onHuRequest(eventContext []byte, flow interfaces.
 		logEntry.Infoln("该玩家已经做出过选择了")
 		return
 	}
-	player.HasSelected, player.SelectedAction = true, majongpb.Action_action_dianpao
+	player.HasSelected, player.SelectedAction = true, majongpb.Action_action_hu
 	return s.makeDecision(flow)
 }
 
@@ -93,7 +93,7 @@ func (s *WaitQiangganghuState) onQiRequest(eventContext []byte, flow interfaces.
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 
 	player := utils.GetMajongPlayer(playerID, mjContext)
-	if !utils.ExistPossibleAction(player, majongpb.Action_action_dianpao) {
+	if !utils.ExistPossibleAction(player, majongpb.Action_action_hu) {
 		logEntry.Infoln("该玩家不能抢杠胡")
 		return
 	}
@@ -119,7 +119,7 @@ func (s *WaitQiangganghuState) makeDecision(flow interfaces.MajongFlow) (newStat
 		if !player.GetHasSelected() {
 			return majongpb.StateID_state_waitqiangganghu, nil
 		}
-		if player.SelectedAction == majongpb.Action_action_dianpao {
+		if player.SelectedAction == majongpb.Action_action_hu {
 			huPlayers = append(huPlayers, player.GetPalyerId())
 		}
 	}
