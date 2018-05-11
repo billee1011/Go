@@ -172,7 +172,7 @@ func CallDivertSettle(huType majongpb.HuType, palyerAll, winPalyers []*majongpb.
 		winSum := len(winPalyers)
 		//输家所得的总杠分
 		total := di * score
-		// 不是明杠类型，要乘上所有玩家数量
+		// 不是明杠类型，要乘上所有玩家数量-1
 		if gang.Type != majongpb.GangType_gang_minggang {
 			total = total * int64(len(palyerAll)-1)
 		}
