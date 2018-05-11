@@ -1,7 +1,6 @@
 package states
 
 import (
-	"fmt"
 	"steve/majong/interfaces"
 	"testing"
 
@@ -37,15 +36,17 @@ func Test_MopaiState_mopai(t *testing.T) {
 	context := flow.GetMajongContext()
 	players := context.GetPlayers()
 	player := players[0]
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("查询前:")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("查询前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("查询前:")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 	state, err := s.ProcessEvent(majongpb.EventID_event_mopai_finish, nil, flow)
-	afterResults := ""
-	afterResults += fmt.Sprintln("查询后:")
-	afterResults += FmtPlayerInfo(player)
-	logrus.Info(afterResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("查询后")
+	// afterResults := ""
+	// afterResults += fmt.Sprintln("查询后:")
+	// afterResults += FmtPlayerInfo(player)
+	// logrus.Info(afterResults)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_zixun, state, "查询成功后有特殊操作，应该进入自询状态")
 }
@@ -79,15 +80,17 @@ func Test_MopaiState_mopai1(t *testing.T) {
 	context := flow.GetMajongContext()
 	players := context.GetPlayers()
 	player := players[0]
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("查询前:")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("查询前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("查询前:")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 	state, err := s.ProcessEvent(majongpb.EventID_event_mopai_finish, nil, flow)
-	afterResults := ""
-	afterResults += fmt.Sprintln("查询后:")
-	afterResults += FmtPlayerInfo(player)
-	logrus.Info(afterResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("查询后")
+	// afterResults := ""
+	// afterResults += fmt.Sprintln("查询后:")
+	// afterResults += FmtPlayerInfo(player)
+	// logrus.Info(afterResults)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_zixun, state, "查询成功后有特殊操作，应该进入自询状态")
 }

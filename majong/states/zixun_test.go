@@ -1,7 +1,6 @@
 package states
 
 import (
-	"fmt"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -63,18 +62,20 @@ func TestZixunState_angang(t *testing.T) {
 	assert.Nil(t, err)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetMopaiPlayer())
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("before暗杠：")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("暗杠前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("before暗杠：")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 	// stateID, err := s.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent, flow)
 	flow.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent)
 	// assert.Nil(t, err)
 	// assert.Equal(t, majongpb.StateID_state_angang, stateID, "执行暗杠操作成功后，状态应该为暗杠状态")
-	results := ""
-	results += fmt.Sprintln("after暗杠：")
-	results += FmtPlayerInfo(player)
-	logrus.Info(results)
+	// results := ""
+	// results += fmt.Sprintln("after暗杠：")
+	// results += FmtPlayerInfo(player)
+	// logrus.Info(results)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("暗杠后")
 }
 
 func TestZixunState_zimo(t *testing.T) {
@@ -107,18 +108,20 @@ func TestZixunState_zimo(t *testing.T) {
 	requestEvent, err := proto.Marshal(huRequestEvent)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("before自摸：")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("自摸前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("before自摸：")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 
 	stateID, err := s.ProcessEvent(majongpb.EventID_event_hu_request, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_zimo, stateID, "执行自摸操作成功后，状态应该为自摸状态")
-	results := ""
-	results += fmt.Sprintln("after自摸：")
-	results += FmtPlayerInfo(player)
-	logrus.Info(results)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("自摸后")
+	// results := ""
+	// results += fmt.Sprintln("after自摸：")
+	// results += FmtPlayerInfo(player)
+	// logrus.Info(results)
 }
 
 func TestZixunState_bugang(t *testing.T) {
@@ -172,17 +175,19 @@ func TestZixunState_bugang(t *testing.T) {
 	requestEvent, err := proto.Marshal(gangRequestEvent)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("before补杠：")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("补杠前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("before补杠：")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 	stateID, err := s.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_bugang, stateID, "执行补杠操作成功后，状态应该为补杠状态")
-	results := ""
-	results += fmt.Sprintln("after补杠：")
-	results += FmtPlayerInfo(player)
-	logrus.Info(results)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("补杠后")
+	// results := ""
+	// results += fmt.Sprintln("after补杠：")
+	// results += FmtPlayerInfo(player)
+	// logrus.Info(results)
 }
 
 func TestZixunState_chupai(t *testing.T) {
@@ -236,16 +241,18 @@ func TestZixunState_chupai(t *testing.T) {
 	requestEvent, err := proto.Marshal(bugangRequestEvent)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetActivePlayer())
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("before出牌：")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("出牌前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("before出牌：")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 	// stateID, err := s.bugang(flow, bugangRequestEvent)
 	stateID, err := s.ProcessEvent(majongpb.EventID_event_chupai_request, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_chupai, stateID, "执行出牌操作成功后，状态应该为出牌状态")
-	results := ""
-	results += fmt.Sprintln("after出牌：")
-	results += FmtPlayerInfo(player)
-	logrus.Info(results)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("出牌后")
+	// results := ""
+	// results += fmt.Sprintln("after出牌：")
+	// results += FmtPlayerInfo(player)
+	// logrus.Info(results)
 }

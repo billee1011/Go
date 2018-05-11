@@ -1,7 +1,6 @@
 package states
 
 import (
-	"fmt"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	"testing"
@@ -64,11 +63,6 @@ func Test_ZimoState_zimo(t *testing.T) {
 	).AnyTimes()
 
 	s := ZimoState{}
-	// huRequestEvent := &majongpb.HuRequestEvent{
-	// 	Head: &majongpb.RequestEventHead{
-	// 		PlayerId: 1,
-	// 	},
-	// }
 	autoEvent := majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_zimo_finish,
 		EventContext: nil,
@@ -76,16 +70,18 @@ func Test_ZimoState_zimo(t *testing.T) {
 	requestEvent, err := proto.Marshal(&autoEvent)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetMopaiPlayer())
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("before自摸：")
-	beforeResults += FmtPlayerInfo(player)
-	logrus.Info(beforeResults)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("自摸前")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("before自摸：")
+	// beforeResults += FmtPlayerInfo(player)
+	// logrus.Info(beforeResults)
 
 	stateID, err := s.ProcessEvent(majongpb.EventID_event_zimo_finish, requestEvent, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_mopai, stateID, "执行自摸操作成功后，状态应该为自摸状态")
-	results := ""
-	results += fmt.Sprintln("after自摸：")
-	results += FmtPlayerInfo(player)
-	logrus.Info(results)
+	logrus.WithFields(FmtPlayerInfo(player)).Info("自摸后")
+	// results := ""
+	// results += fmt.Sprintln("after自摸：")
+	// results += FmtPlayerInfo(player)
+	// logrus.Info(results)
 }

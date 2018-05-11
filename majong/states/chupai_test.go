@@ -1,7 +1,6 @@
 package states
 
 import (
-	"fmt"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 	"testing"
@@ -50,20 +49,22 @@ func TestChupaiState_chupaiwenxun(t *testing.T) {
 	context := flow.GetMajongContext()
 	players := context.GetPlayers()
 	for _, player := range players {
-		beforeResults := ""
-		beforeResults += fmt.Sprintln("出牌查询前:")
-		beforeResults += FmtPlayerInfo(player)
-		logrus.Info(beforeResults)
+		logrus.WithFields(FmtPlayerInfo(player)).Info("出牌查询前")
+		// beforeResults := ""
+		// beforeResults += fmt.Sprintln("出牌查询前:")
+		// beforeResults += FmtPlayerInfo(player)
+		// logrus.Info(beforeResults)
 
 	}
 	state, err := s.ProcessEvent(majongpb.EventID_event_chupai_finish, nil, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_chupaiwenxun, state, "查询成功后有特殊操作，应该进入出牌问询状态")
 	for _, player := range players {
-		afterResults := ""
-		afterResults += fmt.Sprintln("出牌查询后:")
-		afterResults += FmtPlayerInfo(player)
-		logrus.Info(afterResults)
+		logrus.WithFields(FmtPlayerInfo(player)).Info("出牌查询后")
+		// afterResults := ""
+		// afterResults += fmt.Sprintln("出牌查询后:")
+		// afterResults += FmtPlayerInfo(player)
+		// logrus.Info(afterResults)
 	}
 }
 
@@ -106,19 +107,21 @@ func TestChupaiState_mopai(t *testing.T) {
 	context := flow.GetMajongContext()
 	players := context.GetPlayers()
 	for _, player := range players {
-		beforeResults := ""
-		beforeResults += fmt.Sprintln("出牌查询前:")
-		beforeResults += FmtPlayerInfo(player)
-		logrus.Info(beforeResults)
+		logrus.WithFields(FmtPlayerInfo(player)).Info("出牌查询前")
+		// beforeResults := ""
+		// beforeResults += fmt.Sprintln("出牌查询前:")
+		// beforeResults += FmtPlayerInfo(player)
+		// logrus.Info(beforeResults)
 
 	}
 	state, err := s.ProcessEvent(majongpb.EventID_event_chupai_finish, nil, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_mopai, state, "查询成功后无特殊操作，应该进入摸牌状态")
 	for _, player := range players {
-		afterResults := ""
-		afterResults += fmt.Sprintln("出牌查询后:")
-		afterResults += FmtPlayerInfo(player)
-		logrus.Info(afterResults)
+		logrus.WithFields(FmtPlayerInfo(player)).Info("出牌查询后")
+		// afterResults := ""
+		// afterResults += fmt.Sprintln("出牌查询后:")
+		// afterResults += FmtPlayerInfo(player)
+		// logrus.Info(afterResults)
 	}
 }

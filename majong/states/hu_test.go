@@ -1,7 +1,6 @@
 package states
 
 import (
-	"fmt"
 	"steve/majong/interfaces"
 	"testing"
 
@@ -49,19 +48,21 @@ func Test_HuState_hu(t *testing.T) {
 
 	s := HuState{}
 	context := flow.GetMajongContext()
-	beforeResults := ""
-	beforeResults += fmt.Sprintln("点炮胡状态：")
+	// beforeResults := ""
+	// beforeResults += fmt.Sprintln("点炮胡状态：")
 	for _, player := range context.Players {
-		beforeResults += FmtPlayerInfo(player)
+		logrus.WithFields(FmtPlayerInfo(player)).Info("点炮胡状态")
+		// beforeResults += FmtPlayerInfo(player)
 	}
-	logrus.Info(beforeResults)
+	// logrus.Info(beforeResults)
 	states, err := s.ProcessEvent(majongpb.EventID_event_hu_finish, nil, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_mopai, states, "点炮胡状态自动跳转到摸牌状态")
-	afterResults := ""
-	afterResults += fmt.Sprintln("摸牌状态：")
+	// afterResults := ""
+	// afterResults += fmt.Sprintln("摸牌状态：")
 	for _, player := range context.Players {
-		afterResults += FmtPlayerInfo(player)
+		logrus.WithFields(FmtPlayerInfo(player)).Info("摸牌状态")
+		// afterResults += FmtPlayerInfo(player)
 	}
-	logrus.Info(afterResults)
+	// logrus.Info(afterResults)
 }
