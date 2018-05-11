@@ -43,16 +43,29 @@ message PengCard {
 enum HuType { 
     hu_zimo = 0;        // 自摸
     hu_dianpao = 1;     // 点炮
-    hu_qiangganghu = 2; // 抢杠胡
-    hu_gangkai = 3;     // 杠开
-    hu_ganghoupao = 4;  // 杠后炮 
+}
+
+// 牌组类型
+enum CardType{
+    PingHu  = 0;            //平胡
+    QingYiSe  = 1;          //清一色
+    QiDui  = 2;             //七对
+    QingQiDui  = 3;         //清七对
+    LongQiDui  = 4;         //龙七对
+    QingLongQiDui  = 5;     //清龙七对   
+    PengPengHu  = 6;        //碰碰胡
+    QingPeng  = 7;          //清碰
+    JingGouDiao  = 8;       //金钩钓
+    QingJingGouDiao  = 9;   //清金钩钓
+    ShiBaLuoHan   = 10;     //十八罗汉
+    QingShiBaLuoHan  = 11;  //清十八罗汉
 }
 
 // 胡牌数据
 message HuCard {
     Card card = 1; // 胡的牌
     uint64 src_player = 2;  // 胡牌来源玩家
-    HuType type = 3;    // 胡牌类型
+    HuType type = 3;    // 胡牌类型 
 }
 
 // 吃牌数据
@@ -91,22 +104,22 @@ message AutoEvent {
 
 // SettleType 结算类型
 enum SettleType {
-    settle_angang = 0;  // 暗杠
-    settle_bugang = 1;  // 补杠
-    settle_mingang = 2; // 明杠
-    settle_dianpao = 3; // 点炮
-    settle_zimo = 4;    // 自摸
-    settle_qiangganghu = 5; // 抢杠胡
+    settle_gang = 0;          // 杠
+    settle_dianpao = 1;       // 点炮
+    settle_zimo = 2;          // 自摸
+    settle_qiangganghu = 3;   // 抢杠胡
+    settle_flowerpig = 4;     // 查花猪
+    settle_yell = 5;          // 查大叫
+    settle_calldiver = 6;     // 呼叫转移
 }
 
 // SettleInfo 结算信息
 message SettleInfo {
-    uint64 id = 1; // 结算 id 
-    uint64 palyer_id = 2;          // 玩家 ID 
-    map<uint64, int64> scores = 3; // 玩家结算分数
-    SettleType settle_type = 4;    // 结算类型
-    string fan_type = 5;           // 牌组番型
-    int32 times = 6;               // 倍数
+    uint64 id = 1;                     // 结算 id 
+    map<uint64, int64> scores = 2;     // 玩家结算分数
+    SettleType settle_type = 3;        // 结算类型
+    repeated CardType card_type = 4;   // 牌组类型(胡牌时)
+    int32 card_value = 5;                // 牌组倍数
 }
 
 // MajongContext 麻将现场
@@ -117,10 +130,11 @@ message MajongContext {
     uint64 active_player = 4;       // 当前轮次的玩家 ID
     repeated Card wall_cards = 5;   // 墙牌
     repeated SettleInfo settle_infos = 6;   // 结算信息表
-    repeated uint64 revert_settles = 7; // 退税结算 ids
-    Card last_out_card = 8;   // 最后一次出的牌
-    uint32 zhuangjia_index = 9; // 庄家索引
-    bool fix_zhuangjia_index = 10;  // 是否固定庄家位置
+    int32 max_settleId = 7;                // 结算信息id
+    repeated uint64 revert_settles = 8; // 退税结算 ids
+    Card last_out_card = 9;   // 最后一次出的牌
+    uint32 zhuangjia_index = 10; // 庄家索引
+    bool fix_zhuangjia_index = 11;  // 是否固定庄家位置
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
 }

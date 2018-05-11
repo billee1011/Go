@@ -1,111 +1,131 @@
 package settle
 
 import (
-	"steve/client_pb/room"
-	"steve/majong/utils"
-	"steve/server_pb/majong"
+	"steve/majong/interfaces"
+	majongpb "steve/server_pb/majong"
 
-	"github.com/gogo/protobuf/proto"
+	"github.com/Sirupsen/logrus"
 )
 
 // RoundSettle 单局结算
 type RoundSettle struct {
 }
 
-// SettleRound 单局结算
-func (roundSettle *RoundSettle) SettleRound(context *majong.MajongContext) {
-	// 退税 TODO
+// Settle  单局结算方法
+func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
+	entry := logrus.WithFields(logrus.Fields{
+		"name":           "roundSettle",
+		"flowPigPlayers": params.FlowerPigPlayers,
+		"huPlayers":      params.HuPlayers,
+		"notTinPlayers":  params.NotTingPlayers,
+	})
+	// 查大叫
+	yellSettleInfos := yellSettle(params)
+	// 查花猪
+	flowerPigSettleInfos := flowerPigSettle(params)
+	// 退税
+	taxRebeatIds := taxRebeat(params)
 
-	//resp := new(room.RoomBalanceInfoRsp)
-	for _, settleInfo := range context.SettleInfos {
-		for _, player := range context.Players {
-			billDetail := createRoomBalanceInfoRsBillDetail(player.PalyerId, settleInfo)
+	setletInfos := make([]*majongpb.SettleInfo, 0)
+	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
+		for _, s := range yellSettleInfos {
+			setletInfos = append(setletInfos, s)
 		}
 	}
+	if flowerPigSettleInfos != nil && len(flowerPigSettleInfos) > 0 {
+		for _, s := range flowerPigSettleInfos {
+			setletInfos = append(setletInfos, s)
+		}
+	}
+	entry.Info("单局结算")
+	return setletInfos, taxRebeatIds
 }
 
-// createRoomBalanceInfoRsBillDetail 生成结算详情
-func createRoomBalanceInfoRsBillDetail(palyerID uint64, settleInfo *majong.SettleInfo) *room.RoomBalanceInfoRsp_BillDetail {
-	billDetail := &room.RoomBalanceInfoRsp_BillDetail{
-		SettleTyoe: proto.String(string(settleInfo.SettleType)),
-		FanType:    proto.String(settleInfo.FanType),
-		Times:      proto.Int32(settleInfo.Times),
-		Score:      proto.Int64(settleInfo.Scores[palyerID]),
-	}
-	if palyerID == settleInfo.GetPalyerId() {
-		for uid, score := range settleInfo.Scores {
-			if (uid != palyerID) && score != 0 {
-				billDetail.RelatedPid = append(billDetail.RelatedPid, settleInfo.PalyerId)
+// 查大叫结算
+// 未上听者需赔上听者最大可能番数（自摸、杠后炮、杠上开花、抢杠胡、海底捞、海底炮不参与）的牌型钱。
+// 注：查大叫时，若上听者牌型中有根，则根也要未上听者包给上听者。
+func yellSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
+	//底注
+	ante := GetDi()
+	// 查大叫结算信息
+	yellSettleInfos := make([]*majongpb.SettleInfo, 0)
+	if len(params.NotTingPlayers) > 0 {
+		for _, noTingPlayer := range params.NotTingPlayers {
+			settleInfoMap := make(map[uint64]int64)
+			win := int64(0)
+			lose := int64(0)
+			// 听玩家结算处理c
+			for playerID, value := range params.TingPlayersInfo {
+				win = int64(value) * ante
+				lose = lose - win
+				settleInfoMap[playerID] = win
+			}
+			// 结算信息记录
+			if len(settleInfoMap) > 0 {
+				settleInfoMap[noTingPlayer] = lose
+				yellSettleInfo := NewSettleInfo(params.SettleID)
+				yellSettleInfo.Scores = settleInfoMap
+				yellSettleInfos = append(yellSettleInfos, yellSettleInfo)
 			}
 		}
-	} else {
-		if settleInfo.Scores[palyerID] != 0 {
-			billDetail.RelatedPid = append(billDetail.RelatedPid, settleInfo.PalyerId)
-		}
 	}
-	return billDetail
-
+	return yellSettleInfos
 }
 
-// createRoomBillPlayerInfo 生成玩家结算信息
-func createRoomBillPlayerInfo(player *majong.Player, context majong.MajongContext) *room.BillPlayerInfo {
-	total := int64(0)
-	for _, settleInfo := range context.SettleInfos {
-		total := settleInfo.Scores[player.PalyerId] + total
+// 查花猪结算
+// 1.—花猪赔给未听牌玩家和胡牌玩家16*底分
+// 2.—花猪赔给听牌未胡玩家（查大叫倍数+16）*底分
+func flowerPigSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
+	//底注
+	ante := GetDi()
+	// 查花猪信息
+	flowwePigSettleInfos := make([]*majongpb.SettleInfo, 0)
+	for _, flowerPig := range params.FlowerPigPlayers {
+		lose := int64(0)
+		settleInfoMap := make(map[uint64]int64)
+		// 胡玩家结算处理
+		for j := 0; j < len(params.HuPlayers); j++ {
+			settleInfoMap[params.HuPlayers[j]] = ante * 16
+			lose = lose - (ante * 16)
+		}
+		// 不是花猪的未听玩家结算处理
+		for n := 0; n < len(params.NotTingPlayers); n++ {
+			settleInfoMap[params.NotTingPlayers[n]] = ante * 16
+			lose = lose - (ante * 16)
+		}
+		// 听玩家结算处理
+		for playerID, value := range params.TingPlayersInfo {
+			win := int64(16+value) * ante
+			settleInfoMap[playerID] = win
+			lose = lose - win
+		}
+		// 查花猪玩家结算信息
+		if len(settleInfoMap) > 0 {
+			settleInfoMap[flowerPig] = lose
+			flowerSettleInfo := NewSettleInfo(params.SettleID)
+			flowerSettleInfo.Scores = settleInfoMap
+			flowwePigSettleInfos = append(flowwePigSettleInfos, flowerSettleInfo)
+		}
 	}
-	return &room.BillPlayerInfo{
-		Pid:        proto.Uint64(player.PalyerId),
-		Score:      proto.Int64(total),
-		Name:       player.Name,
-		CardsGroup: getCardsGroup(),
-	}
-	return nil
+	return flowwePigSettleInfos
 }
 
-// getCardsGroup 获取玩家牌组信息
-func getCardsGroup(player *majong.Player) []*room.CardsGroup {
-	cardsGroupList := make([]*room.CardsGroup, 0)
-	// 碰牌
-	for _, pengCard := range player.PengCards {
-		card, _ := utils.CardToInt(*pengCard.Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  room.CardsGroupType_CardGroupType_Peng.Enum(),
-			Cards: []uint32{uint32(*card)},
+// 退稅结算
+func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
+	taxRebeatIds := make([]uint64, 0)
+	for _, notTingPlayer := range params.NotTingPlayers {
+		for _, settleInfo := range params.SettleInfos {
+			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[notTingPlayer] > 0) {
+				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
+			}
 		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
 	}
-	// 杠牌
-	var groupType *room.CardsGroupType
-	for _, gangCard := range player.GangCards {
-		if gangCard.Type == server_pb.GangType_gang_angang {
-			groupType = room.CardsGroupType_CardGroupType_AnGang.Enum()
+	for _, flowerPigPlayer := range params.FlowerPigPlayers {
+		for _, settleInfo := range params.SettleInfos {
+			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[flowerPigPlayer] > 0) {
+				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
+			}
 		}
-		if gangCard.Type == server_pb.GangType_gang_minggang {
-			groupType = room.CardsGroupType_CardGroupType_MingGang.Enum()
-		}
-		if gangCard.Type == server_pb.GangType_gang_bugang {
-			groupType = room.CardsGroupType_CardGroupType_BuGang.Enum()
-		}
-		card, _ := utils.CardToInt(*gangCard.Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  groupType,
-			Cards: []uint32{uint32(*card)},
-		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
 	}
-	// 手牌
-	handCards, _ := utils.CardsToInt(player.HandCards)
-	cards := make([]uint32, 0)
-	for _, handCard := range handCards {
-		cards = append(cards, uint32(handCard))
-	}
-	cardsGroup := &room.CardsGroup{
-		Pid:   proto.Uint64(player.PalyerId),
-		Type:  room.CardsGroupType_CardGroupType_Hand.Enum(),
-		Cards: cards,
-	}
-	cardsGroupList = append(cardsGroupList, cardsGroup)
-	return cardsGroupList
+	return taxRebeatIds
 }

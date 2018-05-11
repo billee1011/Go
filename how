@@ -1,0 +1,1023 @@
+[33mcommit 4822c1d4a70efc70b9d0ed7c3a01ae6ca165ac6f[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: fca7374 62bad5b
+Author: 郑旭章 <zhengxuzhang@stevegame.cn>
+Date:   Fri May 11 15:48:00 2018 +0800
+
+    牌型修改
+
+[33mcommit fca73749361671ee356300ece1899ae2d444aa9f[m
+Author: 郑旭章 <zhengxuzhang@stevegame.cn>
+Date:   Fri May 11 15:38:26 2018 +0800
+
+    牌型计算
+
+[33mcommit 62bad5b05ea0185390726c90a1b830fd4e69ba84[m[33m ([m[1;32m62bad5b05ea0185390726c90a1b830fd4e69ba84[m[33m)[m
+Author: 郑旭章 <zhengxuzhang@stevegame.cn>
+Date:   Fri May 11 15:23:17 2018 +0800
+
+    提交牌型计算器
+
+[33mcommit 8bcba6253a9a7c0560027e9a50ecae6511f35d1a[m[33m ([m[1;31mmain/master[m[33m)[m
+Merge: 013c4b8 3dfb57a
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 10 03:12:03 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    添加工厂创建状态，明杠，暗杠，补杠，碰，定缺状态，和结算相关方法
+    
+    See merge request hall/steve!56
+
+[33mcommit 3dfb57a5675874b99f4f8e03b26dbbc23da09d57[m
+Author: wuhongwei <wuhongwei@stevegame.cn>
+Date:   Thu May 10 11:08:32 2018 +0800
+
+    添加工厂创建状态，明杠，暗杠，补杠，碰，定缺状态，和结算相关方法
+
+[33mcommit 013c4b8d73ec05b1c782eb9d3e7347c66d348bc5[m
+Merge: e687fe1 23dbf79
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 10 02:46:30 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    将摸牌的逻辑处理从出牌状态中移动到摸牌状态下处理
+    
+    See merge request hall/steve!51
+
+[33mcommit e687fe1d366bd4317bc933f6c8eedadc997fe084[m
+Merge: a2554af 1f6f59f
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 10 02:45:53 2018 +0000
+
+    Merge branch 'revert-a2554af8' into 'master'
+    
+    Revert "Merge branch 'master' into 'master'"
+    
+    See merge request hall/steve!55
+
+[33mcommit 1f6f59faff92cba7392b03ff0fe192632ed88b34[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 10 02:45:48 2018 +0000
+
+    Revert "Merge branch 'master' into 'master'"
+    
+    This reverts merge request !54
+
+[33mcommit a2554af8835c3f6953863a043b96b1bcdf7349ca[m
+Merge: 9f5b4bc 18bd3ad
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 10 02:44:29 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    工厂状态添加,明杠，暗杠，碰，补杠,定缺状态文件添加
+    
+    See merge request hall/steve!54
+
+[33mcommit 18bd3ad23137dd058266f3c4615b5d9df41b476a[m
+Author: wuhongwei <wuhongwei@stevegame.cn>
+Date:   Wed May 9 19:44:56 2018 +0800
+
+    查花猪方法测试用例
+
+[33mcommit d10bcfc373ce462b07a7a0e5a777178ba751fb8a[m
+Author: wuhongwei <wuhongwei@stevegame.cn>
+Date:   Wed May 9 19:14:42 2018 +0800
+
+    修改呼叫转移测试
+
+[33mcommit 263017482582e162ff5b429d4ab6f952af77db8a[m
+Author: wuhongwei <wuhongwei@stevegame.cn>
+Date:   Wed May 9 16:40:30 2018 +0800
+
+    修改所有杠自动触发事件
+
+[33mcommit 23dbf79817d4cfae9d61de17b0d13728a817a918[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Wed May 9 16:39:19 2018 +0800
+
+    将摸牌的逻辑处理从出牌状态中移动到摸牌状态下处理
+
+[33mcommit a91ca3c274965ddacb1fbc525241868c2bccde7e[m
+Merge: d863100 9f5b4bc
+Author: wuhongwei <wuhongwei@stevegame.cn>
+Date:   Wed May 9 16:00:33 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit d863100621027208c15e0b336dbff400006bcb36[m
+Author: wuhongwei <wuhongwei@stevegame.cn>
+Date:   Wed May 9 15:50:03 2018 +0800
+
+    工厂状态添加
+
+[33mcommit 9f5b4bc9e149571a27c6961bc8561d0c6bb48023[m
+Merge: 41b50e6 89f19fb
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 07:42:53 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    更新服务启动文档
+    
+    See merge request hall/steve!49
+
+[33mcommit 41b50e6eba26b5b9fc5e7db101558a7a66c78e84[m
+Merge: 4a938be 7d9037a
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 07:42:34 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    possibleActions是用来进行对优先级进行处理，摸牌不需要possibleActions
+    
+    See merge request hall/steve!47
+
+[33mcommit 89f19fba670282b54a8b7ca8c115f73252988b4b[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 15:41:17 2018 +0800
+
+    更新服务启动文档
+
+[33mcommit 4a938be5c7921fd232c99e9f4af3884e453b7ffa[m
+Merge: d71d936 0402ce3
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 07:40:40 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    上传health.pb.go
+    
+    See merge request hall/steve!48
+
+[33mcommit 0402ce313e3b46cc68509e90b3a7f1e1ab10be00[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 15:39:37 2018 +0800
+
+    上传health.pb.go
+
+[33mcommit 30519c43966ef5aa51f48759a822ccc2aa787fff[m
+Merge: 7d9037a d71d936
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Wed May 9 15:35:19 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit d71d93673906c7c4af45502a91ae4bb5c9411944[m
+Merge: badec1c 5a6f1f1
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 07:28:09 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    serviceloader
+    
+    See merge request hall/steve!46
+
+[33mcommit 5a6f1f105de46739b33e4fc9fe335e4db8511199[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 15:27:02 2018 +0800
+
+    serviceloader
+
+[33mcommit 7d9037ac4d0af3bb1310bb8e01f990aed9f5633b[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Wed May 9 15:19:38 2018 +0800
+
+    possibleActions是用来进行对优先级进行处理，摸牌不需要possibleActions
+
+[33mcommit 0f322b80e4f25efdceedaa78efd7ee6f6d4b01ff[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Wed May 9 14:37:36 2018 +0800
+
+    checkActions前清空玩家的actions
+
+[33mcommit badec1cdad6d64ee10aaf7bb8ceba14ced60c7dd[m
+Merge: fc35dfc 2172c67
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 01:57:08 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    更新文档
+    
+    See merge request hall/steve!45
+
+[33mcommit 2172c672142d167b12f1418f3c50577452688633[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 09:56:00 2018 +0800
+
+    更新文档
+
+[33mcommit fc35dfc8a3d7de2b6c716a604e90de7a90787fed[m
+Merge: cdbb4d9 3369323
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 01:52:51 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    serviceloader 启动指南
+    
+    See merge request hall/steve!44
+
+[33mcommit 336932329727ac95ab3bba788e283f692bd2e422[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 09:46:56 2018 +0800
+
+    serviceloader 启动指南
+
+[33mcommit cdbb4d903cc675a9abf7683305beab3cb7dc3124[m
+Merge: cae52f9 83ba6cd
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 01:34:57 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    状态工厂添加自摸点炮抢杠胡自询出牌状态
+    
+    See merge request hall/steve!42
+
+[33mcommit 83ba6cdfc048da196e4ec1a8db76384f6a404eee[m
+Merge: f41820a cae52f9
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 9 01:34:36 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    # Conflicts:
+    #   majong/states/factory.go
+
+[33mcommit cae52f978dd04b90631e7185c2171335c5ee8eb3[m
+Merge: d3d8a71 afaa9b2
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 12:23:08 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    模拟测试框架，初始化洗牌发牌完善和测试
+    
+    See merge request hall/steve!43
+
+[33mcommit afaa9b268b8e56c70a434dd43abc27da3d70edad[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 20:21:25 2018 +0800
+
+    模拟测试框架，初始化洗牌发牌完善和测试
+
+[33mcommit f41820a680c001ef6f728b364359f46bd07cb096[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Tue May 8 17:24:34 2018 +0800
+
+    工厂添加自摸、点炮、抢杠胡、自询、出牌的状态
+
+[33mcommit 694f0a2f5be83fa37b50c08d925cd0da3f5440e0[m
+Merge: 116fb09 d3d8a71
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Tue May 8 17:15:32 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit d3d8a717b40064ee691b0ddbe899360d1eb9af5d[m
+Merge: 0c7bfcb cbda18b
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 09:03:08 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    基础协议pb.go文件
+    
+    See merge request hall/steve!41
+
+[33mcommit cbda18b374803fd2ff7a26738c6d4698f365efe6[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 17:02:03 2018 +0800
+
+    基础协议pb.go文件
+
+[33mcommit 116fb0937635513fa712a5bffbaacdd8f4f5080a[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Tue May 8 17:01:45 2018 +0800
+
+    去除消息体中的pid（消息头里可以拿到pid）
+
+[33mcommit 0c7bfcbecf1093638e73f46575b669baa5b75969[m
+Merge: c991d0e a32d4b4
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 08:58:22 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    更新vendor
+    
+    See merge request hall/steve!40
+
+[33mcommit a32d4b44d1e14720d1e76bf1dcf536f47bad4ade[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 16:57:17 2018 +0800
+
+    更新vendor
+
+[33mcommit c991d0ec829982d541eda6ebcf9cecd763ce3c0b[m
+Merge: a380102 3c25118
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue May 8 08:49:44 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    增加换三张state，杠，点跑，自摸，抢杠胡的结算
+    
+    See merge request hall/steve!37
+
+[33mcommit 403ab19b799cc0a89c3cdeddbacee2553815d371[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Tue May 8 15:45:54 2018 +0800
+
+    增加消息转换（暗杠、补杠、自摸）
+
+[33mcommit 46b2b311ea11fe476cfb9564ad6b70e09452c826[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Tue May 8 15:45:03 2018 +0800
+
+    对消息反序列化进行error判断
+
+[33mcommit 3c2511843f76e974026440aaa678d8d27205ce35[m
+Author: 郑旭章 <zhengxuzhang@stevegame.cn>
+Date:   Tue May 8 13:14:41 2018 +0800
+
+    增加换三张state，杠，点跑，自摸，抢杠胡的结算
+
+[33mcommit dc59af6448e554f88201a062dd3a4092136f8e77[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Tue May 8 10:53:05 2018 +0800
+
+    增加单元测试
+
+[33mcommit 0582aaf9c142ea2d267a4bc607928331375bfce4[m
+Merge: 0f11196 a380102
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Mon May 7 20:35:59 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit 0f11196bc58fd5dde9a2dfb699dfbe84026b7e94[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Mon May 7 20:35:34 2018 +0800
+
+    添加单元测试
+
+[33mcommit e96978ad49a2eb5310d603671c068d17516e2593[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Mon May 7 20:34:53 2018 +0800
+
+    修改代码逻辑
+
+[33mcommit a380102e46eb0b34e79dc712475d08f860a60cf1[m
+Merge: fc6d9db ca78751
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 11:46:21 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    重新生成 mock
+    
+    See merge request hall/steve!35
+
+[33mcommit ca78751b944eb359a0e7bf2441a9d3fe2fe09402[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 19:45:10 2018 +0800
+
+    重新生成 mock
+
+[33mcommit fc6d9db2c5fd6775e4f3f8d7b53bf3ec929c6cd9[m
+Merge: 5bcbff5 0b798f2
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 11:33:38 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    房间逻辑完善
+    
+    See merge request hall/steve!34
+
+[33mcommit 0b798f250cc6ba20847cd3811595d959f9deacce[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 19:31:37 2018 +0800
+
+    房间逻辑完善
+
+[33mcommit 5bcbff58477019a3d2644976e390c5bfa3395253[m
+Merge: 1ae089b bbe1fee
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 10:58:16 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    房间逻辑完善
+    
+    See merge request hall/steve!32
+
+[33mcommit bbe1fee22c5a738cbe57266ae6eb10cdea9f9649[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 18:57:07 2018 +0800
+
+    房间逻辑完善
+
+[33mcommit 1ae089b6004f4563531f49945b559600b2ac0144[m
+Merge: 115026f c3bc992
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 09:00:41 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    房间逻辑完善
+    
+    See merge request hall/steve!31
+
+[33mcommit c3bc9923c65b3c1973708f802ec334c038a711e9[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 16:59:22 2018 +0800
+
+    房间逻辑完善
+
+[33mcommit 115026f3a175df20592295993f3ba3c140713801[m
+Merge: 8a8ca59 c45fe57
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 04:27:45 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    牌桌逻辑（部分）
+    
+    See merge request hall/steve!30
+
+[33mcommit 8a8ca5960c06f73cf1bd2fb79c1bf87619f41265[m
+Merge: 80ad99b 60d5ea8
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 04:27:17 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    修改了上次提交出现的问题，添加配牌代码
+    
+    See merge request hall/steve!29
+
+[33mcommit c45fe5707477e711d87e5a1a3487b6271383d0bb[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon May 7 12:25:36 2018 +0800
+
+    牌桌逻辑（部分）
+
+[33mcommit 60d5ea8e6913ff720587f7e3ec57eddd5a6ef8df[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Mon May 7 10:25:59 2018 +0800
+
+    修改bug，以及添加配牌
+
+[33mcommit e87bff7aa0a208e4557ffdd7ad96213009a1b08a[m
+Merge: 1da408b 80ad99b
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Mon May 7 10:19:53 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit 80ad99b7cea6dc624d98e4bc80030ed8750ae4ac[m
+Merge: 2ea0eaf 5906d88
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat May 5 11:25:24 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    匹配逻辑
+    
+    See merge request hall/steve!28
+
+[33mcommit 5906d88233a5408a13b4138478e177cebcccf677[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat May 5 19:10:52 2018 +0800
+
+    匹配逻辑
+
+[33mcommit 1da408bf671a847de973e55dc6ae5dc42b4d8c62[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Sat May 5 17:03:29 2018 +0800
+
+    修改部分逻辑问题
+
+[33mcommit 34ab2da7a2e6f781b290ea8caad40f01c25a9899[m
+Merge: 005f89b 2ea0eaf
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Sat May 5 16:53:34 2018 +0800
+
+    添加协议广播逻辑
+
+[33mcommit 2ea0eaf59bdb168165d91977d7d714f61ef67a0e[m
+Merge: 6cab915 5edb0c5
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Fri May 4 12:50:01 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    Master
+    
+    See merge request hall/steve!26
+
+[33mcommit 5edb0c54d0bd4a0987e861b1f629888e41bc2e83[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Fri May 4 20:47:49 2018 +0800
+
+    room登录流程及模拟客户端
+
+[33mcommit c84b67eb39d1e1545682034a3b7ae021632a1299[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Fri May 4 17:23:56 2018 +0800
+
+    room 通信框架
+
+[33mcommit 005f89b165cef95f8b6f8f18ffef7ff3eee22dc0[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Fri May 4 16:01:24 2018 +0800
+
+    完成摸牌、自询、出牌、胡、自摸、抢杠胡的状态逻辑
+
+[33mcommit fb22d1bafedfa21effcfdbe2ed542bd3e15f5592[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Thu May 3 20:08:32 2018 +0800
+
+    完善自询
+
+[33mcommit 6cab9151dbd29dfc95b8c5d3c1960c6645e17d8d[m
+Merge: bec0945 3a5b20e
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 09:31:20 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    麻将玩法选项字段
+    
+    See merge request hall/steve!23
+
+[33mcommit 3a5b20e6fc495ef3cacdb185b02fc4624a34a304[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 17:30:03 2018 +0800
+
+    麻将玩法选项字段
+
+[33mcommit bec09454579ca915a2369ed98139126bc9f12201[m
+Merge: 1371f2d 65cb4c9
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 09:09:39 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    转换/洗牌/发牌
+    
+    See merge request hall/steve!22
+
+[33mcommit 65cb4c94e13e71fb54a41bc539d45d0b970f44ab[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 17:08:04 2018 +0800
+
+    洗牌和发牌
+
+[33mcommit f87e185631401248ef09cd78902d027bd16700e4[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 12:31:42 2018 +0800
+
+    增加注释
+
+[33mcommit c4b485391ffc567bf7c1b995b4e0bc7f0f702793[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 12:30:41 2018 +0800
+
+    转换约束
+
+[33mcommit 595420608619116deaab82cefc65c1a03f1d74c5[m
+Merge: 19bac2d 1371f2d
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Thu May 3 10:18:12 2018 +0800
+
+    解决冲突
+
+[33mcommit 19bac2d17c9df67966961320d802f0a2e8196b49[m
+Author: pizhiwen <pizhiwen@stevegame.cn>
+Date:   Thu May 3 10:16:12 2018 +0800
+
+    添加摸牌和自询
+
+[33mcommit 1371f2d54cc7208fe75d5fd1e40c0e99e2a52a9a[m
+Merge: 7963f57 972a8cb
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 01:20:52 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    麻将服务端协议
+    
+    See merge request hall/steve!21
+
+[33mcommit 972a8cbf74b8318c1396e75ae34b3ea019ba55db[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu May 3 09:19:17 2018 +0800
+
+    麻将服务端协议
+
+[33mcommit 8a8c985bfb1291d681514d1dbdd42684878a9ca1[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 2 16:09:39 2018 +0800
+
+    修改transition接口
+
+[33mcommit 7963f57767ac28dbacdf12ac9cf63f1a0cec4614[m
+Merge: dcf2f0a 35896e5
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 2 07:51:09 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    麻将状态机框架
+    
+    See merge request hall/steve!20
+
+[33mcommit 35896e531c6e7e75fdbacb84786d1ca842672d04[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed May 2 15:49:09 2018 +0800
+
+    麻将状态机框架
+
+[33mcommit dcf2f0a0916afdfce641236cadadb3d18d531847[m
+Merge: b6ce0b2 3fa6a95
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Apr 28 02:28:29 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    Master
+    
+    See merge request hall/steve!19
+
+[33mcommit 97edb14a1cc928706b59bdc6a1a9b2c5d67ad199[m
+Merge: 3fa6a95 b427729
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Apr 28 09:54:55 2018 +0800
+
+    Merge branch 'master' of gitlab.com:sword2ya/steve.steve
+
+[33mcommit 3fa6a95bf348759b4eb53acec2a4f4244576f8a9[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Apr 28 09:51:38 2018 +0800
+
+    修改麻将玩法逻辑框架文档
+
+[33mcommit a71f67d5f76e3a0163de81ccf5fdbd48727bf705[m
+Merge: ba7f62d b6ce0b2
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Apr 26 09:40:04 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit b6ce0b2c1789aaf6d2e56c5c34ab0fd7588a8035[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Wed Apr 25 14:43:05 2018 +0800
+
+    更新了概述
+
+[33mcommit ba7f62df50e9c0b564bdc5282c5fba7f8df5abba[m
+Merge: 5f53e7b f52646f
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Apr 25 11:43:17 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/hall/steve
+
+[33mcommit b42772949d19d4163602e5475bf3ef1f743967dc[m
+Author: anjiawei <sword2ya@qq.com>
+Date:   Tue Apr 17 20:47:42 2018 +0800
+
+    serviceloader
+
+[33mcommit f52646fd05b5d0b403da773c1cf804f6e3a16d64[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Tue Apr 17 18:17:36 2018 +0800
+
+    添加麻将玩法逻辑框架设计说明
+
+[33mcommit 5f53e7bbce69d8551fd9358ac0b5bf0a637c5c28[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Fri Apr 13 09:30:57 2018 +0800
+
+    增加 redisfactory
+
+[33mcommit d815dd568d4a35df0f691b1807ad95d8adb07bc3[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Apr 11 11:01:26 2018 +0800
+
+    网关消息发送接口
+
+[33mcommit b30f943e6027ab4fe74ec056326b7f7e06becaf8[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue Apr 10 21:20:43 2018 +0800
+
+    修改网络接口
+
+[33mcommit c294fc06ad4ba79fe3b52007024c99e0269731d7[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon Apr 9 18:31:14 2018 +0800
+
+    登录测试使用fuzzy随机用户名
+
+[33mcommit d5435fa77b93cf6ab37b7b3bad56f24c818d2bbf[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon Apr 9 17:52:42 2018 +0800
+
+    修改登录测试， 增加网关发送消息rpc
+
+[33mcommit 1b45a33cd8c4625904d3367d7ced5b0ee2d9969c[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sun Apr 8 17:16:54 2018 +0800
+
+    serviceloader 相关文档
+
+[33mcommit fa951fec6a705de1ae896edb1e12389a3225fec2[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sun Apr 8 11:52:16 2018 +0800
+
+    大厅登录及测试框架
+
+[33mcommit 736217a19f19cef09e8d1a65e870ac6b854f05c0[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Wed Apr 4 15:22:33 2018 +0800
+
+    增加 git 使用规范
+
+[33mcommit 2cb488d355ec3804d8c2fbd6a42cf46f0726afe5[m
+Merge: bc18f3a fb9f2d4
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Mon Apr 2 01:18:05 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    Master
+    
+    See merge request hall/steve!17
+
+[33mcommit bc18f3a79b376f8214ded245d0ecf5736bedebd1[m
+Merge: 4ce224b 817a196
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Mon Apr 2 01:16:33 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    编码规范修改(郑旭章)
+    
+    See merge request hall/steve!15
+
+[33mcommit fb9f2d4225fbef5a7545d84f15b4a9c5827f7a9d[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sun Apr 1 18:23:46 2018 +0800
+
+    大厅代码框架，及登录处理
+
+[33mcommit 20687b57e737ff1c4307de3096e849a91679a3bd[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sun Apr 1 15:47:00 2018 +0800
+
+    网关服消息转发的实现
+
+[33mcommit aa8666f75b9244ddf6bf1645b44c74bb8c5e4122[m
+Merge: a283054 a9a3e30
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sun Apr 1 14:47:28 2018 +0800
+
+    Merge branch 'master' of ssh://gitlab.fz.stevegame.red:2222/anjiawei/steve
+
+[33mcommit a2830540c839853157aedc963c5f67e672a9a725[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Mar 31 17:30:09 2018 +0800
+
+    客户端交互接口
+
+[33mcommit a9a3e30dae0e0271a031cfb7c95069f3503242cc[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Mar 31 17:30:09 2018 +0800
+
+    客户端交互接口
+
+[33mcommit 287a6e0b758d054b830f820bfd7419a6da93eb2a[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Mar 31 15:23:08 2018 +0800
+
+    修改编译proto脚本，支持import
+
+[33mcommit 52caf9b3c36c3dfb274e854750feec542b5ca49e[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Sat Mar 31 11:51:57 2018 +0800
+
+    网关服基础代码，更新service接口，修改example
+
+[33mcommit 5d6cad0cbffb4f5c43892dc76c01d712c26b8bd4[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Fri Mar 30 18:14:13 2018 +0800
+
+    提供 watchdog 工厂接口
+
+[33mcommit 9441726c9dd7e682735efecff8893767e415edad[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Fri Mar 30 17:38:55 2018 +0800
+
+    增加 serviceloader 使用指南。 更新通信包头。
+
+[33mcommit 817a1967e463354b94f600d859e1373b02174dc1[m
+Author: 郑旭章 <zhengxuzhang@stevegame.cn>
+Date:   Fri Mar 30 15:25:40 2018 +0800
+
+    编码规范修改
+
+[33mcommit 4ce224bf7504db78b5d0449971226a3338766e1b[m
+Merge: b73d526 266fdf2
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Fri Mar 30 02:17:57 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    Master
+    
+    See merge request hall/steve!14
+
+[33mcommit 266fdf2e92496458b499df85500fa6b0361ab62b[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 29 19:18:41 2018 +0800
+
+    雷区分享
+
+[33mcommit acf7b8b826c1ded93bbb171a50ce4146b26a85e9[m
+Merge: 9c6d75a b73d526
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 29 18:41:56 2018 +0800
+
+    Merge remote-tracking branch 'group/master'
+
+[33mcommit 9c6d75a26c5042dfdc4fd3ea813266021cf9943c[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 29 18:37:18 2018 +0800
+
+    增加gateway，重构serviceloader日志模块， 增加serviceloader使用指南文档
+
+[33mcommit 85ff981fb6038fcf113fabd5d7f29f7a226132d8[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 29 10:46:23 2018 +0800
+
+    增加proto子模块，以及生成proto的shell脚本
+
+[33mcommit b73d526e7247317c41c84eef66fd42a59a9fa873[m
+Merge: 89f4859 fde61db
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 29 02:01:39 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    添加容器操作说明
+    
+    See merge request hall/steve!13
+
+[33mcommit fde61dbb950868b70d1c3780bd49a0582e1b732e[m
+Author: hubing <hubing@stevegame.cn>
+Date:   Wed Mar 28 17:23:40 2018 +0800
+
+    添加容器操作说明
+
+[33mcommit 89f485956b4d46cd4df4721f2658469be49ef1ba[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 22 16:45:41 2018 +0800
+
+    更新了 rscli 文档
+
+[33mcommit c3fa254d6e8e75a68d3278ba54cf4b20ff2f368f[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 15 20:41:19 2018 +0800
+
+    修改rpcexample
+
+[33mcommit e0ae9d5cf8bef7066fa9d0ce3e2c819f1295bb90[m
+Merge: 584505e 0282f4c
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 15 11:28:39 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    郑旭章
+    
+    See merge request hall/steve!10
+
+[33mcommit 0282f4ca4128b90b66589ea66079059d74ff5657[m
+Author: zhengxuzhang <zhengxuzhang@stevegame.cn>
+Date:   Thu Mar 15 19:21:49 2018 +0800
+
+    faq 文档
+
+[33mcommit 584505e81a13b55a723f8cde49e2aeff851bc136[m
+Merge: 579cdb4 9aca046
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 15 08:37:48 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    rsctl使用指南增加证书生成示例
+    
+    See merge request hall/steve!9
+
+[33mcommit 9aca046b5c03c7f3eb78344dfef3aab68469905d[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 15 15:49:11 2018 +0800
+
+    rsctl使用指南增加证书生成示例
+
+[33mcommit 579cdb478f95f5d553248c2b8889af9220826d6d[m
+Merge: d2e0c46 b4a39ee
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 15 15:03:17 2018 +0800
+
+    Merge branch 'anjiawei/steve-master'
+
+[33mcommit b4a39eee7feecda1840f282f8bd9a2b5a4aee17f[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 15 14:08:08 2018 +0800
+
+    go代码规范初稿
+
+[33mcommit c89337ef54e7a155f72bbe2a92d62c38b25fc997[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Thu Mar 15 10:39:11 2018 +0800
+
+    rpc使用示例修改
+
+[33mcommit d2e0c4684ce03e672360ef2b1bf08d25719119b3[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 15 12:03:00 2018 +0800
+
+    修改了一些内容错误
+
+[33mcommit 85aeab65f95fb55d1f473a1454d814200f5fdc3e[m
+Merge: 1b1f980 ca8e640
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Thu Mar 15 03:13:31 2018 +0000
+
+    Merge branch 'master' into 'master'
+    
+    serviceloader提供的一些公用接口，以及rsctl使用指南文档
+    
+    See merge request hall/steve!1
+
+[33mcommit ca8e640a8ebb390f1a8576fabc636e6bdd2396b4[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Mar 14 19:17:36 2018 +0800
+
+    rscli使用指南
+
+[33mcommit ad5badcd932ac850c564ccaf649320efb1ec861b[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Mar 14 16:06:36 2018 +0800
+
+    rscli普通用户使用指南
+
+[33mcommit 35164f283bde5fc6bac25498b349b7979dd50779[m
+Merge: 42847f0 1b1f980
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Mar 14 14:38:31 2018 +0800
+
+    Merge remote-tracking branch 'group/master'
+
+[33mcommit 42847f04c06d708c6fcc4d051f6bd31d1ac4c4a4[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Mar 14 14:29:28 2018 +0800
+
+    增加客户端rpc接口
+
+[33mcommit 1b1f98089771bf3e57f3266ed0f4ed9cd4d3c324[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Wed Mar 14 12:02:32 2018 +0800
+
+    更新内容
+
+[33mcommit 4bdda032c94455da08bdfb4d2854d8f5022bd7ca[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Wed Mar 14 11:42:25 2018 +0800
+
+    健康检查
+
+[33mcommit 92f8883d31375d14b55ca8fe26fdc30397b07f6f[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Tue Mar 13 16:08:21 2018 +0800
+
+    添加编码规范文档
+
+[33mcommit d0f1c1d9a819161a95b234e9e2dc4fc882ea4b10[m
+Author: 安佳玮 <anjiawei@stevegame.cn>
+Date:   Tue Mar 13 15:33:25 2018 +0800
+
+    dep库，structs, example等基础目录
+
+[33mcommit ae84605721aeeacaa259dc28ffbd60594db0473e[m
+Author: 庾俊 <yujun@stevegame.cn>
+Date:   Tue Mar 13 15:08:11 2018 +0800
+
+    添加dev_site

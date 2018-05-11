@@ -1,63 +1,62 @@
 package settle
 
 import (
-	"steve/server_pb/majong"
+	"steve/majong/interfaces"
+	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 )
 
-// GangSettle 杠的结算
+// GangSettle 杠结算
 type GangSettle struct {
 }
 
-// SettleGang  杠立即结算,相关玩家账单 operator 操作者 ,lastActionPlayer 上次操作的人, settleType 结算类型， huType 胡牌类型
-func (gangSettle *GangSettle) SettleGang(context *majong.MajongContext, operator *majong.Player, lastPlayer *majong.Player, settleType majong.SettleType) *majong.SettleInfo {
+// Settle  杠结算方法
+func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) []*majongpb.SettleInfo {
 	entry := logrus.WithFields(logrus.Fields{
-		"name":       "SettleGang",
-		"operator":   operator.PalyerId,
-		"lastPlayer": lastPlayer.PalyerId,
-		"settleType": settleType,
+		"name":       "GangSettle",
+		"gangType":   params.GangType,
+		"gangPlayer": params.GangPlayer,
+		"srcPlayer":  params.SrcPlayer,
 	})
-	//TODO 底数
+	// 底数
 	ante := GetDi()
 	// 杠倍数
-	gangScore := getGangScore(settleType)
+	gangScore := getGangScore(params.GangType)
 
-	baseScore := gangScore * int(ante)
+	total := gangScore * int(ante)
 
 	// 结算信息
-	settleInfo := NewSettleInfo(context, settleType, operator.PalyerId)
-	for _, player := range context.Players {
-		if settleType == majong.SettleType_settle_bugang || settleType == majong.SettleType_settle_angang { // 补杠||暗杠
-			if operator.PalyerId == player.PalyerId {
-				settleInfo.Scores[player.PalyerId] = settleInfo.Scores[player.PalyerId] + int64(baseScore)
-			} else {
-				settleInfo.Scores[player.PalyerId] = settleInfo.Scores[player.PalyerId] - int64(baseScore)
-			}
-		} else if settleType == majong.SettleType_settle_mingang { // 明杠
-			if operator.PalyerId == player.PalyerId {
-				settleInfo.Scores[player.PalyerId] = settleInfo.Scores[player.PalyerId] + int64(baseScore)
-			} else if lastPlayer.PalyerId == player.PalyerId {
-				settleInfo.Scores[player.PalyerId] = settleInfo.Scores[player.PalyerId] - int64(baseScore)
-			} else {
-				settleInfo.Scores[player.PalyerId] = 0
+	settleInfos := make([]*majongpb.SettleInfo, 0)
+	gangSettleInfo := NewSettleInfo(params.SettleID)
+
+	if params.GangType == majongpb.GangType_gang_angang {
+		gangSettleInfo.Scores[params.GangPlayer] = int64(total)
+		gangSettleInfo.Scores[params.SrcPlayer] = 0 - int64(total)
+	} else if params.GangType == majongpb.GangType_gang_bugang || params.GangType == majongpb.GangType_gang_angang {
+		win := 0
+		for _, playerID := range params.AllPlayers {
+			if playerID != params.GangPlayer {
+				gangSettleInfo.Scores[playerID] = 0 - int64(total)
+				win = win + total
 			}
 		}
+		gangSettleInfo.Scores[params.GangPlayer] = int64(win)
 	}
-	settleInfo.Times = int32(gangScore)
-	context.SettleInfos = append(context.SettleInfos, settleInfo)
+	gangSettleInfo.CardValue = int32(gangScore)
+	settleInfos = append(settleInfos, gangSettleInfo)
 	entry.Info("杠结算")
-	return settleInfo
+	return settleInfos
 }
 
 // getGangScore 获取杠对应分数
-func getGangScore(settleType majong.SettleType) int {
-	if settleType == majong.SettleType_settle_bugang {
+func getGangScore(gangType majongpb.GangType) int {
+	if gangType == majongpb.GangType_gang_bugang {
 		return 1
-	} else if settleType == majong.SettleType_settle_angang {
+	} else if gangType == majongpb.GangType_gang_angang {
 		return 2
-	} else if settleType == majong.SettleType_settle_mingang {
+	} else if gangType == majongpb.GangType_gang_minggang {
 		return 2
 	}
-	return 0
+	return 1
 }
