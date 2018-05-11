@@ -92,7 +92,7 @@ func init() {
 		return checkQiangGangHu(context, huType, player)
 	}}
 
-	fanDianPaoHu := Fan{name: FanName[majong.Fan_DianPaoHu], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	fanDianPaoHu := Fan{name: FanName[majong.Fan_DianPaoHu], value: 1, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
 		return checkDianPao(context, huType, player)
 	}}
 
@@ -162,7 +162,7 @@ func init() {
 
 	AllFan = append(AllFan, fanPinghu, fanZimo, fanQiangGangHu, fanDianPaoHu, fanGangHouPao, fanGangKai, fanHaiDiLao, fanQingYiSe, fanQiDui, fanQingQiDui, fanLongQiDui, fanQingLongQiDui, fanPengPengHu, fanQingPeng, fanJingGouDiao, fanQingJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan, fanQingShiBaLuoHan)
 
-	ScxlFan = append(ScxlFan, fanPinghu, fanZimo, fanQiangGangHu, fanDianPaoHu, fanGangHouPao, fanGangKai, fanHaiDiLao, fanQingYiSe, fanQiDui, fanLongQiDui, fanPengPengHu, fanJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan)
+	ScxlFan = append(ScxlFan, fanPinghu, fanQiangGangHu, fanGangHouPao, fanGangKai, fanHaiDiLao, fanQingYiSe, fanQiDui, fanLongQiDui, fanPengPengHu, fanJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan)
 }
 
 // checkPingHu 平胡-不包含其他番型

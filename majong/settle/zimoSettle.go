@@ -4,6 +4,8 @@ import (
 	"steve/majong/settle/fan"
 	"steve/majong/utils"
 	"steve/server_pb/majong"
+	"strconv"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -22,7 +24,7 @@ func (ziMoSettle *ZiMoSettle) SettleZiMo(context *majong.MajongContext, operator
 	})
 
 	// 结算信息
-	settleInfo := NewSettleInfo(context, settleType)
+	settleInfo := NewSettleInfo(context, settleType, operatorID)
 
 	winner := utils.GetPlayerByID(context.Players, operatorID)
 
@@ -35,15 +37,22 @@ func (ziMoSettle *ZiMoSettle) SettleZiMo(context *majong.MajongContext, operator
 	}
 	fansMap, gen = scxlFanMutex(fansMap, fan.GetGenCount(winner))
 
-	fanTotal := 1
-	for _, value := range fansMap {
+	fanValues := 1
+	fanNames := make([]string, 0)
+	if gen != 0 {
+		fanNames = append(fanNames, strconv.Itoa(int(gen))+"根")
+	}
+	for name, value := range fansMap {
 		if value != 0 {
-			fanTotal = fanTotal * int(value)
+			fanValues = fanValues * int(value)
+			fanNames = append(fanNames, name)
 		}
 	}
+	// 自摸2倍
+	fanValues = fanValues * 2
 	//底数
 	ante := GetDi()
-	total := int64(fanTotal) * (1 << gen) * ante
+	total := int64(fanValues) * (1 << gen) * ante
 
 	for _, player := range context.Players {
 		if winner.PalyerId == player.PalyerId {
@@ -52,6 +61,8 @@ func (ziMoSettle *ZiMoSettle) SettleZiMo(context *majong.MajongContext, operator
 			settleInfo.Scores[player.PalyerId] = settleInfo.Scores[player.PalyerId] - total
 		}
 	}
+	settleInfo.Type = strings.Join(fanNames, ",")
+	settleInfo.Times = int32(fanValues)
 	entry.Info("自摸结算")
 	return settleInfo, nil
 }

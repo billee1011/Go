@@ -102,8 +102,11 @@ enum SettleType {
 // SettleInfo 结算信息
 message SettleInfo {
     uint64 id = 1; // 结算 id 
-    map<uint64, int64> scores = 2; // 玩家结算分数
-    SettleType settle_type = 3; // 结算类型
+    uint64 palyer_id = 2;          // 玩家 ID 
+    map<uint64, int64> scores = 3; // 玩家结算分数
+    SettleType settle_type = 4;    // 结算类型
+    string fan_type = 5;           // 牌组番型
+    int32 times = 6;               // 倍数
 }
 
 // MajongContext 麻将现场
