@@ -24,7 +24,7 @@ var _ interfaces.MajongState = new(HuState)
 // ProcessEvent 处理事件
 func (s *HuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_hu_finish {
-		s.setMoPaiPlayer(flow)
+		s.setMopaiPlayer(flow)
 		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID_state_hu, global.ErrInvalidEvent
@@ -81,53 +81,16 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }
 
-// stepCount 计算从 srcPlayer 到 destPlayer 需要经过的距离
-// TODO 未考虑性能， 但影响不大
-func (s *HuState) stepCount(mjContext *majongpb.MajongContext, srcPlayer uint64, destPlayer uint64) (int, error) {
-	players := mjContext.GetPlayers()
-	srcIndex, err := utils.GetPlayerIndex(srcPlayer, players)
-	if err != nil {
-		return 0, err
-	}
-	destIndex, err := utils.GetPlayerIndex(destPlayer, players)
-	if err != nil {
-		return 0, err
-	}
-	return (srcIndex + len(players) - destIndex) % len(players), nil
-}
-
-// setMoPaiPlayer 设置摸牌玩家
-// 从出牌玩家的位置算起，找到最后一个胡牌的玩家，他的下家就是摸牌的玩家
-// TODO 未考虑性能， 但影响不大
-func (s *HuState) setMoPaiPlayer(flow interfaces.MajongFlow) {
+// setMopaiPlayer 设置摸牌玩家
+func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "HuState.setMoPaiPlayer",
+		"func_name": "QiangganghuState.setMopaiPlayer",
 	})
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
-
-	chupaiPlayer := mjContext.GetLastChupaiPlayer()
-	hupaiPlayers := mjContext.GetLastHuPlayers()
-
-	maxStepCount := -1
-	var maxStepPlayer uint64
-	for _, hupaiPlayer := range hupaiPlayers {
-		c, err := s.stepCount(mjContext, chupaiPlayer, hupaiPlayer)
-		if err != nil {
-			logEntry.Errorln(err)
-			return
-		}
-		if c > maxStepCount {
-			maxStepCount = c
-			maxStepPlayer = hupaiPlayer
-		}
-	}
-	if maxStepPlayer == 0 {
-		logEntry.Errorln("没有找到最后一个胡牌玩家")
-		return
-	}
+	huPlayers := mjContext.GetLastHuPlayers()
+	srcPlayer := mjContext.GetLastChupaiPlayer()
 	players := mjContext.GetPlayers()
-	srcIndex, _ := utils.GetPlayerIndex(maxStepPlayer, players)
-	moPaiIndex := (srcIndex + 1) % len(players)
-	mjContext.MopaiPlayer = players[moPaiIndex].GetPalyerId()
+
+	mjContext.MopaiPlayer = calcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
 }

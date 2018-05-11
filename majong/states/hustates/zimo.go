@@ -58,6 +58,8 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 		logEntry.Errorln(err)
 		return
 	}
+	mjContext.LastHuPlayers = []uint64{player.GetPalyerId()}
+
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
 	addHuCard(card, player, player.GetPalyerId(), majongpb.HuType_hu_zimo)
 	s.notifyHu(card, player.GetPalyerId(), flow)
@@ -89,9 +91,7 @@ func (s *ZimoState) setMopaiPlayer(flow interfaces.MajongFlow) {
 		return
 	}
 	players := mjContext.GetPlayers()
-	index, _ := utils.GetPlayerIndex(huPlayers[0], players)
-	mopaiIndex := (index + 1) % len(players)
-	mjContext.MopaiPlayer = players[mopaiIndex].GetPalyerId()
+	mjContext.MopaiPlayer = calcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
 }
 
 // getZimoInfo 获取自摸信息
