@@ -479,9 +479,13 @@ func GetDingQueCardSum(handCards []*majongpb.Card, dingQueColor majongpb.CardCol
 	return sum
 }
 
-//GetPlayCardCheckTing 获取可以出那些牌提示
+//GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
 func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 	tingInfo := make(map[Card][]Card)
+	// 不能少一张
+	if len(handCards)%3 != 2 {
+		return tingInfo
+	}
 	// 手牌转查胡的工具牌
 	cardsCard := CardsToUtilCards(handCards)
 	laizi := make(map[Card]bool)
@@ -491,24 +495,30 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	// 七对查胡，打那张牌可以胡那些牌
 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
-	// 合并去重复
-	for k, v := range tingInfo {
-		tInfo, exite := qiStrategy[k]
+	// 存在相同的playCard,去重复
+	for playCard, huCard := range tingInfo {
+		tInfo, exite := qiStrategy[playCard]
 		if exite {
-			tingInfo[k] = MergeAndNoRepeat(tInfo, v)
+			tingInfo[playCard] = MergeAndNoRepeat(tInfo, huCard)
 		}
 	}
-
-	return tingInfo
+	// 存在不相同的playCard,合并,把推倒胡中不存在的听，加进去
+	for playCard, huCards := range qiStrategy {
+		_, exite := tingInfo[playCard]
+		if !exite {
+			tingInfo[playCard] = huCards
+		}
+	}
+	return qiStrategy
 }
 
-//GetPlayCardHint 出牌提示倍数，摸牌查听
+//GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]int64, error
 func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int64, error) {
 	// map:palyCard-map:[tingCard-multiple]
 	tingMultiple := make(map[int32]map[int32]int64)
 	// 获取手牌定缺牌数量
 	sum := GetDingQueCardSum(palyer.HandCards, palyer.DingqueColor)
-	// 手中少于2张定缺牌才进行查听
+	// 手中少于2张定缺牌才能进行查听
 	if sum < 2 {
 		// 获取出牌提示
 		tingInfo := GetPlayCardCheckTing(palyer.HandCards)
@@ -523,12 +533,13 @@ func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int64, error)
 				return tingMultiple, err
 			}
 			// 复制手牌
-		    copy(handCard, palyer.HandCards)
+			handCard = append(handCard[:0],palyer.HandCards...)
 			// 删除出牌
 			newHanCard, isSucceed := DeleteCardFromLast(handCard, playCard2)
 			if !isSucceed {
 				return tingMultiple, fmt.Errorf("获取出牌提示：删除牌失败：")
 			}
+			// 能胡牌
 			for _, tingCard := range tingCards {
 				// util.card转麻将牌
 				tingCard2, err := IntToCard(int32(tingCard))
@@ -540,8 +551,9 @@ func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int64, error)
 					// 添加能胡的牌
 					newHanCard = append(newHanCard, tingCard2)
 					// 查询能胡的最大倍数 TODO
-					multiple := int64(0)
-					tingMultiple[int32(playCard)][int32(tingCard)] = multiple
+					multiple := int64(1)
+					huMutipleMap := map[int32]int64{int32(tingCard):multiple}
+					tingMultiple[int32(playCard)] = huMutipleMap
 					// 删除能胡的牌
 					newHanCard = newHanCard[:len(newHanCard)-1]
 				}
@@ -551,14 +563,12 @@ func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int64, error)
 	return tingMultiple, nil
 }
 
-//GetHuHint 胡牌提示倍数，缺一张
+//GetHuHint 胡牌提示倍数，缺一张，返回map[int32]int64, error
 func GetHuHint(palyer *majongpb.Player) (map[int32]int64, error) {
 	// map:tingCard-multiple
 	tingMultiple := make(map[int32]int64)
-	// 获取手牌定缺牌数量
-	sum := GetDingQueCardSum(palyer.HandCards, palyer.DingqueColor)
-	// 手中少于2张定缺牌才进行查听
-	if sum < 2 {
+	// 手中没有定缺牌
+	if !CheckHasDingQueCard(palyer.HandCards, palyer.DingqueColor) {
 		// 获取出牌提示
 		tingInfo, err := GetTingCards(palyer.HandCards)
 		if err != nil {
@@ -567,7 +577,7 @@ func GetHuHint(palyer *majongpb.Player) (map[int32]int64, error) {
 		// 手牌数量
 		handCardSum := len(palyer.HandCards)
 		handCard := make([]*majongpb.Card, handCardSum)
-		// 复制手牌	
+		// 复制手牌
 		copy(handCard, palyer.HandCards)
 		// 可以胡那些牌
 		for _, tingCard := range tingInfo {
@@ -575,9 +585,9 @@ func GetHuHint(palyer *majongpb.Player) (map[int32]int64, error) {
 			if tingCard.Color != palyer.DingqueColor {
 				// 添加能胡的牌
 				newHandCard := append(handCard, tingCard)
-                // 查询能胡的最大倍数 TODO
+				// 查询能胡的最大倍数 TODO
 				// 倍数
-				multiple := int64(0)
+				multiple := int64(1)
 				// 麻将牌转Int32
 				cardInt, err := CardToInt(*tingCard)
 				if err != nil {
