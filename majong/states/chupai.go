@@ -19,10 +19,13 @@ var _ interfaces.MajongState = new(ChupaiState)
 // ProcessEvent 处理事件
 func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_chupai_finish {
+		s.chupai(flow)
 		context := flow.GetMajongContext()
 		players := context.GetPlayers()
 		card := context.GetLastOutCard()
 		var hasChupaiwenxun bool
+		//出完牌后，将上轮添加的胡牌玩家列表重置
+		context.LastHuPlayers = context.LastHuPlayers[:0]
 		for _, player := range players {
 			ntf, need := checkActions(context, player, card)
 			if need {
@@ -62,6 +65,7 @@ func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card
 	canDianPao := checkDianPao(context, player, card)
 	chupaiWenxunNtf.EnableDianpao = proto.Bool(canDianPao)
 	if canDianPao {
+		context.LastHuPlayers = append(context.LastHuPlayers, player.GetPalyerId())
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 	}
 	canPeng := checkPeng(context, player, card)
@@ -159,6 +163,28 @@ func checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card
 		}
 	}
 	return false
+}
+
+//chupai 决策出牌
+func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
+	context := flow.GetMajongContext()
+	activePlayer := utils.GetPlayerByID(context.GetPlayers(), context.GetLastChupaiPlayer())
+	card := context.LastOutCard
+	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
+	activePlayer.OutCards = append(activePlayer.OutCards, card)
+	playersID := make([]uint64, 0, 0)
+	for _, player := range context.GetPlayers() {
+		playersID = append(playersID, player.GetPalyerId())
+	}
+	cardToClient, _ := utils.CardToRoomCard(card)
+	toClientMessage := interfaces.ToClientMessage{
+		MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
+		Msg: &room.RoomChupaiNtf{
+			Player: proto.Uint64(activePlayer.GetPalyerId()),
+			Card:   cardToClient,
+		},
+	}
+	flow.PushMessages(playersID, toClientMessage)
 }
 
 // OnEntry 进入状态

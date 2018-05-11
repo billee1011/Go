@@ -66,6 +66,8 @@ func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequ
 	}
 	canBuGang, _ := s.canBuGang(flow, message)
 	if canBuGang {
+		//补杠的时候，可能会有玩家抢杠胡，所以此处也将胡牌玩家列表清空
+		flow.GetMajongContext().LastHuPlayers = flow.GetMajongContext().LastHuPlayers[:0]
 		hasQGH := s.hasQiangGangHu(flow)
 		if hasQGH {
 			//TODO: 可以在这里广播补杠的消息（也可以在waitqiangganghu的entry中进行广播）
@@ -178,23 +180,25 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	}
 	if canOutCard {
 		//决策成功，移除手牌，并且广播
-		activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
-		context.LastOutCard = card
-		activePlayer.OutCards = append(activePlayer.OutCards, card)
-		playersID := make([]uint64, 0, 0)
-		for _, player := range context.GetPlayers() {
-			playersID = append(playersID, player.GetPalyerId())
-		}
-		cardToClient, _ := utils.CardToRoomCard(card)
-		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
-			Msg: &room.RoomChupaiNtf{
-				Player: proto.Uint64(activePlayer.GetPalyerId()),
-				Card:   cardToClient,
-			},
-		}
-		flow.PushMessages(playersID, toClientMessage)
+		// activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
+		// context.LastOutCard = card
+		// activePlayer.OutCards = append(activePlayer.OutCards, card)
+		// playersID := make([]uint64, 0, 0)
+		// for _, player := range context.GetPlayers() {
+		// 	playersID = append(playersID, player.GetPalyerId())
+		// }
+		// cardToClient, _ := utils.CardToRoomCard(card)
+		// toClientMessage := interfaces.ToClientMessage{
+		// 	MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
+		// 	Msg: &room.RoomChupaiNtf{
+		// 		Player: proto.Uint64(activePlayer.GetPalyerId()),
+		// 		Card:   cardToClient,
+		// 	},
+		// }
+		// flow.PushMessages(playersID, toClientMessage)
 		// activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
+		context.LastOutCard = card
+		context.LastChupaiPlayer = pid
 		return majongpb.StateID_state_chupai, nil
 	}
 	return majongpb.StateID_state_zixun, errInvalidEvent
@@ -337,6 +341,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 					MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
 					Msg:   angang,
 				}
+				// ctx.LastHuPlayers = append(ctx.LastHuPlayers, player.GetPalyerId())
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 				flow.PushMessages(playersID, toClientMessage)
 			}
