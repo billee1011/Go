@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -92,7 +93,7 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 
 		return majongpb.StateID_state_huansanzhang, errors.New("换三张尚有玩家未完成")
 	}
-	return majongpb.StateID_state_huansanzhang, errInvalidEvent
+	return majongpb.StateID_state_huansanzhang, global.ErrInvalidEvent
 }
 
 // OnExit 退出换三张状态
