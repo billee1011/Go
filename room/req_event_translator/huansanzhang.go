@@ -16,6 +16,7 @@ func translateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	eventContext = &server_pb.HuansanzhangRequestEvent{
 		Head:  &eventHeader,
 		Cards: translateCards(req.GetCards()),
+		Sure:  req.GetSure(),
 	}
 	eventID = server_pb.EventID_event_huansanzhang_request
 	return
