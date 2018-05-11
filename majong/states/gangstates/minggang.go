@@ -1,4 +1,4 @@
-package states
+package gangstates
 
 import (
 	msgid "steve/client_pb/msgId"
