@@ -26,8 +26,7 @@ func (gangSettle *GangSettle) SettleGang(context *majong.MajongContext, operator
 	baseScore := gangScore * int(ante)
 
 	// 结算信息
-	settleInfo := NewSettleInfo(context, settleType)
-
+	settleInfo := NewSettleInfo(context, settleType, operator.PalyerId)
 	for _, player := range context.Players {
 		if settleType == majong.SettleType_settle_bugang || settleType == majong.SettleType_settle_angang { // 补杠||暗杠
 			if operator.PalyerId == player.PalyerId {
@@ -45,6 +44,7 @@ func (gangSettle *GangSettle) SettleGang(context *majong.MajongContext, operator
 			}
 		}
 	}
+	settleInfo.Times = int32(gangScore)
 	context.SettleInfos = append(context.SettleInfos, settleInfo)
 	entry.Info("杠结算")
 	return settleInfo

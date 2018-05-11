@@ -2,7 +2,7 @@ package states
 
 import (
 	"math/rand"
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"

@@ -8,6 +8,8 @@ import (
 type DeskSettler interface {
 	// Settle
 	Settle(desk Desk, mjContext server_pb.MajongContext)
+	// RoundSettle 单局结算
+	RoundSettle(desk Desk, mjContext server_pb.MajongContext)
 }
 
 // DeskSettlerFactory 牌桌结算工厂

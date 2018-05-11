@@ -4,6 +4,8 @@ import (
 	"steve/majong/settle/fan"
 	"steve/majong/utils"
 	"steve/server_pb/majong"
+	"strconv"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -12,8 +14,8 @@ import (
 type DianPaoSettle struct {
 }
 
-// SettleDianPaoHu  点炮胡立即结算,生成结算列表 winnersID 赢家id, loserID 输家id, settleType 结算类型， huType 胡牌类型
-func (dianPaoSettle *DianPaoSettle) SettleDianPaoHu(context *majong.MajongContext, winnersID []uint64, loserID uint64, settleType majong.SettleType, huType majong.HuType) ([]*majong.SettleInfo, error) {
+// SettleDianPaoHu  点炮胡立即结算,生成结算列表 winnersID 赢家id, loserID 输家id, huCard 点炮胡的牌， settleType 结算类型， huType 胡牌类型
+func (dianPaoSettle *DianPaoSettle) SettleDianPaoHu(context *majong.MajongContext, winnersID []uint64, loserID uint64, huCard *majong.Card, settleType majong.SettleType, huType majong.HuType) ([]*majong.SettleInfo, error) {
 	entry := logrus.WithFields(logrus.Fields{
 		"name":       "SettleDianPaoHu",
 		"winnersID":  winnersID,
@@ -21,6 +23,21 @@ func (dianPaoSettle *DianPaoSettle) SettleDianPaoHu(context *majong.MajongContex
 		"settleType": settleType,
 		"huType":     huType,
 	})
+
+	if huType == majong.HuType_hu_qiangganghu { // 抢杠胡移除被抢杠玩家补杠的结算记录
+		beiQiangGangPlayer := utils.GetPlayerByID(context.Players, loserID)
+		for i := len(beiQiangGangPlayer.GangCards) - 1; i > 0; i-- {
+			if utils.CardEqual(beiQiangGangPlayer.GangCards[i].Card, huCard) {
+				if beiQiangGangPlayer.GangCards[i].Type == majong.GangType_gang_bugang {
+					for i, settleInfo := range context.SettleInfos {
+						if settleInfo.SettleType == majong.SettleType_settle_bugang {
+							context.SettleInfos = append(context.SettleInfos[0:i], context.SettleInfos[i+1])
+						}
+					}
+				}
+			}
+		}
+	}
 
 	settleInfos := make([]*majong.SettleInfo, 0)
 	for i := 0; i < len(winnersID); i++ {
@@ -34,17 +51,23 @@ func (dianPaoSettle *DianPaoSettle) SettleDianPaoHu(context *majong.MajongContex
 		}
 		fansMap, gen = scxlFanMutex(fansMap, fan.GetGenCount(winner))
 
-		fanTotal := 1
-		for _, value := range fansMap {
+		fanValues := 1
+		fanNames := make([]string, 0)
+		if gen != 0 {
+			fanNames = append(fanNames, strconv.Itoa(int(gen))+"根")
+		}
+		for name, value := range fansMap {
 			if value != 0 {
-				fanTotal = fanTotal * int(value)
+				fanValues = fanValues * int(value)
+				fanNames = append(fanNames, name)
 			}
 		}
+
 		//底数
 		ante := GetDi()
-		total := int64(fanTotal) * ante * (1 << gen)
+		total := int64(fanValues) * ante * (1 << gen)
 		// 结算信息
-		settleInfo := NewSettleInfo(context, settleType)
+		settleInfo := NewSettleInfo(context, settleType, winner.PalyerId)
 		for _, player := range context.Players {
 			if winner.PalyerId == player.PalyerId {
 				settleInfo.Scores[player.PalyerId] = settleInfo.Scores[player.PalyerId] + total
@@ -54,9 +77,10 @@ func (dianPaoSettle *DianPaoSettle) SettleDianPaoHu(context *majong.MajongContex
 				settleInfo.Scores[player.PalyerId] = 0
 			}
 		}
+		settleInfo.Type = strings.Join(fanNames, ",")
+		settleInfo.Times = int32(fanValues)
 		settleInfos = append(settleInfos, settleInfo)
 	}
-
 	entry.Info("点炮结算")
 	return settleInfos, nil
 }
@@ -136,7 +160,7 @@ func GetDi() int64 {
 }
 
 // NewSettleInfo 初始化生成一条新的结算信息
-func NewSettleInfo(context *majong.MajongContext, settleType majong.SettleType) *majong.SettleInfo {
+func NewSettleInfo(context *majong.MajongContext, settleType majong.SettleType, palyerID uint64) *majong.SettleInfo {
 	id := uint64(1)
 	len := len(context.SettleInfos)
 	scores := make(map[uint64]int64)
@@ -148,6 +172,7 @@ func NewSettleInfo(context *majong.MajongContext, settleType majong.SettleType) 
 	}
 	return &majong.SettleInfo{
 		Id:         id,
+		PalyerId:   palyerID,
 		Scores:     scores,
 		SettleType: settleType,
 	}
