@@ -3,6 +3,7 @@ package states
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -44,7 +45,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		context.MopaiPlayer = player.GetPalyerId()
 		return majongpb.StateID_state_mopai, nil
 	}
-	return majongpb.StateID_state_init, errInvalidEvent
+	return majongpb.StateID_state_init, global.ErrInvalidEvent
 }
 
 //checkActions 检查玩家可以有哪些操作

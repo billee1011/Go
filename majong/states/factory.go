@@ -2,6 +2,7 @@ package states
 
 import (
 	"steve/majong/interfaces"
+	"steve/majong/states/hustates"
 	majongpb "steve/server_pb/majong"
 )
 
@@ -29,11 +30,11 @@ func (f *factory) CreateState(gameID int, stateID majongpb.StateID) interfaces.M
 	case majongpb.StateID_state_chupai:
 		return new(ChupaiState)
 	case majongpb.StateID_state_zimo:
-		return new(ZimoState)
+		return new(hustates.ZimoState)
 	case majongpb.StateID_state_hu:
-		return new(HuState)
+		return new(hustates.HuState)
 	case majongpb.StateID_state_qiangganghu:
-		return new(QiangganghuState)
+		return new(hustates.QiangganghuState)
 	case majongpb.StateID_state_angang:
 		return new(AnGangState)
 	case majongpb.StateID_state_bugang:

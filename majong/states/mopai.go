@@ -3,6 +3,7 @@ package states
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -23,7 +24,7 @@ func (s *MoPaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 	if eventID == majongpb.EventID_event_mopai_finish {
 		return s.mopai(flow)
 	}
-	return majongpb.StateID_state_mopai, errInvalidEvent
+	return majongpb.StateID_state_mopai, global.ErrInvalidEvent
 }
 
 //checkActions 检测进入自询状态下，玩家有哪些可以可行的事件

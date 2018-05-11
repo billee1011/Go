@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -27,7 +28,7 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 			message := &majongpb.HuRequestEvent{}
 			err := proto.Unmarshal(eventContext, message)
 			if err != nil {
-				return majongpb.StateID_state_zixun, errInvalidEvent
+				return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 			}
 			return s.zimo(flow, message)
 
@@ -37,7 +38,7 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 			message := &majongpb.ChupaiRequestEvent{}
 			err := proto.Unmarshal(eventContext, message)
 			if err != nil {
-				return majongpb.StateID_state_zixun, errInvalidEvent
+				return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 			}
 			return s.chupai(flow, message)
 		}
@@ -46,14 +47,14 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 			message := &majongpb.GangRequestEvent{}
 			err := proto.Unmarshal(eventContext, message)
 			if err != nil {
-				return majongpb.StateID_state_zixun, errInvalidEvent
+				return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 			}
 			return s.gang(flow, message)
 
 		}
 	default:
 		{
-			return majongpb.StateID_state_zixun, errInvalidEvent
+			return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 		}
 	}
 }
@@ -158,7 +159,7 @@ func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.HuReques
 	if can {
 		return majongpb.StateID_state_zimo, nil
 	}
-	return majongpb.StateID_state_zixun, errInvalidEvent
+	return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 }
 
 //chupai 决策出牌
@@ -201,7 +202,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		context.LastChupaiPlayer = pid
 		return majongpb.StateID_state_chupai, nil
 	}
-	return majongpb.StateID_state_zixun, errInvalidEvent
+	return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 }
 
 //checkAnGang 检查暗杠 (判断当前事件是否可行)
