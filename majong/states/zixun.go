@@ -213,7 +213,7 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 	if len(wallCards) == 0 {
 		return false, fmt.Errorf("墙牌为0，不允许暗杠")
 	}
-	if message.GetHead().GetPlayerId() != mjContext.GetMopaiPlayer() {
+	if message.GetHead().GetPlayerId() != mjContext.GetLastMopaiPlayer() {
 		return false, fmt.Errorf("当前玩家不是可执行玩家，不予操作")
 	}
 	//检查手牌中是否有足够的暗杠牌
@@ -327,6 +327,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	cardI, _ := utils.CardToInt(*card)
 	var hasQGanghu bool
 	for _, player := range ctx.GetPlayers() {
+		player.PossibleActions = []majongpb.Action{}
 		if player.GetPalyerId() != ctx.GetLastGangPlayer() {
 			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
 			if flag {

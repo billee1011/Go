@@ -35,7 +35,9 @@ func FmtPlayerInfo(player *majongpb.Player) logrus.Fields {
 func FmtMajongpbCards(cards []*majongpb.Card) string {
 	results := ""
 	for _, card := range cards {
-		results += fmt.Sprintf("%v%v ", card.Point, getColor(card.Color))
+		if card != nil {
+			results += fmt.Sprintf("%v%v ", card.Point, getColor(card.Color))
+		}
 	}
 	return results
 }
@@ -83,4 +85,18 @@ func getColor(srcColor majongpb.CardColor) string {
 		return "b"
 	}
 	return "none"
+}
+
+//FmtMajongContxt 打印麻将现场
+func FmtMajongContxt(context *majongpb.MajongContext) logrus.Fields {
+
+	return logrus.Fields{
+		"LastGangPlayer":   context.GetLastGangPlayer(),
+		"LastChupaiPlayer": context.GetLastChupaiPlayer(),
+		"LastOutCard":      FmtMajongpbCards([]*majongpb.Card{context.LastOutCard}),
+		"LastMopaiPlayer":  context.GetLastMopaiPlayer(),
+		"LastMopaiCard":    FmtMajongpbCards([]*majongpb.Card{context.LastMopaiCard}),
+		"LastPengPlayer":   context.GetLastPengPlayer(),
+		"MopaiPlayer":      context.GetMopaiPlayer(),
+	}
 }

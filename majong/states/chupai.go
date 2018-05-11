@@ -4,6 +4,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
+	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -29,13 +30,10 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		for _, player := range players {
 			ntf, need := checkActions(context, player, card)
 			if need {
-				playersID := make([]uint64, 0, 0)
-				playersID = append(playersID, player.GetPalyerId())
-				toClientMessage := interfaces.ToClientMessage{
+				flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
 					MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
 					Msg:   ntf,
-				}
-				flow.PushMessages(playersID, toClientMessage)
+				})
 				hasChupaiwenxun = true
 			}
 		}
@@ -172,19 +170,11 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	card := context.LastOutCard
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
-	playersID := make([]uint64, 0, 0)
-	for _, player := range context.GetPlayers() {
-		playersID = append(playersID, player.GetPalyerId())
-	}
 	cardToClient, _ := utils.CardToRoomCard(card)
-	toClientMessage := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
-		Msg: &room.RoomChupaiNtf{
-			Player: proto.Uint64(activePlayer.GetPalyerId()),
-			Card:   cardToClient,
-		},
-	}
-	flow.PushMessages(playersID, toClientMessage)
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
+		Player: proto.Uint64(activePlayer.GetPalyerId()),
+		Card:   cardToClient,
+	})
 }
 
 // OnEntry 进入状态

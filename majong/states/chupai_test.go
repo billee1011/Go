@@ -24,7 +24,6 @@ func TestChupaiState_chupaiwenxun(t *testing.T) {
 					PalyerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
-					OutCards:        []*majongpb.Card{&Card1T},
 					PossibleActions: []majongpb.Action{},
 				},
 				&majongpb.Player{
@@ -40,9 +39,10 @@ func TestChupaiState_chupaiwenxun(t *testing.T) {
 					PossibleActions: []majongpb.Action{},
 				},
 			},
-			ActivePlayer: 1,
-			WallCards:    []*majongpb.Card{&Card9B, &Card9B},
-			LastOutCard:  &Card1T,
+			ActivePlayer:     1,
+			WallCards:        []*majongpb.Card{&Card9B, &Card9B},
+			LastOutCard:      &Card1T,
+			LastChupaiPlayer: 1,
 		},
 	).AnyTimes()
 	s := ChupaiState{}
@@ -56,6 +56,7 @@ func TestChupaiState_chupaiwenxun(t *testing.T) {
 		// logrus.Info(beforeResults)
 
 	}
+	logrus.WithFields(FmtMajongContxt(context)).Info("出牌前的麻将现场")
 	state, err := s.ProcessEvent(majongpb.EventID_event_chupai_finish, nil, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_chupaiwenxun, state, "查询成功后有特殊操作，应该进入出牌问询状态")
@@ -66,6 +67,7 @@ func TestChupaiState_chupaiwenxun(t *testing.T) {
 		// afterResults += FmtPlayerInfo(player)
 		// logrus.Info(afterResults)
 	}
+	logrus.WithFields(FmtMajongContxt(context)).Info("出牌后的麻将现场")
 }
 
 //TestChupaiState_mopai 出牌后，其他玩家没有特殊操作，进入摸牌状态（下家摸牌）
@@ -82,7 +84,6 @@ func TestChupaiState_mopai(t *testing.T) {
 					PalyerId:        1,
 					HandCards:       []*majongpb.Card{&Card1T, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
-					OutCards:        []*majongpb.Card{&Card1W},
 					PossibleActions: []majongpb.Action{},
 				},
 				&majongpb.Player{
@@ -98,9 +99,10 @@ func TestChupaiState_mopai(t *testing.T) {
 					PossibleActions: []majongpb.Action{},
 				},
 			},
-			ActivePlayer: 1,
-			WallCards:    []*majongpb.Card{&Card9B, &Card9B},
-			LastOutCard:  &Card1W,
+			ActivePlayer:     1,
+			WallCards:        []*majongpb.Card{&Card9B, &Card9B},
+			LastOutCard:      &Card1W,
+			LastChupaiPlayer: 1,
 		},
 	).AnyTimes()
 	s := ChupaiState{}
@@ -114,6 +116,7 @@ func TestChupaiState_mopai(t *testing.T) {
 		// logrus.Info(beforeResults)
 
 	}
+	logrus.WithFields(FmtMajongContxt(context)).Info("出牌前的麻将现场")
 	state, err := s.ProcessEvent(majongpb.EventID_event_chupai_finish, nil, flow)
 	assert.Nil(t, err)
 	assert.Equal(t, majongpb.StateID_state_mopai, state, "查询成功后无特殊操作，应该进入摸牌状态")
@@ -124,4 +127,5 @@ func TestChupaiState_mopai(t *testing.T) {
 		// afterResults += FmtPlayerInfo(player)
 		// logrus.Info(afterResults)
 	}
+	logrus.WithFields(FmtMajongContxt(context)).Info("出牌后的麻将现场")
 }

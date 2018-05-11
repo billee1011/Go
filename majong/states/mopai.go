@@ -7,6 +7,8 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"github.com/Sirupsen/logrus"
+
 	"github.com/golang/protobuf/proto"
 )
 
@@ -38,17 +40,18 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 	if canBuGang {
 		zixunNtf.EnableBugangCards = enablieBugangCards
 	}
-	if canZiMo {
-		//TODO:可以出的牌，在胡牌后可能需要
-		// enableChupaiCards :=
-	}
 	playerIDs := make([]uint64, 0, 0)
-	playerIDs = append(playerIDs, context.ActivePlayer)
+	playerIDs = append(playerIDs, context.MopaiPlayer)
 	toClient := interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
 		Msg:   zixunNtf,
 	}
 	flow.PushMessages(playerIDs, toClient)
+	logrus.WithFields(logrus.Fields{
+		"canZimo":   canZiMo,
+		"canAnGang": canAnGang,
+		"canBuGang": canBuGang,
+	}).Infof("玩家%v可以有的操作", context.MopaiPlayer)
 }
 
 //checkZiMo 查自摸
@@ -72,7 +75,7 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room
 	if len(context.WallCards) == 0 {
 		return false, nil
 	}
-	activePlayerID := context.GetActivePlayer()
+	activePlayerID := context.GetMopaiPlayer()
 	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
 	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
 	hasHu := len(activePlayer.GetHuCards()) > 0
@@ -97,8 +100,7 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room
 				newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
 				newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
 				cardsI := utils.IntToUtilCard(newcardsI)
-				laizi := make(map[utils.Card]bool)
-				huCards := utils.FastCheckTingV2(cardsI, laizi)
+				huCards := utils.FastCheckTingV2(cardsI, map[utils.Card]bool{})
 				if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 					roomCard, _ := utils.IntToRoomCard(k)
 					enableAngangCards = append(enableAngangCards, roomCard)
@@ -156,7 +158,7 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room
 func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
 	context := flow.GetMajongContext()
 	players := context.GetPlayers()
-	activePlayer := utils.GetNextPlayerByID(players, context.ActivePlayer)
+	activePlayer := utils.GetPlayerByID(players, context.MopaiPlayer)
 	//TODO：目前只在这个地方改变操作玩家（感觉碰，明杠，点炮这三种情况也需要改变activePlayer）
 	context.ActivePlayer = activePlayer.GetPalyerId()
 	if len(context.WallCards) == 0 {
@@ -168,6 +170,7 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	//将这张牌添加到手牌中
 	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
 	context.LastMopaiPlayer = context.MopaiPlayer
+	context.LastMopaiCard = drowCard
 	s.checkActions(flow)
 	return majongpb.StateID_state_zixun, nil
 }
