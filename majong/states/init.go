@@ -3,6 +3,7 @@ package states
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	majongpb "steve/server_pb/majong"
@@ -20,7 +21,7 @@ func (s *InitState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, 
 		s.notifyPlayers(flow)
 		return majongpb.StateID_state_xipai, nil
 	}
-	return majongpb.StateID_state_init, errInvalidEvent
+	return majongpb.StateID_state_init, global.ErrInvalidEvent
 }
 
 // notifyPlayers 通知玩家游戏开始

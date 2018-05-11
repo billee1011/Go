@@ -1,6 +1,7 @@
 package states
 
 import (
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -18,7 +19,7 @@ func (s *QiangganghuState) ProcessEvent(eventID majongpb.EventID, eventContext [
 		s.mopai(flow)
 		return majongpb.StateID_state_mopai, nil
 	}
-	return majongpb.StateID_state_qiangganghu, errInvalidEvent
+	return majongpb.StateID_state_qiangganghu, global.ErrInvalidEvent
 }
 
 //mopai 摸牌处理

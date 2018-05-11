@@ -3,6 +3,7 @@ package states
 import (
 	"errors"
 	"fmt"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -25,7 +26,7 @@ func (s *ChupaiwenxunState) ProcessEvent(eventID majongpb.EventID, eventContext 
 			return s.onActionRequestEvent(eventID, eventContext, flow)
 		}
 	}
-	return majongpb.StateID_state_chupaiwenxun, errInvalidEvent
+	return majongpb.StateID_state_chupaiwenxun, global.ErrInvalidEvent
 }
 
 // OnEntry 进入状态
@@ -97,7 +98,7 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 		majongpb.EventID_event_qi_request:   majongpb.Action_action_qi,
 	}[eventID]
 	if !ok {
-		err = errInvalidEvent
+		err = global.ErrInvalidEvent
 		return
 	}
 
@@ -110,7 +111,7 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 		majongpb.EventID_event_qi_request:   s.getHuRequestPlayer,
 	}[eventID]
 	if !ok {
-		err = errInvalidEvent
+		err = global.ErrInvalidEvent
 		return
 	}
 	playerID, err := f(eventContext)
@@ -119,7 +120,7 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 	}
 	player = s.getMajongPlayer(playerID, mjContext)
 	if player == nil {
-		err = errInvalidRequestPlayer
+		err = global.ErrInvalidRequestPlayer
 		return
 	}
 	return
@@ -283,15 +284,6 @@ func (s *ChupaiwenxunState) doAction(flow interfaces.MajongFlow, action majongpb
 	return f(flow, playerIDs)
 }
 
-// removePlayerCards 从玩家的手牌中移除指定数量的某张牌
-func (s *ChupaiwenxunState) removePlayerCards(card *majongpb.Card, count int, player *majongpb.Player) bool {
-	newCards, ok := utils.RemoveCards(player.GetHandCards(), card, count)
-	if ok {
-		player.HandCards = newCards
-	}
-	return ok
-}
-
 // doPeng 执行碰操作
 func (s *ChupaiwenxunState) doPeng(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
 	newState, err = majongpb.StateID_state_peng, nil
@@ -313,15 +305,6 @@ func (s *ChupaiwenxunState) doPeng(flow interfaces.MajongFlow, playerIDs []uint6
 	return
 }
 
-// addGangCard 添加碰的牌
-func (s *ChupaiwenxunState) addGangCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
-	player.GangCards = append(player.GetGangCards(), &majongpb.GangCard{
-		Card:      card,
-		Type:      majongpb.GangType_gang_minggang,
-		SrcPlayer: srcPlayerID,
-	})
-}
-
 // doGang 执行杠操作
 func (s *ChupaiwenxunState) doGang(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
 	newState, err = majongpb.StateID_state_gang, nil
@@ -338,16 +321,10 @@ func (s *ChupaiwenxunState) doGang(flow interfaces.MajongFlow, playerIDs []uint6
 		return majongpb.StateID_state_chupaiwenxun, err
 	}
 	playerID := playerIDs[0]
-	player := s.getMajongPlayer(playerID, mjContext)
 
 	card := mjContext.GetLastOutCard()
-	if !s.removePlayerCards(card, 3, player) {
-		err := errors.New("玩家没有 3 张对应的牌")
-		logEntry.Errorln(err)
-		return majongpb.StateID_state_chupaiwenxun, err
-	}
-	s.addGangCard(card, player, mjContext.GetLastChupaiPlayer())
-	mjContext.LastGangPlayer = player.GetPalyerId()
+	mjContext.GangCard = card
+	mjContext.LastGangPlayer = playerID
 	return
 }
 
