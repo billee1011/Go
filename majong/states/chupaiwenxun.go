@@ -328,15 +328,6 @@ func (s *ChupaiwenxunState) doGang(flow interfaces.MajongFlow, playerIDs []uint6
 	return
 }
 
-// addHuCard 添加胡的牌
-func (s *ChupaiwenxunState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
-	player.HuCards = append(player.GetHuCards(), &majongpb.HuCard{
-		Card:      card,
-		Type:      majongpb.HuType_hu_dianpao, // TODO: 还需要考虑杠后炮
-		SrcPlayer: srcPlayerID,
-	})
-}
-
 // doHu 执行胡牌操作
 func (s *ChupaiwenxunState) doHu(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
 	newState, err = majongpb.StateID_state_hu, nil
@@ -348,11 +339,6 @@ func (s *ChupaiwenxunState) doHu(flow interfaces.MajongFlow, playerIDs []uint64)
 	mjContext := flow.GetMajongContext()
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 
-	for _, playerID := range playerIDs {
-		player := s.getMajongPlayer(playerID, mjContext)
-		card := mjContext.GetLastOutCard()
-		s.addHuCard(card, player, playerID)
-	}
 	mjContext.LastHuPlayers = playerIDs
 	return
 }
