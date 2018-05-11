@@ -2,6 +2,7 @@ package states
 
 import (
 	"errors"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -28,12 +29,12 @@ func (s *WaitQiangganghuState) ProcessEvent(eventID majongpb.EventID, eventConte
 			return s.onQiRequest(eventContext, flow)
 		}
 	}
-	return majongpb.StateID_state_waitqiangganghu, errInvalidEvent
+	return majongpb.StateID_state_waitqiangganghu, global.ErrInvalidEvent
 }
 
 // OnEntry 进入状态
 func (s *WaitQiangganghuState) OnEntry(flow interfaces.MajongFlow) {
-
+	// TODO 通知玩家等待抢杠胡
 }
 
 // OnExit 退出状态
