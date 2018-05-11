@@ -6,7 +6,10 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/utils"
+	"steve/peipai"
 	majongpb "steve/server_pb/majong"
+	"strconv"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -37,7 +40,51 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	rand.Shuffle(len(cards), func(i, j int) {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
+	gameName := getGameName(flow)
+	PeiPai(cards, flow.GetMajongContext(), gameName)
+	length := peipai.GetLensOfWallCards(gameName)
+	if length != 0 {
+		cards = cards[:length]
+	}
+	//暂时只能配牌和长度，换三张方向的代码已写，具体怎么操作要和向xuzhang了解下
 	return cards
+}
+
+func getGameName(flow interfaces.MajongFlow) string {
+	gameID := flow.GetMajongContext().GetGameId()
+	var gameName string
+	if gameID == 1 {
+		gameName = "scxl"
+	}
+	return gameName
+}
+
+// PeiPai 配牌工具
+func PeiPai(wallCards []*majongpb.Card, context *majongpb.MajongContext, gameName string) (bool, []*majongpb.Card) {
+	value, err := peipai.GetPeiPai(gameName)
+	if err != nil {
+		return false, wallCards
+	}
+	var cards []*majongpb.Card
+	for i := 0; i < len(value); i = i + 3 {
+		ca, err := strconv.Atoi(value[i : i+2])
+		if err != nil {
+			return false, wallCards
+		}
+		card, err := utils.IntToCard(int32(ca))
+		if err != nil {
+			return false, wallCards
+		}
+		cards = append(cards, card)
+	}
+	for i := 0; i < len(cards); i++ {
+		for j := len(wallCards) - 1; j >= 0; j-- {
+			if utils.CardEqual(cards[i], wallCards[j]) {
+				wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
+			}
+		}
+	}
+	return true, wallCards
 }
 
 // randDices 随机筛子
