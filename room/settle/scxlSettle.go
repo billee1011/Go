@@ -25,19 +25,19 @@ type scxlSettle struct {
 // Settle 结算信息扣分
 func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext server_pb.MajongContext) {
 	lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
-	if !lastSettleInfo.Handle {
-		for _, player := range desk.GetPlayers() {
-			settleScore := lastSettleInfo.Scores[*player.PlayerId]
-			*player.Coin = uint64(settleScore + int64(*player.Coin))
-			if settleScore < 0 && *player.Coin < 0 {
-				settleScore = int64(*player.Coin)
-				*player.Coin = 0
-			}
-			s.settleMap[SInfoID(lastSettleInfo.Id)] = settleScore
-			s.roundScore[PlayerID(*player.PlayerId)] = s.roundScore[PlayerID(*player.PlayerId)] + settleScore
+	// if !lastSettleInfo.Handle {
+	for _, player := range desk.GetPlayers() {
+		settleScore := lastSettleInfo.Scores[*player.PlayerId]
+		*player.Coin = uint64(settleScore + int64(*player.Coin))
+		if settleScore < 0 && *player.Coin < 0 {
+			settleScore = int64(*player.Coin)
+			*player.Coin = 0
 		}
-		lastSettleInfo.Handle = true
+		s.settleMap[SInfoID(lastSettleInfo.Id)] = settleScore
+		s.roundScore[PlayerID(*player.PlayerId)] = s.roundScore[PlayerID(*player.PlayerId)] + settleScore
 	}
+	// 	lastSettleInfo.Handle = true
+	// }
 }
 
 // RoundSettle 单局结算信息
@@ -60,9 +60,9 @@ func (s *scxlSettle) createBillDetail(palyerID uint64, settleInfo *server_pb.Set
 	if settleInfo.Scores[palyerID] != 0 {
 		billDetail := &room.RoomBalanceInfoRsp_BillDetail{
 			SetleType: proto.String(string(settleInfo.SettleType)),
-			FanType:   proto.String(settleInfo.FanType),
-			Times:     proto.Int32(settleInfo.Times),
-			Score:     proto.Int64(int64(s.settleMap[SInfoID(settleInfo.Id)])),
+			// FanType:   proto.String(settleInfo.FanType),
+			// Times:     proto.Int32(settleInfo.Times),
+			Score: proto.Int64(int64(s.settleMap[SInfoID(settleInfo.Id)])),
 		}
 		if settleInfo.Scores[palyerID] > 0 {
 			for pid, score := range settleInfo.Scores {
