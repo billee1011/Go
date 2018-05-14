@@ -13,18 +13,30 @@ var CardTypeValueMap = make(map[interfaces.CardType]int)
 
 // 初始番型与卡牌映射
 func init() {
-	// 平胡 1
-	// 清一色 4
-	// 七对 4
-	// 清七对 16
-	// 龙七对 8
-	// 清龙七对 32
-	// 碰碰胡 2
-	// 清碰 8
-	// 金钩钓 4
-	// 清金钩钓 16
-	// 十八罗汉 64
-	// 清十八罗汉 256
+	// // 平胡 1
+	// CardTypeValueMap[PingHu] = 1 
+	// // 清一色 4
+	// CardTypeValueMap[QingYiSe] = 4 
+	// // 七对 4
+	// CardTypeValueMap[QiDui] = 4 
+	// // 清七对 16
+	// CardTypeValueMap[QingQiDui] = 16 
+	// // 龙七对 8
+	// CardTypeValueMap[LongQiDui] = 8 
+	// // 清龙七对 32
+	// CardTypeValueMap[QingLongQiDui] = 32
+	// // 碰碰胡 2
+	// CardTypeValueMap[PengPengHu] = 2
+	// // 清碰 8
+	// CardTypeValueMap[QingPeng] = 8
+	// // 金钩钓 4
+	// CardTypeValueMap[JingGouDiao] = 4
+	// // 清金钩钓 16
+	// CardTypeValueMap[QingJingGouDiao] = 16
+	// // 十八罗汉 64
+	// CardTypeValueMap[ShiBaLuoHan] = 64
+	// // 清十八罗汉 256
+	// CardTypeValueMap[QingShiBaLuoHan] = 254
 
 }
 

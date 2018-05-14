@@ -16,9 +16,9 @@ type CardType int
 
 // CardCalcParams 计算牌型的参数
 type CardCalcParams struct {
-	handCard []*majongpb.Card
-	pengCard []*majongpb.Card
-	gangCard []*majongpb.Card
-	huCard   *majongpb.Card
-	gameID   int
+	HandCard []*majongpb.Card
+	PengCard []*majongpb.Card
+	GangCard []*majongpb.Card
+	HuCard   *majongpb.Card
+	GameID   int
 }
