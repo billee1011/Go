@@ -8,6 +8,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
+	"steve/peipai"
 	majongpb "steve/server_pb/majong"
 	"time"
 
@@ -60,7 +61,11 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 		if huansnazhangDone == len(players) { // 所有玩家换三张牌都收到，开始处理换三张
 			rd := rand.New(rand.NewSource(time.Now().Unix())) // 生成换三张方向
 			towards := rd.Intn(3)
-
+			gameName := getGameName(flow)
+			fx := peipai.GetHSZFangXiang(gameName)
+			if fx != -1 {
+				towards = fx
+			}
 			l := len(players)
 			result := false
 			for i, player := range players { // 根据不同方向处理换三张
