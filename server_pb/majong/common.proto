@@ -16,26 +16,3 @@ message Card {
     int32 point = 2;    // 卡牌点数
 }
 
-// Fan 番型
-enum Fan {
-    PingHu  = 0;            //平胡
-    FZiMo  = 1;             //自摸
-    QiangGangHu  = 2;       //抢杠胡
-    DianPaoHu = 3;          //点炮胡
-    GangHouPao  = 4;        //杠后炮
-    GangKai  = 5;           //杠开
-    HaiDiLao  = 6;          //海底捞
-    QingYiSe  = 7;          //清一色
-    QiDui  = 8;             //七对
-    QingQiDui  = 9;         //清七对
-    LongQiDui  = 10;        //龙七对
-    QingLongQiDui  = 11;    //清龙七对   
-    PengPengHu  = 12;       //碰碰胡
-    QingPeng  = 13;         //清碰
-    JingGouDiao  = 14;      //金钩钓
-    QingJingGouDiao  = 15;  //清金钩钓
-    TianHu  = 16;           //天胡
-    DiHu = 17;              //地胡
-    ShiBaLuoHan   = 18;     //十八罗汉
-    QingShiBaLuoHan  = 19;  //清十八罗汉
-}
