@@ -113,7 +113,7 @@ func TestZixunState_bugang(t *testing.T) {
 	// ntf := &room.RoomBugangNtf{
 	// 	Player: proto.Uint64(1),
 	// 	Card: &room.Card{
-	// 		Color: room.CardColor_ColorWan.Enum(),
+	// 		Color: room.CardColor_CC_WAN.Enum(),
 	// 		Point: proto.Int32(1),
 	// 	},
 	// }
@@ -179,7 +179,7 @@ func TestZixunState_chupai(t *testing.T) {
 	// ntf := &room.RoomChupaiNtf{
 	// 	Player: proto.Uint64(1),
 	// 	Card: &room.Card{
-	// 		Color: room.CardColor_ColorWan.Enum(),
+	// 		Color: room.CardColor_CC_WAN.Enum(),
 	// 		Point: proto.Int32(1),
 	// 	},
 	// }
