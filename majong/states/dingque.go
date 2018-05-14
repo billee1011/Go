@@ -3,6 +3,7 @@ package states
 import (
 	"fmt"
 	"steve/majong/interfaces"
+	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -37,14 +38,27 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	// 序列化
 	dinqueEvent := new(majongpb.DingqueRequestEvent)
 	if err := proto.Unmarshal(eventContext, dinqueEvent); err != nil {
-		return false, fmt.Errorf("定缺事件反序列化失败: %v", err)
+		return false, fmt.Errorf("定缺 ： %v", errUnmarshalEvent)
 	}
 	//麻将牌局现场
 	mjContext := flow.GetMajongContext()
 	// 所有玩家
 	players := mjContext.Players
-	// 获取定缺玩家和定缺颜色
+	// 获取定缺玩家ID
 	playerID := dinqueEvent.GetHead().GetPlayerId()
+	// 错误码-成功
+	err := room.RoomError_Success
+	// 定缺应答 请求-响应
+	toClientRsq := interfaces.ToClientMessage{
+		MsgID: int(msgid.MsgID_ROOM_DINGQUE_RSP),
+		Msg: &room.RoomDingqueRsp{
+			ErrCode: &err,
+		},
+	}
+	// 推送消息应答
+	flow.PushMessages([]uint64{playerID}, toClientRsq)
+
+	// 获取定缺玩家和定缺颜色
 	dqPlayer := utils.GetPlayerByID(players, playerID)
 	if dqPlayer == nil {
 		return false, fmt.Errorf("定缺事件失败-定缺玩家ID不存在: %v ", playerID)
@@ -64,36 +78,29 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	dqPlayer.DingqueColor = dqColor
 	// 设置已经定缺
 	dqPlayer.HasDingque = true
-	// 定缺所有玩家ID
-	playerAllID := []uint64{}
 	// 所有定缺玩家通知
 	playerDqColors := make([]*room.PlayerDingqueColor, 0)
-	// 遍历其他玩家是否都已经定缺,并设置广播通知定缺完成
+	// 遍历其他玩家是否都已经定缺,并设置每个玩家定缺颜色消息
 	for i := 0; i < len(players); i++ {
-		if dqPlayer.PalyerId != players[i].PalyerId && !players[i].HasDingque {
+		if !players[i].HasDingque {
 			return false, nil
 		}
-		playerAllID = append(playerAllID, players[i].PalyerId)
+		// 房间定缺完成通知的玩家定缺消息
 		playerDQ := &room.PlayerDingqueColor{
-			PlayerId: &players[i].PalyerId,
+			PlayerId: proto.Uint64(players[i].PalyerId),
 			Color:    room.CardColor(players[i].DingqueColor).Enum(),
 		}
 		playerDqColors = append(playerDqColors, playerDQ)
 	}
-	// 定缺完成通知
-	dqNtf := &room.RoomDingqueFinishNtf{
+	dingQueNtf := room.RoomDingqueFinishNtf{
 		PlayerDingqueColor: playerDqColors,
 	}
-	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_DINGQUE_FINISH_NTF),
-		Msg:   dqNtf,
-	}
-	// 推送消息
-	// flow.PushMessages(playerAllID, toClient)
+	// 广播定缺完成消息
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, &dingQueNtf)
 	// 日志
 	logrus.WithFields(logrus.Fields{
-		"playerAllID": playerAllID,
-		"toClient":    toClient,
+		"toClientRsq": toClientRsq,
+		"dingQueNtf":  dingQueNtf,
 	}).Info("定缺成功")
 	return true, nil
 }

@@ -1,13 +1,14 @@
 package fan
 
 import (
+	"steve/majong/interfaces"
 	"steve/majong/utils"
 	"steve/server_pb/majong"
 )
 
 // Fan 番型
 type Fan struct {
-	name      string
+	name      interfaces.CardType
 	value     uint32
 	Condition condition
 }
@@ -15,7 +16,7 @@ type Fan struct {
 type condition func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool
 
 // GetFanName 获取番型名字
-func (f *Fan) GetFanName() string {
+func (f *Fan) GetFanName() interfaces.CardType {
 	return f.name
 }
 
@@ -80,89 +81,57 @@ var FanValue = map[majong.Fan]uint32{
 
 func init() {
 
-	fanPinghu := Fan{name: FanName[majong.Fan_PingHu], value: 1, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkPingHu(context, huType, player)
-	}}
+	// fanPinghu := Fan{name: FanName[majong.Fan_PingHu], value: 1, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkPingHu(context, huType, player)
+	// }}
 
-	fanZimo := Fan{name: FanName[majong.Fan_FZiMo], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkZiMo(context, huType, player)
-	}}
+	// fanHaiDiLao := Fan{name: FanName[majong.Fan_HaiDiLao], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkHaiDiLao(context, huType, player)
+	// }}
 
-	fanQiangGangHu := Fan{name: FanName[majong.Fan_QiangGangHu], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQiangGangHu(context, huType, player)
-	}}
+	// fanQingYiSe := Fan{name: FanName[majong.Fan_QingYiSe], value: 4, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkQingYiSe(context, huType, player)
+	// }}
 
-	fanDianPaoHu := Fan{name: FanName[majong.Fan_DianPaoHu], value: 1, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkDianPao(context, huType, player)
-	}}
+	// fanQiDui := Fan{name: FanName[majong.Fan_QiDui], value: 4, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkQiDui(context, huType, player)
+	// }}
 
-	fanGangHouPao := Fan{name: FanName[majong.Fan_GangHouPao], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkGangHouPao(context, huType, player)
-	}}
+	// fanLongQiDui := Fan{name: FanName[majong.Fan_LongQiDui], value: 8, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkLongQiDui(context, huType, player)
+	// }}
 
-	fanGangKai := Fan{name: FanName[majong.Fan_GangKai], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkGangKai(context, huType, player)
-	}}
+	// fanPengPengHu := Fan{name: FanName[majong.Fan_PengPengHu], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkPengPengHu(context, huType, player)
+	// }}
 
-	fanHaiDiLao := Fan{name: FanName[majong.Fan_HaiDiLao], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkHaiDiLao(context, huType, player)
-	}}
+	// fanJingGouDiao := Fan{name: FanName[majong.Fan_JingGouDiao], value: 4, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkJingGouDiao(context, huType, player)
+	// }}
 
-	fanQingYiSe := Fan{name: FanName[majong.Fan_QingYiSe], value: 4, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQingYiSe(context, huType, player)
-	}}
+	// fanQingJingGouDiao := Fan{name: FanName[majong.Fan_QingJingGouDiao], value: 16, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkQingJingGouDiao(context, huType, player)
+	// }}
 
-	fanQiDui := Fan{name: FanName[majong.Fan_QiDui], value: 4, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQiDui(context, huType, player)
-	}}
+	// fanTianHu := Fan{name: FanName[majong.Fan_TianHu], value: 32, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkTianHu(context, huType, player)
+	// }}
 
-	fanQingQiDui := Fan{name: FanName[majong.Fan_QingQiDui], value: 16, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQingQiDui(context, huType, player)
-	}}
+	// fanDiHu := Fan{name: FanName[majong.Fan_DiHu], value: 32, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkDiHu(context, huType, player)
+	// }}
 
-	fanLongQiDui := Fan{name: FanName[majong.Fan_LongQiDui], value: 8, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkLongQiDui(context, huType, player)
-	}}
+	// fanShiBaLuoHan := Fan{name: FanName[majong.Fan_ShiBaLuoHan], value: 64, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkShiBaLuoHan(context, huType, player)
+	// }}
 
-	fanQingLongQiDui := Fan{name: FanName[majong.Fan_QingLongQiDui], value: 32, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQingLongQiDui(context, huType, player)
-	}}
+	// fanQingShiBaLuoHan := Fan{name: FanName[majong.Fan_QingShiBaLuoHan], value: 256, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
+	// 	return checkQingShiBaLuoHan(context, huType, player)
+	// }}
 
-	fanPengPengHu := Fan{name: FanName[majong.Fan_PengPengHu], value: 2, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkPengPengHu(context, huType, player)
-	}}
+	// AllFan = append(AllFan, fanPinghu, fanHaiDiLao, fanQingYiSe, fanQiDui, fanLongQiDui, fanPengPengHu, fanQingPeng, fanJingGouDiao, fanQingJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan, fanQingShiBaLuoHan)
 
-	fanQingPeng := Fan{name: FanName[majong.Fan_QingPeng], value: 8, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQingPeng(context, huType, player)
-	}}
-
-	fanJingGouDiao := Fan{name: FanName[majong.Fan_JingGouDiao], value: 4, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkJingGouDiao(context, huType, player)
-	}}
-
-	fanQingJingGouDiao := Fan{name: FanName[majong.Fan_QingJingGouDiao], value: 16, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQingJingGouDiao(context, huType, player)
-	}}
-
-	fanTianHu := Fan{name: FanName[majong.Fan_TianHu], value: 32, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkTianHu(context, huType, player)
-	}}
-
-	fanDiHu := Fan{name: FanName[majong.Fan_DiHu], value: 32, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkDiHu(context, huType, player)
-	}}
-
-	fanShiBaLuoHan := Fan{name: FanName[majong.Fan_ShiBaLuoHan], value: 64, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkShiBaLuoHan(context, huType, player)
-	}}
-
-	fanQingShiBaLuoHan := Fan{name: FanName[majong.Fan_QingShiBaLuoHan], value: 256, Condition: func(context majong.MajongContext, huType majong.HuType, player *majong.Player) bool {
-		return checkQingShiBaLuoHan(context, huType, player)
-	}}
-
-	AllFan = append(AllFan, fanPinghu, fanZimo, fanQiangGangHu, fanDianPaoHu, fanGangHouPao, fanGangKai, fanHaiDiLao, fanQingYiSe, fanQiDui, fanQingQiDui, fanLongQiDui, fanQingLongQiDui, fanPengPengHu, fanQingPeng, fanJingGouDiao, fanQingJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan, fanQingShiBaLuoHan)
-
-	ScxlFan = append(ScxlFan, fanPinghu, fanQiangGangHu, fanGangHouPao, fanGangKai, fanHaiDiLao, fanQingYiSe, fanQiDui, fanLongQiDui, fanPengPengHu, fanJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan)
+	// ScxlFan = append(ScxlFan, fanPinghu, fanZimo, fanQiangGangHu, fanDianPaoHu, fanGangHouPao, fanGangKai, fanHaiDiLao, fanQingYiSe, fanQiDui, fanLongQiDui, fanPengPengHu, fanJingGouDiao, fanTianHu, fanDiHu, fanShiBaLuoHan)
 }
 
 // checkPingHu 平胡-不包含其他番型
@@ -240,7 +209,7 @@ func checkQingYiSe(context majong.MajongContext, huType majong.HuType, player *m
 	}
 	color := majong.CardColor(-1)
 	for _, card := range checkCards {
-		if color == 1 {
+		if color == -1 {
 			color = card.Color
 		} else if color != card.Color {
 			return false
