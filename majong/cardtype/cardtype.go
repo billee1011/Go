@@ -3,6 +3,7 @@ package cardtype
 import (
 	"steve/majong/interfaces"
 	"steve/majong/settle/fan"
+	majongpb "steve/server_pb/majong"
 )
 
 type cardTypeCalculator struct {
@@ -13,30 +14,30 @@ var CardTypeValueMap = make(map[interfaces.CardType]int)
 
 // 初始番型与卡牌映射
 func init() {
-	// // 平胡 1
-	// CardTypeValueMap[PingHu] = 1 
-	// // 清一色 4
-	// CardTypeValueMap[QingYiSe] = 4 
-	// // 七对 4
-	// CardTypeValueMap[QiDui] = 4 
-	// // 清七对 16
-	// CardTypeValueMap[QingQiDui] = 16 
-	// // 龙七对 8
-	// CardTypeValueMap[LongQiDui] = 8 
-	// // 清龙七对 32
-	// CardTypeValueMap[QingLongQiDui] = 32
-	// // 碰碰胡 2
-	// CardTypeValueMap[PengPengHu] = 2
-	// // 清碰 8
-	// CardTypeValueMap[QingPeng] = 8
-	// // 金钩钓 4
-	// CardTypeValueMap[JingGouDiao] = 4
-	// // 清金钩钓 16
-	// CardTypeValueMap[QingJingGouDiao] = 16
-	// // 十八罗汉 64
-	// CardTypeValueMap[ShiBaLuoHan] = 64
-	// // 清十八罗汉 256
-	// CardTypeValueMap[QingShiBaLuoHan] = 254
+	// 平胡 1
+	CardTypeValueMap[majongpb.CardType_PingHu] = 1
+	// 清一色 4
+	CardTypeValueMap[majongpb.CardType_QingYiSe] = 4
+	// 七对 4
+	CardTypeValueMap[majongpb.CardType_QiDui] = 4
+	// 清七对 16
+	CardTypeValueMap[majongpb.CardType_QingQiDui] = 16
+	// 龙七对 8
+	CardTypeValueMap[majongpb.CardType_LongQiDui] = 8
+	// 清龙七对 32
+	CardTypeValueMap[majongpb.CardType_QingLongQiDui] = 32
+	// 碰碰胡 2
+	CardTypeValueMap[majongpb.CardType_PengPengHu] = 2
+	// 清碰 8
+	CardTypeValueMap[majongpb.CardType_QingPeng] = 8
+	// 金钩钓 4
+	CardTypeValueMap[majongpb.CardType_JingGouDiao] = 4
+	// 清金钩钓 16
+	CardTypeValueMap[majongpb.CardType_QingJingGouDiao] = 16
+	// 十八罗汉 64
+	CardTypeValueMap[majongpb.CardType_ShiBaLuoHan] = 64
+	// 清十八罗汉 256
+	CardTypeValueMap[majongpb.CardType_QingShiBaLuoHan] = 254
 
 }
 
@@ -45,10 +46,10 @@ func (ctc *cardTypeCalculator) Calculate(params interfaces.CardCalcParams) (card
 	fanCardTypes := make([]interfaces.CardType, 0)
 	// 遍历可行番型
 	for i := 0; i < len(fan.AllFan); i++ {
-		// if fan.AllFan[i].Condition() {
-		fanName := fan.AllFan[i].GetFanName()
-		fanCardTypes = append(fanCardTypes, fanName)
-		// }
+		if fan.AllFan[i].Condition() {
+			fanName := fan.AllFan[i].GetFanName()
+			fanCardTypes = append(fanCardTypes, fanName)
+		}
 	}
 	// 获取根数
 	// gengCount = fan.GetGenCount(winner)
