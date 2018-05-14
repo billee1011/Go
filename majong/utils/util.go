@@ -509,13 +509,13 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 			tingInfo[playCard] = huCards
 		}
 	}
-	return tingInfo
+	return qiStrategy
 }
 
-//GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]int32, error
-func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int32, error) {
+//GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]uint32, error
+func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]uint32, error) {
 	// map:palyCard-map:[tingCard-multiple]
-	tingMultiple := make(map[int32]map[int32]int32)
+	tingMultiple := make(map[int32]map[int32]uint32)
 	// 获取手牌定缺牌数量
 	sum := GetDingQueCardSum(palyer.HandCards, palyer.DingqueColor)
 	// 手中少于2张定缺牌才能进行查听
@@ -533,7 +533,7 @@ func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int32, error)
 				return tingMultiple, err
 			}
 			// 复制手牌
-			handCard = append(handCard[:0],palyer.HandCards...)
+			handCard = append(handCard[:0], palyer.HandCards...)
 			// 删除出牌
 			newHanCard, isSucceed := DeleteCardFromLast(handCard, playCard2)
 			if !isSucceed {
@@ -551,8 +551,8 @@ func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int32, error)
 					// 添加能胡的牌
 					newHanCard = append(newHanCard, tingCard2)
 					// 查询能胡的最大倍数 TODO
-					multiple := int32(1)
-					huMutipleMap := map[int32]int32{int32(tingCard):multiple}
+					multiple := uint32(1)
+					huMutipleMap := map[int32]uint32{int32(tingCard): multiple}
 					tingMultiple[int32(playCard)] = huMutipleMap
 					// 删除能胡的牌
 					newHanCard = newHanCard[:len(newHanCard)-1]
@@ -563,10 +563,10 @@ func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]int32, error)
 	return tingMultiple, nil
 }
 
-//GetHuHint 胡牌提示倍数，缺一张，返回map[int32]int32, error
-func GetHuHint(palyer *majongpb.Player) (map[int32]int32, error) {
+//GetHuHint 胡牌提示倍数，缺一张，返回map[int32]uint32, error
+func GetHuHint(palyer *majongpb.Player) (map[int32]uint32, error) {
 	// map:tingCard-multiple
-	tingMultiple := make(map[int32]int32)
+	tingMultiple := make(map[int32]uint32)
 	// 手中没有定缺牌
 	if !CheckHasDingQueCard(palyer.HandCards, palyer.DingqueColor) {
 		// 获取出牌提示
@@ -587,7 +587,7 @@ func GetHuHint(palyer *majongpb.Player) (map[int32]int32, error) {
 				newHandCard := append(handCard, tingCard)
 				// 查询能胡的最大倍数 TODO
 				// 倍数
-				multiple := int32(1)
+				multiple := uint32(1)
 				// 麻将牌转Int32
 				cardInt, err := CardToInt(*tingCard)
 				if err != nil {
