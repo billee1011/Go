@@ -40,6 +40,7 @@ func Test_StartGame(t *testing.T) {
 			makeRoomCards(Card1T, Card1T, Card1T),
 			makeRoomCards(Card5T, Card5T, Card5T),
 		},
+		DingqueColor: []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO},
 	})
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)

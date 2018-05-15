@@ -102,3 +102,26 @@ func ContainCard(cards []*majongpb.Card, card *majongpb.Card) bool {
 	}
 	return false
 }
+
+// ServerColor2ClientColor 服务端协议卡牌花色转客户端花色
+func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
+	switch color {
+	case majongpb.CardColor_ColorWan:
+		{
+			return room.CardColor_CC_WAN
+		}
+	case majongpb.CardColor_ColorTiao:
+		{
+			return room.CardColor_CC_TIAO
+		}
+	case majongpb.CardColor_ColorTong:
+		{
+			return room.CardColor_CC_TONG
+		}
+	case majongpb.CardColor_ColorFeng:
+		{
+			return room.CardColor_CC_FENG
+		}
+	}
+	return room.CardColor(-1)
+}

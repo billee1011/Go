@@ -2,6 +2,7 @@ package states
 
 import (
 	"fmt"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -120,7 +121,7 @@ func (s *DingqueState) OnExit(flow interfaces.MajongFlow) {
 		// 房间定缺完成通知的玩家定缺消息
 		playerDingQue := &room.PlayerDingqueColor{
 			PlayerId: proto.Uint64(player.PalyerId),
-			Color:    room.CardColor(player.DingqueColor).Enum(),
+			Color:    gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 		}
 		playerDingQueMsg = append(playerDingQueMsg, playerDingQue)
 	}

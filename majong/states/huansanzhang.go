@@ -214,5 +214,6 @@ func (s *HuansanzhangState) execute(flow interfaces.MajongFlow) (newState majong
 		}
 	}
 	s.notifyFinish(flow, dir, exchangesIn, exchangesOut)
+	newState = majongpb.StateID_state_dingque
 	return
 }
