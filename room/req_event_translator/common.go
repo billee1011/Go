@@ -18,19 +18,19 @@ func translateHeader(playerID uint64, header *steve_proto_gaterpc.Header, body p
 // translateCardColor 转换卡牌花色
 func translateCardColor(color room.CardColor) server_pb.CardColor {
 	switch color {
-	case room.CardColor_ColorWan:
+	case room.CardColor_CC_WAN:
 		{
 			return server_pb.CardColor_ColorWan
 		}
-	case room.CardColor_ColorTiao:
+	case room.CardColor_CC_TIAO:
 		{
 			return server_pb.CardColor_ColorTiao
 		}
-	case room.CardColor_ColorTong:
+	case room.CardColor_CC_TONG:
 		{
 			return server_pb.CardColor_ColorTong
 		}
-	case room.CardColor_ColorFeng:
+	case room.CardColor_CC_FENG:
 		{
 			return server_pb.CardColor_ColorFeng
 		}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 	// "github.com/go-redis/redis"
 	// "github.com/spf13/viper"
 )
@@ -19,10 +21,8 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 	value := r.FormValue("cards")
 	lenValue := r.FormValue("len")
 	lens := 0
-	fmt.Println("lens:", len(lenValue))
 	if len(lenValue) != 0 {
 		lenNum, err := strconv.Atoi(lenValue)
-		fmt.Println("lens:", lens)
 		if err != nil {
 			w.WriteHeader(404)
 			w.Write([]byte("墙牌长度应为纯数字"))
@@ -44,8 +44,19 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 	} else if fxValue == "ni" {
 		fx = 2
 	}
-	fmt.Println("game: ", game)
-	fmt.Println("value: ", value)
+
+	zhuangValue := r.FormValue("zhuang")
+	zhuangIndex := -1
+	if len(zhuangValue) != 0 {
+		index, err := strconv.Atoi(zhuangValue)
+		if err != nil {
+			w.WriteHeader(404)
+			w.Write([]byte("庄家index应该为纯数字"))
+			return
+		}
+		zhuangIndex = index
+	}
+
 	var cards []int
 	for i := 0; i < len(value); i = i + 3 {
 		in := value[i : i+2]
@@ -89,40 +100,56 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(data))
 		}
 	}
-	peipai_value[game] = value
+	// peipaiValue[game] = value
 	pp := peipaiInfo{
-		key:   game,
-		cards: value,
-		len:   lens,
-		fx:    fx,
+		Key:    game,
+		Cards:  value,
+		Len:    lens,
+		Fx:     fx,
+		Zhuang: zhuangIndex,
 	}
 	addPeiPaiInfo(pp)
-	fmt.Println(pp)
+	// for k, info := range peiPaiInfos {
+	// 	logrus.WithFields(logrus.Fields{
+	// 		strconv.Itoa(k): logrus.Fields{
+	// 			"game":   info.Key,
+	// 			"cards":  info.Cards,
+	// 			"len":    info.Len,
+	// 			"fx":     info.Fx,
+	// 			"zhuang": info.Zhuang,
+	// 		},
+	// 	}).Info("所有的配牌信息")
+	// }
+
 	okStr := "ok"
 	w.WriteHeader(200)
 	w.Write([]byte(okStr))
 }
 
-var peipai_value map[string]string
+var peipaiValue map[string]string
 
 var peiPaiInfos []peipaiInfo
 
 // var PP_PORT string
 type peipaiInfo struct {
 	//配牌关键字
-	key string
+	Key string
 	//配牌
-	cards string
+	Cards string
 	//墙牌长度
-	len int
+	Len int
 	//换三张方向
-	fx int
+	Fx int
+	//庄的index
+	Zhuang int
 }
 
 //GetPeiPai 通过配牌关键字拿到配牌
 func GetPeiPai(key string) (string, error) {
-	if value, ok := peipai_value[key]; ok {
-		return value, nil
+	for _, pp := range peiPaiInfos {
+		if pp.Key == key {
+			return pp.Cards, nil
+		}
 	}
 	return "", fmt.Errorf("不存在这个配牌key")
 }
@@ -130,8 +157,8 @@ func GetPeiPai(key string) (string, error) {
 //GetLensOfWallCards 牌墙长度
 func GetLensOfWallCards(key string) int {
 	for _, pp := range peiPaiInfos {
-		if pp.key == key {
-			return pp.len
+		if pp.Key == key {
+			return pp.Len
 		}
 	}
 	return 0
@@ -140,8 +167,18 @@ func GetLensOfWallCards(key string) int {
 //GetHSZFangXiang 换三张方向
 func GetHSZFangXiang(key string) int {
 	for _, pp := range peiPaiInfos {
-		if pp.key == key {
-			return pp.fx
+		if pp.Key == key {
+			return pp.Fx
+		}
+	}
+	return -1
+}
+
+//GetZhuangIndex 定义庄家的index
+func GetZhuangIndex(key string) int {
+	for _, pp := range peiPaiInfos {
+		if pp.Key == key {
+			return pp.Zhuang
 		}
 	}
 	return -1
@@ -159,7 +196,7 @@ func addPeiPaiInfo(pp peipaiInfo) {
 //checkPeiPaiInfo 检查新的配牌请求是否存在
 func checkPeiPaiInfo(pp peipaiInfo) (int, bool) {
 	for index, peipaiInfo := range peiPaiInfos {
-		if peipaiInfo.key == pp.key {
+		if peipaiInfo.Key == pp.Key {
 			return index, true
 		}
 	}
@@ -185,10 +222,25 @@ func checkPeiPaiLen(lenValue string) {
 func checkPeiPaiHSZFX(fxValue string) {
 
 }
-func init() {
-	peipai_value = make(map[string]string)
-	peiPaiInfos = make([]peipaiInfo, 0)
+
+//LogPeiPaiInfos 打印配牌信息
+func LogPeiPaiInfos() {
+	fmt.Println(peiPaiInfos)
+	for k, info := range peiPaiInfos {
+		logrus.WithFields(logrus.Fields{
+			"game":   info.Key,
+			"cards":  info.Cards,
+			"len":    info.Len,
+			"fx":     info.Fx,
+			"zhuang": info.Zhuang,
+		}).Info(k)
+	}
 }
+
+// func init() {
+// 	peipaiValue = make(map[string]string)
+// 	peiPaiInfos = []*peipaiInfo{}
+// }
 
 // Run 启动配牌
 func Run(addr string) {

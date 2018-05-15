@@ -12,16 +12,9 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 	roomReqs := []msgid.MsgID{
 		// TODO: 添加所有房间请求消息
 		msgid.MsgID_ROOM_HUANSANZHANG_REQ,
+		msgid.MsgID_ROOM_XINGPAI_ACTION_REQ,
 		msgid.MsgID_ROOM_DINGQUE_REQ,
-		msgid.MsgID_ROOM_PENG_REQ,
-		msgid.MsgID_ROOM_GANG_REQ,
-		msgid.MsgID_ROOM_HU_REQ,
-		msgid.MsgID_ROOM_QI_REQ,
 		msgid.MsgID_ROOM_CHUPAI_REQ,
-		msgid.MsgID_ROOM_HU_REQ,
-		msgid.MsgID_ROOM_GANG_REQ,
-		msgid.MsgID_ROOM_GANG_REQ,
-		msgid.MsgID_ROOM_HU_REQ,
 	}
 
 	for _, msg := range roomReqs {

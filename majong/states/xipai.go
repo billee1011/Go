@@ -97,10 +97,14 @@ func (s *XipaiState) randDices() [2]int {
 }
 
 // selectZhuangjia 选择庄家
-func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices [2]int) int {
+func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices [2]int, gameName string) int {
 	totalDice := dices[0] + dices[1]
 
 	mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
+	zhuangIndex := peipai.GetZhuangIndex(gameName)
+	if zhuangIndex != -1 {
+		return zhuangIndex
+	}
 	return int(mjContext.ZhuangjiaIndex)
 }
 
@@ -108,9 +112,9 @@ func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices [2
 func (s *XipaiState) pushMessages(cardCount int, dices [2]int, zjIndex int, flow interfaces.MajongFlow) {
 	protoDices := []uint32{uint32(dices[0]), uint32(dices[1])}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_XIPAI_NTF, &room.RoomXipaiNtf{
-		Dices:          protoDices,
-		TotalCard:      proto.Uint32(uint32(cardCount)),
-		ZhuangjiaIndex: proto.Uint32(uint32(zjIndex)),
+		Dices:      protoDices,
+		TotalCard:  proto.Uint32(uint32(cardCount)),
+		BankerSeat: proto.Uint32(uint32(zjIndex)),
 	})
 }
 
@@ -120,10 +124,9 @@ func (s *XipaiState) OnEntry(flow interfaces.MajongFlow) {
 
 	mjContext.WallCards = s.xipai(flow)
 	dices := s.randDices()
-	zjIndex := s.selectZhuangjia(mjContext, dices)
-
+	gameName := getGameName(flow)
+	zjIndex := s.selectZhuangjia(mjContext, dices, gameName)
 	s.pushMessages(len(mjContext.WallCards), dices, zjIndex, flow)
-
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_xipai_finish,
 		EventContext: nil,

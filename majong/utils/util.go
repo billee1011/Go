@@ -191,11 +191,11 @@ func IntToRoomCard(cardValue int32) (*room.Card, error) {
 	var color room.CardColor
 	switch colorValue {
 	case 1:
-		color = room.CardColor_ColorWan
+		color = room.CardColor_CC_WAN
 	case 2:
-		color = room.CardColor_ColorTiao
+		color = room.CardColor_CC_TIAO
 	case 3:
-		color = room.CardColor_ColorTong
+		color = room.CardColor_CC_TONG
 	default:
 		return nil, fmt.Errorf("cant trans card %d", cardValue)
 	}
@@ -208,14 +208,14 @@ func IntToRoomCard(cardValue int32) (*room.Card, error) {
 //CardToRoomCard majongpb.card类型转room.Card类型
 func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	var color room.CardColor
-	if card.Color.String() == room.CardColor_ColorWan.String() {
-		color = room.CardColor_ColorWan
+	if card.Color.String() == room.CardColor_CC_WAN.String() {
+		color = room.CardColor_CC_WAN
 	}
-	if card.Color.String() == room.CardColor_ColorTiao.String() {
-		color = room.CardColor_ColorTiao
+	if card.Color.String() == room.CardColor_CC_TIAO.String() {
+		color = room.CardColor_CC_TIAO
 	}
-	if card.Color.String() == room.CardColor_ColorTong.String() {
-		color = room.CardColor_ColorTong
+	if card.Color.String() == room.CardColor_CC_TONG.String() {
+		color = room.CardColor_CC_TONG
 	}
 
 	return &room.Card{
