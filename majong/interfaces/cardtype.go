@@ -6,9 +6,11 @@ import (
 
 // CardTypeCalculator 牌型计算器
 type CardTypeCalculator interface {
-	Calculate(params CardCalcParams) (cardTypes []CardType, gengCount int)
+	Calculate(params CardCalcParams) (cardTypes []CardType, gengCount uint32)
 	// CardTypeValue 牌型的倍数
-	CardTypeValue(cardTypes []CardType, gengCount int) int
+	CardTypeValue(cardTypes []CardType, gengCount uint32) uint32
+	// CardGenSum 牌的根数量
+	CardGenSum(params CardCalcParams) uint32
 }
 
 // CardType 卡牌类型
