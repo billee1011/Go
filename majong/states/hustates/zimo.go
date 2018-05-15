@@ -4,9 +4,11 @@ import (
 	"errors"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/cardtype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -63,16 +65,26 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
 	addHuCard(card, player, player.GetPalyerId(), majongpb.HuType_hu_zimo)
 	s.notifyHu(card, player.GetPalyerId(), flow)
+	s.doZiMoSettle(card, player.GetPalyerId(), flow)
 }
 
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, playerID uint64, flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
 	huCard, _ := utils.CardToRoomCard(card)
+	huType := room.HuType_ZiMo.Enum()
+	huPlayer := utils.GetMajongPlayer(playerID, mjContext)
+	if string(huPlayer.Properties["gang"]) == "true" {
+		huType = room.HuType_GangKai.Enum()
+		if len(mjContext.WallCards) == 0 {
+			huType = room.HuType_GangShangHaiDiLao.Enum()
+		}
+	}
 	body := room.RoomHuNtf{
 		Players:      []uint64{playerID},
 		FromPlayerId: proto.Uint64(playerID),
 		Card:         huCard,
-		HuType:       room.HuType_ZiMo.Enum(),
+		HuType:       huType,
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }
@@ -119,4 +131,56 @@ func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majo
 func (s *ZimoState) calcTianhuCard(cards []*majongpb.Card) *majongpb.Card {
 	// TODO
 	return cards[len(cards)-1]
+}
+
+// doZiMoSettle 自摸的结算
+func (s *ZimoState) doZiMoSettle(card *majongpb.Card, huPlayerID uint64, flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+
+	allPlayers := make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		allPlayers = append(allPlayers, player.GetPalyerId())
+	}
+
+	cardValues := make(map[uint64]uint32, 0)
+	cardTypes := make(map[uint64][]majongpb.CardType, 0)
+	genCount := make(map[uint64]uint32, 0)
+
+	huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
+	cardParams := interfaces.CardCalcParams{
+		HandCard: huPlayer.HandCards,
+		PengCard: utils.TransPengCard(huPlayer.PengCards),
+		GangCard: utils.TransGangCard(huPlayer.GangCards),
+		HuCard:   mjContext.GetLastMopaiCard(),
+	}
+	calculator := new(cardtype.ScxlCardTypeCalculator)
+	cardType, gen := calculator.Calculate(cardParams)
+	cardValue, _ := calculator.CardTypeValue(cardType, gen)
+
+	cardTypes[huPlayerID] = cardType
+	cardValues[huPlayerID] = cardValue
+	genCount[huPlayerID] = gen
+
+	huType := majongpb.SettleHuType_settle_hu_zimo
+	if string(huPlayer.Properties["gang"]) == "true" {
+		huType = majongpb.SettleHuType_settle_hu_gangkai
+		if len(mjContext.WallCards) == 0 {
+			huType = majongpb.SettleHuType_settle_hu_gangshanghaidilao
+		}
+	}
+	params := interfaces.HuSettleParams{
+		HuPlayers:  []uint64{huPlayerID},
+		SrcPlayer:  huPlayerID,
+		AllPlayers: allPlayers,
+		SettleType: majongpb.SettleType_settle_zimo,
+		HuType:     huType,
+		CardTypes:  cardTypes,
+		CardValues: cardValues,
+		GenCount:   genCount,
+		SettleID:   mjContext.CurrentSettleId,
+	}
+	huSettle := new(settle.HuSettle)
+	settleInfo := huSettle.Settle(params)
+	mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
+	mjContext.CurrentSettleId++
 }

@@ -12,7 +12,7 @@ type GangSettle struct {
 }
 
 // Settle  杠结算方法
-func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) []*majongpb.SettleInfo {
+func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majongpb.SettleInfo {
 	entry := logrus.WithFields(logrus.Fields{
 		"name":       "GangSettle",
 		"gangType":   params.GangType,
@@ -27,10 +27,9 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) []*majo
 	total := gangScore * int(ante)
 
 	// 结算信息
-	settleInfos := make([]*majongpb.SettleInfo, 0)
 	gangSettleInfo := NewSettleInfo(params.SettleID)
 
-	if params.GangType == majongpb.GangType_gang_angang {
+	if params.GangType == majongpb.GangType_gang_minggang {
 		gangSettleInfo.Scores[params.GangPlayer] = int64(total)
 		gangSettleInfo.Scores[params.SrcPlayer] = 0 - int64(total)
 	} else if params.GangType == majongpb.GangType_gang_bugang || params.GangType == majongpb.GangType_gang_angang {
@@ -43,10 +42,9 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) []*majo
 		}
 		gangSettleInfo.Scores[params.GangPlayer] = int64(win)
 	}
-	gangSettleInfo.CardValue = int32(gangScore)
-	settleInfos = append(settleInfos, gangSettleInfo)
+	gangSettleInfo.CardValue = uint32(gangScore)
 	entry.Info("杠结算")
-	return settleInfos
+	return gangSettleInfo
 }
 
 // getGangScore 获取杠对应分数
