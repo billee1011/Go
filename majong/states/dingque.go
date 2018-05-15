@@ -35,7 +35,7 @@ func (s *DingqueState) ProcessEvent(eventID majongpb.EventID, eventContext []byt
 
 //定缺操作
 func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) (bool, error) {
-	// 序列化
+	// 序列化utils
 	dinqueEvent := new(majongpb.DingqueRequestEvent)
 	if err := proto.Unmarshal(eventContext, dinqueEvent); err != nil {
 		return false, fmt.Errorf("定缺 ： %v", errUnmarshalEvent)
@@ -78,39 +78,60 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	dqPlayer.DingqueColor = dqColor
 	// 设置已经定缺
 	dqPlayer.HasDingque = true
-	// 所有定缺玩家通知
-	playerDqColors := make([]*room.PlayerDingqueColor, 0)
-	// 遍历其他玩家是否都已经定缺,并设置每个玩家定缺颜色消息
+
+	// 日志
+	logrus.WithFields(logrus.Fields{
+		"msgID":           msgid.MsgID_ROOM_DINGQUE_RSP,
+		"toClientRsq":     toClientRsq,
+		"dinqueEvent":     dinqueEvent,
+		"dingQuePlayerID": dqPlayer.PalyerId,
+		"dingQueColor":    dqPlayer.DingqueColor,
+		"isDingQue":       dqPlayer.HasDingque,
+	}).Info("-----定缺中")
+
+	// 遍历其他玩家是否都已经定缺
 	for i := 0; i < len(players); i++ {
 		if !players[i].HasDingque {
 			return false, nil
 		}
-		// 房间定缺完成通知的玩家定缺消息
-		playerDQ := &room.PlayerDingqueColor{
-			PlayerId: proto.Uint64(players[i].PalyerId),
-			Color:    room.CardColor(players[i].DingqueColor).Enum(),
-		}
-		playerDqColors = append(playerDqColors, playerDQ)
 	}
-	dingQueNtf := room.RoomDingqueFinishNtf{
-		PlayerDingqueColor: playerDqColors,
-	}
-	// 广播定缺完成消息
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, &dingQueNtf)
-	// 日志
-	logrus.WithFields(logrus.Fields{
-		"toClientRsq": toClientRsq,
-		"dingQueNtf":  dingQueNtf,
-	}).Info("定缺成功")
 	return true, nil
 }
 
-// OnEntry 进入状态
+// OnEntry 进入状态，进入定缺状态，发送到客户端，进入定缺
 func (s *DingqueState) OnEntry(flow interfaces.MajongFlow) {
-
+	// 广播通知客户端进入定缺
+	dingQueNtf := room.RoomDingqueNtf{}
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
+	// 日志
+	logrus.WithFields(logrus.Fields{
+		"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
+		"dingQueNtf": dingQueNtf,
+	}).Info("-----定缺开始-进入定缺状态")
 }
 
-// OnExit 退出状态
+// OnExit 退出状态，定缺完成，发送定缺完成通知，进入下一个状态
 func (s *DingqueState) OnExit(flow interfaces.MajongFlow) {
-
+	players := flow.GetMajongContext().Players
+	// 所有定缺玩家消息通知
+	playerDingQueMsg := make([]*room.PlayerDingqueColor, 0)
+	// 设置每个玩家定缺颜色消息
+	for _, player := range players {
+		// 房间定缺完成通知的玩家定缺消息
+		playerDingQue := &room.PlayerDingqueColor{
+			PlayerId: proto.Uint64(player.PalyerId),
+			Color:    room.CardColor(player.DingqueColor).Enum(),
+		}
+		playerDingQueMsg = append(playerDingQueMsg, playerDingQue)
+	}
+	dingQueFinishNtf := room.RoomDingqueFinishNtf{
+		PlayerDingqueColor: playerDingQueMsg,
+	}
+	// 广播定缺完成消息
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, &dingQueFinishNtf)
+	// 日志
+	logrus.WithFields(logrus.Fields{
+		"msgID":            msgid.MsgID_ROOM_DINGQUE_FINISH_NTF,
+		"dingQueFinishNtf": dingQueFinishNtf,
+	}).Info("-----定缺完成-退出定缺状态")
 }

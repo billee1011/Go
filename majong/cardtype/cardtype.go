@@ -6,15 +6,15 @@ import (
 	majongpb "steve/server_pb/majong"
 )
 
-//XueLiuCardTypeCalculator 血流卡牌类型计算器
-type XueLiuCardTypeCalculator struct {
+//ScxlCardTypeCalculator 血流卡牌类型计算器
+type ScxlCardTypeCalculator struct {
 }
 
 func init() {
 }
 
 //Calculate 获取能胡所有番型，及根，最小平胡
-func (ctc *XueLiuCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []interfaces.CardType, gengCount uint32) {
+func (ctc *ScxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []interfaces.CardType, gengCount uint32) {
 	fanCardTypes := make([]majongpb.CardType, 0)
 	// 遍历可行番型
 	for i := 0; i < len(fan.ScxlFan); i++ {
@@ -29,7 +29,7 @@ func (ctc *XueLiuCardTypeCalculator) Calculate(params interfaces.CardCalcParams)
 }
 
 //CardTypeValue 获取总倍数
-func (ctc *XueLiuCardTypeCalculator) CardTypeValue(cardTypes []interfaces.CardType, gengCount uint32) uint32 {
+func (ctc *ScxlCardTypeCalculator) CardTypeValue(cardTypes []interfaces.CardType, gengCount uint32) uint32 {
 	total := uint32(1)
 	// 叠乘番型
 	for _, cardType := range cardTypes {
@@ -46,6 +46,6 @@ func (ctc *XueLiuCardTypeCalculator) CardTypeValue(cardTypes []interfaces.CardTy
 }
 
 //CardGenSum 获取根数量，没有做处理的，如是七对，并且是1根，就直接返回1
-func (ctc *XueLiuCardTypeCalculator) CardGenSum(params interfaces.CardCalcParams) uint32 {
+func (ctc *ScxlCardTypeCalculator) CardGenSum(params interfaces.CardCalcParams) uint32 {
 	return fan.GetGenCount(params)
 }
