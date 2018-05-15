@@ -24,6 +24,9 @@ type scxlSettle struct {
 
 // Settle 结算信息扣分
 func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext server_pb.MajongContext) {
+	if len(mjContext.SettleInfos) == 0 {
+		return
+	}
 	lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
 	// if !lastSettleInfo.Handle {
 	for _, player := range desk.GetPlayers() {

@@ -103,7 +103,7 @@ func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices [2
 	mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
 	zhuangIndex := peipai.GetZhuangIndex(gameName)
 	if zhuangIndex != -1 {
-		return zhuangIndex
+		mjContext.ZhuangjiaIndex = uint32(zhuangIndex % len(mjContext.Players))
 	}
 	return int(mjContext.ZhuangjiaIndex)
 }

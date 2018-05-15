@@ -1,12 +1,13 @@
 package states
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
+	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	"steve/peipai"
 	majongpb "steve/server_pb/majong"
@@ -22,81 +23,13 @@ type HuansanzhangState struct {
 
 // OnEntry 进入换三张状态
 func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
 }
 
 // ProcessEvent 处理换三张事件
 func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_huansanzhang_request {
-		huansanzhangReq := new(majongpb.HuansanzhangRequestEvent)
-		err := proto.Unmarshal(eventContext, huansanzhangReq)
-		if err != nil {
-			return majongpb.StateID_state_huansanzhang, err
-		}
-		players := flow.GetMajongContext().Players
-		player := utils.GetPlayerByID(players, huansanzhangReq.GetHead().PlayerId)
-		huansnahzangCards := huansanzhangReq.Cards
-		if len(huansnahzangCards) != 3 {
-			return majongpb.StateID_state_huansanzhang, errors.New("换三张牌数不为3")
-		}
-		for i := 0; i < len(huansnahzangCards)-1; i++ {
-			if huansnahzangCards[i].Color != huansnahzangCards[i+1].Color {
-				return majongpb.StateID_state_huansanzhang, errors.New("换三张花色不一样")
-			}
-			if !utils.ContainCard(player.HandCards, huansnahzangCards[i]) {
-				return majongpb.StateID_state_huansanzhang, fmt.Errorf("换三张的牌%v不存在玩家%v手牌", huansnahzangCards[i].Point, player.PalyerId)
-			}
-
-		}
-
-		player.HuansanzhangCards = huansnahzangCards
-		if huansanzhangReq.Sure {
-			player.HuansanzhangSure = true
-		}
-		huansnazhangDone := 0
-		for i := 0; i < len(players); i++ {
-			if (len(players[i].HuansanzhangCards) == 3) && (players[i].HuansanzhangSure == true) {
-				huansnazhangDone++
-			}
-		}
-		if huansnazhangDone == len(players) { // 所有玩家换三张牌都收到，开始处理换三张
-			rd := rand.New(rand.NewSource(time.Now().Unix())) // 生成换三张方向
-			towards := rd.Intn(3)
-			gameName := getGameName(flow)
-			fx := peipai.GetHSZFangXiang(gameName)
-			if fx != -1 {
-				towards = fx
-			}
-			l := len(players)
-			result := false
-			for i, player := range players { // 根据不同方向处理换三张
-				var pairPlayer *majongpb.Player
-				if towards == int(room.Direction_ClockWise) {
-					result = processHuansanzhang(player, players[(i+l-1)%l])
-					pairPlayer = players[(i+l-1)%l]
-
-				} else if towards == int(room.Direction_AntiClockWise) {
-					result = processHuansanzhang(player, players[(i+l+1)%l])
-					pairPlayer = players[(i+l+1)%l]
-
-				} else if towards == int(room.Direction_Opposite) {
-					result = processHuansanzhang(player, players[(i+l+2)%l])
-					pairPlayer = players[(i+l+2)%l]
-				}
-				huansanzhangFinishNtf := room.RoomHuansanzhangFinishNtf{
-					InCards:   utils.CardsToRoomCards(pairPlayer.HuansanzhangCards),
-					OutCards:  utils.CardsToRoomCards(player.HuansanzhangCards),
-					Direction: room.Direction(towards).Enum(),
-				}
-				if result {
-					//TODO
-					fmt.Println(huansanzhangFinishNtf)
-					//flow.PushMessages([]uint64{player.PalyerId}，huansanzhangFinishNtf)
-				}
-			}
-			return majongpb.StateID_state_dingque, nil
-		}
-
-		return majongpb.StateID_state_huansanzhang, errors.New("换三张尚有玩家未完成")
+		return s.onReq(eventID, eventContext, flow)
 	}
 	return majongpb.StateID_state_huansanzhang, global.ErrInvalidEvent
 }
@@ -106,17 +39,180 @@ func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
 
 }
 
-// processHuansanzhang 处理玩家换三张
-func processHuansanzhang(playerIn, playerOut *majongpb.Player) bool {
-	outCards := playerOut.HuansanzhangCards
-	for _, outCard := range outCards {
-		deleted := false
-		playerOut.HandCards, deleted = utils.DeleteCardFromLast(playerOut.HandCards, outCard)
-		if !deleted {
-			logrus.Fatalf("huansanzhang err deleted fail cards[%v] deleteCard[%v]\n", playerOut.HandCards, outCard)
+// checkReq 检测玩家请求是否合法
+func (s *HuansanzhangState) checkReq(logEntry *logrus.Entry, player *majongpb.Player, cards []*majongpb.Card) bool {
+	if len(cards) != 3 {
+		logEntry.Infoln("请求牌数不为3")
+		return false
+	}
+	for i := 0; i < len(cards)-1; i++ {
+		if cards[i].Color != cards[i+1].Color {
+			logEntry.Infoln("花色不一致")
 			return false
 		}
-		playerIn.HandCards = append(playerIn.HandCards, outCard)
+		if !utils.ContainCard(player.HandCards, cards[i]) {
+			logEntry.WithField("card", cards[i]).Infoln("玩家手牌不存在该牌")
+			return false
+		}
+	}
+	// TODO : 判断重复情况
+	return true
+}
+
+// onReq 处理换三张请求事件
+func (s *HuansanzhangState) onReq(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_huansanzhang, nil
+
+	logEntry := logrus.WithField("func_name", "HuansanzhangState.onReq")
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	req := new(majongpb.HuansanzhangRequestEvent)
+
+	if marshalErr := proto.Unmarshal(eventContext, req); marshalErr != nil {
+		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
+		return majongpb.StateID_state_huansanzhang, global.ErrUnmarshalEvent
+	}
+	playerID := req.GetHead().GetPlayerId()
+	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
+	reqCards := req.GetCards()
+
+	logEntry = logEntry.WithFields(logrus.Fields{
+		"req_player": playerID,
+		"req_cards":  reqCards,
+		"hand_cards": player.GetHandCards(),
+	})
+	if !s.checkReq(logEntry, player, reqCards) {
+		return
+	}
+	player.HuansanzhangCards = reqCards
+	if req.Sure {
+		player.HuansanzhangSure = true
+	}
+	return s.execute(flow)
+}
+
+// checkDone 检测换三张是否可执行
+func (s *HuansanzhangState) checkDone(players []*majongpb.Player) bool {
+	for _, player := range players {
+		if len(player.GetHuansanzhangCards()) != 3 || !player.GetHuansanzhangSure() {
+			return false
+		}
 	}
 	return true
+}
+
+// randDirection 随机换三张方向
+func (s *HuansanzhangState) randDirection(flow interfaces.MajongFlow) room.Direction {
+	rd := rand.New(rand.NewSource(time.Now().Unix())) // 生成换三张方向
+	directios := []room.Direction{room.Direction_ClockWise, room.Direction_Opposite, room.Direction_AntiClockWise}
+	towards := rd.Intn(len(directios))
+
+	gameName := getGameName(flow)
+	fx := peipai.GetHSZFangXiang(gameName)
+	if fx >= 0 && fx < len(directios) {
+		towards = fx
+	}
+	return directios[towards]
+}
+
+// makePairs 生成换三张配对数据。
+// 返回： 座号->从哪个座号拿牌
+func (s *HuansanzhangState) makePairs(playerCount int, dir room.Direction) map[int]int {
+	switch dir {
+	case room.Direction_AntiClockWise:
+		{
+			return map[int]int{0: 1, 1: 2, 2: 3, 3: 0}
+		}
+	case room.Direction_ClockWise:
+		{
+			return map[int]int{0: 3, 1: 0, 2: 1, 3: 2}
+		}
+	case room.Direction_Opposite:
+		{
+			return map[int]int{0: 2, 1: 3, 2: 0, 3: 1}
+		}
+	default:
+		return map[int]int{}
+	}
+}
+
+// fetchCardFrom seat 从 from 获取换三张的牌
+func (s *HuansanzhangState) fetchCardFrom(flow interfaces.MajongFlow, seat int, from int) ([]*majongpb.Card, error) {
+	mjContext := flow.GetMajongContext()
+	players := mjContext.GetPlayers()
+
+	fromPlayer := players[from]
+	curPlayer := players[seat]
+
+	cards := fromPlayer.GetHuansanzhangCards()
+
+	var ok bool
+	for _, card := range cards {
+		if fromPlayer.HandCards, ok = utils.RemoveCards(fromPlayer.GetHandCards(), card, 1); !ok {
+			return nil, fmt.Errorf("移除卡牌失败。玩家: %v, 卡牌：%v 手牌：%v", fromPlayer.GetPalyerId(), card, fromPlayer.GetHandCards())
+		}
+		curPlayer.HandCards = append(curPlayer.HandCards, card)
+	}
+	return cards, nil
+}
+
+// notifyFinish 通知换三张完成
+func (s *HuansanzhangState) notifyFinish(flow interfaces.MajongFlow, dir room.Direction, exchangesIn map[int][]*majongpb.Card, exchangesOut map[int][]*majongpb.Card) {
+	mjContext := flow.GetMajongContext()
+	players := mjContext.GetPlayers()
+
+	for index, player := range players {
+		inCards, ok := exchangesIn[index]
+		if !ok {
+			continue
+		}
+		outCards, ok := exchangesOut[index]
+		if !ok {
+			continue
+		}
+		notify := room.RoomHuansanzhangFinishNtf{
+			InCards:   utils.CardsToRoomCards(inCards),
+			OutCards:  utils.CardsToRoomCards(outCards),
+			Direction: dir.Enum(),
+		}
+		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF),
+			Msg:   &notify,
+		})
+	}
+}
+
+// execute 执行换三张
+func (s *HuansanzhangState) execute(flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_huansanzhang, nil
+
+	logEntry := logrus.WithField("func_name", "HuansanzhangState.execute")
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	players := mjContext.GetPlayers()
+
+	if !s.checkDone(players) {
+		return
+	}
+
+	dir := s.randDirection(flow)
+	logEntry = logEntry.WithField("direction", dir)
+	pairs := s.makePairs(len(players), dir)
+
+	exchangesIn := map[int][]*majongpb.Card{}
+	exchangesOut := map[int][]*majongpb.Card{}
+
+	for seat, from := range pairs {
+		if cards, err := s.fetchCardFrom(flow, seat, from); err != nil {
+			logEntry.Errorln(err)
+			return newState, err
+		} else {
+			exchangesIn[seat] = cards
+			exchangesOut[from] = cards
+		}
+	}
+	s.notifyFinish(flow, dir, exchangesIn, exchangesOut)
+	return
 }

@@ -1,6 +1,6 @@
 log_level: debug 
 log_dir: ./log
-log_file: gateway
+log_prefix: gateway
 log_stderr: true 
 
 # rpc_addr: 127.0.0.1
@@ -9,4 +9,6 @@ log_stderr: true
 
 lis_client_addr: 127.0.0.1
 lis_client_port: 36001
+
+peipai_addr: 127.0.0.1:36002
 

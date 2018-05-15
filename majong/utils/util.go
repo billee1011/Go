@@ -152,6 +152,7 @@ func RemoveCards(cards []*majongpb.Card, card *majongpb.Card, count int) ([]*maj
 			removeCount++
 			if removeCount == count {
 				newCards = append(newCards, cards[index+1:]...)
+				break
 			}
 		} else {
 			newCards = append(newCards, c)
