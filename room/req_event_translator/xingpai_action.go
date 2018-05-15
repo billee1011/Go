@@ -28,7 +28,7 @@ func translateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 	case room.XingpaiAction_XA_GANG:
 		{
 			eventID = server_pb.EventID_event_gang_request
-			card := translateCard(*req.GetGangCard())
+			card := translateCard(req.GetGangCard())
 			eventContext = &server_pb.GangRequestEvent{
 				Head: &eventHeader,
 				Card: &card,

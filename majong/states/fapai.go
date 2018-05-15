@@ -63,15 +63,19 @@ func (f *FapaiState) fapaiToPlayer(flow interfaces.MajongFlow, p *majongpb.Playe
 
 func (f *FapaiState) fapai(flow interfaces.MajongFlow) {
 	majongContext := flow.GetMajongContext()
-	for _, player := range majongContext.Players {
+	playerCount := len(majongContext.Players)
+
+	zjIndex := int(majongContext.GetZhuangjiaIndex())
+	if zjIndex >= playerCount {
+		logrus.WithField("index", zjIndex).Panic("庄家索引越界")
+	}
+	zjPlayer := majongContext.Players[zjIndex]
+	f.fapaiToPlayer(flow, zjPlayer, 1)
+
+	for i := 0; i < playerCount; i++ {
+		player := majongContext.Players[(i+zjIndex)%playerCount]
 		f.fapaiToPlayer(flow, player, initHandCardCount)
 	}
-	index := majongContext.GetZhuangjiaIndex()
-	if index >= uint32(len(majongContext.Players)) {
-		logrus.WithField("index", index).Panic("庄家索引越界")
-	}
-	zjPlayer := majongContext.Players[index]
-	f.fapaiToPlayer(flow, zjPlayer, 1)
 }
 
 // notifyPlayer 通知玩家发牌消息
@@ -89,7 +93,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 
 	for _, player := range mjContext.Players {
 		msg := &room.RoomFapaiNtf{
-			Cards:            utils.CardsToRoomCards(player.GetHandCards()),
+			Cards:            utils.ServerCards2Uint32(player.GetHandCards()),
 			PlayerCardCounts: playerCardCount,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{

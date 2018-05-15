@@ -27,11 +27,11 @@ func TestApplyJoinDesk(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 
-		createNtfExpector, err := client.ExpectMessage(msgid.MsgID_room_desk_created_ntf)
+		createNtfExpector, err := client.ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
 		assert.Nil(t, err)
 		createNtfExpectors[i] = createNtfExpector
 
-		gameStartNtfExpector, err := client.ExpectMessage(msgid.MsgID_room_start_game_ntf)
+		gameStartNtfExpector, err := client.ExpectMessage(msgid.MsgID_ROOM_START_GAME_NTF)
 		assert.Nil(t, err)
 		gameStartNtfExpectors[i] = gameStartNtfExpector
 

@@ -152,6 +152,7 @@ func RemoveCards(cards []*majongpb.Card, card *majongpb.Card, count int) ([]*maj
 			removeCount++
 			if removeCount == count {
 				newCards = append(newCards, cards[index+1:]...)
+				break
 			}
 		} else {
 			newCards = append(newCards, c)
@@ -222,6 +223,45 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 		Color: color.Enum(),
 		Point: proto.Int32(card.Point),
 	}, nil
+}
+
+// ServerCard2Number 服务器的 Card 转换成数字
+func ServerCard2Number(card *majongpb.Card) int {
+	var color int
+	if card.Color == majongpb.CardColor_ColorWan {
+		color = 1
+	} else if card.Color == majongpb.CardColor_ColorTiao {
+		color = 2
+	} else if card.Color == majongpb.CardColor_ColorTong {
+		color = 3
+	} else if card.Color == majongpb.CardColor_ColorFeng {
+		color = 4
+	}
+	value := color*10 + int(card.Point)
+	return value
+}
+
+// ServerCards2Numbers 服务器的 Card 数组转 int 数组
+func ServerCards2Numbers(cards []*majongpb.Card) []int {
+	result := []int{}
+	for _, c := range cards {
+		result = append(result, ServerCard2Number(c))
+	}
+	return result
+}
+
+// ServerCard2Uint32 服务器的 Card 转换成数字
+func ServerCard2Uint32(card *majongpb.Card) uint32 {
+	return uint32(ServerCard2Number(card))
+}
+
+// ServerCards2Uint32 服务器的 Card 数组转 int 数组
+func ServerCards2Uint32(cards []*majongpb.Card) []uint32 {
+	result := []uint32{}
+	for _, c := range cards {
+		result = append(result, ServerCard2Uint32(c))
+	}
+	return result
 }
 
 // CardsToRoomCards 将Card转换为room package中的Card
@@ -453,7 +493,7 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 			tingInfo[playCard] = huCards
 		}
 	}
-	return qiStrategy
+	return tingInfo
 }
 
 //GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]uint32, error

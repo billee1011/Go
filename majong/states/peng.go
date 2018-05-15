@@ -7,9 +7,8 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-
-	"steve/client_pb/msgId"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -84,31 +83,29 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	// 清空玩家可能动作
 	outCardPlayer.PossibleActions = outCardPlayer.PossibleActions[:0]
 
-	// 出牌广播通知
-	playerIDs := make([]uint64, 0, 0)
-	for _, player := range mjContext.Players {
-		playerIDs = append(playerIDs, player.GetPalyerId())
-	}
-	// 麻将牌转房间牌
-	roomCard, err := utils.CardToRoomCard(outCard)
-	if err != nil {
-		return fmt.Errorf("出牌事件-outCard to roomCard - 失败: %v", outCard)
-	}
 	chuPaiNtf := room.RoomChupaiNtf{
 		Player: proto.Uint64(outCardPlayer.PalyerId),
-		Card:   roomCard,
+		Card:   proto.Uint32(utils.ServerCard2Uint32(outCard)),
 	}
 	// 广播出牌通知
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &chuPaiNtf)
 
+	// 查看玩家最后出的牌是否是要出的牌
+	lastOutCard := new(majongpb.Card)
+	// 防止数组越界
+	outCardSum := len(outCardPlayer.GetOutCards())
+	if outCardSum > 0 {
+		lastOutCard = outCardPlayer.GetOutCards()[outCardSum-1]
+	}
 	// 日志
 	logrus.WithFields(logrus.Fields{
+		"msgID":        msgid.MsgID_ROOM_CHUPAI_NTF,
+		"chuPaiNtf":    chuPaiNtf,
 		"outPlayer_id": outCardPlayer.GetPalyerId(),
 		"outCard":      outCard,
 		"chupaiEvent":  chupaiEvent,
-		"chuPaiNtf":    chuPaiNtf,
 		"HandCards":    outCardPlayer.GetHandCards(),
-		"OutCards":     outCardPlayer.GetOutCards(),
+		"LastOutCards": lastOutCard,
 	}).Info("出牌成功")
 	return nil
 }
@@ -159,3 +156,5 @@ func (s *PengState) addPengCard(card *majongpb.Card, player *majongpb.Player, sr
 		SrcPlayer: srcPlayerID,
 	})
 }
+
+// TODO:  通知碰

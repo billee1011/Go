@@ -83,7 +83,7 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	body := room.RoomHuNtf{
 		Players:      mjContext.GetLastHuPlayers(),
 		FromPlayerId: proto.Uint64(mjContext.GetLastChupaiPlayer()),
-		Card:         huCard,
+		Card:         proto.Uint32(uint32(utils.ServerCard2Number(huCard))),
 		HuType:       huType,
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
