@@ -159,8 +159,8 @@ func checkQiDui(cardCalcParams interfaces.CardCalcParams) bool {
 	}
 	cardCount := make(map[int32]int)
 	for _, card := range checkCards {
-		cardValue := cardToInt(card)
-		cardCount[cardValue] = cardCount[cardValue] + 1
+		cardValue, _ := utils.CardToInt(*card)
+		cardCount[*cardValue] = cardCount[*cardValue] + 1
 	}
 	for _, v := range cardCount {
 		if v%2 != 0 {
@@ -281,15 +281,16 @@ func GetGenCount(cardCalcParams interfaces.CardCalcParams) uint32 {
 
 	cardCount := make(map[int32]int)
 	for _, card := range checkCards {
-		cardValue := cardToInt(card)
-		cardCount[cardValue] = cardCount[cardValue] + 1
+		cardValue, _ := utils.CardToInt(*card)
+		cardCount[*cardValue] = cardCount[*cardValue] + 1
 	}
 	for card, sum := range cardCount {
 		if sum >= 4 {
 			gCount++
 		} else if sum == 1 {
 			for _, pengCard := range pengCards {
-				if cardToInt(pengCard) == card {
+				cardValue, _ := utils.CardToInt(*pengCard)
+				if *cardValue == card {
 					gCount++
 				}
 			}
@@ -306,23 +307,6 @@ func getCheckCards(handCards []*majongpb.Card, huCard *majongpb.Card) []*majongp
 		checkCard = append(checkCard, huCard)
 	}
 	return checkCard
-}
-
-// 麻将牌转int32
-func cardToInt(card *majongpb.Card) int32 {
-	var cardValue int32
-	switch card.Color {
-	case majongpb.CardColor_ColorWan:
-		cardValue = 10
-	case majongpb.CardColor_ColorTiao:
-		cardValue = 20
-	case majongpb.CardColor_ColorTong:
-		cardValue = 30
-	default:
-		return 0
-	}
-	cardValue = cardValue + card.Point
-	return cardValue
 }
 
 //ScxlFanMutex 番型和根处理
