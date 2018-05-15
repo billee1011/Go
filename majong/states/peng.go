@@ -3,6 +3,7 @@ package states
 import (
 	"fmt"
 	"steve/majong/interfaces"
+	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -37,7 +38,7 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	// 序列化
 	chupaiEvent := new(majongpb.ChupaiRequestEvent)
 	if err := proto.Unmarshal(eventContext, chupaiEvent); err != nil {
-		return fmt.Errorf("出牌事件反序列化失败: %v", err)
+		return fmt.Errorf("出牌 : %v", errUnmarshalEvent)
 	}
 	//麻将牌局现场
 	mjContext := flow.GetMajongContext()
@@ -54,21 +55,32 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	// 获取出的牌
 	outCard := chupaiEvent.Cards
 	// 判断出的牌是否存在
+	isExist := false
 	handCard := outCardPlayer.GetHandCards()
-	if utils.SeekCardSum(handCard, outCard) == 0 {
-		return fmt.Errorf("出牌事件失败-牌不存在: %v", outCard)
+	for _, card := range handCard {
+		if utils.CardEqual(card, outCard) {
+			isExist = true
+			break
+		}
 	}
+	if !isExist {
+		return fmt.Errorf("出牌事件失败-请求出的牌不存在：%v", outCard)
+	}
+
 	// 删除手中要出牌
 	handCards, flag := utils.DeleteCardFromLast(handCard, outCard)
 	if !flag {
 		return fmt.Errorf("出牌事件-删除牌失败: %v", outCard)
 	}
+
 	// 修改玩家手牌
 	outCardPlayer.HandCards = handCards
 	// 将出的牌添加到玩家出牌数组中
 	outCardPlayer.OutCards = append(outCardPlayer.OutCards, outCard)
 	// 修改麻将牌局现场最后出的牌
 	mjContext.LastOutCard = outCard
+	// 设置最后出牌玩家ID
+	mjContext.LastChupaiPlayer = outCardPlayer.PalyerId
 	// 清空玩家可能动作
 	outCardPlayer.PossibleActions = outCardPlayer.PossibleActions[:0]
 
@@ -77,38 +89,31 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	for _, player := range mjContext.Players {
 		playerIDs = append(playerIDs, player.GetPalyerId())
 	}
+	// 麻将牌转房间牌
 	roomCard, err := utils.CardToRoomCard(outCard)
 	if err != nil {
 		return fmt.Errorf("出牌事件-outCard to roomCard - 失败: %v", outCard)
 	}
-	chupaiNtf := &room.RoomChupaiNtf{
-		Player: &outCardPlayer.PalyerId,
+	chuPaiNtf := room.RoomChupaiNtf{
+		Player: proto.Uint64(outCardPlayer.PalyerId),
 		Card:   roomCard,
 	}
-	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_PENG_NTF),
-		Msg:   chupaiNtf,
-	}
-	flow.PushMessages(playerIDs, toClient)
-
-	// 出过非定缺颜色的牌 TODO
-	if len(outCardPlayer.Properties[utils.IsOutNoDingQueColorCard]) == 0 && outCard.Color != outCardPlayer.DingqueColor {
-		outCardPlayer.Properties[utils.IsOutNoDingQueColorCard] = []byte{1}
-	}
+	// 广播出牌通知
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &chuPaiNtf)
 
 	// 日志
 	logrus.WithFields(logrus.Fields{
 		"outPlayer_id": outCardPlayer.GetPalyerId(),
 		"outCard":      outCard,
 		"chupaiEvent":  chupaiEvent,
-		"toClient":     toClient,
+		"chuPaiNtf":    chuPaiNtf,
 		"HandCards":    outCardPlayer.GetHandCards(),
 		"OutCards":     outCardPlayer.GetOutCards(),
 	}).Info("出牌成功")
 	return nil
 }
 
-// OnEntry 进入状态
+// OnEntry 进入状态	"steve/majong/interfaces/facade"
 func (s *PengState) OnEntry(flow interfaces.MajongFlow) {
 	s.doPeng(flow)
 }

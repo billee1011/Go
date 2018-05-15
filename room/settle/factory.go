@@ -9,6 +9,8 @@ type factory struct{}
 
 func (f *factory) CreateDeskSettler(gameID int) interfaces.DeskSettler {
 	switch gameID {
+	case 1:
+		return new(scxlSettle)
 	default:
 		return new(nullSettler)
 	}
