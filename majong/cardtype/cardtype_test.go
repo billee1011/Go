@@ -31,15 +31,15 @@ func init() {
 func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 11, 12, 13, 24, 25, 26, 14, 15, 16, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -47,7 +47,7 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_PingHu}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -55,7 +55,7 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(1))
 }
 
@@ -63,15 +63,15 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 21, 22, 23, 24, 25, 26, 27, 28, 29, 24}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(24)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -79,7 +79,7 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingYiSe}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -87,7 +87,7 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
 }
 
@@ -95,15 +95,15 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 24, 25, 26, 24, 25, 26, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -111,7 +111,7 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QiDui}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -119,7 +119,7 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
 }
 
@@ -127,15 +127,15 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 24, 25, 25, 24, 24, 24, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -143,7 +143,7 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_LongQiDui}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -151,7 +151,7 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(8))
 }
 
@@ -159,15 +159,15 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 21, 22, 23, 24, 25, 26, 24, 25, 26, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -175,7 +175,7 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingQiDui}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -183,7 +183,7 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(16))
 }
 
@@ -191,15 +191,15 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 21, 22, 23, 24, 25, 25, 24, 24, 24, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -207,7 +207,7 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingLongQiDui}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -215,7 +215,7 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(32))
 }
 
@@ -223,15 +223,15 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 	handUtilCards := []utils.Card{22, 22, 22, 23, 23, 23, 15, 15, 15, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -239,7 +239,7 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_PengPengHu}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -247,7 +247,7 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(2))
 }
 
@@ -255,15 +255,15 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 	handUtilCards := []utils.Card{23, 23, 23, 25, 25, 25, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 22}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -271,7 +271,7 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingPeng}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -279,7 +279,7 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(8))
 }
 
@@ -287,15 +287,15 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 	handUtilCards := []utils.Card{27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 22, 23, 15}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -303,7 +303,7 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_JingGouDiao}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -311,7 +311,7 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
 }
 
@@ -319,15 +319,15 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 	handUtilCards := []utils.Card{27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 22, 23, 25}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -335,7 +335,7 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingJingGouDiao}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -343,7 +343,7 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(16))
 }
 
@@ -351,15 +351,15 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 	handUtilCards := []utils.Card{27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{21, 22, 23, 15}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -367,7 +367,7 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_ShiBaLuoHan}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -375,7 +375,7 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(64))
 }
 
@@ -383,15 +383,15 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 	handUtilCards := []utils.Card{27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{21, 22, 23, 25}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(27)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -399,7 +399,7 @@ func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	cardTypes, genCount := new(XueLiuCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingShiBaLuoHan}
 	testCardTypes := make([]interfaces.CardType, 0)
 	for _, cardType := range testFanTypes {
@@ -407,23 +407,23 @@ func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 	}
 	assert.Equal(t, cardTypes, testCardTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(XueLiuCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(256))
 }
 
 // 根
 func TestCardGenSum(t *testing.T) {
-	handUtilCards := []utils.Card{23,23,23,23,24}
+	handUtilCards := []utils.Card{23, 23, 23, 23, 24}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{22}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 24}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(21)
-	assert.Empty(t, err, nil)
+	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
@@ -431,6 +431,6 @@ func TestCardGenSum(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	genSum := new(XueLiuCardTypeCalculator).CardGenSum(playerParams)
+	genSum := new(ScxlCardTypeCalculator).CardGenSum(playerParams)
 	assert.Equal(t, genSum, uint32(4))
 }
