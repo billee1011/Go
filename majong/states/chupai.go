@@ -55,7 +55,7 @@ func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card
 		return nil, false
 	}
 	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
-	chupaiWenxunNtf.Card, _ = utils.CardToRoomCard(card)
+	chupaiWenxunNtf.Card = proto.Uint32(uint32(utils.ServerCard2Number(card)))
 	canMingGang := checkMingGang(context, player, card)
 	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
@@ -171,10 +171,9 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	card := context.LastOutCard
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
-	cardToClient, _ := utils.CardToRoomCard(card)
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
 		Player: proto.Uint64(activePlayer.GetPalyerId()),
-		Card:   cardToClient,
+		Card:   proto.Uint32(uint32(utils.ServerCard2Number(card))),
 	})
 }
 

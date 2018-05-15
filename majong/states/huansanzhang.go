@@ -172,8 +172,8 @@ func (s *HuansanzhangState) notifyFinish(flow interfaces.MajongFlow, dir room.Di
 			continue
 		}
 		notify := room.RoomHuansanzhangFinishNtf{
-			InCards:   utils.CardsToRoomCards(inCards),
-			OutCards:  utils.CardsToRoomCards(outCards),
+			InCards:   utils.ServerCards2Uint32(inCards),
+			OutCards:  utils.ServerCards2Uint32(outCards),
 			Direction: dir.Enum(),
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{

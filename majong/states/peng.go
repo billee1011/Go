@@ -83,14 +83,9 @@ func (s *PengState) chupai(eventContext []byte, flow interfaces.MajongFlow) erro
 	// 清空玩家可能动作
 	outCardPlayer.PossibleActions = outCardPlayer.PossibleActions[:0]
 
-	// 麻将牌转房间牌
-	roomCard, err := utils.CardToRoomCard(outCard)
-	if err != nil {
-		return fmt.Errorf("出牌事件-outCard to roomCard - 失败: %v", outCard)
-	}
 	chuPaiNtf := room.RoomChupaiNtf{
 		Player: proto.Uint64(outCardPlayer.PalyerId),
-		Card:   roomCard,
+		Card:   proto.Uint32(utils.ServerCard2Uint32(outCard)),
 	}
 	// 广播出牌通知
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &chuPaiNtf)
@@ -161,3 +156,5 @@ func (s *PengState) addPengCard(card *majongpb.Card, player *majongpb.Player, sr
 		SrcPlayer: srcPlayerID,
 	})
 }
+
+// TODO:  通知碰

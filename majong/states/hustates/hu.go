@@ -71,11 +71,11 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 // HuState 广播胡
 func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	huCard, _ := utils.CardToRoomCard(mjContext.GetLastOutCard())
+	card := mjContext.GetLastOutCard()
 	body := room.RoomHuNtf{
 		Players:      mjContext.GetLastHuPlayers(),
 		FromPlayerId: proto.Uint64(mjContext.GetLastChupaiPlayer()),
-		Card:         huCard,
+		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		HuType:       room.HuType_DianPao.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)

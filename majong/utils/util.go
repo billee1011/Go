@@ -225,6 +225,45 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	}, nil
 }
 
+// ServerCard2Number 服务器的 Card 转换成数字
+func ServerCard2Number(card *majongpb.Card) int {
+	var color int
+	if card.Color == majongpb.CardColor_ColorWan {
+		color = 1
+	} else if card.Color == majongpb.CardColor_ColorTiao {
+		color = 2
+	} else if card.Color == majongpb.CardColor_ColorTong {
+		color = 3
+	} else if card.Color == majongpb.CardColor_ColorFeng {
+		color = 4
+	}
+	value := color*10 + int(card.Point)
+	return value
+}
+
+// ServerCards2Numbers 服务器的 Card 数组转 int 数组
+func ServerCards2Numbers(cards []*majongpb.Card) []int {
+	result := []int{}
+	for _, c := range cards {
+		result = append(result, ServerCard2Number(c))
+	}
+	return result
+}
+
+// ServerCard2Uint32 服务器的 Card 转换成数字
+func ServerCard2Uint32(card *majongpb.Card) uint32 {
+	return uint32(ServerCard2Number(card))
+}
+
+// ServerCards2Uint32 服务器的 Card 数组转 int 数组
+func ServerCards2Uint32(cards []*majongpb.Card) []uint32 {
+	result := []uint32{}
+	for _, c := range cards {
+		result = append(result, ServerCard2Uint32(c))
+	}
+	return result
+}
+
 // CardsToRoomCards 将Card转换为room package中的Card
 func CardsToRoomCards(cards []*majongpb.Card) []*room.Card {
 	var rCards []*room.Card

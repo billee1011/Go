@@ -168,7 +168,7 @@ func executeHSZ(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *De
 		fe, _ := client.ExpectMessage(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF)
 		finishNtfExpectors[playerID] = fe
 		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
-			Cards: cards,
+			Cards: RoomCards2UInt32(cards),
 			Sure:  proto.Bool(true),
 		})
 	}
