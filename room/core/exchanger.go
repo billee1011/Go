@@ -86,10 +86,11 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 		"msg_id":    head.MsgId,
 	})
 	bodyData := []byte{}
-	if err := proto.Unmarshal(bodyData, body); err != nil {
-		var errUnmarshal = errors.New("序列化消息体失败")
-		entry.WithError(err).Errorln(errUnmarshal)
-		return errUnmarshal
+	var err error
+	if bodyData, err = proto.Marshal(body); err != nil {
+		var errMarshal = errors.New("序列化消息体失败")
+		entry.WithError(err).Errorln(errMarshal)
+		return errMarshal
 	}
 	e.BroadcastPackageBare(clientIDs, head, bodyData)
 	return nil
