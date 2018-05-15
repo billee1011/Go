@@ -1,4 +1,4 @@
-package utils
+package gutils
 
 import (
 	"steve/client_pb/room"
@@ -7,78 +7,34 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-//GetPlayerByID 根据玩家id获取玩家
-func GetPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
-	for _, player := range players {
-		if player.PalyerId == id {
-			return player
-		}
+// RoomCard2UInt32 Card 转 int
+func RoomCard2UInt32(card *room.Card) uint32 {
+	var color uint32
+	if *card.Color == room.CardColor_CC_WAN {
+		color = 1
+	} else if *card.Color == room.CardColor_CC_TIAO {
+		color = 2
+	} else if *card.Color == room.CardColor_CC_TONG {
+		color = 3
+	} else if *card.Color == room.CardColor_CC_FENG {
+		color = 4
 	}
-	return nil
+	value := color*10 + uint32(*card.Point)
+	return value
 }
 
-//GetNextPlayerByID 根据玩家id获取下个玩家
-func GetNextPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
-	for k, player := range players {
-		if player.PalyerId == id {
-			index := (k + 1) % len(players)
-			return players[index]
-		}
+// RoomCards2UInt32 Card 转 int
+func RoomCards2UInt32(card []*room.Card) []uint32 {
+	result := []uint32{}
+	for _, c := range card {
+		result = append(result, RoomCard2UInt32(c))
 	}
-	return nil
-}
-
-//CheckHasDingQueCard 检查牌里面是否含有定缺的牌
-func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool {
-	for _, card := range cards {
-		if card.Color == color {
-			return true
-		}
-	}
-	return false
-}
-
-//DeleteIntCardFromLast 从int32类型的牌组中，找到对应的目标牌，并且移除
-func DeleteIntCardFromLast(cards []int32, targetCard int32) ([]int32, bool) {
-	index := -1
-	l := len(cards)
-	if l == 0 {
-		return cards, false
-	}
-	for i := l - 1; i >= 0; i-- {
-		if targetCard == cards[i] {
-			index = i
-			break
-		}
-	}
-	if index != -1 {
-		cards = append(cards[:index], cards[index+1:]...)
-	}
-	return cards, index != -1
+	return result
 }
 
 //CardEqual 判断两张牌是否一样
 func CardEqual(card1 *majongpb.Card, card2 *majongpb.Card) bool {
 	return card1.GetColor() == card2.GetColor() && card1.GetPoint() == card2.GetPoint()
-}
-
-//DeleteCardFromLast 从majongpb.Card类型的牌组中，找到对应的目标牌，并且移除
-func DeleteCardFromLast(cards []*majongpb.Card, targetCard *majongpb.Card) ([]*majongpb.Card, bool) {
-	index := -1
-	l := len(cards)
-	if l == 0 {
-		return cards, false
-	}
-	for i := l - 1; i >= 0; i-- {
-		if CardEqual(targetCard, cards[i]) {
-			index = i
-			break
-		}
-	}
-	if index != -1 {
-		cards = append(cards[:index], cards[index+1:]...)
-	}
-	return cards, index != -1
 }
 
 //CardToRoomCard majongpb.card类型转room.Card类型
