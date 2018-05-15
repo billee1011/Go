@@ -82,32 +82,44 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room
 	hasHu := len(activePlayer.GetHuCards()) > 0
 	handCard := activePlayer.GetHandCards()
 	enableAngangCards := make([]*room.Card, 0, 0)
-	cardsI, _ := utils.CardsToInt(handCard)
-	cardNum := make(map[int32]int)
-	for i := 0; i < len(cardsI); i++ {
-		num := cardNum[cardsI[i]]
+	// cardsI, _ := utils.CardsToInt(handCard)
+	// cardNum := make(map[int32]int)
+	// for i := 0; i < len(cardsI); i++ {
+	// 	num := cardNum[cardsI[i]]
+	// 	num++
+	// 	cardNum[cardsI[i]] = num
+	// }
+	cardNum := make(map[*majongpb.Card]int)
+	for i := 0; i < len(handCard); i++ {
+		num := cardNum[handCard[i]]
 		num++
-		cardNum[cardsI[i]] = num
+		cardNum[handCard[i]] = num
 	}
 	color := activePlayer.GetDingqueColor()
 	for k, num := range cardNum {
-		if k/10 != int32(color) && num == 4 {
+		// if k/10 != int32(color) && num == 4 {
+		if k.Color != color && num == 4 {
 			if hasHu {
 				//创建副本，移除相应的杠牌进行查胡
-				newcardsI := make([]int32, 0, len(cardsI))
-				newcardsI = append(newcardsI, cardsI...)
-				newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
-				newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
-				newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
-				newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
-				cardsI := utils.IntToUtilCard(newcardsI)
-				huCards := utils.FastCheckTingV2(cardsI, map[utils.Card]bool{})
+				// newcardsI := make([]int32, 0, len(cardsI))
+				// newcardsI = append(newcardsI, cardsI...)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				newCards := []*majongpb.Card{}
+				newCards = append(newCards, handCard...)
+				newCards, _ = utils.RemoveCards(newCards, k, 4)
+				utilCards := utils.CardsToUtilCards(newCards)
+				// cardsI := utils.IntToUtilCard(newcardsI)
+				huCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
+				// huCards := utils.FastCheckTingV2(cardsI, map[utils.Card]bool{})
 				if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
-					roomCard, _ := utils.IntToRoomCard(k)
+					roomCard, _ := utils.CardToRoomCard(k)
 					enableAngangCards = append(enableAngangCards, roomCard)
 				}
 			} else {
-				roomCard, _ := utils.IntToRoomCard(k)
+				roomCard, _ := utils.CardToRoomCard(k)
 				enableAngangCards = append(enableAngangCards, roomCard)
 			}
 		}
