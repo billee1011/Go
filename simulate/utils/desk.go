@@ -34,7 +34,8 @@ type StartGameParams struct {
 	ServerAddr string         // 服务器地址
 	ClientVer  string         // 客户端版本号
 
-	HszCards [][]*room.Card // 从庄家的位置算起，用来换三张的牌
+	HszCards     [][]*room.Card   // 从庄家的位置算起，用来换三张的牌
+	DingqueColor []room.CardColor // 定缺花色。 从庄家位置算起
 }
 
 // StartGame 启动一局游戏
@@ -68,6 +69,9 @@ func StartGame(params StartGameParams) (*DeskData, error) {
 	checkFapaiNtf(fapaiNtfExpectors, &dd, params.Cards, params.WallCards)
 	// 执行换三张
 	if err := executeHSZ(hszNotifyExpectors, &dd, params.HszCards); err != nil {
+		return nil, err
+	}
+	if err := executeDingque(&dd, params.DingqueColor); err != nil {
 		return nil, err
 	}
 	return &dd, nil
@@ -154,35 +158,6 @@ func createHSZNotifyExpector(players []interfaces.ClientPlayer) map[uint64]inter
 	return createExpectors(players, msgid.MsgID_ROOM_HUANSANZHANG_NTF)
 }
 
-// executeHSZ 执行换三张
-func executeHSZ(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, HszCards [][]*room.Card) error {
-	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
-	for playerID, e := range ntfExpectors {
-		hszNtf := room.RoomHuansanzhangNtf{}
-		if err := e.Recv(time.Second*2, &hszNtf); err != nil {
-			return fmt.Errorf("未收到换三张通知: %v", err)
-		}
-		player := deskData.Players[playerID]
-		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
-		cards := HszCards[offset]
-
-		client := player.Player.GetClient()
-		fe, _ := client.ExpectMessage(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF)
-		finishNtfExpectors[playerID] = fe
-		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
-			Cards: gutils.RoomCards2UInt32(cards),
-			Sure:  proto.Bool(true),
-		})
-	}
-	for playerID, e := range finishNtfExpectors {
-		finishNtf := room.RoomHuansanzhangFinishNtf{}
-		if err := e.Recv(time.Second*2, &finishNtf); err != nil {
-			return fmt.Errorf("玩家 %v 未收到换三张完成通知:%v", playerID, err)
-		}
-	}
-	return nil
-}
-
 // checkXipaiNtf 检查洗牌通知
 func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
 	totalCardCount := len(wallCards)
@@ -236,6 +211,80 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 		}
 		if err := checkPlayerCardCount(fapaiNtf.GetPlayerCardCounts(), deskData, seatCards); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// executeHSZ 执行换三张
+func executeHSZ(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, HszCards [][]*room.Card) error {
+	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
+	for playerID, e := range ntfExpectors {
+		hszNtf := room.RoomHuansanzhangNtf{}
+		if err := e.Recv(time.Second*2, &hszNtf); err != nil {
+			return fmt.Errorf("未收到换三张通知: %v", err)
+		}
+		player := deskData.Players[playerID]
+		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
+		cards := HszCards[offset]
+
+		client := player.Player.GetClient()
+		fe, _ := client.ExpectMessage(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF)
+		finishNtfExpectors[playerID] = fe
+		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
+			Cards: gutils.RoomCards2UInt32(cards),
+			Sure:  proto.Bool(true),
+		})
+	}
+	for playerID, e := range finishNtfExpectors {
+		finishNtf := room.RoomHuansanzhangFinishNtf{}
+		if err := e.Recv(time.Second*2, &finishNtf); err != nil {
+			return fmt.Errorf("玩家 %v 未收到换三张完成通知:%v", playerID, err)
+		}
+	}
+	return nil
+}
+
+// checkDingqueColor 检查定缺花色是否正确
+func checkDingqueColor(deskData *DeskData, playerColors []*room.PlayerDingqueColor, expectedColors []room.CardColor) bool {
+	if len(playerColors) != len(expectedColors) {
+		return false
+	}
+	for _, playerColor := range playerColors {
+		playerID := playerColor.GetPlayerId()
+		seat := deskData.Players[playerID].Seat
+		offset := GetSeatOffset(deskData.BankerSeat, seat, len(deskData.Players))
+		expected := expectedColors[offset]
+		actual := playerColor.GetColor()
+		if expected != actual {
+			return false
+		}
+	}
+	return true
+}
+
+// executeDingque 执行定缺
+func executeDingque(deskData *DeskData, colors []room.CardColor) error {
+	finishExpectors := map[uint64]interfaces.MessageExpector{}
+	for playerID, player := range deskData.Players {
+		seat := player.Seat
+		offset := GetSeatOffset(deskData.BankerSeat, seat, len(deskData.Players))
+
+		client := player.Player.GetClient()
+		finishExpector, _ := client.ExpectMessage(msgid.MsgID_ROOM_DINGQUE_FINISH_NTF)
+		finishExpectors[playerID] = finishExpector
+
+		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_DINGQUE_REQ), &room.RoomDingqueReq{
+			Color: colors[offset].Enum(),
+		})
+	}
+	for playerID, e := range finishExpectors {
+		ntf := room.RoomDingqueFinishNtf{}
+		if err := e.Recv(time.Second*2, &ntf); err != nil {
+			return fmt.Errorf("玩家 %d 未收到定缺完成通知: %v", playerID, err)
+		}
+		if !checkDingqueColor(deskData, ntf.GetPlayerDingqueColor(), colors) {
+			return fmt.Errorf("玩家收到的定缺通知中花色不正确。 expected:%v actual:%v", colors, ntf.GetPlayerDingqueColor())
 		}
 	}
 	return nil
