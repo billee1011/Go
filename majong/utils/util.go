@@ -510,7 +510,7 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 			tingInfo[playCard] = huCards
 		}
 	}
-	return qiStrategy
+	return tingInfo
 }
 
 //GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]uint32, error
