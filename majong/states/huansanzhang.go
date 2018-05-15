@@ -7,7 +7,6 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	"steve/peipai"
 	majongpb "steve/server_pb/majong"
@@ -23,7 +22,8 @@ type HuansanzhangState struct {
 
 // OnEntry 进入换三张状态
 func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
+	// 客户端强烈要求不要这个通知
+	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
 }
 
 // ProcessEvent 处理换三张事件

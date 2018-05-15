@@ -50,7 +50,7 @@ func StartGame(params StartGameParams) (*DeskData, error) {
 	}
 	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
-	hszNotifyExpectors := createHSZNotifyExpector(players)
+	// hszNotifyExpectors := createHSZNotifyExpector(players)
 	seatMap, err := joinDesk(players)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func StartGame(params StartGameParams) (*DeskData, error) {
 	checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
 	checkFapaiNtf(fapaiNtfExpectors, &dd, params.Cards, params.WallCards)
 	// 执行换三张
-	if err := executeHSZ(hszNotifyExpectors, &dd, params.HszCards); err != nil {
+	if err := executeHSZ(&dd, params.HszCards); err != nil {
 		return nil, err
 	}
 	if err := executeDingque(&dd, params.DingqueColor); err != nil {
@@ -153,11 +153,6 @@ func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[u
 	return result
 }
 
-// createHSZNotifyExpector 创建换三张通知消息期望
-func createHSZNotifyExpector(players []interfaces.ClientPlayer) map[uint64]interfaces.MessageExpector {
-	return createExpectors(players, msgid.MsgID_ROOM_HUANSANZHANG_NTF)
-}
-
 // checkXipaiNtf 检查洗牌通知
 func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
 	totalCardCount := len(wallCards)
@@ -217,14 +212,9 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 }
 
 // executeHSZ 执行换三张
-func executeHSZ(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, HszCards [][]*room.Card) error {
+func executeHSZ(deskData *DeskData, HszCards [][]*room.Card) error {
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
-	for playerID, e := range ntfExpectors {
-		hszNtf := room.RoomHuansanzhangNtf{}
-		if err := e.Recv(time.Second*2, &hszNtf); err != nil {
-			return fmt.Errorf("未收到换三张通知: %v", err)
-		}
-		player := deskData.Players[playerID]
+	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
 		cards := HszCards[offset]
 
