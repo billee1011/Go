@@ -169,6 +169,12 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	context.LastMopaiPlayer = context.MopaiPlayer
 	context.LastMopaiCard = drowCard
 	s.checkActions(flow)
+	// 清空其他玩家杠的标识
+	for _, player := range players {
+		if player.PalyerId != activePlayer.PalyerId {
+			player.Properties["gang"] = []byte("false")
+		}
+	}
 	return majongpb.StateID_state_zixun, nil
 }
 

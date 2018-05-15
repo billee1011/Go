@@ -6,15 +6,10 @@ import (
 
 // CardTypeCalculator 牌型计算器
 type CardTypeCalculator interface {
-	Calculate(params CardCalcParams) (cardTypes []CardType, gengCount uint32)
-	// CardTypeValue 牌型的倍数
-	CardTypeValue(cardTypes []CardType, gengCount uint32) uint32
-	// CardGenSum 牌的根数量
-	CardGenSum(params CardCalcParams) uint32
+	Calculate(params CardCalcParams) (cardTypes []majongpb.CardType, gengCount uint32)
+	// CardTypeValue 牌型的倍数,根数
+	CardTypeValue(cardTypes []majongpb.CardType, gengCount uint32) (uint32, uint32)
 }
-
-// CardType 卡牌类型
-type CardType int
 
 // CardCalcParams 计算牌型的参数
 type CardCalcParams struct {

@@ -14,7 +14,7 @@ func init() {
 }
 
 //Calculate 获取能胡所有番型，及根，最小平胡
-func (ctc *ScxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []interfaces.CardType, gengCount uint32) {
+func (ctc *ScxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []majongpb.CardType, gengCount uint32) {
 	fanCardTypes := make([]majongpb.CardType, 0)
 	// 遍历可行番型
 	for i := 0; i < len(fan.ScxlFan); i++ {
@@ -28,8 +28,8 @@ func (ctc *ScxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (
 	return cardTypes, gengCount
 }
 
-//CardTypeValue 获取总倍数
-func (ctc *ScxlCardTypeCalculator) CardTypeValue(cardTypes []interfaces.CardType, gengCount uint32) uint32 {
+//CardTypeValue 获取总倍数及根数	（注：总倍数已包括根的倍数了）
+func (ctc *ScxlCardTypeCalculator) CardTypeValue(cardTypes []majongpb.CardType, gengCount uint32) (uint32, uint32) {
 	total := uint32(1)
 	// 叠乘番型
 	for _, cardType := range cardTypes {
@@ -42,10 +42,5 @@ func (ctc *ScxlCardTypeCalculator) CardTypeValue(cardTypes []interfaces.CardType
 	genTotoal := uint32(1 << gengCount)
 	// 根乘总番型倍数
 	total = total * genTotoal
-	return total
-}
-
-//CardGenSum 获取根数量，没有做处理的，如是七对，并且是1根，就直接返回1
-func (ctc *ScxlCardTypeCalculator) CardGenSum(params interfaces.CardCalcParams) uint32 {
-	return fan.GetGenCount(params)
+	return total, gengCount
 }

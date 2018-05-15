@@ -352,62 +352,6 @@ func SeekCardSum(cards []*majongpb.Card, targetCard *majongpb.Card) int {
 	return count
 }
 
-//GetHuEdPlayers 获取胡过牌玩家
-func GetHuEdPlayers(players []*majongpb.Player) []*majongpb.Player {
-	huEdPlayers := make([]*majongpb.Player, 0)
-	for i := 0; i < len(players); i++ {
-		if len(players[i].HuCards) > 0 {
-			huEdPlayers = append(huEdPlayers, players[i])
-		}
-	}
-	return huEdPlayers
-}
-
-//GetBustedHandPlayers 获取未听玩家,包括花猪,isIncludeFlower-是否包含花猪，true 包含，false 不包含
-func GetBustedHandPlayers(players []*majongpb.Player, isIncludeFlower bool) ([]*majongpb.Player, error) {
-	bustedHandPlayers := make([]*majongpb.Player, 0)
-	for i := 0; i < len(players); i++ {
-		// 胡过的不算
-		if len(players[i].HuCards) > 0 {
-			continue
-		}
-		//查听
-		isTing, _, err := IsCanTingAndGetMultiple(players[i])
-		if err != nil {
-			return []*majongpb.Player{}, err
-		}
-		// 不能听
-		if !isTing && (isIncludeFlower || !IsFlowerPig(players[i])) {
-			bustedHandPlayers = append(bustedHandPlayers, players[i])
-		}
-	}
-	return bustedHandPlayers, nil
-}
-
-//GetFlowerPigPlayers 获取花猪玩家
-func GetFlowerPigPlayers(players []*majongpb.Player) []*majongpb.Player {
-	flowerPigPlayers := make([]*majongpb.Player, 0)
-	for i := 0; i < len(players); i++ {
-		if IsFlowerPig(players[i]) {
-			flowerPigPlayers = append(flowerPigPlayers, players[i])
-		}
-	}
-	return flowerPigPlayers
-}
-
-//IsOutNoDingQueColorCard 玩家properties中的key，代表玩家是否出过非定缺颜色的牌
-const IsOutNoDingQueColorCard = "isoutnodingquecolorcard"
-
-//IsFlowerPig 判断玩家是否是花猪 TODO
-func IsFlowerPig(bustedHandPlayer *majongpb.Player) bool {
-	//在出牌逻辑设置玩家一旦出过非定缺颜色的牌，[]byte{1}, 玩家是否出过非定缺的牌 TODO
-	if len(bustedHandPlayer.Properties[IsOutNoDingQueColorCard]) != 0 {
-		// 玩家手牌中是否存在花牌
-		return CheckHasDingQueCard(bustedHandPlayer.HandCards, bustedHandPlayer.DingqueColor)
-	}
-	return false
-}
-
 //GetTingPlayerIDAndMultiple 获取所有听玩家,和返回每个听玩家最大倍数
 func GetTingPlayerIDAndMultiple(players []*majongpb.Player) (map[uint64]int64, error) {
 	tingPlayers := make(map[uint64]int64, 0)
@@ -640,4 +584,22 @@ func GetHuHint(palyer *majongpb.Player) (map[int32]uint32, error) {
 		}
 	}
 	return tingMultiple, nil
+}
+
+// TransPengCard 碰牌转Card
+func TransPengCard(pengCards []*majongpb.PengCard) []*majongpb.Card {
+	cards := make([]*majongpb.Card, 0)
+	for _, pengCard := range pengCards {
+		cards = append(cards, pengCard.Card)
+	}
+	return cards
+}
+
+// TransGangCard 杠牌转Card
+func TransGangCard(gangCards []*majongpb.GangCard) []*majongpb.Card {
+	cards := make([]*majongpb.Card, 0)
+	for _, gangCard := range gangCards {
+		cards = append(cards, gangCard.Card)
+	}
+	return cards
 }

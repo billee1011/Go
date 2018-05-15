@@ -77,39 +77,17 @@ func init() {
 		return checkQiDui(cardCalcParams)
 	}}
 
-	fanQingQiDui := Fan{name: majongpb.CardType_QingQiDui, value: 16, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
-		return checkQingQiDui(cardCalcParams)
-	}}
-
-	fanQingLongQiDui := Fan{name: majongpb.CardType_QingLongQiDui, value: 32, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
-		return checkQingLongQiDui(cardCalcParams)
-	}}
-
 	fanPengPengHu := Fan{name: majongpb.CardType_PengPengHu, value: 2, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
 		return checkPengPengHu(cardCalcParams)
-	}}
-
-	fanQingPeng := Fan{name: majongpb.CardType_QingPeng, value: 8, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
-		return checkQingPeng(cardCalcParams)
 	}}
 
 	fanJingGouDiao := Fan{name: majongpb.CardType_JingGouDiao, value: 4, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
 		return checkJingGouDiao(cardCalcParams)
 	}}
 
-	fanQingJingGouDiao := Fan{name: majongpb.CardType_QingJingGouDiao, value: 16, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
-		return checkQingJingGouDiao(cardCalcParams)
-	}}
-
 	fanShiBaLuoHan := Fan{name: majongpb.CardType_ShiBaLuoHan, value: 64, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
 		return checkShiBaLuoHan(cardCalcParams)
 	}}
-
-	fanQingShiBaLuoHan := Fan{name: majongpb.CardType_QingShiBaLuoHan, value: 256, Condition: func(cardCalcParams interfaces.CardCalcParams) bool {
-		return checkQingShiBaLuoHan(cardCalcParams)
-	}}
-
-	AllFan = append(AllFan, fanPinghu, fanQingYiSe, fanQiDui, fanQingQiDui, fanQingLongQiDui, fanPengPengHu, fanQingPeng, fanJingGouDiao, fanQingJingGouDiao, fanShiBaLuoHan, fanQingShiBaLuoHan)
 
 	ScxlFan = append(ScxlFan, fanPinghu, fanQingYiSe, fanQiDui, fanPengPengHu, fanJingGouDiao, fanShiBaLuoHan)
 }
@@ -310,14 +288,14 @@ func getCheckCards(handCards []*majongpb.Card, huCard *majongpb.Card) []*majongp
 }
 
 //ScxlFanMutex 番型和根处理
-func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]interfaces.CardType, uint32) {
+func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]majongpb.CardType, uint32) {
 	// 翻型只有1个，并且根为0,直接返回
 	if len(fans) == 1 && gen == 0 {
-		return []interfaces.CardType{interfaces.CardType(fans[0])}, 0
+		return []majongpb.CardType{majongpb.CardType(fans[0])}, 0
 	}
-	fansMap := make(map[majongpb.CardType]interfaces.CardType)
+	fansMap := make(map[majongpb.CardType]majongpb.CardType)
 	for _, fanCardType := range fans {
-		fansMap[fanCardType] = interfaces.CardType(fanCardType)
+		fansMap[fanCardType] = majongpb.CardType(fanCardType)
 	}
 	if value, ok := fansMap[majongpb.CardType_JingGouDiao]; ok && value > 0 { //金钩钓跟碰碰胡互斥
 		delete(fansMap, majongpb.CardType_PengPengHu)
@@ -336,26 +314,26 @@ func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]interfaces.CardType, 
 		flag := false
 		if value, ok := fansMap[majongpb.CardType_ShiBaLuoHan]; ok && value > 0 { // 添加清十八罗汉,移除十八罗汉
 			delete(fansMap, majongpb.CardType_ShiBaLuoHan)
-			fansMap[majongpb.CardType_QingShiBaLuoHan] = interfaces.CardType(majongpb.CardType_QingShiBaLuoHan)
+			fansMap[majongpb.CardType_QingShiBaLuoHan] = majongpb.CardType_QingShiBaLuoHan
 			flag = true
 		}
 		if value, ok := fansMap[majongpb.CardType_JingGouDiao]; ok && value > 0 { // 添加清金钩钓,移除金钩钓
 			delete(fansMap, majongpb.CardType_JingGouDiao)
-			fansMap[majongpb.CardType_QingJingGouDiao] = interfaces.CardType(majongpb.CardType_QingJingGouDiao)
+			fansMap[majongpb.CardType_QingJingGouDiao] = majongpb.CardType_QingJingGouDiao
 			flag = true
 		}
 		if value, ok := fansMap[majongpb.CardType_PengPengHu]; ok && value > 0 { // 添加清碰,移除碰碰胡
 			delete(fansMap, majongpb.CardType_PengPengHu)
-			fansMap[majongpb.CardType_QingPeng] = interfaces.CardType(majongpb.CardType_QingPeng)
+			fansMap[majongpb.CardType_QingPeng] = majongpb.CardType_QingPeng
 			flag = true
 		}
 		if value, ok := fansMap[majongpb.CardType_QiDui]; ok && value > 0 {
 			delete(fansMap, majongpb.CardType_QiDui)
 			if gen > 0 { // 添加清龙七对,移除七对/清七对/龙七对
-				fansMap[majongpb.CardType_QingLongQiDui] = interfaces.CardType(majongpb.CardType_QingLongQiDui)
+				fansMap[majongpb.CardType_QingLongQiDui] = majongpb.CardType_QingLongQiDui
 				gen--
 			} else { // 添加清七对,移除七对
-				fansMap[majongpb.CardType_QingQiDui] = interfaces.CardType(majongpb.CardType_QingQiDui)
+				fansMap[majongpb.CardType_QingQiDui] = majongpb.CardType_QingQiDui
 			}
 			flag = true
 		}
@@ -364,12 +342,12 @@ func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]interfaces.CardType, 
 		}
 	}
 	if value, ok := fansMap[majongpb.CardType_QiDui]; ok && gen > 0 && value > 0 { // 龙七对
-		delete(fansMap, majongpb.CardType_QiDui)                                                // 移除七对
-		fansMap[majongpb.CardType_LongQiDui] = interfaces.CardType(majongpb.CardType_LongQiDui) // 添加龙七对
-		gen--                                                                                   // 根减1
+		delete(fansMap, majongpb.CardType_QiDui)                           // 移除七对
+		fansMap[majongpb.CardType_LongQiDui] = majongpb.CardType_LongQiDui // 添加龙七对
+		gen--                                                              // 根减1
 	}
 	// fan的cardType，转为卡牌的cardType
-	cardTypes := make([]interfaces.CardType, 0)
+	cardTypes := make([]majongpb.CardType, 0)
 	for _, cardType := range fansMap {
 		cardTypes = append(cardTypes, cardType)
 	}
