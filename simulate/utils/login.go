@@ -38,11 +38,11 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 	rsp := room.RoomLoginRsp{}
 	err := client.Request(interfaces.SendHead{
 		Head: interfaces.Head{
-			MsgID: uint32(msgid.MsgID_room_login_req),
+			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_REQ),
 		},
 	}, &room.RoomLoginReq{
 		UserName: proto.String("test_user"),
-	}, time.Second*2, uint32(msgid.MsgID_room_login_rsp), &rsp)
+	}, time.Second*2, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
 
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)

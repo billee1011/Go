@@ -22,7 +22,7 @@ func Test_Xipai(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 
-		expector, err := client.ExpectMessage(msgid.MsgID_room_xipai_ntf)
+		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_XIPAI_NTF)
 		assert.Nil(t, err)
 		xipaiExpectors[i] = expector
 
@@ -34,7 +34,7 @@ func Test_Xipai(t *testing.T) {
 		assert.Nil(t, e.Recv(time.Second*1, &xipaiNtf))
 		assert.True(t, xipaiNtf.GetTotalCard() > 0)
 		assert.Equal(t, 2, len(xipaiNtf.GetDices()))
-		zjIdx := xipaiNtf.GetZhuangjiaIndex()
+		zjIdx := xipaiNtf.GetBankerSeat()
 		assert.True(t, zjIdx >= 0 && zjIdx < 4)
 	}
 }

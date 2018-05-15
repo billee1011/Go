@@ -58,7 +58,12 @@ func (t *translator) callTranslator(msgTranslator msgTranslator, playerID uint64
 
 	eventID = callResults[0].Interface().(server_pb.EventID)
 	eventContext = callResults[1].Interface().(proto.Message)
-	err = callResults[2].Interface().(error)
+	errInterface := callResults[2].Interface()
+	if errInterface == nil {
+		err = nil
+	} else {
+		err = errInterface.(error)
+	}
 	return
 }
 
