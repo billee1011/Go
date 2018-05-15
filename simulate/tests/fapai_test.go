@@ -25,7 +25,7 @@ func Test_Fapai(t *testing.T) {
 		assert.NotNil(t, player)
 
 		// 创建消息期望： 期望收到发牌通知消息
-		expector, err := client.ExpectMessage(msgid.MsgID_room_fapai_ntf)
+		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_FAPAI_NTF)
 		assert.Nil(t, err)
 		fapaiNtfExpectors[i] = expector
 

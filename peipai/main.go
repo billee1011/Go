@@ -243,8 +243,8 @@ func LogPeiPaiInfos() {
 // }
 
 // Run 启动配牌
-func Run(addr string) {
+func Run(addr string) error {
 	// PP_PORT = addr
 	http.HandleFunc("/", Demo)
-	http.ListenAndServe(addr, nil)
+	return http.ListenAndServe(addr, nil)
 }
