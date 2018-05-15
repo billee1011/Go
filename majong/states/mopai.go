@@ -1,6 +1,7 @@
 package states
 
 import (
+	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
@@ -41,6 +42,9 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 	if canBuGang {
 		zixunNtf.EnableBugangCards = enablieBugangCards
 	}
+	//TODO:暂时将所有的手牌都设置为可以出的牌
+	mopaiPlayer := utils.GetPlayerByID(context.Players, context.GetMopaiPlayer())
+	zixunNtf.EnableChupaiCards = utils.CardsToRoomCards(mopaiPlayer.HandCards)
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, context.MopaiPlayer)
 	toClient := interfaces.ToClientMessage{
@@ -184,6 +188,25 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
 	context.LastMopaiPlayer = context.MopaiPlayer
 	context.LastMopaiCard = drowCard
+	roomCard, err := utils.CardToRoomCard(drowCard)
+	if err != nil {
+		return majongpb.StateID_state_mopai, fmt.Errorf("转换失败")
+	}
+	//TODO:摸牌后发送摸牌消息通知所有人,只有摸牌的玩家自己才能看到摸到的牌
+	for _, player := range context.Players {
+		ntf := &room.RoomMopaiNtf{}
+		if player.PalyerId == context.GetMopaiPlayer() {
+			ntf.Card = roomCard
+		}
+		ntf.Player = &context.MopaiPlayer
+		//TODO:摸牌方向暂时用顺时针进行
+		ntf.Back = proto.Bool(false)
+		toClientMessage := interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
+			Msg:   ntf,
+		}
+		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
+	}
 	s.checkActions(flow)
 	return majongpb.StateID_state_zixun, nil
 }
