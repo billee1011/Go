@@ -71,7 +71,6 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, playerID uint64, flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	huCard, _ := utils.CardToRoomCard(card)
 	huType := room.HuType_ZiMo.Enum()
 	huPlayer := utils.GetMajongPlayer(playerID, mjContext)
 	if string(huPlayer.Properties["gang"]) == "true" {

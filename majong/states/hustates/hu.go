@@ -74,7 +74,6 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 // HuState 广播胡
 func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	huCard, _ := utils.CardToRoomCard(mjContext.GetLastOutCard())
 	huType := room.HuType_DianPao.Enum()
 	srcPlayer := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext)
 	if string(srcPlayer.Properties["gang"]) == "true" {
@@ -83,7 +82,7 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	body := room.RoomHuNtf{
 		Players:      mjContext.GetLastHuPlayers(),
 		FromPlayerId: proto.Uint64(mjContext.GetLastChupaiPlayer()),
-		Card:         proto.Uint32(uint32(utils.ServerCard2Number(huCard))),
+		Card:         proto.Uint32(uint32(utils.ServerCard2Number(mjContext.GetLastOutCard()))),
 		HuType:       huType,
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
