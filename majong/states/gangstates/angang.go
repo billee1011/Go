@@ -74,11 +74,11 @@ func (s *AnGangState) doAngang(flow interfaces.MajongFlow) {
 
 // notifyPlayers 广播暗杠消息
 func (s *AnGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb.Card, player *majongpb.Player) {
-	roomCard, _ := utils.CardToRoomCard(card)
+	intCard := uint32(utils.ServerCard2Number(card))
 	body := room.RoomGangNtf{
 		ToPlayerId:   proto.Uint64(player.GetPalyerId()),
 		FromPlayerId: proto.Uint64(player.GetPalyerId()),
-		Card:         roomCard,
+		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_AnGang.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GANG_NTF, &body)

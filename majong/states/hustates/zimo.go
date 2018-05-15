@@ -67,11 +67,10 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, playerID uint64, flow interfaces.MajongFlow) {
-	huCard, _ := utils.CardToRoomCard(card)
 	body := room.RoomHuNtf{
 		Players:      []uint64{playerID},
 		FromPlayerId: proto.Uint64(playerID),
-		Card:         huCard,
+		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		HuType:       room.HuType_ZiMo.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)

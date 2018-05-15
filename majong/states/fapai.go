@@ -93,7 +93,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 
 	for _, player := range mjContext.Players {
 		msg := &room.RoomFapaiNtf{
-			Cards:            utils.CardsToRoomCards(player.GetHandCards()),
+			Cards:            utils.ServerCards2Uint32(player.GetHandCards()),
 			PlayerCardCounts: playerCardCount,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{

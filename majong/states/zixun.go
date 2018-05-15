@@ -98,10 +98,9 @@ func (s *ZiXunState) angang(flow interfaces.MajongFlow) {
 	for _, player := range context.Players {
 		playerIDs = append(playerIDs, player.GetPalyerId())
 	}
-	angangCard, _ := utils.CardToRoomCard(card)
 	angang := &room.RoomGangNtf{
 		ToPlayerId:   proto.Uint64(activePlayer.PalyerId),
-		Card:         angangCard,
+		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		GangType:     room.GangType_AnGang.Enum(),
 		FromPlayerId: proto.Uint64(activePlayer.PalyerId),
 	}
@@ -135,10 +134,9 @@ func (s *ZiXunState) bugang(flow interfaces.MajongFlow) {
 	for _, player := range ctx.Players {
 		playerIDs = append(playerIDs, player.GetPalyerId())
 	}
-	bugangCard, _ := utils.CardToRoomCard(card)
 	bugang := &room.RoomGangNtf{
 		ToPlayerId:   proto.Uint64(activePlayer.PalyerId),
-		Card:         bugangCard,
+		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		GangType:     room.GangType_BuGang.Enum(),
 		FromPlayerId: proto.Uint64(activePlayer.PalyerId),
 	}
@@ -335,9 +333,8 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 				hasQGanghu = true
 				playersID := make([]uint64, 0, 0)
 				playersID = append(playersID, player.PalyerId)
-				qianggangCard, _ := utils.CardToRoomCard(card)
 				angang := &room.RoomWaitQianggangHuNtf{
-					Card: qianggangCard,
+					Card: proto.Uint32(utils.ServerCard2Uint32(card)),
 				}
 				toClientMessage := interfaces.ToClientMessage{
 					MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
