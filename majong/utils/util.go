@@ -225,6 +225,45 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	}, nil
 }
 
+// ServerCard2Number 服务器的 Card 转换成数字
+func ServerCard2Number(card *majongpb.Card) int {
+	var color int
+	if card.Color == majongpb.CardColor_ColorWan {
+		color = 1
+	} else if card.Color == majongpb.CardColor_ColorTiao {
+		color = 2
+	} else if card.Color == majongpb.CardColor_ColorTong {
+		color = 3
+	} else if card.Color == majongpb.CardColor_ColorFeng {
+		color = 4
+	}
+	value := color*10 + int(card.Point)
+	return value
+}
+
+// ServerCards2Numbers 服务器的 Card 数组转 int 数组
+func ServerCards2Numbers(cards []*majongpb.Card) []int {
+	result := []int{}
+	for _, c := range cards {
+		result = append(result, ServerCard2Number(c))
+	}
+	return result
+}
+
+// ServerCard2Uint32 服务器的 Card 转换成数字
+func ServerCard2Uint32(card *majongpb.Card) uint32 {
+	return uint32(ServerCard2Number(card))
+}
+
+// ServerCards2Uint32 服务器的 Card 数组转 int 数组
+func ServerCards2Uint32(cards []*majongpb.Card) []uint32 {
+	result := []uint32{}
+	for _, c := range cards {
+		result = append(result, ServerCard2Uint32(c))
+	}
+	return result
+}
+
 // CardsToRoomCards 将Card转换为room package中的Card
 func CardsToRoomCards(cards []*majongpb.Card) []*room.Card {
 	var rCards []*room.Card
@@ -311,62 +350,6 @@ func SeekCardSum(cards []*majongpb.Card, targetCard *majongpb.Card) int {
 		}
 	}
 	return count
-}
-
-//GetHuEdPlayers 获取胡过牌玩家
-func GetHuEdPlayers(players []*majongpb.Player) []*majongpb.Player {
-	huEdPlayers := make([]*majongpb.Player, 0)
-	for i := 0; i < len(players); i++ {
-		if len(players[i].HuCards) > 0 {
-			huEdPlayers = append(huEdPlayers, players[i])
-		}
-	}
-	return huEdPlayers
-}
-
-//GetBustedHandPlayers 获取未听玩家,包括花猪,isIncludeFlower-是否包含花猪，true 包含，false 不包含
-func GetBustedHandPlayers(players []*majongpb.Player, isIncludeFlower bool) ([]*majongpb.Player, error) {
-	bustedHandPlayers := make([]*majongpb.Player, 0)
-	for i := 0; i < len(players); i++ {
-		// 胡过的不算
-		if len(players[i].HuCards) > 0 {
-			continue
-		}
-		//查听
-		isTing, _, err := IsCanTingAndGetMultiple(players[i])
-		if err != nil {
-			return []*majongpb.Player{}, err
-		}
-		// 不能听
-		if !isTing && (isIncludeFlower || !IsFlowerPig(players[i])) {
-			bustedHandPlayers = append(bustedHandPlayers, players[i])
-		}
-	}
-	return bustedHandPlayers, nil
-}
-
-//GetFlowerPigPlayers 获取花猪玩家
-func GetFlowerPigPlayers(players []*majongpb.Player) []*majongpb.Player {
-	flowerPigPlayers := make([]*majongpb.Player, 0)
-	for i := 0; i < len(players); i++ {
-		if IsFlowerPig(players[i]) {
-			flowerPigPlayers = append(flowerPigPlayers, players[i])
-		}
-	}
-	return flowerPigPlayers
-}
-
-//IsOutNoDingQueColorCard 玩家properties中的key，代表玩家是否出过非定缺颜色的牌
-const IsOutNoDingQueColorCard = "isoutnodingquecolorcard"
-
-//IsFlowerPig 判断玩家是否是花猪 TODO
-func IsFlowerPig(bustedHandPlayer *majongpb.Player) bool {
-	//在出牌逻辑设置玩家一旦出过非定缺颜色的牌，[]byte{1}, 玩家是否出过非定缺的牌 TODO
-	if len(bustedHandPlayer.Properties[IsOutNoDingQueColorCard]) != 0 {
-		// 玩家手牌中是否存在花牌
-		return CheckHasDingQueCard(bustedHandPlayer.HandCards, bustedHandPlayer.DingqueColor)
-	}
-	return false
 }
 
 //GetTingPlayerIDAndMultiple 获取所有听玩家,和返回每个听玩家最大倍数
@@ -469,17 +452,6 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 	return nil
 }
 
-//GetDingQueCardSum 获取定缺牌数量
-func GetDingQueCardSum(handCards []*majongpb.Card, dingQueColor majongpb.CardColor) int {
-	sum := 0
-	for _, card := range handCards {
-		if card.Color == dingQueColor {
-			sum++
-		}
-	}
-	return sum
-}
-
 //GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
 func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 	tingInfo := make(map[Card][]Card)
@@ -510,95 +482,23 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 			tingInfo[playCard] = huCards
 		}
 	}
-	return qiStrategy
+	return tingInfo
 }
 
-//GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]uint32, error
-func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]uint32, error) {
-	// map:palyCard-map:[tingCard-multiple]
-	tingMultiple := make(map[int32]map[int32]uint32)
-	// 获取手牌定缺牌数量
-	sum := GetDingQueCardSum(palyer.HandCards, palyer.DingqueColor)
-	// 手中少于2张定缺牌才能进行查听
-	if sum < 2 {
-		// 获取出牌提示
-		tingInfo := GetPlayCardCheckTing(palyer.HandCards)
-		// 手牌数量
-		handCardSum := len(palyer.HandCards)
-		handCard := make([]*majongpb.Card, handCardSum)
-		// 打那张牌可以胡那些牌，和胡这些牌的倍数
-		for playCard, tingCards := range tingInfo {
-			// util.card转麻将牌
-			playCard2, err := IntToCard(int32(playCard))
-			if err != nil {
-				return tingMultiple, err
-			}
-			// 复制手牌
-			handCard = append(handCard[:0], palyer.HandCards...)
-			// 删除出牌
-			newHanCard, isSucceed := DeleteCardFromLast(handCard, playCard2)
-			if !isSucceed {
-				return tingMultiple, fmt.Errorf("获取出牌提示：删除牌失败：")
-			}
-			// 能胡牌
-			for _, tingCard := range tingCards {
-				// util.card转麻将牌
-				tingCard2, err := IntToCard(int32(tingCard))
-				if err != nil {
-					return tingMultiple, err
-				}
-				// 听的定缺牌不用查倍数
-				if tingCard2.Color != palyer.DingqueColor {
-					// 添加能胡的牌
-					newHanCard = append(newHanCard, tingCard2)
-					// 查询能胡的最大倍数 TODO
-					multiple := uint32(1)
-					huMutipleMap := map[int32]uint32{int32(tingCard): multiple}
-					tingMultiple[int32(playCard)] = huMutipleMap
-					// 删除能胡的牌
-					newHanCard = newHanCard[:len(newHanCard)-1]
-				}
-			}
-		}
+// TransPengCard 碰牌转Card
+func TransPengCard(pengCards []*majongpb.PengCard) []*majongpb.Card {
+	cards := make([]*majongpb.Card, 0)
+	for _, pengCard := range pengCards {
+		cards = append(cards, pengCard.Card)
 	}
-	return tingMultiple, nil
+	return cards
 }
 
-//GetHuHint 胡牌提示倍数，缺一张，返回map[int32]uint32, error
-func GetHuHint(palyer *majongpb.Player) (map[int32]uint32, error) {
-	// map:tingCard-multiple
-	tingMultiple := make(map[int32]uint32)
-	// 手中没有定缺牌
-	if !CheckHasDingQueCard(palyer.HandCards, palyer.DingqueColor) {
-		// 获取出牌提示
-		tingInfo, err := GetTingCards(palyer.HandCards)
-		if err != nil {
-			return tingMultiple, err
-		}
-		// 手牌数量
-		handCardSum := len(palyer.HandCards)
-		handCard := make([]*majongpb.Card, handCardSum)
-		// 复制手牌
-		copy(handCard, palyer.HandCards)
-		// 可以胡那些牌
-		for _, tingCard := range tingInfo {
-			// 听的定缺牌不用查倍数
-			if tingCard.Color != palyer.DingqueColor {
-				// 添加能胡的牌
-				newHandCard := append(handCard, tingCard)
-				// 查询能胡的最大倍数 TODO
-				// 倍数
-				multiple := uint32(1)
-				// 麻将牌转Int32
-				cardInt, err := CardToInt(*tingCard)
-				if err != nil {
-					return tingMultiple, err
-				}
-				tingMultiple[*cardInt] = multiple
-				// 删除能胡的牌
-				newHandCard = newHandCard[:len(newHandCard)-1]
-			}
-		}
+// TransGangCard 杠牌转Card
+func TransGangCard(gangCards []*majongpb.GangCard) []*majongpb.Card {
+	cards := make([]*majongpb.Card, 0)
+	for _, gangCard := range gangCards {
+		cards = append(cards, gangCard.Card)
 	}
-	return tingMultiple, nil
+	return cards
 }

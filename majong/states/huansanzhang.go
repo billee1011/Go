@@ -7,7 +7,6 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	"steve/peipai"
 	majongpb "steve/server_pb/majong"
@@ -23,7 +22,8 @@ type HuansanzhangState struct {
 
 // OnEntry 进入换三张状态
 func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
+	// 客户端强烈要求不要这个通知
+	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
 }
 
 // ProcessEvent 处理换三张事件
@@ -172,8 +172,8 @@ func (s *HuansanzhangState) notifyFinish(flow interfaces.MajongFlow, dir room.Di
 			continue
 		}
 		notify := room.RoomHuansanzhangFinishNtf{
-			InCards:   utils.CardsToRoomCards(inCards),
-			OutCards:  utils.CardsToRoomCards(outCards),
+			InCards:   utils.ServerCards2Uint32(inCards),
+			OutCards:  utils.ServerCards2Uint32(outCards),
 			Direction: dir.Enum(),
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
@@ -214,5 +214,6 @@ func (s *HuansanzhangState) execute(flow interfaces.MajongFlow) (newState majong
 		}
 	}
 	s.notifyFinish(flow, dir, exchangesIn, exchangesOut)
+	newState = majongpb.StateID_state_dingque
 	return
 }

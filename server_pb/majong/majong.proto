@@ -80,6 +80,7 @@ message Player {
     CardColor dingque_color = 12;           // 定缺花色
     bool huansanzhang_sure = 13;            // 换三张是否已确认
     repeated Card huansanzhang_cards = 14;  // 换三张的牌
+    int32 mopai_count = 15;                 // 已经摸牌的次数
 
 
     map<string, bytes> properties = 256;    // 其他的一些属性
@@ -96,10 +97,21 @@ enum SettleType {
     settle_gang = 0;          // 杠
     settle_dianpao = 1;       // 点炮
     settle_zimo = 2;          // 自摸
-    settle_qiangganghu = 3;   // 抢杠胡
-    settle_flowerpig = 4;     // 查花猪
-    settle_yell = 5;          // 查大叫
+    settle_flowerpig = 3;     // 查花猪
+    settle_yell = 4;          // 查大叫
+    settle_taxrebeat = 5;     // 退税
     settle_calldiver = 6;     // 呼叫转移
+}
+
+// SettleHuType 结算类型
+enum SettleHuType {
+    settle_hu_ganghoupao = 0;          // 杠后炮
+    settle_hu_qiangganghu = 1;         // 抢杠胡
+    settle_hu_noramaldianpao = 2;      // 点炮
+    settle_hu_gangkai = 3;             // 杠开
+    settle_hu_haidilao = 4;            // 海底捞
+    settle_hu_gangshanghaidilao = 5;   // 杠上海底捞
+    settle_hu_zimo = 6;                // 自摸
 }
 
 // SettleInfo 结算信息
@@ -107,8 +119,10 @@ message SettleInfo {
     uint64 id = 1;                     // 结算 id 
     map<uint64, int64> scores = 2;     // 玩家结算分数
     SettleType settle_type = 3;        // 结算类型
-    repeated CardType card_type = 4;   // 牌组类型(胡牌时)
-    int32 card_value = 5;                // 牌组倍数
+    SettleHuType hu_type =4;           // 胡牌类型
+    repeated CardType card_type = 5;   // 牌组类型(胡牌时)
+    uint32 card_value = 6;             // 牌组倍数
+    uint32 gen_count=7;                //根的数目
 }
 
 // 玩家操作
@@ -133,7 +147,7 @@ message MajongContext {
     uint64 active_player = 4;       // 当前轮次的玩家 ID (可能要废弃，含义不明确)
     repeated Card wall_cards = 5;   // 墙牌
     repeated SettleInfo settle_infos = 6;   // 结算信息表
-    int32 max_settleId = 7;                // 最大结算信息id
+    uint64 current_settleId = 7;                // 最大结算信息id
     repeated uint64 revert_settles = 8; // 退税结算 ids
     Card last_out_card = 9;   // 最后一次出的牌
     uint32 zhuangjia_index = 10; // 庄家索引

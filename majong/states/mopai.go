@@ -76,7 +76,7 @@ func (s *MoPaiState) checkZiMo(context *majongpb.MajongContext) bool {
 }
 
 //checkAnGang 查暗杠
-func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room.Card) {
+func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []uint32) {
 	if len(context.WallCards) == 0 {
 		return false, nil
 	}
@@ -132,7 +132,7 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []*room
 }
 
 //checkBuGang 查补杠
-func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room.Card) {
+func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []uint32) {
 	// 没有墙牌不能杠
 	if len(context.WallCards) == 0 {
 		return false, nil
@@ -142,7 +142,7 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room
 	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
 	hasHu := len(activePlayer.GetHuCards()) > 0
 	pengCards := activePlayer.GetPengCards()
-	enableBugangCards := make([]*room.Card, 0, 0)
+	enableBugangCards := make([]uint32, 0, 0)
 	// actioninfos := []*clientpb.ActionInfo{}
 	for _, touchCard := range activePlayer.HandCards {
 		for _, pengCard := range pengCards {
@@ -158,12 +158,10 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []*room
 					laizi := make(map[utils.Card]bool)
 					huCards := utils.FastCheckTingV2(utilCards, laizi)
 					if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
-						roomCard, _ := utils.IntToRoomCard(*removeCard)
-						enableBugangCards = append(enableBugangCards, roomCard)
+						enableBugangCards = append(enableBugangCards, uint32(*removeCard))
 					}
 				} else {
-					roomCard, _ := utils.IntToRoomCard(*removeCard)
-					enableBugangCards = append(enableBugangCards, roomCard)
+					enableBugangCards = append(enableBugangCards, uint32(*removeCard))
 				}
 			}
 		}
@@ -207,7 +205,14 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
 	}
+	activePlayer.MopaiCount++
 	s.checkActions(flow)
+	// 清空其他玩家杠的标识
+	for _, player := range players {
+		if player.PalyerId != activePlayer.PalyerId {
+			player.Properties["gang"] = []byte("false")
+		}
+	}
 	return majongpb.StateID_state_zixun, nil
 }
 

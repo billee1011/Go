@@ -29,6 +29,9 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		//出完牌后，将上轮添加的胡牌玩家列表重置
 		context.LastHuPlayers = context.LastHuPlayers[:0]
 		for _, player := range players {
+			if context.GetLastChupaiPlayer() != player.GetPalyerId() {
+				continue
+			}
 			ntf, need := checkActions(context, player, card)
 			if need {
 				flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
@@ -55,7 +58,7 @@ func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card
 		return nil, false
 	}
 	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
-	chupaiWenxunNtf.Card, _ = utils.CardToRoomCard(card)
+	chupaiWenxunNtf.Card = proto.Uint32(uint32(utils.ServerCard2Number(card)))
 	canMingGang := checkMingGang(context, player, card)
 	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
@@ -166,13 +169,12 @@ func checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card
 func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	context := flow.GetMajongContext()
 	activePlayer := utils.GetPlayerByID(context.GetPlayers(), context.GetLastChupaiPlayer())
-	card := context.LastOutCard
+	card := context.GetLastOutCard()
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
-	cardToClient, _ := utils.CardToRoomCard(card)
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
 		Player: proto.Uint64(activePlayer.GetPalyerId()),
-		Card:   cardToClient,
+		Card:   proto.Uint32(utils.ServerCard2Uint32(card)),
 	})
 }
 

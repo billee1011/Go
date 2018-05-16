@@ -27,6 +27,7 @@ type SendResult struct {
 type MessageExpector interface {
 	Recv(timeOut time.Duration, body proto.Message) error
 	Close()
+	Clear() // 清空之前收到的消息
 }
 
 // Client 客户端接口
