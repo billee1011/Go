@@ -9,6 +9,7 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -29,7 +30,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		//出完牌后，将上轮添加的胡牌玩家列表重置
 		context.LastHuPlayers = context.LastHuPlayers[:0]
 		for _, player := range players {
-			if context.GetLastChupaiPlayer() != player.GetPalyerId() {
+			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
 				continue
 			}
 			ntf, need := checkActions(context, player, card)
@@ -54,9 +55,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 //checkActions 检查玩家可以有哪些操作
 func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
 	player.PossibleActions = player.PossibleActions[:0]
-	if player.PalyerId == context.ActivePlayer {
-		return nil, false
-	}
+
 	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
 	chupaiWenxunNtf.Card = proto.Uint32(uint32(utils.ServerCard2Number(card)))
 	canMingGang := checkMingGang(context, player, card)
@@ -85,38 +84,34 @@ func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, car
 	if len(context.WallCards) == 0 {
 		return false
 	}
-	cpPlayerID := context.GetActivePlayer()
-	cpPlayer := utils.GetPlayerByID(context.GetPlayers(), cpPlayerID)
 	outCard := context.GetLastOutCard()
 	color := player.GetDingqueColor()
 	//定缺牌不查
 	if outCard.Color == color {
 		return false
 	}
-	if cpPlayer.PalyerId != player.PalyerId {
-		cards := player.HandCards
-		num := 0
-		for _, card := range cards {
-			if utils.CardEqual(card, outCard) {
-				num++
-			}
+	cards := player.HandCards
+	num := 0
+	for _, card := range cards {
+		if utils.CardEqual(card, outCard) {
+			num++
 		}
-		if num == 3 {
-			if len(player.GetHuCards()) > 0 {
-				//创建副本，移除相应的杠牌进行查胡
-				newcards := make([]*majongpb.Card, 0, len(cards))
-				newcards = append(newcards, cards...)
-				newcards, _ = utils.RemoveCards(newcards, outCard, num)
-				newcardsI, _ := utils.CardsToInt(newcards)
-				cardsI := utils.IntToUtilCard(newcardsI)
-				laizi := make(map[utils.Card]bool)
-				huCards := utils.FastCheckTingV2(cardsI, laizi)
-				if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(player.HuCards)) {
-					return true
-				}
-			} else {
+	}
+	if num == 3 {
+		if len(player.GetHuCards()) > 0 {
+			//创建副本，移除相应的杠牌进行查胡
+			newcards := make([]*majongpb.Card, 0, len(cards))
+			newcards = append(newcards, cards...)
+			newcards, _ = utils.RemoveCards(newcards, outCard, num)
+			newcardsI, _ := utils.CardsToInt(newcards)
+			cardsI := utils.IntToUtilCard(newcardsI)
+			laizi := make(map[utils.Card]bool)
+			huCards := utils.FastCheckTingV2(cardsI, laizi)
+			if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(player.HuCards)) {
 				return true
 			}
+		} else {
+			return true
 		}
 	}
 	return false
@@ -129,38 +124,35 @@ func checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *m
 	if len(player.GetHuCards()) > 0 || card.Color == color {
 		return false
 	}
-	if context.ActivePlayer != player.PalyerId {
-		handCards := player.HandCards
-		num := 0
-		for _, handCard := range handCards {
-			if utils.CardEqual(handCard, card) {
-				num++
-			}
-		}
-		if num >= 2 {
-			// player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
-			return true
+	num := 0
+	for _, handCard := range player.GetHandCards() {
+		if utils.CardEqual(handCard, card) {
+			num++
 		}
 	}
-	return false
+	logrus.WithFields(logrus.Fields{
+		"func_name":    "checkPeng",
+		"check_player": player.GetPalyerId(),
+		"check_card":   card,
+		"hand_cards":   player.GetHandCards(),
+		"count":        num,
+	}).Debugln("检查是否可碰")
+	return num >= 2
 }
 
 //checkDianPao 查点炮
 func checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
-	cpPlayer := utils.GetPlayerByID(context.GetPlayers(), context.ActivePlayer)
 	cpCard := context.GetLastOutCard()
-	if cpPlayer.PalyerId != player.PalyerId {
-		color := player.GetDingqueColor()
-		hasDingQueCard := utils.CheckHasDingQueCard(player.HandCards, color)
-		if hasDingQueCard {
-			return false
-		}
-		handCard := player.GetHandCards() // 当前点炮胡玩家手牌
-		cardI, _ := utils.CardToInt(*cpCard)
-		flag := utils.CheckHu(handCard, uint32(*cardI))
-		if flag {
-			return true
-		}
+	color := player.GetDingqueColor()
+	hasDingQueCard := utils.CheckHasDingQueCard(player.HandCards, color)
+	if hasDingQueCard {
+		return false
+	}
+	handCard := player.GetHandCards() // 当前点炮胡玩家手牌
+	cardI, _ := utils.CardToInt(*cpCard)
+	flag := utils.CheckHu(handCard, uint32(*cardI))
+	if flag {
+		return true
 	}
 	return false
 }
@@ -176,6 +168,7 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 		Player: proto.Uint64(activePlayer.GetPalyerId()),
 		Card:   proto.Uint32(utils.ServerCard2Uint32(card)),
 	})
+
 }
 
 // OnEntry 进入状态

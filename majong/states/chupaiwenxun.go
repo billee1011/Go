@@ -3,6 +3,8 @@ package states
 import (
 	"errors"
 	"fmt"
+	"steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -34,11 +36,56 @@ func (s *ChupaiwenxunState) OnEntry(flow interfaces.MajongFlow) {
 	for _, player := range flow.GetMajongContext().GetPlayers() {
 		player.HasSelected = false
 	}
+	s.notifyPossibleActions(flow)
 }
 
 // OnExit 退出状态
 func (s *ChupaiwenxunState) OnExit(flow interfaces.MajongFlow) {
 
+}
+
+// notifyPossibleActions 通知出牌问询
+func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	players := mjContext.GetPlayers()
+	card := mjContext.GetLastOutCard()
+
+	for index, player := range players {
+		actions := player.GetPossibleActions()
+		if len(actions) == 0 {
+			continue
+		}
+		ntf := room.RoomChupaiWenxunNtf{}
+		ntf.Card = proto.Uint32(utils.ServerCard2Uint32(card))
+		ntf.EnableQi = proto.Bool(true)
+		for _, action := range actions {
+			switch action {
+			case majongpb.Action_action_peng:
+				{
+					ntf.EnablePeng = proto.Bool(true)
+				}
+			case majongpb.Action_action_gang:
+				{
+					ntf.EnableMinggang = proto.Bool(true)
+				}
+			case majongpb.Action_action_hu:
+				{
+					ntf.EnableDianpao = proto.Bool(true)
+				}
+
+			}
+		}
+		logrus.WithFields(logrus.Fields{
+			"func_name":   "ChupaiwenxunState.notifyPossibleActions",
+			"player_id":   player.GetPalyerId(),
+			"player_seat": index,
+			"actions":     actions,
+		}).Debugln("发送问询通知")
+		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
+			Msg:   &ntf,
+		})
+	}
 }
 
 // getMajongPlayer 获取玩家对象

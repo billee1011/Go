@@ -2,7 +2,10 @@ package states
 
 import (
 	"fmt"
+	"steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/majong/interfaces"
+	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -103,6 +106,14 @@ func (s *PengState) OnExit(flow interfaces.MajongFlow) {
 
 }
 
+func (s *PengState) notifyPeng(flow interfaces.MajongFlow, card *majongpb.Card, from uint64, to uint64) {
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_PENG_NTF, &room.RoomPengNtf{
+		Card:         proto.Uint32(utils.ServerCard2Uint32(card)),
+		FromPlayerId: proto.Uint64(from),
+		ToPlayerId:   proto.Uint64(to),
+	})
+}
+
 // doPeng 执行碰操作
 func (s *PengState) doPeng(flow interfaces.MajongFlow) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -127,7 +138,7 @@ func (s *PengState) doPeng(flow interfaces.MajongFlow) {
 		return
 	}
 	player.HandCards = newCards
-
+	s.notifyPeng(flow, card, mjContext.GetLastChupaiPlayer(), pengPlayer)
 	s.addPengCard(card, player, mjContext.GetActivePlayer())
 	return
 }

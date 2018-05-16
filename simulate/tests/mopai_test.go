@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Test_Mopai 摸牌测试
 func Test_Mopai(t *testing.T) {
 	deskData, err := utils.StartGame(commonStartGameParams)
 
