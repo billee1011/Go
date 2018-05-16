@@ -2,6 +2,7 @@ package tests
 
 import (
 	"steve/client_pb/room"
+	"steve/simulate/utils"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -63,4 +64,39 @@ var (
 	Card8B = room.Card{Color: room.CardColor_CC_TONG.Enum(), Point: proto.Int32(8)}
 	// Card9B 9 筒
 	Card9B = room.Card{Color: room.CardColor_CC_TONG.Enum(), Point: proto.Int32(9)}
+)
+
+func makeRoomCards(card ...room.Card) []*room.Card {
+	result := []*room.Card{}
+	for i := range card {
+		result = append(result, &card[i])
+	}
+	return result
+}
+
+var (
+	// commonStartGameParams 通用的启动游戏参数
+	commonStartGameParams = utils.StartGameParams{
+		Cards: [][]*room.Card{
+			makeRoomCards(Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card4W),
+			makeRoomCards(Card5W, Card5W, Card5W, Card5W, Card6W, Card6W, Card6W, Card6W, Card7W, Card7W, Card7W, Card7W, Card8W),
+			makeRoomCards(Card1T, Card1T, Card1T, Card1T, Card2T, Card2T, Card2T, Card2T, Card3T, Card3T, Card3T, Card3T, Card4T),
+			makeRoomCards(Card5T, Card5T, Card5T, Card5T, Card6T, Card6T, Card6T, Card6T, Card7T, Card7T, Card7T, Card7T, Card8T),
+		},
+		WallCards: []*room.Card{
+			&Card1B,
+		},
+		HszDir:     0, // TODO
+		BankerSeat: 0,
+		ServerAddr: ServerAddr,
+		ClientVer:  ClientVersion,
+
+		HszCards: [][]*room.Card{
+			makeRoomCards(Card1W, Card1W, Card1W),
+			makeRoomCards(Card5W, Card5W, Card5W),
+			makeRoomCards(Card1T, Card1T, Card1T),
+			makeRoomCards(Card5T, Card5T, Card5T),
+		},
+		DingqueColor: []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO},
+	}
 )

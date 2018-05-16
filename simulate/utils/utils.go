@@ -12,3 +12,8 @@ func createMsgHead(msgID msgid.MsgID) interfaces.SendHead {
 		},
 	}
 }
+
+// CreateMsgHead 创建消息头
+func CreateMsgHead(msgID msgid.MsgID) interfaces.SendHead {
+	return createMsgHead(msgID)
+}

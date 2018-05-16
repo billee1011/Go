@@ -1,7 +1,6 @@
 package hustates
 
 import (
-	"errors"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/cardtype"
@@ -108,18 +107,13 @@ func (s *ZimoState) setMopaiPlayer(flow interfaces.MajongFlow) {
 // getZimoInfo 获取自摸信息
 func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majongpb.Player, card *majongpb.Card, err error) {
 	playerID := mjContext.GetLastMopaiPlayer()
+	players := mjContext.GetPlayers()
+	player = utils.GetPlayerByID(players, playerID)
+
 	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
-	if playerID == 0 {
-		players := mjContext.GetPlayers()
-		zjIndex := mjContext.GetZhuangjiaIndex()
-		if zjIndex >= uint32(len(players)) {
-			err = errors.New("庄家索引越界")
-			return
-		}
-		player = players[zjIndex]
+	if player.GetMopaiCount() == 0 {
 		card = s.calcTianhuCard(player.GetHandCards())
 	} else {
-		player = utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
 		card = mjContext.GetLastMopaiCard()
 	}
 	mjContext.LastHuPlayers = []uint64{playerID}
