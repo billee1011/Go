@@ -35,7 +35,7 @@ func TestDingQueState_WeiWangCheng(t *testing.T) {
 	// 序列化消息
 	dingqueEvent := &majongpb.DingqueRequestEvent{
 		Head:  &majongpb.RequestEventHead{PlayerId: 1},
-		Color: majongpb.CardColor_ColorTiao,
+		Color: majongpb.CardColor_ColorWan,
 	}
 	eventContext, err := proto.Marshal(dingqueEvent)
 	if err != nil {
@@ -57,7 +57,7 @@ func TestDingQueState_WeiWangCheng(t *testing.T) {
 		"DingqueColor": mjContext.Players[1].DingqueColor,
 		"HasDingque":   mjContext.Players[1].HasDingque,
 	}).Info("后")
-	assert.Equal(t, mjContext.Players[1].DingqueColor, majongpb.CardColor_ColorTiao, "定缺")
+	assert.Equal(t, mjContext.Players[1].DingqueColor, majongpb.CardColor_ColorWan, "定缺")
 	assert.Equal(t, mjContext.Players[1].HasDingque, true, "定缺")
 	assert.Equal(t, majongpb.StateID_state_dingque, newStateID, "定缺")
 }

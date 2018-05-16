@@ -52,38 +52,21 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	if dqPlayer == nil {
 		return false, fmt.Errorf("定缺事件失败-定缺玩家ID不存在: %v ", playerID)
 	}
-	// 错误码-成功
-	err := room.RoomError_Success
-	// 定缺应答 请求-响应
-	toClientRsq := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_DINGQUE_RSP),
-		Msg: &room.RoomDingqueRsp{
-			ErrCode: &err,
-		},
-	}
-	// 推送消息应答
-	flow.PushMessages([]uint64{playerID}, toClientRsq)
 	// 获取定缺颜色
 	dqColor := dinqueEvent.GetColor()
-
-	// 校验颜色是否合法
-	sichuangxueliuDingQueColor := map[majongpb.CardColor]string{
-		majongpb.CardColor_ColorWan:  "万",
-		majongpb.CardColor_ColorTong: "筒",
-		majongpb.CardColor_ColorTiao: "条",
-	}
-	if _, ok := sichuangxueliuDingQueColor[dqColor]; !ok {
+	// 检测定缺颜色是否合法
+	if ok := checkDingQueReq(dqColor); !ok {
 		return false, fmt.Errorf("定缺事件失败-定缺花色不存在: %v ", dqColor)
 	}
 	// 设置玩家定缺颜色
 	dqPlayer.DingqueColor = dqColor
 	// 设置已经定缺
 	dqPlayer.HasDingque = true
+	// 应答
+	onDingQueRsq(playerID, flow)
 
 	// 日志
 	logrus.WithFields(logrus.Fields{
-		"msgID":           msgid.MsgID_ROOM_DINGQUE_RSP,
-		"toClientRsq":     toClientRsq,
 		"dinqueEvent":     dinqueEvent,
 		"dingQuePlayerID": dqPlayer.PalyerId,
 		"dingQueColor":    dqPlayer.DingqueColor,
@@ -135,4 +118,36 @@ func (s *DingqueState) OnExit(flow interfaces.MajongFlow) {
 		"msgID":            msgid.MsgID_ROOM_DINGQUE_FINISH_NTF,
 		"dingQueFinishNtf": dingQueFinishNtf,
 	}).Info("-----定缺完成-退出定缺状态")
+}
+
+//checkDingQueReq 检测定缺请求是否合法
+func checkDingQueReq(dingQueColor majongpb.CardColor) bool {
+	sichuangxueliuDingQueColor := map[majongpb.CardColor]string{
+		majongpb.CardColor_ColorWan:  "万",
+		majongpb.CardColor_ColorTong: "筒",
+		majongpb.CardColor_ColorTiao: "条",
+	}
+	colorValue, ok := sichuangxueliuDingQueColor[dingQueColor]
+	if !ok {
+		return false
+	}
+	logrus.WithFields(logrus.Fields{
+		"DingQueColor": colorValue,
+	}).Info("--定缺颜色")
+	return true
+}
+
+//onRsq 定缺应答
+func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
+	// 错误码-成功
+	err := room.RoomError_Success
+	// 定缺应答 请求-响应
+	toClientRsq := interfaces.ToClientMessage{
+		MsgID: int(msgid.MsgID_ROOM_DINGQUE_RSP),
+		Msg: &room.RoomDingqueRsp{
+			ErrCode: &err,
+		},
+	}
+	// 推送消息应答
+	flow.PushMessages([]uint64{playerID}, toClientRsq)
 }
