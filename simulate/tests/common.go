@@ -86,7 +86,7 @@ var (
 		WallCards: []*room.Card{
 			&Card1B,
 		},
-		HszDir:     0, // TODO
+		HszDir:     room.Direction_ClockWise,
 		BankerSeat: 0,
 		ServerAddr: ServerAddr,
 		ClientVer:  ClientVersion,
