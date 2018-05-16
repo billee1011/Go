@@ -20,6 +20,9 @@ type Desk interface {
 	// finish : 当牌桌逻辑完成时调用
 	Start(finish func()) error
 
+	// Stop 停止牌桌
+	Stop() error
+
 	// PushRequest 压入玩家请求
 	PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
 }
@@ -31,6 +34,9 @@ type DeskMgr interface {
 
 	// HandlePlayerRequest 处理玩家请求
 	HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
+
+	// GetRunDeskByPlayerID 获取该玩家所在牌桌
+	GetRunDeskByPlayerID(playerID uint64) (Desk, error)
 }
 
 // CreateDeskOptions 创建牌桌选项

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime/debug"
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
@@ -162,6 +162,40 @@ func (d *desk) Start(finish func()) error {
 		eventContext: []byte{},
 	}
 	return nil
+}
+
+// Stop 停止桌面
+// step1，桌面解散开始
+// step2，广播桌面解散通知
+func (d *desk) Stop() error {
+	d.cancel()
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "desk.Stop",
+		"desk_uid":  d.deskUID,
+		"game_id":   d.gameID,
+	})
+	players := d.GetPlayers()
+	clientIDs := []uint64{}
+
+	playerMgr := global.GetPlayerMgr()
+	for _, player := range players {
+		playerID := player.GetPlayerId()
+		p := playerMgr.GetPlayer(playerID)
+		if p != nil {
+			clientIDs = append(clientIDs, p.GetClientID())
+		}
+	}
+	ntf := room.RoomDeskDismissNtf{}
+	head := &steve_proto_gaterpc.Header{
+		MsgId: uint32(msgid.MsgID_ROOM_DESK_QUIT_REQ)}
+	ms := global.GetMessageSender()
+	err := ms.BroadcastPackage(clientIDs, head, &ntf)
+	if err != nil {
+		logEntry.WithError(err)
+	}
+
+	return err
 }
 
 // PushRequest 压入玩家请求

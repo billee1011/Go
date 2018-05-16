@@ -19,6 +19,12 @@ type deskMgr struct {
 var errPlayerAlreadyInDesk = errors.New("有玩家已经在牌桌上了")
 var errDeskStartError = errors.New("牌桌启动失败")
 
+func init() {
+	mgr := new(deskMgr)
+	global.SetDeskMgr(mgr)
+	logrus.Debugln("初始化牌桌管理器")
+}
+
 // RunDesk 运转牌桌
 func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	dm.mu.Lock()
@@ -110,8 +116,27 @@ func (dm *deskMgr) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterp
 	desk.PushRequest(playerID, head, bodyData)
 }
 
-func init() {
-	mgr := new(deskMgr)
-	global.SetDeskMgr(mgr)
-	logrus.Debugln("初始化牌桌管理器")
+// GetRunDeskByPlayerID
+func (dm *deskMgr) GetRunDeskByPlayerID(playerID uint64) (desk interfaces.Desk, err error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "deskMgr.RoomDeskQuitReq",
+		"player_id": playerID,
+	})
+
+	iDeskID, ok := dm.playerDeskMap.Load(playerID)
+	if !ok {
+		logEntry.Infoln("玩家不在牌桌上")
+		return nil, errors.New("玩家不在牌桌上")
+	}
+	deskID := iDeskID.(uint64)
+	logEntry = logEntry.WithField("desk_id", deskID)
+
+	iDesk, ok := dm.deskMap.Load(deskID)
+	if !ok {
+		logEntry.Infoln("牌桌可能已经结束")
+		return nil, errors.New("牌桌可能已经结束")
+	}
+
+	desk = iDesk.(interfaces.Desk)
+	return desk, nil
 }
