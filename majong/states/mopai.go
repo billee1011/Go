@@ -176,7 +176,7 @@ func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, ba
 		ntf.Player = &context.MopaiPlayer
 		ntf.Back = proto.Bool(back)
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
+			MsgID: int(msgid.MsgID_ROOM_MOPAI_NTF),
 			Msg:   ntf,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
@@ -186,15 +186,24 @@ func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, ba
 //mopai 摸牌处理
 func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
 	context := flow.GetMajongContext()
+	logEntry := logrus.WithField("func_name", "MoPaiState.mopai")
+	logEntry = utils.WithMajongContext(logEntry, context)
+
 	players := context.GetPlayers()
 	activePlayer := utils.GetPlayerByID(players, context.GetMopaiPlayer())
 	//TODO：目前只在这个地方改变操作玩家（感觉碰，明杠，点炮这三种情况也需要改变activePlayer）
 	context.ActivePlayer = activePlayer.GetPalyerId()
 	if len(context.WallCards) == 0 {
+		logEntry.Infoln("没牌了")
 		return majongpb.StateID_state_gameover, nil
 	}
 	//从墙牌中移除一张牌
 	card := context.WallCards[0]
+	logEntry.WithFields(logrus.Fields{
+		"wall_card_count": len(context.GetWallCards()),
+		"card":            card,
+	}).Infoln("执行摸牌")
+
 	context.WallCards = context.WallCards[1:]
 	//将这张牌添加到手牌中
 	activePlayer.HandCards = append(activePlayer.GetHandCards(), card)
