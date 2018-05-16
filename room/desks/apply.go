@@ -120,3 +120,23 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
 	return
 }
+
+// HandleRoomDeskQuitReq 处理玩家退出桌面请求
+// 失败先不回复
+func HandleRoomDeskQuitReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+	if player == nil {
+		return
+	}
+	deskMgr := global.GetDeskMgr()
+	desk, err := deskMgr.GetRunDeskByPlayerID(player.GetID())
+	if err != nil {
+		return
+	}
+	err = desk.Stop()
+	if err != nil {
+		return
+	}
+	return
+}
