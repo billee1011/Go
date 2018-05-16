@@ -92,8 +92,8 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 		entry.WithError(err).Errorln(errMarshal)
 		return errMarshal
 	}
-	e.BroadcastPackageBare(clientIDs, head, bodyData)
-	return nil
+	err = e.BroadcastPackageBare(clientIDs, head, bodyData)
+	return err
 }
 
 // SendPackage 发送消息给指定客户端 clientID
