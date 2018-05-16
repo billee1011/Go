@@ -186,9 +186,10 @@ func (d *desk) Stop() error {
 			clientIDs = append(clientIDs, p.GetClientID())
 		}
 	}
+
 	ntf := room.RoomDeskDismissNtf{}
 	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid.MsgID_ROOM_DESK_QUIT_REQ)}
+		MsgId: uint32(msgid.MsgID_ROOM_DESK_DISMISS_NTF)}
 	ms := global.GetMessageSender()
 	err := ms.BroadcastPackage(clientIDs, head, &ntf)
 	if err != nil {
