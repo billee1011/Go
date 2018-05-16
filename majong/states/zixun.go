@@ -59,6 +59,13 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 	}
 }
 
+// getZixunPlayer 获取自询玩家 ID
+// 如果没有上一个摸牌的人，则返回庄家。否则返回上一个摸牌的玩家
+func (s *ZiXunState) getZixunPlayer(flow interfaces.MajongFlow) uint64 {
+	mjContext := flow.GetMajongContext()
+	return mjContext.GetLastMopaiPlayer()
+}
+
 //angang 决策杠
 func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequestEvent) (majongpb.StateID, error) {
 	canAnGang, _ := s.canAnGang(flow, message)
@@ -165,42 +172,19 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	//检查玩家收牌中是否包含出的牌
 	context := flow.GetMajongContext()
 	pid := message.GetHead().GetPlayerId()
-	if context.GetMopaiPlayer() != pid {
-		return majongpb.StateID_state_zixun, fmt.Errorf("未到玩家：%v 出牌，当前应该出牌的玩家是：%v", pid, context.GetActivePlayer())
+	if s.getZixunPlayer(flow) != pid {
+		return majongpb.StateID_state_zixun, fmt.Errorf("未到玩家：%v 出牌，当前应该出牌的玩家是：%v", pid, s.getZixunPlayer(flow))
 	}
 	card := message.GetCards()
 	activePlayer := utils.GetPlayerByID(context.GetPlayers(), pid)
-	var canOutCard bool
 	for _, c := range activePlayer.GetHandCards() {
 		if utils.CardEqual(c, card) {
-			canOutCard = true
-			break
+			context.LastOutCard = card
+			context.LastChupaiPlayer = pid
+			return majongpb.StateID_state_chupai, nil
 		}
 	}
-	if canOutCard {
-		//决策成功，移除手牌，并且广播
-		// activePlayer.HandCards, _ = utils.DeleteCardFromLast(activePlayer.HandCards, card)
-		// context.LastOutCard = card
-		// activePlayer.OutCards = append(activePlayer.OutCards, card)
-		// playersID := make([]uint64, 0, 0)
-		// for _, player := range context.GetPlayers() {
-		// 	playersID = append(playersID, player.GetPalyerId())
-		// }
-		// cardToClient, _ := utils.CardToRoomCard(card)
-		// toClientMessage := interfaces.ToClientMessage{
-		// 	MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
-		// 	Msg: &room.RoomChupaiNtf{
-		// 		Player: proto.Uint64(activePlayer.GetPalyerId()),
-		// 		Card:   cardToClient,
-		// 	},
-		// }
-		// flow.PushMessages(playersID, toClientMessage)
-		// activePlayer.PossibleActions = activePlayer.PossibleActions[:0]
-		context.LastOutCard = card
-		context.LastChupaiPlayer = pid
-		return majongpb.StateID_state_chupai, nil
-	}
-	return majongpb.StateID_state_zixun, global.ErrInvalidEvent
+	return majongpb.StateID_state_zixun, nil
 }
 
 //checkAnGang 检查暗杠 (判断当前事件是否可行)

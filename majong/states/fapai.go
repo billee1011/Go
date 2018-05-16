@@ -76,6 +76,7 @@ func (f *FapaiState) fapai(flow interfaces.MajongFlow) {
 		player := majongContext.Players[(i+zjIndex)%playerCount]
 		f.fapaiToPlayer(flow, player, initHandCardCount)
 	}
+	majongContext.LastMopaiPlayer = zjPlayer.GetPalyerId()
 }
 
 // notifyPlayer 通知玩家发牌消息

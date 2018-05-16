@@ -15,8 +15,9 @@ import (
 
 // DeskPlayer 牌桌玩家数据
 type DeskPlayer struct {
-	Player interfaces.ClientPlayer
-	Seat   int
+	Player    interfaces.ClientPlayer
+	Seat      int
+	Expectors map[msgid.MsgID]interfaces.MessageExpector // 消息期望， 消息 ID -> expector
 }
 
 // DeskData 牌桌数据
@@ -36,9 +37,11 @@ type StartGameParams struct {
 
 	HszCards     [][]*room.Card   // 从庄家的位置算起，用来换三张的牌
 	DingqueColor []room.CardColor // 定缺花色。 从庄家位置算起
+
 }
 
 // StartGame 启动一局游戏
+// 开始后停留在等待庄家出牌状态
 func StartGame(params StartGameParams) (*DeskData, error) {
 	players, err := createAndLoginUsers(params.ServerAddr, params.ClientVer)
 	if err != nil {
@@ -61,8 +64,9 @@ func StartGame(params StartGameParams) (*DeskData, error) {
 	dd.Players = map[uint64]DeskPlayer{}
 	for _, player := range players {
 		dd.Players[player.GetID()] = DeskPlayer{
-			Player: player,
-			Seat:   calcPlayerSeat(seatMap, player.GetID()),
+			Player:    player,
+			Seat:      calcPlayerSeat(seatMap, player.GetID()),
+			Expectors: createPlayerExpectors(player.GetClient()),
 		}
 	}
 	checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
@@ -75,6 +79,20 @@ func StartGame(params StartGameParams) (*DeskData, error) {
 		return nil, err
 	}
 	return &dd, nil
+}
+
+// createPlayerExpectors 创建玩家的麻将逻辑消息期望
+func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.MessageExpector {
+	msgs := []msgid.MsgID{msgid.MsgID_ROOM_CHUPAIWENXUN_NTF, msgid.MsgID_ROOM_PENG_NTF, msgid.MsgID_ROOM_GANG_NTF, msgid.MsgID_ROOM_HU_NTF,
+		msgid.MsgID_ROOM_ZIXUN_NTF, msgid.MsgID_ROOM_CHUPAI_NTF,
+		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
+		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE,
+	}
+	result := map[msgid.MsgID]interfaces.MessageExpector{}
+	for _, msg := range msgs {
+		result[msg], _ = client.ExpectMessage(msg)
+	}
+	return result
 }
 
 // GetDeskPlayerBySeat 根据座号获取牌桌玩家

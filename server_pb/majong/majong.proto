@@ -80,6 +80,7 @@ message Player {
     CardColor dingque_color = 12;           // 定缺花色
     bool huansanzhang_sure = 13;            // 换三张是否已确认
     repeated Card huansanzhang_cards = 14;  // 换三张的牌
+    int32 mopai_count = 15;                 // 已经摸牌的次数
 
 
     map<string, bytes> properties = 256;    // 其他的一些属性

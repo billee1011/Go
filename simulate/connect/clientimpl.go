@@ -58,6 +58,23 @@ func (me *messageExpector) Recv(timeOut time.Duration, body proto.Message) error
 	}
 }
 
+func (me *messageExpector) Clear() {
+	for {
+		cont := false
+
+		select {
+		case <-me.ch:
+			cont = true
+		default:
+			cont = false
+		}
+
+		if !cont {
+			break
+		}
+	}
+}
+
 func (me *messageExpector) Close() {
 	me.closer()
 }
