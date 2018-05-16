@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -66,20 +67,22 @@ func (s *BuGangState) doBugang(flow interfaces.MajongFlow) {
 		return
 	}
 	player.HandCards = newCards
+	player.Properties["gang"] = []byte("true")
 
 	s.removePengCard(card, player)
 	s.addGangCard(card, player, player.GetPalyerId())
 	s.notifyPlayers(flow, card, player)
+	s.doBuGangSettle(mjContext, player)
 	return
 }
 
 // notifyPlayers 广播暗杠消息
 func (s *BuGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb.Card, player *majongpb.Player) {
-	roomCard, _ := utils.CardToRoomCard(card)
+	intCard := uint32(utils.ServerCard2Number(card))
 	body := room.RoomGangNtf{
 		ToPlayerId:   proto.Uint64(player.GetPalyerId()),
 		FromPlayerId: proto.Uint64(player.GetPalyerId()),
-		Card:         roomCard,
+		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_BuGang.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GANG_NTF, &body)
@@ -111,4 +114,24 @@ func (s *BuGangState) removePengCard(card *majongpb.Card, player *majongpb.Playe
 func (s *BuGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
+}
+
+//	doBuGangSettle 补杠结算
+func (s *BuGangState) doBuGangSettle(mjContext *majongpb.MajongContext, player *majongpb.Player) {
+	allPlayers := make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		allPlayers = append(allPlayers, player.GetPalyerId())
+	}
+	param := interfaces.GangSettleParams{
+		GangPlayer: player.GetPalyerId(),
+		SrcPlayer:  player.GetPalyerId(),
+		AllPlayers: allPlayers,
+		GangType:   majongpb.GangType_gang_bugang,
+		SettleID:   mjContext.CurrentSettleId,
+	}
+
+	buGangSettle := new(settle.GangSettle)
+	settleInfo := buGangSettle.Settle(param)
+	mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
+	mjContext.CurrentSettleId++
 }

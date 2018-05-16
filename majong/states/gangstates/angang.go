@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -66,19 +67,20 @@ func (s *AnGangState) doAngang(flow interfaces.MajongFlow) {
 		return
 	}
 	player.HandCards = newCards
-
+	player.Properties["gang"] = []byte("true")
 	s.addGangCard(card, player, player.GetPalyerId())
 	s.notifyPlayers(flow, card, player)
+	s.doAnGangSettle(mjContext, player)
 	return
 }
 
 // notifyPlayers 广播暗杠消息
 func (s *AnGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb.Card, player *majongpb.Player) {
-	roomCard, _ := utils.CardToRoomCard(card)
+	intCard := uint32(utils.ServerCard2Number(card))
 	body := room.RoomGangNtf{
 		ToPlayerId:   proto.Uint64(player.GetPalyerId()),
 		FromPlayerId: proto.Uint64(player.GetPalyerId()),
-		Card:         roomCard,
+		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_AnGang.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GANG_NTF, &body)
@@ -97,4 +99,24 @@ func (s *AnGangState) addGangCard(card *majongpb.Card, player *majongpb.Player, 
 func (s *AnGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
+}
+
+//	doAnGangSettle 暗杠结算
+func (s *AnGangState) doAnGangSettle(mjContext *majongpb.MajongContext, player *majongpb.Player) {
+	allPlayers := make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		allPlayers = append(allPlayers, player.GetPalyerId())
+	}
+	param := interfaces.GangSettleParams{
+		GangPlayer: player.GetPalyerId(),
+		SrcPlayer:  player.GetPalyerId(),
+		AllPlayers: allPlayers,
+		GangType:   majongpb.GangType_gang_angang,
+		SettleID:   mjContext.CurrentSettleId,
+	}
+
+	anGangSettle := new(settle.GangSettle)
+	settleInfo := anGangSettle.Settle(param)
+	mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
+	mjContext.CurrentSettleId++
 }

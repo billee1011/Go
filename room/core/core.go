@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"steve/peipai"
 	"steve/room/interfaces/global"
 	"steve/room/registers"
 	"steve/structs"
@@ -41,6 +42,7 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 }
 
 func (c *roomCore) Start() error {
+	go startPeipai()
 	return c.startWatchDog()
 }
 
@@ -69,4 +71,22 @@ func (c *roomCore) startWatchDog() error {
 
 	addr := fmt.Sprintf("%s:%d", listenIP, listenPort)
 	return c.dog.Start(addr, net.TCP)
+}
+
+func startPeipai() error {
+	peipaiAddr := viper.GetString(ListenPeipaiAddr)
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "startPeipai",
+		"addr":      peipaiAddr,
+	})
+	if peipaiAddr != "" {
+		logEntry.Info("启动配牌服务")
+		err := peipai.Run(peipaiAddr)
+		if err != nil {
+			logEntry.WithError(err).Panic("配牌服务启动失败")
+		}
+		return err
+	}
+	logEntry.Info("未配置配牌")
+	return nil
 }
