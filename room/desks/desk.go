@@ -3,7 +3,9 @@ package desks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"runtime/debug"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
@@ -290,6 +292,9 @@ func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
 		for _, playerID := range msg.GetPlayers() {
 			player := playerMgr.GetPlayer(playerID)
 			clientIDs = append(clientIDs, player.GetClientID())
+		}
+		if msg.GetMsgId() == int32(msgid.MsgID_ROOM_XIPAI_NTF) {
+			fmt.Println("洗牌通知：", clientIDs)
 		}
 		msgSender.BroadcastPackageBare(clientIDs, &steve_proto_gaterpc.Header{
 			MsgId: uint32(msg.GetMsgId()),
