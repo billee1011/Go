@@ -106,9 +106,7 @@ func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, car
 				//创建副本，移除相应的杠牌进行查胡
 				newcards := make([]*majongpb.Card, 0, len(cards))
 				newcards = append(newcards, cards...)
-				newcards, _ = utils.DeleteCardFromLast(newcards, outCard)
-				newcards, _ = utils.DeleteCardFromLast(newcards, outCard)
-				newcards, _ = utils.DeleteCardFromLast(newcards, outCard)
+				newcards, _ = utils.RemoveCards(newcards, outCard, num)
 				newcardsI, _ := utils.CardsToInt(newcards)
 				cardsI := utils.IntToUtilCard(newcardsI)
 				laizi := make(map[utils.Card]bool)

@@ -326,7 +326,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 				}
 				// ctx.LastHuPlayers = append(ctx.LastHuPlayers, player.GetPalyerId())
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
-				flow.PushMessages(playersID, toClientMessage)
+				// flow.PushMessages(playersID, toClientMessage)
 			}
 		}
 	}
