@@ -33,6 +33,7 @@ func Test_Xipai(t *testing.T) {
 		xipaiNtf := room.RoomXipaiNtf{}
 		assert.Nil(t, e.Recv(time.Second*1, &xipaiNtf))
 		assert.True(t, xipaiNtf.GetTotalCard() > 0)
+		assert.Equal(t, uint32(108), xipaiNtf.GetTotalCard())
 		assert.Equal(t, 2, len(xipaiNtf.GetDices()))
 		zjIdx := xipaiNtf.GetBankerSeat()
 		assert.True(t, zjIdx >= 0 && zjIdx < 4)

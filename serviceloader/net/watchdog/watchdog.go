@@ -67,7 +67,9 @@ func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 	wg.Add(1)
 	go func() {
 		// 由 run 函数自己处理异常
-		err := client.run()
+		err := client.run(func() {
+			dog.clientMap.Delete(clientID)
+		})
 		logrus.WithField("client_id", clientID).WithError(err).Debug("client finished")
 		wg.Done()
 	}()

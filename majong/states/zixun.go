@@ -315,18 +315,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
 			if flag {
 				hasQGanghu = true
-				playersID := make([]uint64, 0, 0)
-				playersID = append(playersID, player.PalyerId)
-				angang := &room.RoomWaitQianggangHuNtf{
-					Card: proto.Uint32(utils.ServerCard2Uint32(card)),
-				}
-				toClientMessage := interfaces.ToClientMessage{
-					MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
-					Msg:   angang,
-				}
-				// ctx.LastHuPlayers = append(ctx.LastHuPlayers, player.GetPalyerId())
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
-				// flow.PushMessages(playersID, toClientMessage)
 			}
 		}
 	}

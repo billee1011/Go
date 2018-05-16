@@ -1,7 +1,6 @@
 package states
 
 import (
-	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
@@ -44,7 +43,7 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 	}
 	//TODO:暂时将所有的手牌都设置为可以出的牌
 	mopaiPlayer := utils.GetPlayerByID(context.Players, context.GetMopaiPlayer())
-	zixunNtf.EnableChupaiCards = utils.CardsToRoomCards(mopaiPlayer.HandCards)
+	zixunNtf.EnableChupaiCards = utils.ServerCards2Uint32(mopaiPlayer.GetHandCards())
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, context.MopaiPlayer)
 	toClient := interfaces.ToClientMessage{
@@ -85,7 +84,7 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []uint3
 	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
 	hasHu := len(activePlayer.GetHuCards()) > 0
 	handCard := activePlayer.GetHandCards()
-	enableAngangCards := make([]*room.Card, 0, 0)
+	enableAngangCards := make([]uint32, 0, 0)
 	// cardsI, _ := utils.CardsToInt(handCard)
 	// cardNum := make(map[int32]int)
 	// for i := 0; i < len(cardsI); i++ {
@@ -119,12 +118,10 @@ func (s *MoPaiState) checkAnGang(context *majongpb.MajongContext) (bool, []uint3
 				huCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
 				// huCards := utils.FastCheckTingV2(cardsI, map[utils.Card]bool{})
 				if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
-					roomCard, _ := utils.CardToRoomCard(k)
-					enableAngangCards = append(enableAngangCards, roomCard)
+					enableAngangCards = append(enableAngangCards, utils.ServerCard2Uint32(k))
 				}
 			} else {
-				roomCard, _ := utils.CardToRoomCard(k)
-				enableAngangCards = append(enableAngangCards, roomCard)
+				enableAngangCards = append(enableAngangCards, utils.ServerCard2Uint32(k))
 			}
 		}
 	}
@@ -169,43 +166,43 @@ func (s *MoPaiState) checkBuGang(context *majongpb.MajongContext) (bool, []uint3
 	return len(enableBugangCards) > 0, enableBugangCards
 }
 
-//mopai 摸牌处理
-func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
+func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, back bool, card *majongpb.Card) {
 	context := flow.GetMajongContext()
-	players := context.GetPlayers()
-	activePlayer := utils.GetPlayerByID(players, context.MopaiPlayer)
-	//TODO：目前只在这个地方改变操作玩家（感觉碰，明杠，点炮这三种情况也需要改变activePlayer）
-	context.ActivePlayer = activePlayer.GetPalyerId()
-	if len(context.WallCards) == 0 {
-		return majongpb.StateID_state_gameover, nil
-	}
-	//从墙牌中移除一张牌
-	drowCard := context.WallCards[0]
-	context.WallCards = context.WallCards[1:]
-	//将这张牌添加到手牌中
-	activePlayer.HandCards = append(activePlayer.HandCards, drowCard)
-	context.LastMopaiPlayer = context.MopaiPlayer
-	context.LastMopaiCard = drowCard
-	roomCard, err := utils.CardToRoomCard(drowCard)
-	if err != nil {
-		return majongpb.StateID_state_mopai, fmt.Errorf("转换失败")
-	}
-	//TODO:摸牌后发送摸牌消息通知所有人,只有摸牌的玩家自己才能看到摸到的牌
 	for _, player := range context.Players {
 		ntf := &room.RoomMopaiNtf{}
 		if player.PalyerId == context.GetMopaiPlayer() {
-			ntf.Card = roomCard
+			ntf.Card = proto.Uint32(utils.ServerCard2Uint32(card))
 		}
 		ntf.Player = &context.MopaiPlayer
-		//TODO:摸牌方向暂时用顺时针进行
-		ntf.Back = proto.Bool(false)
+		ntf.Back = proto.Bool(back)
 		toClientMessage := interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_CHUPAI_NTF),
 			Msg:   ntf,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
 	}
+}
+
+//mopai 摸牌处理
+func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	context := flow.GetMajongContext()
+	players := context.GetPlayers()
+	activePlayer := utils.GetPlayerByID(players, context.GetMopaiPlayer())
+	//TODO：目前只在这个地方改变操作玩家（感觉碰，明杠，点炮这三种情况也需要改变activePlayer）
+	context.ActivePlayer = activePlayer.GetPalyerId()
+	if len(context.WallCards) == 0 {
+		return majongpb.StateID_state_gameover, nil
+	}
+	//从墙牌中移除一张牌
+	card := context.WallCards[0]
+	context.WallCards = context.WallCards[1:]
+	//将这张牌添加到手牌中
+	activePlayer.HandCards = append(activePlayer.GetHandCards(), card)
+	context.LastMopaiPlayer = context.MopaiPlayer
+	context.LastMopaiCard = card
 	activePlayer.MopaiCount++
+
+	s.notifyMopai(flow, context.GetMopaiPlayer(), false, card)
 	s.checkActions(flow)
 	// 清空其他玩家杠的标识
 	for _, player := range players {

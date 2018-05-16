@@ -78,7 +78,7 @@ func (c *clientV2) close() {
 }
 
 // run 返回后表示 client 的生命周期结束
-func (c *clientV2) run() error {
+func (c *clientV2) run(onFinish func()) error {
 	defer func() {
 		if x := recover(); x != nil {
 			c.callback.onError(fmt.Errorf("客户端执行错误: %v. 堆栈： %s", x, string(debug.Stack())))
@@ -99,6 +99,10 @@ func (c *clientV2) run() error {
 
 	// 发送数据 goroutine
 	sfinish := c.sendLoop(done)
+
+	if onFinish != nil {
+		defer onFinish()
+	}
 
 	// 在接收数据、发送数据 goroutine 或者是 c.finish (外部关闭)关闭后，返回
 	select {

@@ -108,8 +108,11 @@ func (e *exchangerImpl) BroadcastPackageBare(clientIDs []uint64, head *steve_pro
 	header := steve_proto_base.Header{
 		MsgId: proto.Uint32(head.MsgId),
 	}
-	e.watchDog.BroadPackage(clientIDs, &header, bodyData)
-	return nil
+	err := e.watchDog.BroadPackage(clientIDs, &header, bodyData)
+	if err != nil {
+		fmt.Println("广播消息发送失败", err)
+	}
+	return err
 }
 
 func (e *exchangerImpl) getHandler(msgID uint32) *wrapHandler {

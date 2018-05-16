@@ -3,6 +3,7 @@ package desks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
@@ -325,6 +326,9 @@ func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
 		for _, playerID := range msg.GetPlayers() {
 			player := playerMgr.GetPlayer(playerID)
 			clientIDs = append(clientIDs, player.GetClientID())
+		}
+		if msg.GetMsgId() == int32(msgid.MsgID_ROOM_XIPAI_NTF) {
+			fmt.Println("洗牌通知：", clientIDs)
 		}
 		msgSender.BroadcastPackageBare(clientIDs, &steve_proto_gaterpc.Header{
 			MsgId: uint32(msg.GetMsgId()),
