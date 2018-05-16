@@ -47,6 +47,11 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	players := mjContext.Players
 	// 获取定缺玩家ID
 	playerID := dinqueEvent.GetHead().GetPlayerId()
+	// 获取定缺玩家
+	dqPlayer := utils.GetPlayerByID(players, playerID)
+	if dqPlayer == nil {
+		return false, fmt.Errorf("定缺事件失败-定缺玩家ID不存在: %v ", playerID)
+	}
 	// 错误码-成功
 	err := room.RoomError_Success
 	// 定缺应答 请求-响应
@@ -58,12 +63,7 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	}
 	// 推送消息应答
 	flow.PushMessages([]uint64{playerID}, toClientRsq)
-
-	// 获取定缺玩家和定缺颜色
-	dqPlayer := utils.GetPlayerByID(players, playerID)
-	if dqPlayer == nil {
-		return false, fmt.Errorf("定缺事件失败-定缺玩家ID不存在: %v ", playerID)
-	}
+	// 获取定缺颜色
 	dqColor := dinqueEvent.GetColor()
 
 	// 校验颜色是否合法
@@ -101,14 +101,14 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 
 // OnEntry 进入状态，进入定缺状态，发送到客户端，进入定缺
 func (s *DingqueState) OnEntry(flow interfaces.MajongFlow) {
-	// 广播通知客户端进入定缺
-	dingQueNtf := room.RoomDingqueNtf{}
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
-	// 日志
-	logrus.WithFields(logrus.Fields{
-		"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
-		"dingQueNtf": dingQueNtf,
-	}).Info("-----定缺开始-进入定缺状态")
+	// 定缺消息NTF被注释了 // 广播通知客户端进入定缺
+	// dingQueNtf := room.RoomDingqueNtf{}
+	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
+	// // 日志
+	// logrus.WithFields(logrus.Fields{
+	// 	"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
+	// 	"dingQueNtf": dingQueNtf,
+	// }).Info("-----定缺开始-进入定缺状态")
 }
 
 // OnExit 退出状态，定缺完成，发送定缺完成通知，进入下一个状态

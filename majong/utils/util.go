@@ -452,17 +452,6 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 	return nil
 }
 
-//GetDingQueCardSum 获取定缺牌数量
-func GetDingQueCardSum(handCards []*majongpb.Card, dingQueColor majongpb.CardColor) int {
-	sum := 0
-	for _, card := range handCards {
-		if card.Color == dingQueColor {
-			sum++
-		}
-	}
-	return sum
-}
-
 //GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
 func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 	tingInfo := make(map[Card][]Card)
@@ -494,96 +483,6 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 		}
 	}
 	return tingInfo
-}
-
-//GetPlayCardHint 出牌提示，出牌这张牌，提示胡的牌和胡的牌的倍数，返回map[int32]map[int32]uint32, error
-func GetPlayCardHint(palyer *majongpb.Player) (map[int32]map[int32]uint32, error) {
-	// map:palyCard-map:[tingCard-multiple]
-	tingMultiple := make(map[int32]map[int32]uint32)
-	// 获取手牌定缺牌数量
-	sum := GetDingQueCardSum(palyer.HandCards, palyer.DingqueColor)
-	// 手中少于2张定缺牌才能进行查听
-	if sum < 2 {
-		// 获取出牌提示
-		tingInfo := GetPlayCardCheckTing(palyer.HandCards)
-		// 手牌数量
-		handCardSum := len(palyer.HandCards)
-		handCard := make([]*majongpb.Card, handCardSum)
-		// 打那张牌可以胡那些牌，和胡这些牌的倍数
-		for playCard, tingCards := range tingInfo {
-			// util.card转麻将牌
-			playCard2, err := IntToCard(int32(playCard))
-			if err != nil {
-				return tingMultiple, err
-			}
-			// 复制手牌
-			handCard = append(handCard[:0], palyer.HandCards...)
-			// 删除出牌
-			newHanCard, isSucceed := DeleteCardFromLast(handCard, playCard2)
-			if !isSucceed {
-				return tingMultiple, fmt.Errorf("获取出牌提示：删除牌失败：")
-			}
-			// 能胡牌
-			for _, tingCard := range tingCards {
-				// util.card转麻将牌
-				tingCard2, err := IntToCard(int32(tingCard))
-				if err != nil {
-					return tingMultiple, err
-				}
-				// 听的定缺牌不用查倍数
-				if tingCard2.Color != palyer.DingqueColor {
-					// 添加能胡的牌
-					newHanCard = append(newHanCard, tingCard2)
-					// 查询能胡的最大倍数 TODO
-					multiple := uint32(1)
-					huMutipleMap := map[int32]uint32{int32(tingCard): multiple}
-					tingMultiple[int32(playCard)] = huMutipleMap
-					// 删除能胡的牌
-					newHanCard = newHanCard[:len(newHanCard)-1]
-				}
-			}
-		}
-	}
-	return tingMultiple, nil
-}
-
-//GetHuHint 胡牌提示倍数，缺一张，返回map[int32]uint32, error
-func GetHuHint(palyer *majongpb.Player) (map[int32]uint32, error) {
-	// map:tingCard-multiple
-	tingMultiple := make(map[int32]uint32)
-	// 手中没有定缺牌
-	if !CheckHasDingQueCard(palyer.HandCards, palyer.DingqueColor) {
-		// 获取出牌提示
-		tingInfo, err := GetTingCards(palyer.HandCards)
-		if err != nil {
-			return tingMultiple, err
-		}
-		// 手牌数量
-		handCardSum := len(palyer.HandCards)
-		handCard := make([]*majongpb.Card, handCardSum)
-		// 复制手牌
-		copy(handCard, palyer.HandCards)
-		// 可以胡那些牌
-		for _, tingCard := range tingInfo {
-			// 听的定缺牌不用查倍数
-			if tingCard.Color != palyer.DingqueColor {
-				// 添加能胡的牌
-				newHandCard := append(handCard, tingCard)
-				// 查询能胡的最大倍数 TODO
-				// 倍数
-				multiple := uint32(1)
-				// 麻将牌转Int32
-				cardInt, err := CardToInt(*tingCard)
-				if err != nil {
-					return tingMultiple, err
-				}
-				tingMultiple[*cardInt] = multiple
-				// 删除能胡的牌
-				newHandCard = newHandCard[:len(newHandCard)-1]
-			}
-		}
-	}
-	return tingMultiple, nil
 }
 
 // TransPengCard 碰牌转Card

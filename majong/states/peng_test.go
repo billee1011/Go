@@ -64,10 +64,10 @@ func TestPengState_chupai(t *testing.T) {
 		"OutCards":     mjContext.Players[1].GetOutCards(),
 	}).Info("后")
 	assert.Nil(t, err)
-	// 手牌中是否删除了3W
-	assert.Equal(t, mjContext.Players[1].HandCards, []*majongpb.Card{&Card1W, &Card1T, &Card1B, &Card2W})
-	// 玩家出牌数组中是否添加3W
-	assert.Equal(t, mjContext.Players[1].GetOutCards()[len(mjContext.Players[1].GetOutCards())-1], &Card3W)
+	// 手牌中是否删除了3W,结果要不删除
+	assert.Equal(t, mjContext.Players[1].HandCards, []*majongpb.Card{&Card1W, &Card1T, &Card1B, &Card2W, &Card3W})
+	// 玩家出牌数组中是否添加3W，结果要不添加
+	assert.Equal(t, len(mjContext.Players[1].GetOutCards()), 0)
 	// 麻将现场最后出牌是否是3W
 	assert.Equal(t, mjContext.LastOutCard, &Card3W)
 	// 麻将现场最后出牌玩家是否是1玩家
