@@ -135,9 +135,7 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 
 	srcPlayer := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext)
 	huType := majongpb.SettleHuType_settle_hu_noramaldianpao
-	if string(srcPlayer.Properties["gang"]) == "true" {
-		huType = majongpb.SettleHuType_settle_hu_ganghoupao
-	}
+
 	params := interfaces.HuSettleParams{
 		HuPlayers:  huPlayers,
 		SrcPlayer:  mjContext.GetLastChupaiPlayer(),
@@ -149,8 +147,16 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 		GenCount:   genCount,
 		SettleID:   mjContext.CurrentSettleId,
 	}
+	if string(srcPlayer.Properties["gang"]) == "true" {
+		huType = majongpb.SettleHuType_settle_hu_ganghoupao
+		GangCards := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext).GangCards
+		params.HuType = huType
+		params.GangCard = *GangCards[len(GangCards)-1]
+	}
 	huSettle := new(settle.HuSettle)
-	settleInfo := huSettle.Settle(params)
-	mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-	mjContext.CurrentSettleId++
+	settleInfos := huSettle.Settle(params)
+	for _, settleInfo := range settleInfos {
+		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
+		mjContext.CurrentSettleId++
+	}
 }

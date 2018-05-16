@@ -12,7 +12,7 @@ type HuSettle struct {
 }
 
 // Settle  胡结算方法
-func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
+func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.SettleInfo {
 	entry := logrus.WithFields(logrus.Fields{
 		"name":       "HuSettle",
 		"winnersID":  params.HuPlayers,
@@ -21,7 +21,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) *majongpb.Set
 		"cardTypes":  params.CardTypes,
 		"cardValues": params.CardValues,
 	})
-
+	settleInfos := make([]*majongpb.SettleInfo, 0)
 	huSettleInfo := NewSettleInfo(params.SettleID)
 	huSettleInfo.HuType = params.HuType
 	for i := 0; i < len(params.HuPlayers); i++ {
@@ -52,22 +52,62 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) *majongpb.Set
 		huSettleInfo.GenCount = params.GenCount[params.HuPlayers[i]]
 
 	}
+	settleInfos = append(settleInfos, huSettleInfo)
+	if params.HuType == majongpb.SettleHuType_settle_hu_ganghoupao { // 需呼叫转移
+		callTransferS := callTransferSettle(params)
+		callTransferS.Id++
+		settleInfos = append(settleInfos, callTransferS)
+	}
 	entry.Info("胡结算")
-	return huSettleInfo
+	return settleInfos
 }
 
-func callTransferSettle(params interfaces.HuSettleParams) {
-	// gangCard := params.GangCard
-	// gangScore := getGangScore(gangCard.GetType())
-	// // 赢家人数
-	// winSum := len(params.HuPlayers)
+func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
+	callTransferS := NewSettleInfo(params.SettleID)
+	callTransferS.SettleType = majongpb.SettleType_settle_calldiver
 
-	// if winSum == 1 {
-	// 	win := GetDi() * int64(gangScore)
-	// 	if gangCard.GetType() ==
-	// } else { // 多个赢家平分杠钱
+	gangCard := params.GangCard
+	gangScore := getGangScore(gangCard.GetType())
+	// 赢家人数
+	winSum := len(params.HuPlayers)
 
-	// }
+	score := GetDi() * int64(gangScore)
+
+	if winSum == 1 {
+		if gangCard.GetType() == majongpb.GangType_gang_angang || gangCard.GetType() == majongpb.GangType_gang_bugang {
+			score = score * int64(winSum)
+		}
+		callTransferS.Scores[params.HuPlayers[0]] = score
+		callTransferS.Scores[params.SrcPlayer] = -score
+	} else {
+		// 一炮多响
+		if gangCard.GetType() == majongpb.GangType_gang_minggang { // （直杠）先收杆钱，然后转移给点杠者
+			callTransferS.Scores[params.HuPlayers[0]] = score
+			callTransferS.Scores[params.SrcPlayer] = -score
+		} else if gangCard.GetType() == majongpb.GangType_gang_angang || gangCard.GetType() == majongpb.GangType_gang_bugang {
+			// （暗杠、补杠）先收杠钱,平分,杠钱后还有多余，多余的杠钱按位置给第一个胡牌玩家
+			score = score * int64(winSum)
+			// 平分
+			equallyTotal := score / int64(winSum)
+			for _, huPlayerID := range params.HuPlayers {
+				callTransferS.Scores[huPlayerID] = equallyTotal
+				callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - score
+			}
+
+			// 剩余分数
+			surplusTotal := score % int64(winSum)
+
+			if surplusTotal != 0 {
+				startIndex := getPlayerIndex(params.SrcPlayer, params.AllPlayers)
+				firstPlayerID := getPalyerCloseIndex(startIndex, params.AllPlayers, params.HuPlayers)
+				if firstPlayerID != 0 {
+					callTransferS.Scores[firstPlayerID] = surplusTotal
+					callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - surplusTotal
+				}
+			}
+		}
+	}
+	return callTransferS
 }
 
 // GetDi 获取底注
@@ -82,4 +122,26 @@ func NewSettleInfo(settleID uint64) *majongpb.SettleInfo {
 		Id:     settleID + 1,
 		Scores: make(map[uint64]int64),
 	}
+}
+
+func getPlayerIndex(playerID uint64, allPlayer []uint64) int {
+	for index, player := range allPlayer {
+		if playerID == player {
+			return index
+		}
+	}
+	return -1
+}
+
+func getPalyerCloseIndex(index int, allPlayer, huPlayers []uint64) uint64 {
+	for i := 0; i <= len(allPlayer); i++ {
+		nextIndex := (index + i) % len(allPlayer)
+		for _, huPlayer := range huPlayers {
+			index := getPlayerIndex(huPlayer, allPlayer)
+			if index == nextIndex {
+				return huPlayer
+			}
+		}
+	}
+	return 0
 }
