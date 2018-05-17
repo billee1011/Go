@@ -158,7 +158,7 @@ var transitionCfg = `
         - 
           # 杠完成 转移到 摸牌状态
           events: 
-            - event_gang_request
+            - event_gang_finish
           next_state: state_mopai  
     - 
       # 胡状态
