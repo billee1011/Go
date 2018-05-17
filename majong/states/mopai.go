@@ -44,6 +44,8 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 	//TODO:暂时将所有的手牌都设置为可以出的牌
 	mopaiPlayer := utils.GetPlayerByID(context.Players, context.GetMopaiPlayer())
 	zixunNtf.EnableChupaiCards = utils.ServerCards2Uint32(mopaiPlayer.GetHandCards())
+	canQi := len(mopaiPlayer.GetHuCards()) == 0 && (canAnGang || canBuGang || canZiMo)
+	zixunNtf.EnableQi = proto.Bool(canQi)
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, context.MopaiPlayer)
 	toClient := interfaces.ToClientMessage{
@@ -55,6 +57,7 @@ func (s *MoPaiState) checkActions(flow interfaces.MajongFlow) {
 		"canZimo":   canZiMo,
 		"canAnGang": canAnGang,
 		"canBuGang": canBuGang,
+		"canQi":     canQi,
 	}).Infof("玩家%v可以有的操作", context.MopaiPlayer)
 }
 
