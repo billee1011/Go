@@ -22,6 +22,14 @@ type scxlSettle struct {
 	handleSettle map[uint64]bool
 }
 
+// newScxlSettle 创建四川血流结算
+func newScxlSettle() *scxlSettle {
+	return &scxlSettle{
+		settleMap:    make(map[uint64]playerCoin),
+		handleSettle: make(map[uint64]bool),
+	}
+}
+
 // playerCoin 玩家实际输赢分   key:playerID value:score
 type playerCoin map[uint64]int64
 
