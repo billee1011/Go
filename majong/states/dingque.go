@@ -79,6 +79,8 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 			return false, nil
 		}
 	}
+	//定缺完之后设置要操作的玩家
+	mjContext.LastMopaiPlayer = mjContext.Players[mjContext.GetZhuangjiaIndex()].GetPalyerId()
 	return true, nil
 }
 

@@ -218,7 +218,7 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (bool, error) {
 	context := flow.GetMajongContext()
 	playerID := message.GetHead().GetPlayerId()
-	if context.GetMopaiPlayer() != message.GetHead().GetPlayerId() {
+	if context.GetLastMopaiPlayer() != message.GetHead().GetPlayerId() {
 		return false, fmt.Errorf("当前玩家不允许操作")
 	}
 	player := utils.GetPlayerByID(context.Players, playerID)
@@ -275,7 +275,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	canQi := len(mopaiPlayer.GetHuCards()) == 0 && (canAnGang || canBuGang || canZiMo)
 	zixunNtf.EnableQi = proto.Bool(canQi)
 	playerIDs := make([]uint64, 0, 0)
-	playerIDs = append(playerIDs, context.MopaiPlayer)
+	playerIDs = append(playerIDs, context.GetLastMopaiPlayer())
 	toClient := interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
 		Msg:   zixunNtf,
@@ -286,7 +286,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		"canAnGang": canAnGang,
 		"canBuGang": canBuGang,
 		"canQi":     canQi,
-	}).Infof("玩家%v可以有的操作", context.MopaiPlayer)
+	}).Infof("玩家%v可以有的操作", context.GetLastMopaiPlayer())
 }
 
 //checkZiMo 查自摸
