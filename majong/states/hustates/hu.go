@@ -82,9 +82,9 @@ func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 // HuState 广播胡
 func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	huType := room.HuType_DianPao.Enum()
+	huType := room.HuType_HT_DIANPAO.Enum()
 	if s.isAfterGang(mjContext) {
-		huType = room.HuType_GangouPao.Enum()
+		huType = room.HuType_HT_GANGHOUPAO.Enum()
 	}
 	body := room.RoomHuNtf{
 		Players:      mjContext.GetLastHuPlayers(),

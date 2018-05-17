@@ -20,7 +20,7 @@ var (
 			makeRoomCards(Card5T, Card5T, Card5T, Card5T, Card6T, Card6T, Card6T, Card6T, Card7T, Card7T, Card7T, Card7T, Card8T),
 		},
 		WallCards: []*room.Card{
-			&Card1B,
+			&Card1B, &Card1B, &Card1B,
 		},
 		HszDir:     room.Direction_ClockWise,
 		BankerSeat: 0,
