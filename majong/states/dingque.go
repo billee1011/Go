@@ -1,5 +1,15 @@
+//Package states implements a simple states
 package states
 
+//适用麻将：四川血流
+//前置条件：无
+//处理的事件请求：定缺请求
+//处理请求的过程：设置定缺玩家的定缺颜色和设置定缺玩家是否已经定缺,所有玩家定缺完设置麻将现场最后摸牌玩家为庄家，
+//请求成功处理，设置应答错误码成功消息通知，给当前玩家客户端
+//处理请求的结果：所有玩家都定缺则返回自询状态ID，否则返回定缺状态ID
+//状态退出行为：定缺完成，广播通知客户端定缺完成消息通知，该通知包含每个玩家的ID和定缺的颜色
+//状态进入行为：无
+//约束条件：定缺的颜色，必需是万或条或筒
 import (
 	"fmt"
 	"steve/gutils"
@@ -16,7 +26,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-//DingqueState 定缺状态 @Author:wuhongwei
+//DingqueState 定缺状态
 type DingqueState struct {
 }
 
@@ -82,7 +92,7 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 	return true, nil
 }
 
-// OnEntry 进入状态，进入定缺状态，发送到客户端，进入定缺
+// OnEntry 进入状态，进入定缺状态，发送到客户端，进入定缺tiao jian
 func (s *DingqueState) OnEntry(flow interfaces.MajongFlow) {
 	// 定缺消息NTF被注释了 // 广播通知客户端进入定缺
 	// dingQueNtf := room.RoomDingqueNtf{}

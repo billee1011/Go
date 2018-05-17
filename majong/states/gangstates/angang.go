@@ -1,5 +1,14 @@
 package gangstates
 
+//适用麻将：四川血流
+//前置条件：取麻将现场的杠的牌和最后杠玩家
+//处理的事件请求：暗杠完成请求
+//处理请求的过程：设置麻将现场的摸牌玩家
+//处理请求的结果：返回摸牌状态ID
+//状态退出行为：无
+//状态进入行为：设置自动触发杠完成事件，处理暗杠逻辑，和广播通知客户端杠消息通知，该消息包含来自的玩家，去的玩家，杠的牌，还有杠类型。
+//并设置杠玩家Properties["gang"]为[]byte("true")，最后进行暗杠结算
+//约束条件：无
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
@@ -15,7 +24,7 @@ import (
 
 // TODO 结算
 
-//AnGangState 暗杠状态 @Author:wuhongwei
+//AnGangState 暗杠状态
 type AnGangState struct {
 }
 
