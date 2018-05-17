@@ -76,6 +76,9 @@ func (jam *joinApplyManager) checkMatch() {
 }
 
 func notifyDeskCreate(desk interfaces.Desk) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "notifyDeskCreate",
+	})
 	players := desk.GetPlayers()
 	clientIDs := []uint64{}
 
@@ -95,6 +98,7 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	ms := global.GetMessageSender()
 
 	ms.BroadcastPackage(clientIDs, head, &ntf)
+	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求

@@ -2,6 +2,7 @@ package watchdog
 
 import (
 	"fmt"
+	msgid "steve/client_pb/msgId"
 	"steve/structs/net"
 	"steve/structs/proto/base"
 	"sync"
@@ -139,6 +140,10 @@ func (dog *watchDogImpl) pushClientMessage(clientID uint64, header *steve_proto_
 	} else {
 		return fmt.Errorf("clientID %v not exists", clientID)
 	}
+	logrus.WithFields(logrus.Fields{
+		"client_id": clientID,
+		"msg_id":    msgid.MsgID(header.GetMsgId()),
+	}).Infoln("发送消息给客户端")
 	return c.pushMessage(header, body)
 }
 

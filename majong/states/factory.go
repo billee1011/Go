@@ -52,6 +52,8 @@ func (f *factory) CreateState(gameID int, stateID majongpb.StateID) interfaces.M
 		return new(ChupaiwenxunState)
 	case majongpb.StateID_state_mopai:
 		return new(MoPaiState)
+	case majongpb.StateID_state_gameover:
+		return new(GameOverState)
 	default:
 		return nil
 	}

@@ -27,6 +27,7 @@ func newScxlSettle() *scxlSettle {
 	return &scxlSettle{
 		settleMap:    make(map[uint64]playerCoin),
 		handleSettle: make(map[uint64]bool),
+		roundScore:   make(map[uint64]int64),
 	}
 }
 
