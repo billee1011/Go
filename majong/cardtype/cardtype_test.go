@@ -49,14 +49,11 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_PingHu}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(1))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 清一色
@@ -81,14 +78,11 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingYiSe}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 七对
@@ -113,14 +107,12 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QiDui}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 龙七对
@@ -145,14 +137,11 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_LongQiDui}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(8))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 清七对
@@ -177,14 +166,12 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingQiDui}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(16))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 清龙七对
@@ -209,14 +196,11 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingLongQiDui}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(32))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 碰碰胡
@@ -241,14 +225,11 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_PengPengHu}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(2))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 清碰
@@ -273,14 +254,12 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingPeng}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(8))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 金钩钓
@@ -305,14 +284,11 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_JingGouDiao}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 清金钩钓
@@ -337,14 +313,11 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingJingGouDiao}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(16))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 十八罗汉
@@ -369,14 +342,11 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_ShiBaLuoHan}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(64))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 清十八罗汉
@@ -401,14 +371,11 @@ func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 	}
 	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingShiBaLuoHan}
-	testCardTypes := make([]interfaces.CardType, 0)
-	for _, cardType := range testFanTypes {
-		testCardTypes = append(testCardTypes, interfaces.CardType(cardType))
-	}
-	assert.Equal(t, cardTypes, testCardTypes)
+	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(256))
+	assert.Equal(t, gen, uint32(0))
 }
 
 // 根
@@ -431,6 +398,6 @@ func TestCardGenSum(t *testing.T) {
 		HuCard:   HuCard,
 		GameID:   0,
 	}
-	genSum := new(ScxlCardTypeCalculator).CardGenSum(playerParams)
-	assert.Equal(t, genSum, uint32(4))
+	_, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	assert.Equal(t, genCount, uint32(4))
 }

@@ -41,7 +41,7 @@ type GangSettleParams struct {
 
 // GangSettle 杠结算
 type GangSettle interface {
-	Settle(params GangSettleParams) []*majongpb.SettleInfo
+	Settle(params GangSettleParams) *majongpb.SettleInfo
 }
 
 // RoundSettleParams 单局结算参数

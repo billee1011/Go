@@ -413,6 +413,15 @@ func GetTingCards(handCards []*majongpb.Card) ([]*majongpb.Card, error) {
 	// 合并去重复
 	tingCards := MergeAndNoRepeat(huCards, qiCards)
 	newTingCards, err := CheckHuUtilCardsToHandCards(tingCards)
+	// 特殊情况，手上只有4张相同的牌，胡这张相同的牌，但又不存在的牌，只能听，不能胡
+	if len(newTingCards) == 0 && len(handCards) == 4 {
+		for _, card := range handCards {
+			if !CardEqual(handCards[0], card) {
+				return newTingCards, err
+			}
+		}
+		newTingCards = append(newTingCards, handCards[0])
+	}
 	return newTingCards, err
 }
 
