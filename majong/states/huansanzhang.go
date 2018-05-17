@@ -74,6 +74,7 @@ func (s *HuansanzhangState) onReq(eventID majongpb.EventID, eventContext []byte,
 		return majongpb.StateID_state_huansanzhang, global.ErrUnmarshalEvent
 	}
 	playerID := req.GetHead().GetPlayerId()
+
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
 	reqCards := req.GetCards()
 
@@ -87,6 +88,8 @@ func (s *HuansanzhangState) onReq(eventID majongpb.EventID, eventContext []byte,
 	}
 	player.HuansanzhangCards = reqCards
 	if req.Sure {
+		// 应答
+		onHuanSanZhangRsq(playerID, flow)
 		player.HuansanzhangSure = true
 	}
 	return s.execute(flow)
@@ -216,4 +219,23 @@ func (s *HuansanzhangState) execute(flow interfaces.MajongFlow) (newState majong
 	s.notifyFinish(flow, dir, exchangesIn, exchangesOut)
 	newState = majongpb.StateID_state_dingque
 	return
+}
+
+//onRsq 换三张应答
+func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
+	// 错误码-成功
+	errCode := room.RoomError_Success
+	// 定缺应答 请求-响应
+	toClientRsq := interfaces.ToClientMessage{
+		MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_RSP),
+		Msg: &room.RoomHuansanzhangRsp{
+			ErrCode: &errCode,
+		},
+	}
+	// 推送消息应答
+	flow.PushMessages([]uint64{playerID}, toClientRsq)
+	logrus.WithFields(logrus.Fields{
+		"msgID":      msgid.MsgID_ROOM_HUANSANZHANG_RSP,
+		"dingQueNtf": toClientRsq,
+	}).Info("-----换三张成功应答")
 }
