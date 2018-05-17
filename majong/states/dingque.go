@@ -140,14 +140,18 @@ func checkDingQueReq(dingQueColor majongpb.CardColor) bool {
 //onRsq 定缺应答
 func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
 	// 错误码-成功
-	err := room.RoomError_Success
+	errCode := room.RoomError_Success
 	// 定缺应答 请求-响应
 	toClientRsq := interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_DINGQUE_RSP),
 		Msg: &room.RoomDingqueRsp{
-			ErrCode: &err,
+			ErrCode: &errCode,
 		},
 	}
 	// 推送消息应答
 	flow.PushMessages([]uint64{playerID}, toClientRsq)
+	logrus.WithFields(logrus.Fields{
+		"msgID":      msgid.MsgID_ROOM_DINGQUE_RSP,
+		"dingQueNtf": toClientRsq,
+	}).Info("-----定缺成功应答")
 }
