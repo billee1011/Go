@@ -114,6 +114,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		if utils.CardEqual(c, card) {
 			context.LastOutCard = card
 			context.LastChupaiPlayer = pid
+			context.ChupaiType = majongpb.ChupaiType_CT_ZIXUN
 			return majongpb.StateID_state_chupai, nil
 		}
 	}

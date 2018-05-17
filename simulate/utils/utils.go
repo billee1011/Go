@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,14 +23,13 @@ func CreateMsgHead(msgID msgid.MsgID) interfaces.SendHead {
 	return createMsgHead(msgID)
 }
 
-// SendChupaiReq 发送出牌请求
-func SendChupaiReq(deskData *DeskData, seat int, card uint32) error {
-	zjPlayer := GetDeskPlayerBySeat(seat, deskData)
-	zjClient := zjPlayer.Player.GetClient()
-	_, err := zjClient.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
-		Card: proto.Uint32(card),
-	})
-	return err
+// MakeRoomCards 构造牌切片
+func MakeRoomCards(card ...room.Card) []*room.Card {
+	result := []*room.Card{}
+	for i := range card {
+		result = append(result, &card[i])
+	}
+	return result
 }
 
 //CheckChuPaiNotify 检查出牌广播

@@ -67,7 +67,6 @@ func (s *BuGangState) doBugang(flow interfaces.MajongFlow) {
 		return
 	}
 	player.HandCards = newCards
-	player.Properties["gang"] = []byte("true")
 
 	s.removePengCard(card, player)
 	s.addGangCard(card, player, player.GetPalyerId())
@@ -114,6 +113,7 @@ func (s *BuGangState) removePengCard(card *majongpb.Card, player *majongpb.Playe
 func (s *BuGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
+	mjContext.MopaiType = majongpb.MopaiType_MT_GANG
 }
 
 //	doBuGangSettle 补杠结算

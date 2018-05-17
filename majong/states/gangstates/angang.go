@@ -67,7 +67,6 @@ func (s *AnGangState) doAngang(flow interfaces.MajongFlow) {
 		return
 	}
 	player.HandCards = newCards
-	player.Properties["gang"] = []byte("true")
 	s.addGangCard(card, player, player.GetPalyerId())
 	s.notifyPlayers(flow, card, player)
 	s.doAnGangSettle(mjContext, player)
@@ -99,6 +98,7 @@ func (s *AnGangState) addGangCard(card *majongpb.Card, player *majongpb.Player, 
 func (s *AnGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
+	mjContext.MopaiType = majongpb.MopaiType_MT_GANG
 }
 
 //	doAnGangSettle 暗杠结算
