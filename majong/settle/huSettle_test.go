@@ -27,10 +27,10 @@ func TestDianPaoHuSettle(t *testing.T) {
 func TestZiMoHuSettle(t *testing.T) {
 	// 点炮
 	huParmas := interfaces.HuSettleParams{
-		HuPlayers:     []uint64{1, 2},
-		AllPlayers:    []uint64{0, 1, 2, 3},
-		CardTypeValue: int(2),
-		SettleType:    majongpb.SettleType_settle_zimo,
+		HuPlayers:  []uint64{1, 2},
+		AllPlayers: []uint64{0, 1, 2, 3},
+		//CardTypeValue: int(2),
+		SettleType: majongpb.SettleType_settle_zimo,
 	}
 	huSettle := new(HuSettle)
 	settleInfos := huSettle.Settle(huParmas)

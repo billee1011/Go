@@ -140,7 +140,9 @@ func (s *QiangganghuState) doQiangGangHuSettle(flow interfaces.MajongFlow) {
 		SettleID:   mjContext.CurrentSettleId,
 	}
 	huSettle := new(settle.HuSettle)
-	settleInfo := huSettle.Settle(params)
-	mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-	mjContext.CurrentSettleId++
+	settleInfos := huSettle.Settle(params)
+	for _, settleInfo := range settleInfos {
+		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
+		mjContext.CurrentSettleId++
+	}
 }
