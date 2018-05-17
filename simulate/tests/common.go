@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"steve/client_pb/room"
 	"steve/simulate/global"
 )
 
@@ -62,14 +61,6 @@ var (
 	// Card9B 9 筒
 	Card9B = global.Card9B
 )
-
-func makeRoomCards(card ...room.Card) []*room.Card {
-	result := []*room.Card{}
-	for i := range card {
-		result = append(result, &card[i])
-	}
-	return result
-}
 
 var (
 	// commonStartGameParams 通用的启动游戏参数

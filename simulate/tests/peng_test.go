@@ -19,10 +19,10 @@ func Test_Peng(t *testing.T) {
 	params.Cards[1][0] = &Card4W
 	// 修改换三张的牌
 	params.HszCards = [][]*room.Card{
-		makeRoomCards(Card3W, Card3W, Card3W),
-		makeRoomCards(Card7W, Card7W, Card7W),
-		makeRoomCards(Card3T, Card3T, Card3T),
-		makeRoomCards(Card7T, Card7T, Card7T),
+		utils.MakeRoomCards(Card3W, Card3W, Card3W),
+		utils.MakeRoomCards(Card7W, Card7W, Card7W),
+		utils.MakeRoomCards(Card3T, Card3T, Card3T),
+		utils.MakeRoomCards(Card7T, Card7T, Card7T),
 	}
 
 	deskData, err := utils.StartGame(params)

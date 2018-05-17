@@ -71,12 +71,19 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 	return
 }
 
+// isAfterGang 是否为杠后炮
+// 杠后摸牌、自询出牌则为杠后炮
+func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
+	cpType := mjContext.GetChupaiType()
+	mpType := mjContext.GetMopaiType()
+	return mpType == majongpb.MopaiType_MT_GANG && cpType == majongpb.ChupaiType_CT_ZIXUN
+}
+
 // HuState 广播胡
 func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	huType := room.HuType_DianPao.Enum()
-	srcPlayer := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext)
-	if string(srcPlayer.Properties["gang"]) == "true" {
+	if s.isAfterGang(mjContext) {
 		huType = room.HuType_GangouPao.Enum()
 	}
 	body := room.RoomHuNtf{
@@ -100,6 +107,7 @@ func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	players := mjContext.GetPlayers()
 
 	mjContext.MopaiPlayer = calcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
+	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
 // doHuSettle 胡的结算
@@ -133,7 +141,6 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 		genCount[huPlayerID] = gen
 	}
 
-	srcPlayer := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext)
 	huType := majongpb.SettleHuType_settle_hu_noramaldianpao
 
 	params := interfaces.HuSettleParams{
@@ -147,7 +154,7 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 		GenCount:   genCount,
 		SettleID:   mjContext.CurrentSettleId,
 	}
-	if string(srcPlayer.Properties["gang"]) == "true" {
+	if s.isAfterGang(mjContext) {
 		huType = majongpb.SettleHuType_settle_hu_ganghoupao
 		GangCards := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext).GangCards
 		params.HuType = huType

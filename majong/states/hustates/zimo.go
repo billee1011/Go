@@ -67,22 +67,35 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	s.doZiMoSettle(card, player.GetPalyerId(), flow)
 }
 
+// isAfterGang 判断是否为杠开
+// 杠后摸牌则为杠开
+func (s *ZimoState) isAfterGang(mjContext *majongpb.MajongContext) bool {
+	return mjContext.GetMopaiType() == majongpb.MopaiType_MT_GANG
+}
+
+// calcHuType 计算胡牌类型
+func (s *ZimoState) calcHuType(mjContext *majongpb.MajongContext) room.HuType {
+	afterGang := s.isAfterGang(mjContext)
+	isLast := (len(mjContext.WallCards) == 0)
+	if afterGang && isLast {
+		return room.HuType_GangShangHaiDiLao
+	} else if afterGang {
+		return room.HuType_GangKai
+	} else if isLast {
+		return room.HuType_HaiDiLao
+	}
+	return room.HuType_ZiMo
+}
+
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, playerID uint64, flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	huType := room.HuType_ZiMo.Enum()
-	huPlayer := utils.GetMajongPlayer(playerID, mjContext)
-	if string(huPlayer.Properties["gang"]) == "true" {
-		huType = room.HuType_GangKai.Enum()
-		if len(mjContext.WallCards) == 0 {
-			huType = room.HuType_GangShangHaiDiLao.Enum()
-		}
-	}
+	huType := s.calcHuType(mjContext)
 	body := room.RoomHuNtf{
 		Players:      []uint64{playerID},
 		FromPlayerId: proto.Uint64(playerID),
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
-		HuType:       huType,
+		HuType:       huType.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }
@@ -102,6 +115,7 @@ func (s *ZimoState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	}
 	players := mjContext.GetPlayers()
 	mjContext.MopaiPlayer = calcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
+	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
 // getZimoInfo 获取自摸信息
@@ -124,6 +138,15 @@ func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majo
 func (s *ZimoState) calcTianhuCard(cards []*majongpb.Card) *majongpb.Card {
 	// TODO
 	return cards[len(cards)-1]
+}
+
+func (s *ZimoState) huType2SettleType(huType room.HuType) majongpb.SettleHuType {
+	return map[room.HuType]majongpb.SettleHuType{
+		room.HuType_ZiMo:              majongpb.SettleHuType_settle_hu_zimo,
+		room.HuType_GangKai:           majongpb.SettleHuType_settle_hu_gangkai,
+		room.HuType_HaiDiLao:          majongpb.SettleHuType_settle_hu_haidilao,
+		room.HuType_GangShangHaiDiLao: majongpb.SettleHuType_settle_hu_gangshanghaidilao,
+	}[huType]
 }
 
 // doZiMoSettle 自摸的结算
@@ -154,19 +177,14 @@ func (s *ZimoState) doZiMoSettle(card *majongpb.Card, huPlayerID uint64, flow in
 	cardValues[huPlayerID] = cardValue
 	genCount[huPlayerID] = gen
 
-	huType := majongpb.SettleHuType_settle_hu_zimo
-	if string(huPlayer.Properties["gang"]) == "true" {
-		huType = majongpb.SettleHuType_settle_hu_gangkai
-		if len(mjContext.WallCards) == 0 {
-			huType = majongpb.SettleHuType_settle_hu_gangshanghaidilao
-		}
-	}
+	huType := s.calcHuType(mjContext)
+	settleType := s.huType2SettleType(huType)
 	params := interfaces.HuSettleParams{
 		HuPlayers:  []uint64{huPlayerID},
 		SrcPlayer:  huPlayerID,
 		AllPlayers: allPlayers,
 		SettleType: majongpb.SettleType_settle_zimo,
-		HuType:     huType,
+		HuType:     settleType,
 		CardTypes:  cardTypes,
 		CardValues: cardValues,
 		GenCount:   genCount,

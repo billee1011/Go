@@ -47,6 +47,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		}
 		player := utils.GetNextPlayerByID(context.GetPlayers(), context.GetLastChupaiPlayer())
 		context.MopaiPlayer = player.GetPalyerId()
+		context.MopaiType = majongpb.MopaiType_MT_NORMAL
 		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID_state_init, global.ErrInvalidEvent
