@@ -56,7 +56,7 @@ func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err 
 	defer func() {
 		if x := recover(); x != nil {
 			err = fmt.Errorf("client closed")
-			debug.PrintStack()
+			// debug.PrintStack()
 		}
 	}()
 
