@@ -33,12 +33,12 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
 				continue
 			}
-			_, need := s.checkActions(context, player, card)
+			ntf, need := checkActions(context, player, card)
 			if need {
-				// flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-				// 	MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
-				// 	Msg:   ntf,
-				// })
+				flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+					MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
+					Msg:   ntf,
+				})
 				hasChupaiwenxun = true
 			}
 		}
@@ -50,27 +50,27 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		context.MopaiType = majongpb.MopaiType_MT_NORMAL
 		return majongpb.StateID_state_mopai, nil
 	}
-	return majongpb.StateID_state_chupai, global.ErrInvalidEvent
+	return majongpb.StateID_state_init, global.ErrInvalidEvent
 }
 
 //checkActions 检查玩家可以有哪些操作
-func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
+func checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
 	player.PossibleActions = player.PossibleActions[:0]
 
 	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
 	chupaiWenxunNtf.Card = proto.Uint32(uint32(utils.ServerCard2Number(card)))
-	canMingGang := s.checkMingGang(context, player, card)
+	canMingGang := checkMingGang(context, player, card)
 	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_gang)
 	}
-	canDianPao := s.checkDianPao(context, player, card)
+	canDianPao := checkDianPao(context, player, card)
 	chupaiWenxunNtf.EnableDianpao = proto.Bool(canDianPao)
 	if canDianPao {
 		context.LastHuPlayers = append(context.LastHuPlayers, player.GetPalyerId())
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 	}
-	canPeng := s.checkPeng(context, player, card)
+	canPeng := checkPeng(context, player, card)
 	chupaiWenxunNtf.EnablePeng = proto.Bool(canPeng)
 	if canPeng {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
@@ -80,7 +80,7 @@ func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majo
 }
 
 //checkMingGang 查明杠
-func (s *ChupaiState) checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
+func checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	// 没有墙牌不能明杠
 	if len(context.WallCards) == 0 {
 		return false
@@ -119,7 +119,7 @@ func (s *ChupaiState) checkMingGang(context *majongpb.MajongContext, player *maj
 }
 
 //checkPeng 查碰
-func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
+func checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	color := player.GetDingqueColor()
 	//胡牌后不能碰了
 	if len(player.GetHuCards()) > 0 || card.Color == color {
@@ -142,7 +142,7 @@ func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongp
 }
 
 //checkDianPao 查点炮
-func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
+func checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	cpCard := context.GetLastOutCard()
 	color := player.GetDingqueColor()
 	hasDingQueCard := utils.CheckHasDingQueCard(player.HandCards, color)
