@@ -7,7 +7,11 @@ import (
 )
 
 func makeRoomCards(card ...room.Card) []*room.Card {
-	return utils.MakeRoomCards(card...)
+	result := []*room.Card{}
+	for i := range card {
+		result = append(result, &card[i])
+	}
+	return result
 }
 
 var (
@@ -20,7 +24,7 @@ var (
 			makeRoomCards(Card5T, Card5T, Card5T, Card5T, Card6T, Card6T, Card6T, Card6T, Card7T, Card7T, Card7T, Card7T, Card8T),
 		},
 		WallCards: []*room.Card{
-			&Card1B, &Card1B, &Card1B,
+			&Card1B,
 		},
 		HszDir:     room.Direction_ClockWise,
 		BankerSeat: 0,
