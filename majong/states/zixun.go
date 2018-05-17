@@ -322,9 +322,151 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	return hasQGanghu
 }
 
+//checkActions 检测进入自询状态下，玩家有哪些可以可行的事件
+func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
+	context := flow.GetMajongContext()
+	zixunNtf := &room.RoomZixunNtf{}
+	canZiMo := s.checkZiMo(context)
+	zixunNtf.EnableZimo = proto.Bool(canZiMo)
+	canAnGang, enablieAngangCards := s.checkAnGang(context)
+	if canAnGang {
+		zixunNtf.EnableAngangCards = enablieAngangCards
+	}
+	canBuGang, enablieBugangCards := s.checkBuGang(context)
+	if canBuGang {
+		zixunNtf.EnableBugangCards = enablieBugangCards
+	}
+	//TODO:暂时将所有的手牌都设置为可以出的牌
+	mopaiPlayer := utils.GetPlayerByID(context.Players, context.GetMopaiPlayer())
+	zixunNtf.EnableChupaiCards = utils.ServerCards2Uint32(mopaiPlayer.GetHandCards())
+	canQi := len(mopaiPlayer.GetHuCards()) == 0 && (canAnGang || canBuGang || canZiMo)
+	zixunNtf.EnableQi = proto.Bool(canQi)
+	playerIDs := make([]uint64, 0, 0)
+	playerIDs = append(playerIDs, context.MopaiPlayer)
+	toClient := interfaces.ToClientMessage{
+		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
+		Msg:   zixunNtf,
+	}
+	flow.PushMessages(playerIDs, toClient)
+	logrus.WithFields(logrus.Fields{
+		"canZimo":   canZiMo,
+		"canAnGang": canAnGang,
+		"canBuGang": canBuGang,
+		"canQi":     canQi,
+	}).Infof("玩家%v可以有的操作", context.MopaiPlayer)
+}
+
+//checkZiMo 查自摸
+func (s *ZiXunState) checkZiMo(context *majongpb.MajongContext) bool {
+	activePlayerID := context.GetLastMopaiPlayer()
+	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
+	handCard := activePlayer.GetHandCards()
+	if utils.CheckHasDingQueCard(handCard, activePlayer.GetDingqueColor()) {
+		return false
+	}
+	l := len(handCard)
+	if l%3 != 2 {
+		return false
+	}
+	flag := utils.CheckHu(handCard, 0)
+	return flag
+}
+
+//checkAnGang 查暗杠
+func (s *ZiXunState) checkAnGang(context *majongpb.MajongContext) (bool, []uint32) {
+	if len(context.WallCards) == 0 {
+		return false, nil
+	}
+	activePlayerID := context.GetLastMopaiPlayer()
+	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
+	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
+	hasHu := len(activePlayer.GetHuCards()) > 0
+	handCard := activePlayer.GetHandCards()
+	enableAngangCards := make([]uint32, 0, 0)
+	// cardsI, _ := utils.CardsToInt(handCard)
+	// cardNum := make(map[int32]int)
+	// for i := 0; i < len(cardsI); i++ {
+	// 	num := cardNum[cardsI[i]]
+	// 	num++
+	// 	cardNum[cardsI[i]] = num
+	// }
+	cardNum := make(map[*majongpb.Card]int)
+	for i := 0; i < len(handCard); i++ {
+		num := cardNum[handCard[i]]
+		num++
+		cardNum[handCard[i]] = num
+	}
+	color := activePlayer.GetDingqueColor()
+	for k, num := range cardNum {
+		// if k/10 != int32(color) && num == 4 {
+		if k.Color != color && num == 4 {
+			if hasHu {
+				//创建副本，移除相应的杠牌进行查胡
+				// newcardsI := make([]int32, 0, len(cardsI))
+				// newcardsI = append(newcardsI, cardsI...)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				// newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, k)
+				newCards := []*majongpb.Card{}
+				newCards = append(newCards, handCard...)
+				newCards, _ = utils.RemoveCards(newCards, k, 4)
+				utilCards := utils.CardsToUtilCards(newCards)
+				// cardsI := utils.IntToUtilCard(newcardsI)
+				huCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
+				// huCards := utils.FastCheckTingV2(cardsI, map[utils.Card]bool{})
+				if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
+					enableAngangCards = append(enableAngangCards, utils.ServerCard2Uint32(k))
+				}
+			} else {
+				enableAngangCards = append(enableAngangCards, utils.ServerCard2Uint32(k))
+			}
+		}
+	}
+	return len(enableAngangCards) > 0, enableAngangCards
+}
+
+//checkBuGang 查补杠
+func (s *ZiXunState) checkBuGang(context *majongpb.MajongContext) (bool, []uint32) {
+	// 没有墙牌不能杠
+	if len(context.WallCards) == 0 {
+		return false, nil
+	}
+	activePlayerID := context.GetLastMopaiPlayer()
+	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
+	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
+	hasHu := len(activePlayer.GetHuCards()) > 0
+	pengCards := activePlayer.GetPengCards()
+	enableBugangCards := make([]uint32, 0, 0)
+	// actioninfos := []*clientpb.ActionInfo{}
+	for _, touchCard := range activePlayer.HandCards {
+		for _, pengCard := range pengCards {
+			if *pengCard.Card == *touchCard {
+				removeCard, _ := utils.CardToInt(*touchCard)
+				if hasHu {
+					//创建副本，移除相应的杠牌进行查胡
+					cardsI, _ := utils.CardsToInt(activePlayer.HandCards)
+					newcardsI := make([]int32, 0, len(cardsI))
+					newcardsI = append(newcardsI, cardsI...)
+					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, *removeCard)
+					utilCards := utils.IntToUtilCard(newcardsI)
+					laizi := make(map[utils.Card]bool)
+					huCards := utils.FastCheckTingV2(utilCards, laizi)
+					if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
+						enableBugangCards = append(enableBugangCards, uint32(*removeCard))
+					}
+				} else {
+					enableBugangCards = append(enableBugangCards, uint32(*removeCard))
+				}
+			}
+		}
+	}
+	return len(enableBugangCards) > 0, enableBugangCards
+}
+
 // OnEntry 进入状态
 func (s *ZiXunState) OnEntry(flow interfaces.MajongFlow) {
-
+	s.checkActions(flow)
 }
 
 // OnExit 退出状态
