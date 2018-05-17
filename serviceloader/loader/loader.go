@@ -2,8 +2,8 @@ package loader
 
 import (
 	"fmt"
+	"plugin"
 	"reflect"
-	"steve/room/core"
 	"steve/serviceloader/exchanger"
 	"steve/serviceloader/net/watchdog"
 	"steve/serviceloader/redisfactory"
@@ -12,6 +12,8 @@ import (
 	"steve/structs"
 	iexchanger "steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
+	"steve/structs/service"
+	"strings"
 	"sync"
 
 	"github.com/Sirupsen/logrus"
@@ -116,23 +118,23 @@ func createExchanger(rpcServer *sgrpc.RPCServerImpl, opt *option) (iexchanger.Ex
 	return e, nil
 }
 
-// func getPluginService(name string) (service.Service, error) {
-// 	// return nil, nil // 调试
-// 	if !strings.HasSuffix(name, ".so") {
-// 		name += ".so"
-// 	}
-// 	p, err := plugin.Open(name)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	f, err := p.Lookup("GetService")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	getter := f.(func() service.Service)
-// 	service := getter()
-// 	return service, nil
-// }
+func getPluginService(name string) (service.Service, error) {
+	// return nil, nil // 调试
+	if !strings.HasSuffix(name, ".so") {
+		name += ".so"
+	}
+	p, err := plugin.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	f, err := p.Lookup("GetService")
+	if err != nil {
+		return nil, err
+	}
+	getter := f.(func() service.Service)
+	service := getter()
+	return service, nil
+}
 
 func infoOption(opt option) {
 
@@ -156,12 +158,12 @@ func LoadService(name string, options ...ServiceOption) {
 	}
 	infoOption(opt)
 
-	// service, err := getPluginService(name)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	service, err := getPluginService(name)
+	if err != nil {
+		panic(err)
+	}
 	// 调试用
-	service := core.NewService()
+	// service := core.NewService()
 
 	redisFacotry := redisfactory.NewFactory(opt.redisAddr, opt.redisPasswd)
 	redisClient, err := redisFacotry.NewClient()
