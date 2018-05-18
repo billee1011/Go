@@ -147,10 +147,10 @@ enum MopaiType {
     MT_GANG = 1;    // 杠后摸牌
 }
 
-// ChupaiType 出牌类型
-enum ChupaiType {
-    CT_PENG = 0;    // 碰后出牌
-    CT_ZIXUN = 1;   // 自询出牌
+// ZixunType 自询类型
+enum ZixunType {
+    ZXT_NORMAL = 0; // 普通自询
+    ZXT_PENG = 1;   // 碰后的自询
 }
 
 // MajongContext 麻将现场
@@ -175,8 +175,7 @@ message MajongContext {
     Card last_mopai_card = 18;    // 上一次摸的牌
     Card gang_card = 19;        // 杠的牌
     MopaiType mopai_type = 20;  // 摸牌类型
-    ChupaiType chupai_type = 21;    // 出牌类型
-
+    ZixunType zixun_type = 21;  // 自询类型
 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项

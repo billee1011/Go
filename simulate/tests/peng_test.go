@@ -51,6 +51,14 @@ func Test_Peng(t *testing.T) {
 	from := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
 	// 所有玩家收到碰通知
 	checkPengNotify(t, deskData, pengPlayer.Player.GetID(), from.Player.GetID(), Int5w)
+	// 碰的玩家收到自询通知，且只能出牌
+	expector, _ = pengPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	zixunNtf := room.RoomZixunNtf{}
+	assert.Nil(t, expector.Recv(time.Second*2, &zixunNtf))
+	assert.Equal(t, len(zixunNtf.GetEnableAngangCards()), 0)
+	assert.Equal(t, len(zixunNtf.GetEnableBugangCards()), 0)
+	assert.False(t, zixunNtf.GetEnableZimo())
+	assert.NotEqual(t, 0, len(zixunNtf.GetEnableChupaiCards()))
 }
 
 func checkPengNotify(t *testing.T, deskData *utils.DeskData, to uint64, from uint64, card uint32) {

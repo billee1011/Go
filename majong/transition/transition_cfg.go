@@ -146,10 +146,10 @@ var transitionCfg = `
       # 转换表
       transition:
         - 
-          # 玩家出牌事件 转移到 出牌状态
+          # 碰完成事件 转移到 自询状态
           events: 
-            - event_chupai_request
-          next_state: state_chupai 
+            - event_peng_finish
+          next_state: state_zixun 
     - 
       # 杠状态
       state: state_gang

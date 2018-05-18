@@ -39,6 +39,8 @@ func (s *DingqueState) ProcessEvent(eventID majongpb.EventID, eventContext []byt
 		if err != nil || !isFinish {
 			return majongpb.StateID_state_dingque, err
 		}
+		mjContext := flow.GetMajongContext()
+		mjContext.ZixunType = majongpb.ZixunType_ZXT_NORMAL
 		return majongpb.StateID_state_zixun, nil
 	}
 	return majongpb.StateID_state_dingque, nil

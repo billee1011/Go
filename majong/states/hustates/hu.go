@@ -74,9 +74,9 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 // isAfterGang 是否为杠后炮
 // 杠后摸牌、自询出牌则为杠后炮
 func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
-	cpType := mjContext.GetChupaiType()
+	zxType := mjContext.GetZixunType()
 	mpType := mjContext.GetMopaiType()
-	return mpType == majongpb.MopaiType_MT_GANG && cpType == majongpb.ChupaiType_CT_ZIXUN
+	return mpType == majongpb.MopaiType_MT_GANG && zxType == majongpb.ZixunType_ZXT_NORMAL
 }
 
 // HuState 广播胡
