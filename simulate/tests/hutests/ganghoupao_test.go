@@ -52,5 +52,5 @@ func Test_Ganghoupao(t *testing.T) {
 	// 发送胡请求
 	assert.Nil(t, utils.SendHuReq(deskData, 1))
 	// 检测所有玩家收到自摸通知
-	utils.CheckHuNotify(t, deskData, []int{1}, 0, 19, room.HuType_GangouPao)
+	utils.CheckHuNotify(t, deskData, []int{1}, 0, 19, room.HuType_HT_GANGHOUPAO)
 }
