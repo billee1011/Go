@@ -38,7 +38,7 @@ func Test_Qiangganghu(t *testing.T) {
 	// 3 号玩家初始手牌： 25,25,25,25,26,26,26,26,27,27,27,27,39
 	params.Cards[3][12] = &global.Card9B
 
-	// 墙牌改为 8W, 8W, 8W, 9W
+	// 墙牌改为 8W, 8W, 8W, 9W， 3B
 	params.WallCards = []*room.Card{&global.Card8W, &global.Card8W, &global.Card8W, &global.Card9W, &global.Card3B}
 
 	deskData, err := utils.StartGame(params)
@@ -77,7 +77,7 @@ func Test_Qiangganghu(t *testing.T) {
 	}
 
 	assert.Nil(t, utils.SendHuReq(deskData, 2))
-	utils.CheckHuNotify(t, deskData, []int{2}, 1, 19, room.HuType_QiangGangHu)
+	utils.CheckHuNotify(t, deskData, []int{2}, 1, 19, room.HuType_HT_QIANGGANGHU)
 }
 
 // makeRoomCards(Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card4W),

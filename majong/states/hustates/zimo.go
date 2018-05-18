@@ -74,23 +74,27 @@ func (s *ZimoState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 }
 
 // calcHuType 计算胡牌类型
-func (s *ZimoState) calcHuType(mjContext *majongpb.MajongContext) room.HuType {
+func (s *ZimoState) calcHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) room.HuType {
 	afterGang := s.isAfterGang(mjContext)
 	isLast := (len(mjContext.WallCards) == 0)
 	if afterGang && isLast {
-		return room.HuType_GangShangHaiDiLao
+		return room.HuType_HT_GANGSHANGHAIDILAO
 	} else if afterGang {
-		return room.HuType_GangKai
+		return room.HuType_HT_GANGKAI
 	} else if isLast {
-		return room.HuType_HaiDiLao
+		return room.HuType_HT_HAIDILAO
 	}
-	return room.HuType_ZiMo
+	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
+	if huPlayer.MopaiCount == 0 && len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 {
+		return room.HuType_HT_TIANHU
+	}
+	return room.HuType_HT_ZIMO
 }
 
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, playerID uint64, flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	huType := s.calcHuType(mjContext)
+	huType := s.calcHuType(playerID, mjContext)
 	body := room.RoomHuNtf{
 		Players:      []uint64{playerID},
 		FromPlayerId: proto.Uint64(playerID),
@@ -142,10 +146,10 @@ func (s *ZimoState) calcTianhuCard(cards []*majongpb.Card) *majongpb.Card {
 
 func (s *ZimoState) huType2SettleType(huType room.HuType) majongpb.SettleHuType {
 	return map[room.HuType]majongpb.SettleHuType{
-		room.HuType_ZiMo:              majongpb.SettleHuType_settle_hu_zimo,
-		room.HuType_GangKai:           majongpb.SettleHuType_settle_hu_gangkai,
-		room.HuType_HaiDiLao:          majongpb.SettleHuType_settle_hu_haidilao,
-		room.HuType_GangShangHaiDiLao: majongpb.SettleHuType_settle_hu_gangshanghaidilao,
+		room.HuType_HT_ZIMO:              majongpb.SettleHuType_settle_hu_zimo,
+		room.HuType_HT_GANGKAI:           majongpb.SettleHuType_settle_hu_gangkai,
+		room.HuType_HT_HAIDILAO:          majongpb.SettleHuType_settle_hu_haidilao,
+		room.HuType_HT_GANGSHANGHAIDILAO: majongpb.SettleHuType_settle_hu_gangshanghaidilao,
 	}[huType]
 }
 
@@ -177,7 +181,7 @@ func (s *ZimoState) doZiMoSettle(card *majongpb.Card, huPlayerID uint64, flow in
 	cardValues[huPlayerID] = cardValue
 	genCount[huPlayerID] = gen
 
-	huType := s.calcHuType(mjContext)
+	huType := s.calcHuType(huPlayerID, mjContext)
 	settleType := s.huType2SettleType(huType)
 	params := interfaces.HuSettleParams{
 		HuPlayers:  []uint64{huPlayerID},

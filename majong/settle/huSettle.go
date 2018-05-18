@@ -24,18 +24,18 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 	settleInfos := make([]*majongpb.SettleInfo, 0)
 	huSettleInfo := NewSettleInfo(params.SettleID)
 	huSettleInfo.HuType = params.HuType
+	huSettleInfo.SettleType = params.SettleType
 	for i := 0; i < len(params.HuPlayers); i++ {
 		//底数
 		ante := GetDi()
 		// 总分
-		total := int64(params.CardValues[params.HuPlayers[i]]) * ante
+		total := int64(params.CardValues[params.HuPlayers[i]]) * ante * int64(getHuTypeValue(params.HuType))
 		win := int64(0)
 		lose := int64(0)
 		if params.SettleType == majongpb.SettleType_settle_zimo {
 			for _, playerID := range params.AllPlayers {
 				if playerID != params.HuPlayers[i] {
 					huSettleInfo.Scores[playerID] = 0 - total
-				} else {
 					win = win + total
 				}
 			}
@@ -45,7 +45,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 				huSettleInfo.Scores[playerID] = total
 				lose = lose - total
 			}
-			huSettleInfo.Scores[params.SrcPlayer] = total
+			huSettleInfo.Scores[params.SrcPlayer] = lose
 		}
 		huSettleInfo.CardValue = params.CardValues[params.HuPlayers[i]]
 		huSettleInfo.CardType = params.CardTypes[params.HuPlayers[i]]
@@ -144,4 +144,17 @@ func getPalyerCloseIndex(index int, allPlayer, huPlayers []uint64) uint64 {
 		}
 	}
 	return 0
+}
+
+func getHuTypeValue(huType majongpb.SettleHuType) uint32 {
+	huTypeValues := map[majongpb.SettleHuType]uint32{
+		majongpb.SettleHuType_settle_hu_noramaldianpao:    1,
+		majongpb.SettleHuType_settle_hu_zimo:              2,
+		majongpb.SettleHuType_settle_hu_gangkai:           2,
+		majongpb.SettleHuType_settle_hu_ganghoupao:        2,
+		majongpb.SettleHuType_settle_hu_qiangganghu:       2,
+		majongpb.SettleHuType_settle_hu_haidilao:          2,
+		majongpb.SettleHuType_settle_hu_gangshanghaidilao: 4,
+	}
+	return huTypeValues[huType]
 }
