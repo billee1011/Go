@@ -1,7 +1,8 @@
-package tests
+package gangtests
 
 import (
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
 
@@ -10,8 +11,8 @@ import (
 
 func Test_Angang(t *testing.T) {
 	// utils.StartGameParams
-	thisParams := commonStartGameParams
-	thisParams.WallCards = append(thisParams.WallCards, &Card9B)
+	thisParams := global.CommonStartGameParams
+	thisParams.WallCards = append(thisParams.WallCards, &global.Card9B)
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
