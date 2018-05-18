@@ -155,6 +155,8 @@ func getHuTypeValue(huType majongpb.SettleHuType) uint32 {
 		majongpb.SettleHuType_settle_hu_qiangganghu:       2,
 		majongpb.SettleHuType_settle_hu_haidilao:          2,
 		majongpb.SettleHuType_settle_hu_gangshanghaidilao: 4,
+		majongpb.SettleHuType_settle_hu_tianhu:            32,
+		majongpb.SettleHuType_settle_hu_dihu:              32,
 	}
 	return huTypeValues[huType]
 }

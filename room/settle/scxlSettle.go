@@ -116,6 +116,7 @@ func (s *scxlSettle) getBillDetail(palyerID uint64, settleInfo *majongpb.SettleI
 	if settleInfo.Scores[palyerID] != 0 {
 		billDetail := &room.BillDetail{
 			SetleType: room.SettleType(settleInfo.SettleType).Enum(),
+			HuType:    room.HuType(settleInfo.HuType).Enum(),
 			FanValue:  proto.Uint32(settleInfo.CardValue),
 			Score:     proto.Int64(s.settleMap[settleInfo.Id][palyerID]),
 		}
