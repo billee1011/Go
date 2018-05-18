@@ -42,7 +42,6 @@ func (s *WaitQiangganghuState) OnEntry(flow interfaces.MajongFlow) {
 
 	for _, player := range mjContext.GetPlayers() {
 		playerID := player.GetPalyerId()
-		fmt.Println(mjContext.GetLastGangPlayer())
 		flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
 			Msg: &room.RoomWaitQianggangHuNtf{
