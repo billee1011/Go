@@ -12,5 +12,5 @@ func WaitZixunNtf(desk *DeskData, seat int) error {
 	expector, _ := player.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 
 	ntf := room.RoomZixunNtf{}
-	return expector.Recv(time.Second*1, &ntf)
+	return expector.Recv(time.Second*2, &ntf)
 }

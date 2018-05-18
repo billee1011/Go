@@ -22,7 +22,7 @@ var (
 		WallCards: []*room.Card{
 			&Card1B,
 		},
-		HszDir:     room.Direction_ClockWise,
+		HszDir:     room.Direction_AntiClockWise,
 		BankerSeat: 0,
 		ServerAddr: config.ServerAddr,
 		ClientVer:  config.ClientVersion,

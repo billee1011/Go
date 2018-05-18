@@ -1,5 +1,13 @@
 package states
 
+//适用麻将：四川血流
+//前置条件：取麻将现场的最后打出的牌，和最后出牌的玩家，和最后碰的玩家
+//处理的事件请求：出牌请求
+//处理请求的过程：验证出牌是否合法，设置麻将牌局现场最后出的牌和最后出牌玩家，还有清空出牌玩家的可能动作
+//处理请求的结果：验证通过返回出牌状态ID，否则还是碰状态
+//状态退出行为：无
+//状态进入行为：处理碰逻辑，并广播通知客户端碰牌消息通知，该消息包含出的牌和来自的玩家，去的玩家
+//约束条件：无
 import (
 	"fmt"
 	"steve/client_pb/msgId"
@@ -13,7 +21,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// PengState 碰状态 @Author:wuhongwei
+// PengState 碰状态
 type PengState struct {
 }
 
@@ -141,7 +149,7 @@ func (s *PengState) doPeng(flow interfaces.MajongFlow) {
 	}
 	player.HandCards = newCards
 	s.notifyPeng(flow, card, mjContext.GetLastChupaiPlayer(), pengPlayer)
-	s.addPengCard(card, player, mjContext.GetActivePlayer())
+	s.addPengCard(card, player, mjContext.GetLastChupaiPlayer())
 	return
 }
 
