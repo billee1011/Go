@@ -76,7 +76,7 @@ func Test_Qiangganghu(t *testing.T) {
 	}
 
 	assert.Nil(t, utils.SendHuReq(deskData, 2))
-	utils.CheckHuNotify(t, deskData, []int{2}, 1, 19, room.HuType_QiangGangHu)
+	utils.CheckHuNotify(t, deskData, []int{2}, 1, 19, room.HuType_HT_QIANGGANGHU)
 }
 
 // makeRoomCards(Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card4W),

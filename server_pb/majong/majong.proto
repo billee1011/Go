@@ -112,6 +112,8 @@ enum SettleHuType {
     settle_hu_haidilao = 4;            // 海底捞
     settle_hu_gangshanghaidilao = 5;   // 杠上海底捞
     settle_hu_zimo = 6;                // 自摸
+    settle_hu_tianhu = 7;              // 天胡
+    settle_hu_dihu = 8;                // 地胡
 }
 
 // SettleInfo 结算信息
