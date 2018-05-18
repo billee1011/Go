@@ -79,7 +79,6 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 			return false, nil
 		}
 	}
-	mjContext.LastMopaiPlayer = players[mjContext.GetZhuangjiaIndex()].GetPalyerId()
 	return true, nil
 }
 
