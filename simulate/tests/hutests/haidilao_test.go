@@ -67,17 +67,17 @@ func Test_Zimo_Haidilao(t *testing.T) {
 // checkZiMoSettleScoreNotify 检查自摸分数结算通知
 func checkZiMoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, zimoSeat int, winScore int64) {
 	zimoplayer := utils.GetDeskPlayerBySeat(zimoSeat, deskData)
-	//zimoID := zimoplayer.Player.GetID()
+	zimoID := zimoplayer.Player.GetID()
 	expector, _ := zimoplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
 	expector.Recv(time.Second*1, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	for _, billInfo := range ntf.BillPlayersInfo {
-		//if billInfo.GetPid() == zimoID {
-		//	assert.Equal(t, billInfo.GetScore(), winScore)
-		//} else {
-		//	assert.Equal(t, billInfo.GetScore(), -(winScore / 3))
-		//}
+		if billInfo.GetPid() == zimoID {
+			assert.Equal(t, billInfo.GetScore(), winScore)
+		} else {
+			assert.Equal(t, billInfo.GetScore(), -(winScore / 3))
+		}
 		fmt.Println(billInfo)
 	}
 }
