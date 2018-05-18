@@ -7,11 +7,7 @@ import (
 )
 
 func makeRoomCards(card ...room.Card) []*room.Card {
-	result := []*room.Card{}
-	for i := range card {
-		result = append(result, &card[i])
-	}
-	return result
+	return utils.MakeRoomCards(card...)
 }
 
 var (
