@@ -20,6 +20,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		"huType":     params.HuType,
 		"cardTypes":  params.CardTypes,
 		"cardValues": params.CardValues,
+		"genCount":   params.GenCount,
 	})
 	settleInfos := make([]*majongpb.SettleInfo, 0)
 	huSettleInfo := NewSettleInfo(params.SettleID)

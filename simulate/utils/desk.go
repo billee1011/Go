@@ -40,6 +40,35 @@ type StartGameParams struct {
 
 }
 
+func (p *StartGameParams) copyCards(cards []*room.Card) []*room.Card {
+	return append([]*room.Card{}, cards...)
+}
+
+func (p *StartGameParams) copy2dCards(cards [][]*room.Card) [][]*room.Card {
+	result := [][]*room.Card{}
+	for _, c := range cards {
+		result = append(result, p.copyCards(c))
+	}
+	return result
+}
+func (p *StartGameParams) copyColors(colors []room.CardColor) []room.CardColor {
+	return append([]room.CardColor{}, colors...)
+}
+
+// Clone 创建一个新的副本
+func (p *StartGameParams) Clone() StartGameParams {
+	return StartGameParams{
+		Cards:        p.copy2dCards(p.Cards),
+		WallCards:    p.copyCards(p.WallCards),
+		HszDir:       p.HszDir,
+		BankerSeat:   p.BankerSeat,
+		ServerAddr:   p.ServerAddr,
+		ClientVer:    p.ClientVer,
+		HszCards:     p.copy2dCards(p.HszCards),
+		DingqueColor: p.copyColors(p.DingqueColor),
+	}
+}
+
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params StartGameParams) (*DeskData, error) {

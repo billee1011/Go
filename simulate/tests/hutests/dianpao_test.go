@@ -18,7 +18,7 @@ import (
 // 2. 1号玩家发送胡请求后，所有玩家收到胡通知， 胡牌者为1号玩家，胡类型为点炮，胡的牌为9W
 func Test_Dianpao(t *testing.T) {
 	var Int9W uint32 = 19
-	params := global.CommonStartGameParams
+	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
 	huSeat := 1

@@ -10,9 +10,9 @@ func makeRoomCards(card ...room.Card) []*room.Card {
 	return utils.MakeRoomCards(card...)
 }
 
-var (
-	// CommonStartGameParams 通用的启动游戏参数
-	CommonStartGameParams = utils.StartGameParams{
+// NewCommonStartGameParams 创建通用启动参数
+func NewCommonStartGameParams() utils.StartGameParams {
+	return utils.StartGameParams{
 		Cards: [][]*room.Card{
 			makeRoomCards(Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card4W),
 			makeRoomCards(Card5W, Card5W, Card5W, Card5W, Card6W, Card6W, Card6W, Card6W, Card7W, Card7W, Card7W, Card7W, Card8W),
@@ -35,4 +35,4 @@ var (
 		},
 		DingqueColor: []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO},
 	}
-)
+}

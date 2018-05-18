@@ -9,6 +9,7 @@ import (
 	majongpb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -90,6 +91,10 @@ func notifyDeskMessage(desk interfaces.Desk, message proto.Message) {
 	head := &steve_proto_gaterpc.Header{
 		MsgId: uint32(msgid.MsgID_ROOM_INSTANT_SETTLE)}
 	ms := global.GetMessageSender()
+
+	logrus.WithFields(logrus.Fields{
+		"msg": message.String(),
+	}).Debugln("通知立即结算")
 
 	ms.BroadcastPackage(clientIDs, head, message)
 }

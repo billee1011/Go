@@ -19,7 +19,7 @@ import (
 func Test_Zimo(t *testing.T) {
 	var Int1B uint32 = 31
 	var Int9W uint32 = 19
-	params := global.CommonStartGameParams
+	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
 	zimoSeat := 1

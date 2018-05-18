@@ -11,7 +11,7 @@ import (
 
 func Test_Angang(t *testing.T) {
 	// utils.StartGameParams
-	thisParams := global.CommonStartGameParams
+	thisParams := global.NewCommonStartGameParams()
 	thisParams.WallCards = append(thisParams.WallCards, &global.Card9B)
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)

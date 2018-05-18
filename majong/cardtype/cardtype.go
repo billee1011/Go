@@ -4,6 +4,8 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/settle/fan"
 	majongpb "steve/server_pb/majong"
+
+	"github.com/Sirupsen/logrus"
 )
 
 //ScxlCardTypeCalculator 血流卡牌类型计算器
@@ -25,6 +27,12 @@ func (ctc *ScxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (
 	}
 	// 番型名和根处理
 	cardTypes, gengCount = fan.ScxlFanMutex(fanCardTypes, fan.GetGenCount(params))
+	logrus.WithFields(logrus.Fields{
+		"func_name": "ScxlCardTypeCalculator.Calculate",
+		"cardTypes": cardTypes,
+		"params":    params,
+		"genCount":  gengCount,
+	}).Debugln("计算胡牌倍数")
 	return cardTypes, gengCount
 }
 

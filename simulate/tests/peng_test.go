@@ -3,6 +3,7 @@ package tests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
 	"time"
@@ -13,7 +14,7 @@ import (
 // Test_Peng 测试碰
 func Test_Peng(t *testing.T) {
 	var Int5w uint32 = 15
-	params := commonStartGameParams
+	params := global.NewCommonStartGameParams()
 	// 0 号玩家的最后一张牌改成 5W， 打出后 1 号玩家可碰
 	params.Cards[0][13] = &Card5W
 	params.Cards[1][0] = &Card4W
@@ -29,10 +30,11 @@ func Test_Peng(t *testing.T) {
 	assert.Nil(t, err)
 
 	// 庄家出 5W
+	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	assert.Nil(t, utils.SendChupaiReq(deskData, params.BankerSeat, Int5w))
 
 	// 1 号玩家收到出牌问询通知，可以碰
-	pengSeat := (commonStartGameParams.BankerSeat + 1) % len(deskData.Players)
+	pengSeat := (params.BankerSeat + 1) % len(deskData.Players)
 	pengPlayer := utils.GetDeskPlayerBySeat(pengSeat, deskData)
 
 	expector, _ := pengPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
