@@ -125,11 +125,11 @@ func (s *HuansanzhangState) makePairs(playerCount int, dir room.Direction) map[i
 	switch dir {
 	case room.Direction_AntiClockWise:
 		{
-			return map[int]int{0: 1, 1: 2, 2: 3, 3: 0}
+			return map[int]int{0: 3, 1: 0, 2: 1, 3: 2}
 		}
 	case room.Direction_ClockWise:
 		{
-			return map[int]int{0: 3, 1: 0, 2: 1, 3: 2}
+			return map[int]int{0: 1, 1: 2, 2: 3, 3: 0}
 		}
 	case room.Direction_Opposite:
 		{
