@@ -2,7 +2,6 @@ package states
 
 import (
 	"errors"
-	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
