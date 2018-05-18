@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMoMo(t *testing.T) {
+func Test_Angang(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := commonStartGameParams
 	thisParams.WallCards = append(thisParams.WallCards, &Card9B)
