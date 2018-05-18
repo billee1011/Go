@@ -19,9 +19,9 @@ func Test_Angang(t *testing.T) {
 	//庄家出牌
 	assert.Nil(t, utils.SendChupaiReq(deskData, deskData.BankerSeat, uint32(13)))
 	//所有客户端接受出牌通知
-	utils.CheckChuPaiNotify(t, deskData, uint32(13), utils.GetDeskPlayerBySeat(deskData.BankerSeat, deskData).Player.GetID())
+	utils.CheckChuPaiNotify(t, deskData, uint32(13), deskData.BankerSeat)
 	//下家这时候摸到牌后，进入自询状态，自询状态下可以暗杠
-	xjPlayer := utils.CheckMoPaiNotify(t, deskData, (deskData.BankerSeat+1)%len(deskData.Players))
+	xjPlayer := utils.CheckMoPaiNotify(t, deskData, (deskData.BankerSeat+1)%len(deskData.Players), 31)
 	//下家请求暗杠
 	utils.SendGangReq(deskData, xjPlayer.Seat, uint32(16), room.GangType_AnGang)
 	//检查下家暗杠的通知
