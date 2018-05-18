@@ -37,12 +37,8 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
 				continue
 			}
-			_, need := s.checkActions(context, player, card)
+			need := s.checkActions(context, player, card)
 			if need {
-				// flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-				// 	MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
-				// 	Msg:   ntf,
-				// })
 				hasChupaiwenxun = true
 			}
 		}
@@ -58,29 +54,26 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 }
 
 //checkActions 检查玩家可以有哪些操作
-func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) (*room.RoomChupaiWenxunNtf, bool) {
+func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	player.PossibleActions = player.PossibleActions[:0]
 
-	chupaiWenxunNtf := &room.RoomChupaiWenxunNtf{}
-	chupaiWenxunNtf.Card = proto.Uint32(uint32(utils.ServerCard2Number(card)))
 	canMingGang := s.checkMingGang(context, player, card)
-	chupaiWenxunNtf.EnableMinggang = proto.Bool(canMingGang)
 	if canMingGang {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_gang)
 	}
 	canDianPao := s.checkDianPao(context, player, card)
-	chupaiWenxunNtf.EnableDianpao = proto.Bool(canDianPao)
 	if canDianPao {
 		context.LastHuPlayers = append(context.LastHuPlayers, player.GetPalyerId())
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 	}
 	canPeng := s.checkPeng(context, player, card)
-	chupaiWenxunNtf.EnablePeng = proto.Bool(canPeng)
 	if canPeng {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
 	}
-	chupaiWenxunNtf.EnableQi = proto.Bool(true)
-	return chupaiWenxunNtf, canDianPao || canMingGang || canPeng
+	if len(player.PossibleActions) > 0 {
+		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qi)
+	}
+	return canDianPao || canMingGang || canPeng
 }
 
 //checkMingGang 查明杠

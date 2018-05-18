@@ -69,13 +69,13 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 				instantSettle := room.RoomSettleInstantRsp{
 					BillPlayersInfo: billplayerInfos,
 				}
-				notifyDeskMessage(desk, &instantSettle)
+				notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &instantSettle)
 			}
 		}
 	}
 }
 
-func notifyDeskMessage(desk interfaces.Desk, message proto.Message) {
+func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
 	players := desk.GetPlayers()
 	clientIDs := []uint64{}
 
@@ -88,7 +88,7 @@ func notifyDeskMessage(desk interfaces.Desk, message proto.Message) {
 		}
 	}
 	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid.MsgID_ROOM_INSTANT_SETTLE)}
+		MsgId: uint32(msgid)}
 	ms := global.GetMessageSender()
 
 	ms.BroadcastPackage(clientIDs, head, message)
@@ -108,7 +108,7 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 		balanceRsp.Pid = proto.Uint64(pid)
 		balanceRsp.BillPlayersInfo = s.getBillPlayerInfo(pid, mjContext)
 	}
-
+	notifyDeskMessage(desk, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 }
 
 // getBillDetail 单次结算详情，包括番型，分数，倍数，以及输赢玩家
@@ -116,6 +116,7 @@ func (s *scxlSettle) getBillDetail(palyerID uint64, settleInfo *majongpb.SettleI
 	if settleInfo.Scores[palyerID] != 0 {
 		billDetail := &room.BillDetail{
 			SetleType: room.SettleType(settleInfo.SettleType).Enum(),
+			HuType:    room.HuType(settleInfo.HuType).Enum(),
 			FanValue:  proto.Uint32(settleInfo.CardValue),
 			Score:     proto.Int64(s.settleMap[settleInfo.Id][palyerID]),
 		}
