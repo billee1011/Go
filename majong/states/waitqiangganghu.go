@@ -2,6 +2,8 @@ package states
 
 import (
 	"errors"
+	"steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -34,7 +36,20 @@ func (s *WaitQiangganghuState) ProcessEvent(eventID majongpb.EventID, eventConte
 
 // OnEntry 进入状态
 func (s *WaitQiangganghuState) OnEntry(flow interfaces.MajongFlow) {
-	// TODO 通知玩家等待抢杠胡
+	mjContext := flow.GetMajongContext()
+	card := mjContext.GetGangCard()
+
+	for _, player := range mjContext.GetPlayers() {
+		playerID := player.GetPalyerId()
+		flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
+			Msg: &room.RoomWaitQianggangHuNtf{
+				Card:         proto.Uint32(utils.ServerCard2Uint32(card)),
+				SelfCan:      proto.Bool(len(player.GetPossibleActions()) != 0),
+				FromPlayerId: proto.Uint64(mjContext.GetLastGangPlayer()),
+			},
+		})
+	}
 }
 
 // OnExit 退出状态
@@ -114,7 +129,7 @@ func (s *WaitQiangganghuState) makeDecision(flow interfaces.MajongFlow) (newStat
 
 	mjContext := flow.GetMajongContext()
 	for _, player := range mjContext.GetPlayers() {
-		if len(player.GetPossibleActions()) < 0 {
+		if len(player.GetPossibleActions()) <= 0 {
 			continue
 		}
 		if !player.GetHasSelected() {

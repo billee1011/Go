@@ -65,6 +65,7 @@ func yellSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
 				settleInfoMap[noTingPlayer] = lose
 				yellSettleInfo := NewSettleInfo(params.SettleID)
 				yellSettleInfo.Scores = settleInfoMap
+				yellSettleInfo.SettleType = majongpb.SettleType_settle_yell
 				yellSettleInfos = append(yellSettleInfos, yellSettleInfo)
 			}
 		}
@@ -104,6 +105,7 @@ func flowerPigSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo
 			settleInfoMap[flowerPig] = lose
 			flowerSettleInfo := NewSettleInfo(params.SettleID)
 			flowerSettleInfo.Scores = settleInfoMap
+			flowerSettleInfo.SettleType = majongpb.SettleType_settle_flowerpig
 			flowwePigSettleInfos = append(flowwePigSettleInfos, flowerSettleInfo)
 		}
 	}

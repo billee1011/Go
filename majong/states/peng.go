@@ -34,6 +34,8 @@ func (s *PengState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, 
 		if err := s.CheckChuPai(eventContext, flow); err != nil {
 			return majongpb.StateID(majongpb.StateID_state_peng), err
 		}
+		mjContext := flow.GetMajongContext()
+		mjContext.ChupaiType = majongpb.ChupaiType_CT_PENG
 		return majongpb.StateID(majongpb.StateID_state_chupai), nil
 	}
 	return majongpb.StateID_state_peng, nil

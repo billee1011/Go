@@ -28,7 +28,7 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majong
 
 	// 结算信息
 	gangSettleInfo := NewSettleInfo(params.SettleID)
-
+	gangSettleInfo.SettleType = majongpb.SettleType_settle_gang
 	if params.GangType == majongpb.GangType_gang_minggang {
 		gangSettleInfo.Scores[params.GangPlayer] = int64(total)
 		gangSettleInfo.Scores[params.SrcPlayer] = 0 - int64(total)

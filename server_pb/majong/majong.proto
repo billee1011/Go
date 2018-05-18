@@ -112,6 +112,8 @@ enum SettleHuType {
     settle_hu_haidilao = 4;            // 海底捞
     settle_hu_gangshanghaidilao = 5;   // 杠上海底捞
     settle_hu_zimo = 6;                // 自摸
+    settle_hu_tianhu = 7;              // 天胡
+    settle_hu_dihu = 8;                // 地胡
 }
 
 // SettleInfo 结算信息
@@ -139,6 +141,18 @@ enum Action {
     action_qi           = 7;  // 弃
 }
 
+// MopaiType 摸牌类型
+enum MopaiType {
+    MT_NORMAL = 0;  // 普通摸牌
+    MT_GANG = 1;    // 杠后摸牌
+}
+
+// ChupaiType 出牌类型
+enum ChupaiType {
+    CT_PENG = 0;    // 碰后出牌
+    CT_ZIXUN = 1;   // 自询出牌
+}
+
 // MajongContext 麻将现场
 message MajongContext {
     int32 game_id = 1;              // 游戏 ID 
@@ -160,6 +174,9 @@ message MajongContext {
     uint64 last_mopai_player = 17;  // 上一个摸牌的玩家
     Card last_mopai_card = 18;    // 上一次摸的牌
     Card gang_card = 19;        // 杠的牌
+    MopaiType mopai_type = 20;  // 摸牌类型
+    ChupaiType chupai_type = 21;    // 出牌类型
+
 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项

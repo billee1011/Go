@@ -27,7 +27,6 @@ var _ interfaces.MajongState = new(QiangganghuState)
 func (s *QiangganghuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_qiangganghu_finish {
 		s.setMopaiPlayer(flow)
-		s.doQiangGangHuSettle(flow)
 		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID_state_qiangganghu, global.ErrInvalidEvent
@@ -35,6 +34,8 @@ func (s *QiangganghuState) ProcessEvent(eventID majongpb.EventID, eventContext [
 
 // OnEntry 进入状态
 func (s *QiangganghuState) OnEntry(flow interfaces.MajongFlow) {
+	s.doHu(flow)
+	s.doQiangGangHuSettle(flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_qiangganghu_finish,
 		EventContext: nil,
@@ -58,6 +59,7 @@ func (s *QiangganghuState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	players := mjContext.GetPlayers()
 
 	mjContext.MopaiPlayer = calcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
+	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
 // addHuCard 添加胡的牌
@@ -87,12 +89,12 @@ func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 // QiangganghuState 广播胡
 func (s *QiangganghuState) notifyHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	card := mjContext.GetLastOutCard()
+	card := mjContext.GetGangCard()
 	body := room.RoomHuNtf{
 		Players:      mjContext.GetLastHuPlayers(),
 		FromPlayerId: proto.Uint64(mjContext.GetLastMopaiPlayer()),
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
-		HuType:       room.HuType_QiangGangHu.Enum(),
+		HuType:       room.HuType_HT_QIANGGANGHU.Enum(),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }

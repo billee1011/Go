@@ -45,6 +45,9 @@ func Test_Dianpao(t *testing.T) {
 	// 发送胡请求
 	assert.Nil(t, utils.SendHuReq(deskData, huSeat))
 
-	// 检测所有玩家收到自摸通知
-	utils.CheckHuNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_DianPao)
+	// 检测所有玩家收到点炮通知
+	utils.CheckHuNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
+
+	// 检测所有玩家收到点炮结算通知
+	utils.CheckDianPaoSettleNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 }

@@ -135,6 +135,7 @@ func (dog *watchDogImpl) SendPackage(clientID uint64, header *steve_proto_base.H
 
 func (dog *watchDogImpl) pushClientMessage(clientID uint64, header *steve_proto_base.Header, body []byte) error {
 	var c *clientV2
+	// TODO : 此处有一个 BUG， 拿出来后在发送消息前客户端可能已被关闭
 	if tmp, ok := dog.clientMap.Load(clientID); ok {
 		c = tmp.(*clientV2)
 	} else {
