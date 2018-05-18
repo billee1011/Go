@@ -88,73 +88,6 @@ func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequ
 	return majongpb.StateID_state_zixun, errInvalidEvent
 }
 
-//angang 决策暗杠
-func (s *ZiXunState) angang(flow interfaces.MajongFlow) {
-	context := flow.GetMajongContext()
-	activePlayer := utils.GetPlayerByID(context.GetPlayers(), context.LastGangPlayer)
-	card := context.GetGangCard()
-	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 4)
-	angangType := &majongpb.GangCard{
-		Card:      card,
-		Type:      majongpb.GangType_gang_angang,
-		SrcPlayer: context.GetActivePlayer(),
-	}
-	activePlayer.GangCards = append(activePlayer.GangCards, angangType)
-	//TODO:广播消息
-	playerIDs := make([]uint64, 0, 0)
-	for _, player := range context.Players {
-		playerIDs = append(playerIDs, player.GetPalyerId())
-	}
-	angang := &room.RoomGangNtf{
-		ToPlayerId:   proto.Uint64(activePlayer.PalyerId),
-		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
-		GangType:     room.GangType_AnGang.Enum(),
-		FromPlayerId: proto.Uint64(activePlayer.PalyerId),
-	}
-	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_GANG_NTF),
-		Msg:   angang,
-	}
-	flow.PushMessages(playerIDs, toClient)
-}
-
-//bugang 决策补杠
-func (s *ZiXunState) bugang(flow interfaces.MajongFlow) {
-	//TODO: 检查是否能可以进行抢杠胡
-	//可以抢杠胡的话，进入等待抢杠胡的状态,否则是补杠状态
-	ctx := flow.GetMajongContext()
-	card := ctx.GetGangCard()
-	activePlayer := utils.GetPlayerByID(ctx.Players, ctx.ActivePlayer)
-	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
-	for k, peng := range activePlayer.PengCards {
-		if utils.CardEqual(peng.Card, card) {
-			activePlayer.PengCards = append(activePlayer.PengCards[:k], activePlayer.PengCards[k+1:]...)
-		}
-	}
-	activePlayer.GangCards = append(activePlayer.GangCards, &majongpb.GangCard{
-		Card:      card,
-		Type:      majongpb.GangType_gang_bugang,
-		SrcPlayer: activePlayer.PalyerId,
-	})
-	//广播补杠消息
-	playerIDs := make([]uint64, 0, 0)
-	for _, player := range ctx.Players {
-		playerIDs = append(playerIDs, player.GetPalyerId())
-	}
-	bugang := &room.RoomGangNtf{
-		ToPlayerId:   proto.Uint64(activePlayer.PalyerId),
-		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
-		GangType:     room.GangType_BuGang.Enum(),
-		FromPlayerId: proto.Uint64(activePlayer.PalyerId),
-	}
-	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_GANG_NTF),
-		Msg:   bugang,
-	}
-	flow.PushMessages(playerIDs, toClient)
-
-}
-
 //zimo 决策自摸
 func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (majongpb.StateID, error) {
 	can, err := s.canZiMo(flow, message)
@@ -233,7 +166,7 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 //checkBuGang 检查补杠 (判断当前事件是否可行)
 func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.GangRequestEvent) (bool, error) {
 	context := flow.GetMajongContext()
-	activePlayer := utils.GetPlayerByID(context.Players, context.MopaiPlayer)
+	activePlayer := utils.GetPlayerByID(context.Players, context.LastMopaiPlayer)
 	if len(context.WallCards) == 0 {
 		return false, fmt.Errorf("墙牌为0时，不予补杠")
 	}
@@ -287,7 +220,7 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (bool, error) {
 	context := flow.GetMajongContext()
 	playerID := message.GetHead().GetPlayerId()
-	if context.GetMopaiPlayer() != message.GetHead().GetPlayerId() {
+	if context.GetLastMopaiPlayer() != message.GetHead().GetPlayerId() {
 		return false, fmt.Errorf("当前玩家不允许操作")
 	}
 	player := utils.GetPlayerByID(context.Players, playerID)
@@ -439,10 +372,6 @@ func (s *ZiXunState) checkBuGang(context *majongpb.MajongContext) (bool, []uint3
 	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
 	hasHu := len(activePlayer.GetHuCards()) > 0
 	pengCards := activePlayer.GetPengCards()
-	logrus.WithFields(logrus.Fields{
-		"player":    activePlayerID,
-		"pengCards": pengCards,
-	}).Info("碰过的牌")
 	enableBugangCards := make([]uint32, 0, 0)
 	// actioninfos := []*clientpb.ActionInfo{}
 	for _, touchCard := range activePlayer.HandCards {
@@ -467,13 +396,12 @@ func (s *ZiXunState) checkBuGang(context *majongpb.MajongContext) (bool, []uint3
 			}
 		}
 	}
-
 	return len(enableBugangCards) > 0, enableBugangCards
 }
 
 // OnEntry 进入状态
 func (s *ZiXunState) OnEntry(flow interfaces.MajongFlow) {
-
+	s.checkActions(flow)
 }
 
 // OnExit 退出状态
