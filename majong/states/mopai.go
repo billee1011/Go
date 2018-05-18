@@ -70,6 +70,7 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	activePlayer.HandCards = append(activePlayer.GetHandCards(), card)
 	context.LastMopaiPlayer = context.MopaiPlayer
 	context.LastMopaiCard = card
+	context.ZixunType = majongpb.ZixunType_ZXT_NORMAL
 	activePlayer.MopaiCount++
 
 	s.notifyMopai(flow, context.GetMopaiPlayer(), false, card)
