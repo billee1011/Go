@@ -6,6 +6,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/states/tingtips"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -24,6 +25,9 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 	if eventID == majongpb.EventID_event_chupai_finish {
 		s.chupai(flow)
 		context := flow.GetMajongContext()
+		// 通知听牌提示
+		tingtips.NotifyTingCards(flow, context.GetLastChupaiPlayer())
+
 		players := context.GetPlayers()
 		card := context.GetLastOutCard()
 		var hasChupaiwenxun bool

@@ -55,6 +55,7 @@ message HuCard {
     Card card = 1; // 胡的牌
     uint64 src_player = 2;  // 胡牌来源玩家
     HuType type = 3;    // 胡牌类型 
+    bool is_real = 4;   // 是否为实（一炮多响时，点炮者的第一个胡牌下家为实，其他胡牌的玩家为虚）
 }
 
 // 吃牌数据
