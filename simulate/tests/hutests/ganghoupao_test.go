@@ -20,6 +20,8 @@ func Test_Ganghoupao(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
+	huSeat := 1
+	gangSeat := params.BankerSeat
 	// 0 号玩家手牌改成 Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card9W
 	// 换三张后手牌为 Card5T, Card5T, Card5T， Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card9W
 	params.Cards[0][13] = &global.Card9W
@@ -53,4 +55,55 @@ func Test_Ganghoupao(t *testing.T) {
 	assert.Nil(t, utils.SendHuReq(deskData, 1))
 	// 检测所有玩家收到自摸通知
 	utils.CheckHuNotify(t, deskData, []int{1}, 0, 19, room.HuType_HT_GANGHOUPAO)
+
+	// 检测所有玩家是否收到呼叫转移的通知
+	checkGangHouPaoSettleScoreNotify(t, deskData, gangSeat, huSeat)
+
+}
+
+// checkGangHouPaoSettleScoreNotify 检查杠后炮分数结算通知
+func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, gangSeat int, huSeat int) {
+	gangplayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
+	gangID := gangplayer.Player.GetID()
+	huPlayer := utils.GetDeskPlayerBySeat(huSeat, deskData)
+	huPlayerID := huPlayer.Player.GetID()
+	expector, _ := gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	ntf := room.RoomSettleInstantRsp{}
+	expector.Recv(time.Second*1, &ntf)
+	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
+	gangWinScore := 6
+	for _, billInfo := range ntf.BillPlayersInfo {
+		if billInfo.GetPid() == gangID {
+			assert.Equal(t, billInfo.GetScore(), int64(gangWinScore))
+		} else {
+			assert.Equal(t, billInfo.GetScore(), -int64((gangWinScore / 3)))
+		}
+	}
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	ntf = room.RoomSettleInstantRsp{}
+	expector.Recv(time.Second*1, &ntf)
+	dianpaoWinScore := 2
+	for _, billInfo := range ntf.BillPlayersInfo {
+		if billInfo.GetPid() == gangID {
+			assert.Equal(t, billInfo.GetScore(), int64(-dianpaoWinScore))
+		} else if billInfo.GetPid() == huPlayerID {
+			assert.Equal(t, billInfo.GetScore(), int64((dianpaoWinScore)))
+		} else {
+			assert.Equal(t, billInfo.GetScore(), int64(0))
+		}
+	}
+
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	ntf = room.RoomSettleInstantRsp{}
+	expector.Recv(time.Second*1, &ntf)
+	callTransferScore := 6
+	for _, billInfo := range ntf.BillPlayersInfo {
+		if billInfo.GetPid() == gangID {
+			assert.Equal(t, billInfo.GetScore(), int64(-callTransferScore))
+		} else if billInfo.GetPid() == huPlayerID {
+			assert.Equal(t, billInfo.GetScore(), int64((callTransferScore)))
+		} else {
+			assert.Equal(t, billInfo.GetScore(), int64(0))
+		}
+	}
 }
