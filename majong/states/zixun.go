@@ -371,6 +371,10 @@ func (s *ZiXunState) checkBuGang(context *majongpb.MajongContext) (bool, []uint3
 	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
 	hasHu := len(activePlayer.GetHuCards()) > 0
 	pengCards := activePlayer.GetPengCards()
+	logrus.WithFields(logrus.Fields{
+		"player":    activePlayerID,
+		"pengCards": pengCards,
+	}).Info("碰过的牌")
 	enableBugangCards := make([]uint32, 0, 0)
 	// actioninfos := []*clientpb.ActionInfo{}
 	for _, touchCard := range activePlayer.HandCards {
@@ -395,6 +399,7 @@ func (s *ZiXunState) checkBuGang(context *majongpb.MajongContext) (bool, []uint3
 			}
 		}
 	}
+
 	return len(enableBugangCards) > 0, enableBugangCards
 }
 

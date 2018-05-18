@@ -45,6 +45,7 @@ func Test_Qiangganghu(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
 	// 庄家出 9W
+	assert.Nil(t, utils.WaitZixunNtf(deskData, 0))
 	assert.Nil(t, utils.SendChupaiReq(deskData, 0, 19))
 	// 1 号玩家等可碰通知， 然后请求碰， 再打出6W
 	assert.Nil(t, utils.WaitChupaiWenxunNtf(deskData, 1, true, false, false))
@@ -59,7 +60,7 @@ func Test_Qiangganghu(t *testing.T) {
 	// 0 号玩家等待自询通知， 然后打出9筒
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 0))
 	assert.Nil(t, utils.SendChupaiReq(deskData, 0, 39))
-	// // 1 号玩家等待自询通知， 然后请求杠 9万
+	// 1 号玩家等待自询通知， 然后请求杠 9万
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 1))
 	assert.Nil(t, utils.SendGangReq(deskData, 1, 19, room.GangType_BuGang))
 

@@ -141,7 +141,13 @@ func (s *PengState) doPeng(flow interfaces.MajongFlow) {
 	}
 	player.HandCards = newCards
 	s.notifyPeng(flow, card, mjContext.GetLastChupaiPlayer(), pengPlayer)
-	s.addPengCard(card, player, mjContext.GetActivePlayer())
+	s.addPengCard(card, player, mjContext.GetLastChupaiPlayer())
+	//当前玩家执行碰成功后,lastchupaiplayer需要更新
+	logrus.WithFields(logrus.Fields{
+		"player":    pengPlayer,
+		"pengCards": player.GetPengCards(),
+	}).Info("碰的牌")
+	mjContext.LastChupaiPlayer = player.GetPalyerId()
 	return
 }
 
