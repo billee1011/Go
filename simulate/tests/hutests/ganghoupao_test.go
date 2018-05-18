@@ -35,7 +35,7 @@ func Test_Ganghoupao(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
 	// 庄家杠 2W
-	// assert.Nil(t, utils.WaitZixunNtf(deskData, 0))	// 定缺后的自询通知还没完成
+	assert.Nil(t, utils.WaitZixunNtf(deskData, 0))
 	assert.Nil(t, utils.SendGangReq(deskData, 0, 12, room.GangType_AnGang))
 	// 庄家等到自询通知后出 9W
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 0))
@@ -45,7 +45,7 @@ func Test_Ganghoupao(t *testing.T) {
 	huPlayer := utils.GetDeskPlayerBySeat(1, deskData)
 	expector, _ := huPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, expector.Recv(time.Second*2, &ntf))
 	assert.True(t, ntf.GetEnableDianpao())
 	assert.True(t, ntf.GetEnableQi())
 
