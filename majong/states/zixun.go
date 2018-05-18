@@ -288,7 +288,8 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		"canAnGang": canAnGang,
 		"canBuGang": canBuGang,
 		"canQi":     canQi,
-	}).Infof("玩家%v可以有的操作", context.GetLastMopaiPlayer())
+		"handCards": mopaiPlayer.GetHandCards(),
+	}).Debugln("玩家%v可以有的操作", context.GetLastMopaiPlayer())
 }
 
 //checkZiMo 查自摸

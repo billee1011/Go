@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"testing"
@@ -50,7 +49,6 @@ func CheckZiMoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, from
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 		ntf := room.RoomSettleInstantRsp{}
 		expector.Recv(time.Second*1, &ntf)
-		fmt.Println(ntf)
 		assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	}
 }
@@ -65,7 +63,6 @@ func CheckDianPaoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, f
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 		ntf := room.RoomSettleInstantRsp{}
 		expector.Recv(time.Second*1, &ntf)
-		fmt.Println(ntf)
 		assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	}
 }

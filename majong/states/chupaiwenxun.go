@@ -176,7 +176,7 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 // canPlayerAction 检测玩家是否可以执行指定行为
 func (s *ChupaiwenxunState) canPlayerAction(player *majongpb.Player, action majongpb.Action) error {
 	if !s.existAction(action, player) {
-		err := errors.New("当前玩家不能执行碰操作")
+		err := errors.New("当前玩家不能执行该操作")
 		return err
 	}
 	if player.GetHasSelected() {

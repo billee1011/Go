@@ -75,7 +75,7 @@ func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
 
 	if winSum == 1 {
 		if gangCard.GetType() == majongpb.GangType_gang_angang || gangCard.GetType() == majongpb.GangType_gang_bugang {
-			score = score * int64(winSum)
+			score = score * int64(len(params.AllPlayers)-1)
 		}
 		callTransferS.Scores[params.HuPlayers[0]] = score
 		callTransferS.Scores[params.SrcPlayer] = -score
@@ -86,7 +86,7 @@ func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
 			callTransferS.Scores[params.SrcPlayer] = -score
 		} else if gangCard.GetType() == majongpb.GangType_gang_angang || gangCard.GetType() == majongpb.GangType_gang_bugang {
 			// （暗杠、补杠）先收杠钱,平分,杠钱后还有多余，多余的杠钱按位置给第一个胡牌玩家
-			score = score * int64(winSum)
+			score = score * int64(len(params.AllPlayers)-1)
 			// 平分
 			equallyTotal := score / int64(winSum)
 			for _, huPlayerID := range params.HuPlayers {
