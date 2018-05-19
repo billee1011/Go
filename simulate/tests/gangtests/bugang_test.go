@@ -10,7 +10,7 @@ import (
 )
 
 func TestBuGang(t *testing.T) {
-	param := global.CommonStartGameParams
+	param := global.NewCommonStartGameParams()
 	param.BankerSeat = 0
 	param.WallCards = []*room.Card{}
 	param.Cards[0][4] = &global.Card6W

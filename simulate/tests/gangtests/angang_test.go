@@ -28,3 +28,11 @@ func Test_Angang(t *testing.T) {
 	utils.CheckGangNotify(t, deskData, xjPlayer.Player.GetID(), xjPlayer.Player.GetID(), uint32(16), room.GangType_AnGang)
 
 }
+
+// func Test_Angang1(t *testing.T) {
+// 	thisParams := global.NewCommonStartGameParams()
+// 	thisParams.WallCards = append(thisParams.WallCards, &global.Card9B, &global.Card9B, &global.Card9B, &global.Card9B)
+// 	deskData, err := utils.StartGame(thisParams)
+// 	assert.Nil(t, err)
+// 	assert.NotNil(t, deskData)
+// }

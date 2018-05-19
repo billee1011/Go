@@ -313,6 +313,9 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	logrus.WithFields(logrus.Fields{
 		"ntf":       zixunNtf.String(),
 		"player_id": playerID,
+		"pengCards": FmtPengCards(player.GetPengCards()),
+		"handCards": FmtMajongpbCards(player.GetHandCards()),
+		"wallCards": FmtMajongpbCards(context.GetWallCards()),
 	}).Infoln("自询通知")
 }
 

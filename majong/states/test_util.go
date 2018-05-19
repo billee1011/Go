@@ -58,7 +58,7 @@ func FmtPengCards(pengCards []*majongpb.PengCard) string {
 	result := ""
 	for _, pengCard := range pengCards {
 		result += fmt.Sprintf("碰的牌:%v%v ", pengCard.Card.Point, getColor(pengCard.Card.Color))
-		result += fmt.Sprintf("来自玩家:%v ", pengCard.SrcPlayer)
+		result += fmt.Sprintf("来自玩家:%v; ", pengCard.SrcPlayer)
 	}
 	return result
 }
