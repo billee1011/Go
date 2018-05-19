@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -31,7 +32,7 @@ func (s *XipaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 
 func (s *XipaiState) genOriginCards(flow interfaces.MajongFlow) []*majongpb.Card {
 	gameID := flow.GetMajongContext().GetGameId()
-	return getOriginCards(int(gameID))
+	return global.GetOriginCards(int(gameID))
 }
 
 func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
