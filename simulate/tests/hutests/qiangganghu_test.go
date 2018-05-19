@@ -22,7 +22,7 @@ import (
 // 1. 所有玩家收到等待抢杠胡通知，杠的玩家为1号玩家， 杠的牌为9W， 并且2号玩家收到的通知中可以抢杠胡
 // 2. 2号玩家请求胡，所有玩家收到胡通知，胡的玩家为2号玩家，胡的牌为9W， 胡牌来源是1号玩家，胡类型为抢杠胡
 func Test_Qiangganghu(t *testing.T) {
-	params := global.CommonStartGameParams
+	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
 	// 庄家的初始手牌： 11,11,11,11,12,12,12,12,13,13,13,39,31,19
@@ -50,6 +50,7 @@ func Test_Qiangganghu(t *testing.T) {
 	// 1 号玩家等可碰通知， 然后请求碰， 再打出6W
 	assert.Nil(t, utils.WaitChupaiWenxunNtf(deskData, 1, true, false, false))
 	assert.Nil(t, utils.SendPengReq(deskData, 1))
+	assert.Nil(t, utils.WaitZixunNtf(deskData, 1))
 	assert.Nil(t, utils.SendChupaiReq(deskData, 1, 16))
 	// 2 号玩家等待自询通知， 然后打出9筒
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 2))

@@ -18,7 +18,7 @@ import (
 //      ②.1 号玩家请求执行杠后， 所有玩家收到杠通知消息, 其中杠的牌为 9W， 杠的玩家为 1 号玩家， 杠类型为明杠
 func Test_Minggang(t *testing.T) {
 	var Int9W uint32 = 19
-	params := global.CommonStartGameParams
+	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
 	gangSeat := 1

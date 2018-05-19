@@ -8,8 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"fmt"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Test_Zimo_Haidilao 海底捞测试
@@ -20,8 +21,7 @@ import (
 func Test_Zimo_Haidilao(t *testing.T) {
 	var Int1B uint32 = 31
 	var Int9W uint32 = 19
-	params := global.CommonStartGameParams
-
+	params := global.NewCommonStartGameParams()
 	params.BankerSeat = 0
 	zimoSeat := 1
 	bankerSeat := params.BankerSeat
@@ -41,6 +41,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	assert.NotNil(t, deskData)
 
 	// 发送出牌请求，庄家出1筒
+	assert.Nil(t, utils.WaitZixunNtf(deskData, bankerSeat))
 	assert.Nil(t, utils.SendChupaiReq(deskData, bankerSeat, Int1B))
 
 	// 根据座号获取自摸玩家
@@ -49,7 +50,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	zixunexpector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	// 1秒内接收到自询通知，并赋值到ntf
-	assert.Nil(t, zixunexpector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, zixunexpector.Recv(time.Second*2, &ntf))
 	// 判断自询通知中是否有自摸
 	assert.True(t, ntf.GetEnableZimo())
 
@@ -57,7 +58,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	assert.Nil(t, utils.SendHuReq(deskData, zimoSeat))
 
 	// 检测所有玩家收到（海底捞算自摸）自摸结算通知,自摸-清一色-2根 = 2 * 4 *4 = 32
-	winScro := 32 * (len(deskData.Players)-1)
+	winScro := 32 * (len(deskData.Players) - 1)
 	checkZiMoSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
 
 	// 检测所有玩家收到海底捞胡类型通知

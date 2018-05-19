@@ -17,7 +17,7 @@ import (
 // 1. 1号玩家收到出牌问询通知，且可胡
 // 2. 1号玩家请求胡，所有玩家收到胡通知，2号玩家摸牌后收到自询通知
 func Test_Ganghoupao(t *testing.T) {
-	params := global.CommonStartGameParams
+	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
 	huSeat := 1

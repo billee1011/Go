@@ -22,7 +22,7 @@ import (
 func Test_Gangshanghaidilao(t *testing.T) {
 	var Int1W uint32 = 11
 	var Int8W uint32 = 18
-	params := global.CommonStartGameParams
+	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
 	gangSeat := 1

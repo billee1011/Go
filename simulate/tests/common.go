@@ -61,8 +61,3 @@ var (
 	// Card9B 9 筒
 	Card9B = global.Card9B
 )
-
-var (
-	// commonStartGameParams 通用的启动游戏参数
-	commonStartGameParams = global.CommonStartGameParams
-)

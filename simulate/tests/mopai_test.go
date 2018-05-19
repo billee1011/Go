@@ -3,6 +3,7 @@ package tests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
 	"time"
@@ -13,19 +14,23 @@ import (
 
 // Test_Mopai 摸牌测试
 func Test_Mopai(t *testing.T) {
-	deskData, err := utils.StartGame(commonStartGameParams)
+	params := global.NewCommonStartGameParams()
+	// 庄家最后一张牌改为1筒
+	params.Cards[0][13] = &global.Card1B
+	deskData, err := utils.StartGame(params)
 
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)
 
-	// 庄家出一万
-	zjPlayer := utils.GetDeskPlayerBySeat(commonStartGameParams.BankerSeat, deskData)
+	// 庄家出1筒
+	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
+	zjPlayer := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
 	zjClient := zjPlayer.Player.GetClient()
 	zjClient.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
-		Card: proto.Uint32(11),
+		Card: proto.Uint32(31),
 	})
 
-	mopaiSeat := (commonStartGameParams.BankerSeat + 1) % len(deskData.Players)
+	mopaiSeat := (params.BankerSeat + 1) % len(deskData.Players)
 	mopaiPlayer := utils.GetDeskPlayerBySeat(mopaiSeat, deskData)
 	mopaiPlayerID := mopaiPlayer.Player.GetID()
 	// 所有玩家收到庄家下家摸牌通知
