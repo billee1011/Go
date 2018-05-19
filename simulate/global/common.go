@@ -4,5 +4,5 @@ import "time"
 
 const (
 	// DefaultWaitMessageTime 默认等待消息时间
-	DefaultWaitMessageTime = 10 * time.Second
+	DefaultWaitMessageTime = 5 * time.Second
 )
