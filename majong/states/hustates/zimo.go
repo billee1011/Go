@@ -133,18 +133,12 @@ func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majo
 
 	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
 	if player.GetMopaiCount() == 0 {
-		card = s.calcTianhuCard(player.GetHandCards())
+		_, card = utils.CalcTianHuCardNum(mjContext, playerID)
 	} else {
 		card = mjContext.GetLastMopaiCard()
 	}
 	mjContext.LastHuPlayers = []uint64{playerID}
 	return
-}
-
-// calcTianhuCard 计算天胡胡的牌
-func (s *ZimoState) calcTianhuCard(cards []*majongpb.Card) *majongpb.Card {
-	// TODO
-	return cards[len(cards)-1]
 }
 
 func (s *ZimoState) huType2SettleType(huType room.HuType) majongpb.SettleHuType {
