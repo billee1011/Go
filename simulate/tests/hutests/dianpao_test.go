@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +37,7 @@ func Test_Dianpao(t *testing.T) {
 	huPlayer := utils.GetDeskPlayerBySeat(huSeat, deskData)
 	expector, _ := huPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableDianpao())
 	assert.True(t, ntf.GetEnableQi())
 

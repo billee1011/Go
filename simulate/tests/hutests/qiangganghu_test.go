@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -71,7 +70,7 @@ func Test_Qiangganghu(t *testing.T) {
 		deskPlayer := utils.GetDeskPlayerBySeat(i, deskData)
 		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF]
 		ntf := room.RoomWaitQianggangHuNtf{}
-		assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, uint32(19), ntf.GetCard())
 		assert.Equal(t, gangPlayer.Player.GetID(), ntf.GetFromPlayerId())
 		assert.Equal(t, i == 2, ntf.GetSelfCan())

@@ -3,8 +3,8 @@ package utils
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"testing"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +27,7 @@ func CheckGangNotify(t *testing.T, deskData *DeskData, to uint64, from uint64, c
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_GANG_NTF]
 		ntf := room.RoomGangNtf{}
-		expector.Recv(time.Second*1, &ntf)
+		expector.Recv(global.DefaultWaitMessageTime, &ntf)
 		assert.Equal(t, to, ntf.GetToPlayerId())
 		assert.Equal(t, from, ntf.GetFromPlayerId())
 		assert.Equal(t, card, ntf.GetCard())

@@ -3,8 +3,8 @@ package utils
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -42,7 +42,7 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 		},
 	}, &room.RoomLoginReq{
 		UserName: proto.String("test_user"),
-	}, time.Second*2, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
+	}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
 
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)

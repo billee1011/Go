@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -47,7 +46,7 @@ func Test_Ganghoupao(t *testing.T) {
 	huPlayer := utils.GetDeskPlayerBySeat(1, deskData)
 	expector, _ := huPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*2, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableDianpao())
 	assert.True(t, ntf.GetEnableQi())
 
@@ -69,7 +68,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	huPlayerID := huPlayer.Player.GetID()
 	expector, _ := gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	gangWinScore := 6
 	for _, billInfo := range ntf.BillPlayersInfo {
@@ -81,7 +80,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	}
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	dianpaoWinScore := 2
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
@@ -95,7 +94,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	callTransferScore := 6
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {

@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +38,7 @@ func Test_Peng(t *testing.T) {
 
 	expector, _ := pengPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, Int5w, ntf.GetCard())
 	assert.True(t, ntf.GetEnablePeng())
 	assert.True(t, ntf.GetEnableQi())
@@ -56,7 +55,7 @@ func Test_Peng(t *testing.T) {
 	// 碰的玩家收到自询通知，且只能出牌
 	expector, _ = pengPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	zixunNtf := room.RoomZixunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*2, &zixunNtf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &zixunNtf))
 	assert.Equal(t, len(zixunNtf.GetEnableAngangCards()), 0)
 	assert.Equal(t, len(zixunNtf.GetEnableBugangCards()), 0)
 	assert.False(t, zixunNtf.GetEnableZimo())
@@ -67,7 +66,7 @@ func checkPengNotify(t *testing.T, deskData *utils.DeskData, to uint64, from uin
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_PENG_NTF]
 		pengNtf := room.RoomPengNtf{}
-		expector.Recv(time.Second*1, &pengNtf)
+		expector.Recv(global.DefaultWaitMessageTime, &pengNtf)
 		assert.Equal(t, to, pengNtf.GetToPlayerId())
 		assert.Equal(t, from, pengNtf.GetFromPlayerId())
 		assert.Equal(t, card, pengNtf.GetCard())

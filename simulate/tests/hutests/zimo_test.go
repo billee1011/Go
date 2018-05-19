@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +41,7 @@ func Test_Zimo(t *testing.T) {
 	zimoPlayer := utils.GetDeskPlayerBySeat(zimoSeat, deskData)
 	expector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableZimo())
 
 	// 发送胡请求

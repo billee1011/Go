@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +36,7 @@ func Test_Mopai(t *testing.T) {
 	for _, deskPlayer := range deskData.Players {
 		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
 		ntf := room.RoomMopaiNtf{}
-		assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, mopaiPlayerID, ntf.GetPlayer())
 		assert.Equal(t, false, ntf.GetBack())
 		if deskPlayer.Seat == mopaiSeat {

@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -41,7 +40,7 @@ func Test_Minggang(t *testing.T) {
 	gangPlayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
 	expector, _ := gangPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, Int9W, ntf.GetCard())
 	assert.True(t, ntf.GetEnableMinggang())
 	assert.True(t, ntf.GetEnableQi())
