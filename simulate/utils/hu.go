@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -62,7 +63,7 @@ func CheckDianPaoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, f
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 		ntf := room.RoomSettleInstantRsp{}
-		expector.Recv(global.DefaultWaitMessageTime, &ntf)
-		assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
+		expector.Recv(time.Second*1, &ntf)
+		assert.Equal(t, len(huSeats)+1, len(ntf.BillPlayersInfo))
 	}
 }
