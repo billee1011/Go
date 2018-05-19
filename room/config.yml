@@ -7,10 +7,12 @@ log_stderr: true
 # rpc_port: 36002
 # rpc_server_name: gate
 
-lis_client_addr: 127.0.0.1
+#lis_client_addr: 127.0.0.1
 lis_client_port: 36001
+lis_client_addr: 192.168.8.18
 
-peipai_addr: 127.0.0.1:36002
+#peipai_addr: 127.0.0.1:36002
+peipai_addr: 192.168.8.18:36002
 
 redis_addr: 127.0.0.1:6379 
 redis_passwd: 
