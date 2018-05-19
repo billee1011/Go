@@ -29,7 +29,7 @@ func Test_Gangkai(t *testing.T) {
 	bankerSeat := params.BankerSeat
 	params.DingqueColor[huSeat] = room.CardColor_CC_TONG
 
-	params.WallCards = []*room.Card{&global.Card8W, &global.Card8W}
+	params.WallCards = []uint32{18, 18}
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

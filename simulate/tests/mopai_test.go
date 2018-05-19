@@ -15,7 +15,7 @@ import (
 func Test_Mopai(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	// 庄家最后一张牌改为1筒
-	params.Cards[0][13] = &global.Card1B
+	params.Cards[0][13] = 31
 	deskData, err := utils.StartGame(params)
 
 	assert.NotNil(t, deskData)

@@ -25,11 +25,11 @@ func Test_Zimo(t *testing.T) {
 	bankerSeat := params.BankerSeat
 
 	// 庄家的最后一张牌改为 1B
-	params.Cards[bankerSeat][13] = &global.Card1B
+	params.Cards[bankerSeat][13] = 31
 	// 1 号玩家最后1张牌改为 9W
-	params.Cards[zimoSeat][12] = &global.Card9W
+	params.Cards[zimoSeat][12] = 19
 	// 墙牌改成 9W 。 墙牌有两张，否则就是海底捞了
-	params.WallCards = []*room.Card{&global.Card9W, &global.Card1B}
+	params.WallCards = []uint32{19, 31}
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

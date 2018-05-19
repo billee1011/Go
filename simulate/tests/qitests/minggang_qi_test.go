@@ -23,11 +23,11 @@ func Test_MingGang_Qi(t *testing.T) {
 	bankerSeat := params.BankerSeat
 
 	// 庄家的最后一张牌改为 9W
-	params.Cards[bankerSeat][13] = &global.Card9W
+	params.Cards[bankerSeat][13] = 19
 	// 1 号玩家最后3张牌改为 9W
-	params.Cards[gangSeat][10] = &global.Card9W
-	params.Cards[gangSeat][11] = &global.Card9W
-	params.Cards[gangSeat][12] = &global.Card9W
+	params.Cards[gangSeat][10] = 19
+	params.Cards[gangSeat][11] = 19
+	params.Cards[gangSeat][12] = 19
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

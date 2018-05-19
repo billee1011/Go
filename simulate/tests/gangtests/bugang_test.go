@@ -12,14 +12,13 @@ import (
 func TestBuGang(t *testing.T) {
 	param := global.NewCommonStartGameParams()
 	param.BankerSeat = 0
-	param.WallCards = []*room.Card{}
-	param.Cards[0][4] = &global.Card6W
-	param.Cards[0][5] = &global.Card6W
-	param.Cards[0][6] = &global.Card6W
-	param.Cards[1][4] = &global.Card2W
-	param.Cards[1][5] = &global.Card2W
-	param.Cards[1][6] = &global.Card2W
-	param.WallCards = []*room.Card{&global.Card8W, &global.Card8W, &global.Card8W, &global.Card9W, &global.Card3B}
+	param.Cards[0][4] = 16
+	param.Cards[0][5] = 16
+	param.Cards[0][6] = 16
+	param.Cards[1][4] = 12
+	param.Cards[1][5] = 12
+	param.Cards[1][6] = 12
+	param.WallCards = []uint32{18, 18, 18, 19, 33}
 	deskData, err := utils.StartGame(param)
 	assert.Nil(t, err)
 	utils.WaitZixunNtf(deskData, deskData.BankerSeat)

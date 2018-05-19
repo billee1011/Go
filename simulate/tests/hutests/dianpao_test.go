@@ -23,9 +23,9 @@ func Test_Dianpao(t *testing.T) {
 	huSeat := 1
 	bankerSeat := params.BankerSeat
 	// 庄家的最后一张牌改为 9W
-	params.Cards[bankerSeat][13] = &global.Card9W
+	params.Cards[bankerSeat][13] = 19
 	// 1 号玩家最后1张牌改为 9W
-	params.Cards[huSeat][12] = &global.Card9W
+	params.Cards[huSeat][12] = 19
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

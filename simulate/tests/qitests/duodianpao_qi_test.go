@@ -24,13 +24,13 @@ func Test_Duo_Dianpao_Qi(t *testing.T) {
 	// 修改所有定缺颜色为筒
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG}
 	// 庄家的最后一张牌改为 9W
-	params.Cards[bankerSeat][13] = &global.Card9W
+	params.Cards[bankerSeat][13] = 19
 	// 1 号玩家最后1张牌改为 9W
-	params.Cards[hu1Seat][12] = &global.Card9W
+	params.Cards[hu1Seat][12] = 19
 	// 2 号玩家最后1张牌改为 9W
-	params.Cards[hu2Seat][12] = &global.Card9W
+	params.Cards[hu2Seat][12] = 19
 	// 3 号玩家最后1张牌改为 9W
-	params.Cards[hu3Seat][12] = &global.Card9W
+	params.Cards[hu3Seat][12] = 19
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
