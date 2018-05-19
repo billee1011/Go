@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
