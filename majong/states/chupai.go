@@ -34,6 +34,8 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		//出完牌后，将上轮添加的胡牌玩家列表重置
 		context.LastHuPlayers = context.LastHuPlayers[:0]
 		for _, player := range players {
+			//每个玩家的possibleActions都需要清空
+			player.PossibleActions = player.PossibleActions[:0]
 			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
 				continue
 			}
@@ -55,7 +57,6 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 
 //checkActions 检查玩家可以有哪些操作
 func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
-	player.PossibleActions = player.PossibleActions[:0]
 
 	canMingGang := s.checkMingGang(context, player, card)
 	if canMingGang {
