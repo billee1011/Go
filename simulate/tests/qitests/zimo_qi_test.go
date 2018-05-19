@@ -1,4 +1,4 @@
-package hutests
+package qitests
 
 import (
 	msgid "steve/client_pb/msgId"
@@ -10,14 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test_Zimo 自摸测试
-// 开始游戏后，庄家出1筒，没有人可以碰杠胡。1 号玩家摸 9W 且可以自摸
+// Test_Zimo_qi 自摸弃测试
 // 期望：
-// 1. 1号玩家收到自询通知，且可以自摸
-// 2. 1号玩家发送胡请求后，所有玩家收到胡通知， 胡牌者为1号玩家，胡类型为自摸，胡的牌为9W
-func Test_Zimo(t *testing.T) {
+// 庄家出9W后，1号玩家将收到出牌问询通知，可杠
+// 1号玩家发出弃杠请求，保留原状态
+func Test_Zimo_qi(t *testing.T) {
 	var Int1B uint32 = 31
-	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
@@ -44,13 +42,6 @@ func Test_Zimo(t *testing.T) {
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableZimo())
 
-	// 发送胡请求
-	assert.Nil(t, utils.SendHuReq(deskData, zimoSeat))
-
-	// 检测所有玩家收到自摸通知
-	utils.CheckHuNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_ZIMO)
-
-	// 检测所有玩家收到自摸结算通知
-	utils.CheckZiMoSettleNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_ZIMO)
-
+	// 发送弃请求
+	assert.Nil(t, utils.SendQiReq(deskData, zimoSeat))
 }

@@ -1,4 +1,4 @@
-package hutests
+package qitests
 
 import (
 	msgid "steve/client_pb/msgId"
@@ -10,12 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test_Dianpao 点炮测试
+// Test_Dianpao_qi 点炮弃测试
 // 开始游戏后，庄家出9W，1 号玩家可以胡，其他玩家都不可以胡
 // 期望：
-// 1. 1号玩家收到出牌问询通知，且可以胡
-// 2. 1号玩家发送胡请求后，所有玩家收到胡通知， 胡牌者为1号玩家，胡类型为点炮，胡的牌为9W
-func Test_Dianpao(t *testing.T) {
+// 1号玩家点弃，由于1号玩家是庄家的下家，1号玩家将收到自询通知
+func Test_Dianpao_qi(t *testing.T) {
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
 
@@ -30,6 +29,8 @@ func Test_Dianpao(t *testing.T) {
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
+	//bankerSeat玩家收到可自询通知
+	utils.WaitZixunNtf(deskData, bankerSeat)
 	// 庄家出 9W
 	assert.Nil(t, utils.SendChupaiReq(deskData, bankerSeat, Int9W))
 
@@ -41,12 +42,9 @@ func Test_Dianpao(t *testing.T) {
 	assert.True(t, ntf.GetEnableDianpao())
 	assert.True(t, ntf.GetEnableQi())
 
-	// 发送胡请求
-	assert.Nil(t, utils.SendHuReq(deskData, huSeat))
+	// 发送弃请求
+	assert.Nil(t, utils.SendQiReq(deskData, huSeat))
 
-	// 检测所有玩家收到点炮通知
-	utils.CheckHuNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
-
-	// 检测所有玩家收到点炮结算通知
-	utils.CheckDianPaoSettleNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
+	// huSeat玩家收到可自询通知
+	utils.WaitZixunNtf(deskData, huSeat)
 }

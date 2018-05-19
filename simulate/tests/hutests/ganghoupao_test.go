@@ -1,6 +1,7 @@
 package hutests
 
 import (
+	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -24,14 +25,14 @@ func Test_Ganghoupao(t *testing.T) {
 	gangSeat := params.BankerSeat
 	// 0 号玩家手牌改成 Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card9W
 	// 换三张后手牌为 Card5T, Card5T, Card5T， Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card9W
-	params.Cards[0][13] = &global.Card9W
+	params.Cards[0][13] = 19
 	// 1 号玩家手牌改成 Card5W, Card5W, Card5W, Card5W, Card6W, Card6W, Card6W, Card6W, Card7W, Card7W, Card7W, Card7W, Card9W
-	params.Cards[1][12] = &global.Card9W
+	params.Cards[1][12] = 19
 	// 1号玩家换三张后手牌为  Card1W, Card1W, Card1W, Card5W, Card5W, Card5W,  Card6W, Card6W, Card6W,  Card7W, Card7W, Card7W, Card9W
-	params.HszCards[1] = []*room.Card{&global.Card5W, &global.Card6W, &global.Card7W}
+	params.HszCards[1] = []uint32{15, 16, 17}
 
 	// 墙牌改为 1筒
-	params.WallCards = []*room.Card{&global.Card1B}
+	params.WallCards = []uint32{31}
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
@@ -47,7 +48,7 @@ func Test_Ganghoupao(t *testing.T) {
 	huPlayer := utils.GetDeskPlayerBySeat(1, deskData)
 	expector, _ := huPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*2, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableDianpao())
 	assert.True(t, ntf.GetEnableQi())
 
@@ -69,7 +70,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	huPlayerID := huPlayer.Player.GetID()
 	expector, _ := gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	gangWinScore := 6
 	for _, billInfo := range ntf.BillPlayersInfo {
@@ -81,7 +82,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	}
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	dianpaoWinScore := 2
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
@@ -95,7 +96,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	callTransferScore := 6
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
@@ -106,4 +107,22 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 			assert.Equal(t, billInfo.GetScore(), int64(0))
 		}
 	}
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	expector.Recv(time.Second*3, &ntf)
+	ntf = room.RoomSettleInstantRsp{}
+	for _, billInfo := range ntf.BillPlayersInfo {
+		assert.Equal(t, billInfo.GetBillType(), room.BillType_BILL_CHECKPIG)
+	}
+
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	ntf = room.RoomSettleInstantRsp{}
+	expector.Recv(time.Second*3, &ntf)
+	for _, billInfo := range ntf.BillPlayersInfo {
+		assert.Equal(t, billInfo.GetBillType(), room.BillType_BILL_REFUND)
+	}
+
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
+	ntf2 := room.RoomBalanceInfoRsp{}
+	expector.Recv(time.Second*5, &ntf2)
+	fmt.Println(ntf2)
 }

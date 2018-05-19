@@ -4,10 +4,10 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/connect"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -40,11 +40,11 @@ func TestApplyJoinDesk(t *testing.T) {
 
 	for _, e := range createNtfExpectors {
 		ntf := &room.RoomDeskCreatedNtf{}
-		assert.Nil(t, e.Recv(time.Second*1, ntf))
+		assert.Nil(t, e.Recv(global.DefaultWaitMessageTime, ntf))
 		assert.Equal(t, 4, len(ntf.GetPlayers()))
 	}
 	for _, e := range gameStartNtfExpectors {
 		ntf := &room.RoomStartGameNtf{}
-		assert.Nil(t, e.Recv(time.Second*1, ntf))
+		assert.Nil(t, e.Recv(global.DefaultWaitMessageTime, ntf))
 	}
 }

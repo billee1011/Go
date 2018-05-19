@@ -13,11 +13,12 @@ type RoundSettle struct {
 
 // Settle  单局结算方法
 func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
-	entry := logrus.WithFields(logrus.Fields{
-		"name":           "roundSettle",
-		"flowPigPlayers": params.FlowerPigPlayers,
-		"huPlayers":      params.HuPlayers,
-		"notTinPlayers":  params.NotTingPlayers,
+	logEntry := logrus.WithFields(logrus.Fields{
+		"name":            "roundSettle",
+		"flowPigPlayers":  params.FlowerPigPlayers,
+		"huPlayers":       params.HuPlayers,
+		"notTinPlayers":   params.NotTingPlayers,
+		"tingPlayersInfo": params.TingPlayersInfo,
 	})
 	// 查大叫
 	yellSettleInfos := yellSettle(params)
@@ -37,7 +38,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 			setletInfos = append(setletInfos, s)
 		}
 	}
-	entry.Info("单局结算")
+	logEntry.Infoln("单局结算")
 	return setletInfos, taxRebeatIds
 }
 
@@ -103,6 +104,7 @@ func flowerPigSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo
 		// 查花猪玩家结算信息
 		if len(settleInfoMap) > 0 {
 			settleInfoMap[flowerPig] = lose
+			params.SettleID++
 			flowerSettleInfo := NewSettleInfo(params.SettleID)
 			flowerSettleInfo.Scores = settleInfoMap
 			flowerSettleInfo.SettleType = majongpb.SettleType_settle_flowerpig

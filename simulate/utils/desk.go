@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/gutils"
 	"steve/simulate/connect"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
-	"time"
+	"steve/simulate/structs"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -26,52 +26,9 @@ type DeskData struct {
 	BankerSeat int
 }
 
-// StartGameParams 启动游戏的参数
-type StartGameParams struct {
-	Cards      [][]*room.Card // 从庄家位置开始算起，每个位置的固定卡牌
-	WallCards  []*room.Card   // 发完牌之后剩下的墙牌
-	HszDir     room.Direction // 换三张的方向
-	BankerSeat int            // 庄家座号
-	ServerAddr string         // 服务器地址
-	ClientVer  string         // 客户端版本号
-
-	HszCards     [][]*room.Card   // 从庄家的位置算起，用来换三张的牌
-	DingqueColor []room.CardColor // 定缺花色。 从庄家位置算起
-
-}
-
-func (p *StartGameParams) copyCards(cards []*room.Card) []*room.Card {
-	return append([]*room.Card{}, cards...)
-}
-
-func (p *StartGameParams) copy2dCards(cards [][]*room.Card) [][]*room.Card {
-	result := [][]*room.Card{}
-	for _, c := range cards {
-		result = append(result, p.copyCards(c))
-	}
-	return result
-}
-func (p *StartGameParams) copyColors(colors []room.CardColor) []room.CardColor {
-	return append([]room.CardColor{}, colors...)
-}
-
-// Clone 创建一个新的副本
-func (p *StartGameParams) Clone() StartGameParams {
-	return StartGameParams{
-		Cards:        p.copy2dCards(p.Cards),
-		WallCards:    p.copyCards(p.WallCards),
-		HszDir:       p.HszDir,
-		BankerSeat:   p.BankerSeat,
-		ServerAddr:   p.ServerAddr,
-		ClientVer:    p.ClientVer,
-		HszCards:     p.copy2dCards(p.HszCards),
-		DingqueColor: p.copyColors(p.DingqueColor),
-	}
-}
-
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
-func StartGame(params StartGameParams) (*DeskData, error) {
+func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	players, err := createAndLoginUsers(params.ServerAddr, params.ClientVer)
 	if err != nil {
 		return nil, err
@@ -179,7 +136,7 @@ func joinDesk(players []interfaces.ClientPlayer) (map[int]uint64, error) {
 		expectors = append(expectors, e)
 	}
 	ntf := room.RoomDeskCreatedNtf{}
-	if err := expectors[0].Recv(2*time.Second, &ntf); err != nil {
+	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return nil, err
 	}
 	seatMap := map[int]uint64{}
@@ -201,7 +158,7 @@ func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[u
 }
 
 // checkXipaiNtf 检查洗牌通知
-func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
+func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]uint32, wallCards []uint32) error {
 	totalCardCount := len(wallCards)
 	for _, sc := range seatCards {
 		totalCardCount += len(sc)
@@ -209,7 +166,7 @@ func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 
 	for _, e := range ntfExpectors {
 		xipaiNtf := room.RoomXipaiNtf{}
-		if err := e.Recv(time.Second*2, &xipaiNtf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &xipaiNtf); err != nil {
 			return fmt.Errorf("未收到洗牌通知： %v", err)
 		}
 		if xipaiNtf.GetBankerSeat() != uint32(deskData.BankerSeat) {
@@ -222,7 +179,7 @@ func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 	return nil
 }
 
-func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *DeskData, seatCards [][]*room.Card) error {
+func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *DeskData, seatCards [][]uint32) error {
 	for _, playerCardCount := range playerCardCounts {
 		playerID := playerCardCount.GetPlayerId()
 		cardCount := int(playerCardCount.GetCardCount())
@@ -237,14 +194,14 @@ func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *De
 }
 
 // checkFapaiNtf 检查发牌通知
-func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
+func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]uint32, wallCards []uint32) error {
 	for playerID, e := range ntfExpectors {
 		fapaiNtf := room.RoomFapaiNtf{}
-		if err := e.Recv(time.Second*2, &fapaiNtf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &fapaiNtf); err != nil {
 			return fmt.Errorf("未收到发牌通知： %v", err)
 		}
 		seat := deskData.Players[playerID].Seat
-		expectCards := gutils.RoomCards2UInt32(seatCards[seat])
+		expectCards := seatCards[seat]
 		ntfCards := fapaiNtf.GetCards()
 		for index, c := range expectCards {
 			if c != ntfCards[index] {
@@ -259,7 +216,7 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 }
 
 // executeHSZ 执行换三张
-func executeHSZ(deskData *DeskData, HszCards [][]*room.Card) error {
+func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
 	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
@@ -269,13 +226,13 @@ func executeHSZ(deskData *DeskData, HszCards [][]*room.Card) error {
 		fe, _ := client.ExpectMessage(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF)
 		finishNtfExpectors[playerID] = fe
 		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
-			Cards: gutils.RoomCards2UInt32(cards),
+			Cards: cards,
 			Sure:  proto.Bool(true),
 		})
 	}
 	for playerID, e := range finishNtfExpectors {
 		finishNtf := room.RoomHuansanzhangFinishNtf{}
-		if err := e.Recv(time.Second*2, &finishNtf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &finishNtf); err != nil {
 			return fmt.Errorf("玩家 %v 未收到换三张完成通知:%v", playerID, err)
 		}
 	}
@@ -317,7 +274,7 @@ func executeDingque(deskData *DeskData, colors []room.CardColor) error {
 	}
 	for playerID, e := range finishExpectors {
 		ntf := room.RoomDingqueFinishNtf{}
-		if err := e.Recv(time.Second*2, &ntf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 			return fmt.Errorf("玩家 %d 未收到定缺完成通知: %v", playerID, err)
 		}
 		if !checkDingqueColor(deskData, ntf.GetPlayerDingqueColor(), colors) {

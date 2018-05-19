@@ -1,7 +1,7 @@
-package gangtests
+package qitests
 
 import (
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -10,12 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test_Minggang 测试明杠
-// 开始游戏后， 庄家出 9W， 1 号玩家可杠， 没有其他玩家可胡
+// Test_MingGang_Qi 测试明杠弃
 // 期望：
-//		①.1 号玩家将收到出牌问询通知, 通知中的可选行为包括杠
-//      ②.1 号玩家请求执行杠后， 所有玩家收到杠通知消息, 其中杠的牌为 9W， 杠的玩家为 1 号玩家， 杠类型为明杠
-func Test_Minggang(t *testing.T) {
+// 庄家出9W后，1号玩家将收到出牌问询通知，可杠
+// 1号玩家发出弃杠请求，1号玩家将收到自询通知
+func Test_MingGang_Qi(t *testing.T) {
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
 
@@ -45,10 +44,9 @@ func Test_Minggang(t *testing.T) {
 	assert.True(t, ntf.GetEnableMinggang())
 	assert.True(t, ntf.GetEnableQi())
 
-	// 发送杠请求
-	assert.Nil(t, utils.SendGangReq(deskData, gangSeat, Int9W, room.GangType_MingGang))
+	// 发送弃请求
+	assert.Nil(t, utils.SendQiReq(deskData, gangSeat))
 
-	// 检测所有玩家收到杠通知
-	bankerPlayer := utils.GetDeskPlayerBySeat(bankerSeat, deskData)
-	utils.CheckGangNotify(t, deskData, gangPlayer.Player.GetID(), bankerPlayer.Player.GetID(), Int9W, room.GangType_MingGang)
+	// 1 号玩家收到可自询通知
+	utils.WaitZixunNtf(deskData, gangSeat)
 }

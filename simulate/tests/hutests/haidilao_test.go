@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"fmt"
 
@@ -27,13 +26,11 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	bankerSeat := params.BankerSeat
 
 	// 庄家的最后一张牌改为 1B
-	params.Cards[bankerSeat][13] = &global.Card1B
+	params.Cards[bankerSeat][13] = 31
 	// 1 号玩家最后1张牌改为 9W
-	params.Cards[zimoSeat][12] = &global.Card9W
+	params.Cards[zimoSeat][12] = 19
 	// 牌墙大小设置为1
-	params.WallCards = make([]*room.Card, 1)
-	// 墙牌改成 9W
-	params.WallCards[0] = &global.Card9W
+	params.WallCards = []uint32{19}
 
 	// 传入参数开始游戏
 	deskData, err := utils.StartGame(params)
@@ -50,7 +47,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	zixunexpector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	// 1秒内接收到自询通知，并赋值到ntf
-	assert.Nil(t, zixunexpector.Recv(time.Second*2, &ntf))
+	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
 	// 判断自询通知中是否有自摸
 	assert.True(t, ntf.GetEnableZimo())
 
@@ -71,7 +68,7 @@ func checkZiMoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, zimoSeat
 	zimoID := zimoplayer.Player.GetID()
 	expector, _ := zimoplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == zimoID {
