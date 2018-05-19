@@ -310,8 +310,8 @@ func (d *desk) processEvent(event *deskEvent) {
 
 	// 游戏结束
 	if d.mjContext.GetCurState() == server_pb.StateID_state_gameover {
-		logEntry.Infoln("游戏结束状态")
 		d.settler.RoundSettle(d, d.mjContext)
+		logEntry.Infoln("游戏结束状态")
 		d.cancel()
 	}
 }

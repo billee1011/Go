@@ -26,13 +26,11 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	bankerSeat := params.BankerSeat
 
 	// 庄家的最后一张牌改为 1B
-	params.Cards[bankerSeat][13] = &global.Card1B
+	params.Cards[bankerSeat][13] = 31
 	// 1 号玩家最后1张牌改为 9W
-	params.Cards[zimoSeat][12] = &global.Card9W
+	params.Cards[zimoSeat][12] = 19
 	// 牌墙大小设置为1
-	params.WallCards = make([]*room.Card, 1)
-	// 墙牌改成 9W
-	params.WallCards[0] = &global.Card9W
+	params.WallCards = []uint32{19}
 
 	// 传入参数开始游戏
 	deskData, err := utils.StartGame(params)

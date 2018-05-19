@@ -29,7 +29,7 @@ func Test_Gangshanghaidilao(t *testing.T) {
 	bankerSeat := params.BankerSeat
 	params.DingqueColor[huSeat] = room.CardColor_CC_TONG
 
-	params.WallCards[0] = &global.Card8W
+	params.WallCards[0] = 18
 
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

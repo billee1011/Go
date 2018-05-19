@@ -13,7 +13,7 @@ import (
 // step 1. 将手牌和墙牌转换成接口可识别的字符串， 参数： cards = 11,12,13,,...  len=xxx
 // step 2. 将换三张方向转换成接口可识别的字符串 ， hszfx=dui, shun, ni
 // step 3. 庄家位置   zhuang= number
-func peipai(game string, seatCards [][]*room.Card, wallCards []*room.Card, hszDir room.Direction, bankerSeat int) error {
+func peipai(game string, seatCards [][]uint32, wallCards []uint32, hszDir room.Direction, bankerSeat int) error {
 	url := fmt.Sprintf("%s?game=%s&%s", config.PeipaiURL, game, translatePeipaiCards(seatCards, wallCards))
 	hszfx := translateHszDir(hszDir)
 	if hszfx != "" {
@@ -31,7 +31,7 @@ func requestPeipai(url string) error {
 
 // translatePeipaiCards 将卡牌转换成配牌接口字符串
 // 返回：  cards=11,22,33,44,...&len=22
-func translatePeipaiCards(seatCards [][]*room.Card, wallCards []*room.Card) string {
+func translatePeipaiCards(seatCards [][]uint32, wallCards []uint32) string {
 	result := "cards="
 	first := true
 	count := 0
@@ -55,19 +55,8 @@ func translatePeipaiCards(seatCards [][]*room.Card, wallCards []*room.Card) stri
 }
 
 // translatePeipaiCard 转换单张牌
-func translatePeipaiCard(card *room.Card) string {
-	var color int
-	if *card.Color == room.CardColor_CC_WAN {
-		color = 1
-	} else if *card.Color == room.CardColor_CC_TIAO {
-		color = 2
-	} else if *card.Color == room.CardColor_CC_TONG {
-		color = 3
-	} else if *card.Color == room.CardColor_CC_FENG {
-		color = 4
-	}
-	value := color*10 + int(*card.Point)
-	return fmt.Sprint(value)
+func translatePeipaiCard(card uint32) string {
+	return fmt.Sprint(card)
 }
 
 func translateHszDir(dir room.Direction) string {

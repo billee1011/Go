@@ -17,7 +17,7 @@ import (
 func Test_Angang(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.WallCards = append(thisParams.WallCards, &global.Card9B)
+	thisParams.WallCards = append(thisParams.WallCards, 39)
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
@@ -50,21 +50,18 @@ func Test_Angang(t *testing.T) {
 func Test_Angang1(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.Cards[0] = utils.MakeRoomCards(global.Card1W, global.Card1W, global.Card1W, global.Card1W, global.Card2W,
-		global.Card2W, global.Card2W, global.Card2W, global.Card3W, global.Card3W, global.Card6T, global.Card7T, global.Card8T, global.Card9T)
-	thisParams.Cards[1] = utils.MakeRoomCards(global.Card9T, global.Card9T, global.Card1B, global.Card1B, global.Card2B,
-		global.Card2B, global.Card2B, global.Card2B, global.Card3B, global.Card3B, global.Card7B, global.Card7B, global.Card6B)
-	thisParams.Cards[2] = utils.MakeRoomCards(global.Card1T, global.Card1T, global.Card2T, global.Card2T, global.Card3T,
-		global.Card3T, global.Card3T, global.Card3T, global.Card4T, global.Card5T, global.Card3W, global.Card3W, global.Card4W)
-	thisParams.Cards[3] = utils.MakeRoomCards(global.Card9B, global.Card9B, global.Card9B, global.Card9B, global.Card8B,
-		global.Card8B, global.Card8B, global.Card8B, global.Card7B, global.Card7B, global.Card3B, global.Card3B, global.Card4B)
-	thisParams.WallCards = append(thisParams.WallCards, &global.Card6T, &global.Card6B, &global.Card4W, &global.Card9T)
+	thisParams.Cards[0] = []uint32{11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 26, 27, 28, 29}
+	thisParams.Cards[1] = []uint32{29, 29, 31, 31, 32, 32, 32, 32, 33, 33, 37, 37, 36}
+	thisParams.Cards[2] = []uint32{21, 21, 22, 22, 23, 23, 23, 23, 24, 25, 13, 13, 14}
+	thisParams.Cards[3] = []uint32{39, 39, 39, 39, 38, 38, 38, 38, 37, 37, 33, 33, 34}
+	thisParams.WallCards = []uint32{26, 36, 14, 29}
+
 	thisParams.HszDir = room.Direction_Opposite
-	thisParams.HszCards = [][]*room.Card{
-		utils.MakeRoomCards(global.Card6T, global.Card7T, global.Card8T),
-		utils.MakeRoomCards(global.Card2B, global.Card1B, global.Card1B),
-		utils.MakeRoomCards(global.Card3W, global.Card3W, global.Card4W),
-		utils.MakeRoomCards(global.Card9B, global.Card9B, global.Card9B),
+	thisParams.HszCards = [][]uint32{
+		{26, 27, 28},
+		{32, 31, 31},
+		{13, 13, 14},
+		{39, 39, 39},
 	}
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)

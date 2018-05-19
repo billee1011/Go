@@ -18,14 +18,14 @@ func Test_Peng_Qi(t *testing.T) {
 	var Int5w uint32 = 15
 	params := global.NewCommonStartGameParams()
 	// 0 号玩家的最后一张牌改成 5W， 打出后 1 号玩家可碰
-	params.Cards[0][13] = &global.Card5W
-	params.Cards[1][0] = &global.Card4W
+	params.Cards[0][13] = 15
+	params.Cards[1][0] = 14
 	// 修改换三张的牌
-	params.HszCards = [][]*room.Card{
-		utils.MakeRoomCards(global.Card3W, global.Card3W, global.Card3W),
-		utils.MakeRoomCards(global.Card7W, global.Card7W, global.Card7W),
-		utils.MakeRoomCards(global.Card3T, global.Card3T, global.Card3T),
-		utils.MakeRoomCards(global.Card7T, global.Card7T, global.Card7T),
+	params.HszCards = [][]uint32{
+		{13, 13, 13},
+		{17, 17, 17},
+		{23, 23, 23},
+		{27, 27, 27},
 	}
 
 	deskData, err := utils.StartGame(params)
