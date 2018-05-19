@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/gutils"
 	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -159,7 +158,7 @@ func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[u
 }
 
 // checkXipaiNtf 检查洗牌通知
-func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
+func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]uint32, wallCards []uint32) error {
 	totalCardCount := len(wallCards)
 	for _, sc := range seatCards {
 		totalCardCount += len(sc)
@@ -180,7 +179,7 @@ func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 	return nil
 }
 
-func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *DeskData, seatCards [][]*room.Card) error {
+func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *DeskData, seatCards [][]uint32) error {
 	for _, playerCardCount := range playerCardCounts {
 		playerID := playerCardCount.GetPlayerId()
 		cardCount := int(playerCardCount.GetCardCount())
@@ -195,14 +194,14 @@ func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *De
 }
 
 // checkFapaiNtf 检查发牌通知
-func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
+func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]uint32, wallCards []uint32) error {
 	for playerID, e := range ntfExpectors {
 		fapaiNtf := room.RoomFapaiNtf{}
 		if err := e.Recv(global.DefaultWaitMessageTime, &fapaiNtf); err != nil {
 			return fmt.Errorf("未收到发牌通知： %v", err)
 		}
 		seat := deskData.Players[playerID].Seat
-		expectCards := gutils.RoomCards2UInt32(seatCards[seat])
+		expectCards := seatCards[seat]
 		ntfCards := fapaiNtf.GetCards()
 		for index, c := range expectCards {
 			if c != ntfCards[index] {
@@ -217,7 +216,7 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 }
 
 // executeHSZ 执行换三张
-func executeHSZ(deskData *DeskData, HszCards [][]*room.Card) error {
+func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
 	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
@@ -227,7 +226,7 @@ func executeHSZ(deskData *DeskData, HszCards [][]*room.Card) error {
 		fe, _ := client.ExpectMessage(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF)
 		finishNtfExpectors[playerID] = fe
 		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
-			Cards: gutils.RoomCards2UInt32(cards),
+			Cards: cards,
 			Sure:  proto.Bool(true),
 		})
 	}

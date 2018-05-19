@@ -14,7 +14,7 @@ import (
 func Test_AnGang_Qi(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.WallCards = append(thisParams.WallCards, &global.Card9B)
+	thisParams.WallCards = []uint32{31, 39}
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)

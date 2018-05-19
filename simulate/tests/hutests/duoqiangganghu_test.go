@@ -25,23 +25,23 @@ func Test_Duo_Qiangganghu(t *testing.T) {
 
 	params.BankerSeat = 0
 	// 庄家的初始手牌： 11,11,11,11,12,12,12,12,13,13,13,39,17,19 8w
-	params.Cards[0][13] = &global.Card9B
-	params.Cards[0][12] = &global.Card7W
-	params.Cards[0][11] = &global.Card9W
+	params.Cards[0][13] = 39
+	params.Cards[0][12] = 17
+	params.Cards[0][11] = 19
 	// 1 号玩家初始手牌： 15,15,15,15,16,16,16,16,17,27,31,19,19 9w
-	params.Cards[1][12] = &global.Card9W
-	params.Cards[1][11] = &global.Card9W
-	params.Cards[1][10] = &global.Card1B
-	params.Cards[1][9] = &global.Card7T
+	params.Cards[1][12] = 19
+	params.Cards[1][11] = 19
+	params.Cards[1][10] = 31
+	params.Cards[1][9] = 27
 	// 2 号玩家初始手牌： 21,21,21,21,22,23,22,22,22,23,23,17,39  8w
-	params.Cards[2][12] = &global.Card7W
-	params.Cards[2][11] = &global.Card9B
+	params.Cards[2][12] = 17
+	params.Cards[2][11] = 39
 	// 3 号玩家初始手牌： 25,25,25,25,26,26,26,26,27,27,27,17,39 8w
-	params.Cards[3][12] = &global.Card9B
-	params.Cards[3][11] = &global.Card7W
+	params.Cards[3][12] = 39
+	params.Cards[3][11] = 17
 
 	// 墙牌改为 8W, 8W, 8W, 9W， 3B
-	params.WallCards = []*room.Card{&global.Card8W, &global.Card8W, &global.Card8W, &global.Card9W, &global.Card3B}
+	params.WallCards = []uint32{18, 18, 18, 19, 33}
 	// 修改所有定缺颜色为筒
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG}
 	// 开始游戏
