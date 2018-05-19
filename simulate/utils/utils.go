@@ -6,6 +6,7 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
