@@ -7,9 +7,9 @@ import (
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/simulate/connect"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/structs"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -137,7 +137,7 @@ func joinDesk(players []interfaces.ClientPlayer) (map[int]uint64, error) {
 		expectors = append(expectors, e)
 	}
 	ntf := room.RoomDeskCreatedNtf{}
-	if err := expectors[0].Recv(2*time.Second, &ntf); err != nil {
+	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return nil, err
 	}
 	seatMap := map[int]uint64{}
@@ -167,7 +167,7 @@ func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 
 	for _, e := range ntfExpectors {
 		xipaiNtf := room.RoomXipaiNtf{}
-		if err := e.Recv(time.Second*2, &xipaiNtf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &xipaiNtf); err != nil {
 			return fmt.Errorf("未收到洗牌通知： %v", err)
 		}
 		if xipaiNtf.GetBankerSeat() != uint32(deskData.BankerSeat) {
@@ -198,7 +198,7 @@ func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *De
 func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]*room.Card, wallCards []*room.Card) error {
 	for playerID, e := range ntfExpectors {
 		fapaiNtf := room.RoomFapaiNtf{}
-		if err := e.Recv(time.Second*2, &fapaiNtf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &fapaiNtf); err != nil {
 			return fmt.Errorf("未收到发牌通知： %v", err)
 		}
 		seat := deskData.Players[playerID].Seat
@@ -233,7 +233,7 @@ func executeHSZ(deskData *DeskData, HszCards [][]*room.Card) error {
 	}
 	for playerID, e := range finishNtfExpectors {
 		finishNtf := room.RoomHuansanzhangFinishNtf{}
-		if err := e.Recv(time.Second*3, &finishNtf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &finishNtf); err != nil {
 			return fmt.Errorf("玩家 %v 未收到换三张完成通知:%v", playerID, err)
 		}
 	}
@@ -275,7 +275,7 @@ func executeDingque(deskData *DeskData, colors []room.CardColor) error {
 	}
 	for playerID, e := range finishExpectors {
 		ntf := room.RoomDingqueFinishNtf{}
-		if err := e.Recv(time.Second*3, &ntf); err != nil {
+		if err := e.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 			return fmt.Errorf("玩家 %d 未收到定缺完成通知: %v", playerID, err)
 		}
 		if !checkDingqueColor(deskData, ntf.GetPlayerDingqueColor(), colors) {

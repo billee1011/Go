@@ -4,7 +4,7 @@ import (
 	"errors"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"time"
+	"steve/simulate/global"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -25,7 +25,7 @@ func WaitChupaiWenxunNtf(desk *DeskData, seat int, canPeng bool, canDianpao bool
 	expector, _ := player.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 
 	ntf := room.RoomChupaiWenxunNtf{}
-	if err := expector.Recv(time.Second*1, &ntf); err != nil {
+	if err := expector.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return err
 	}
 	if ntf.GetEnablePeng() != canPeng {

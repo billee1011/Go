@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"fmt"
 
@@ -50,7 +49,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	zixunexpector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	// 1秒内接收到自询通知，并赋值到ntf
-	assert.Nil(t, zixunexpector.Recv(time.Second*2, &ntf))
+	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
 	// 判断自询通知中是否有自摸
 	assert.True(t, ntf.GetEnableZimo())
 
@@ -71,7 +70,7 @@ func checkZiMoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, zimoSeat
 	zimoID := zimoplayer.Player.GetID()
 	expector, _ := zimoplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
-	expector.Recv(time.Second*1, &ntf)
+	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == zimoID {

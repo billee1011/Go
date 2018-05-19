@@ -3,8 +3,8 @@ package utils
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -19,7 +19,7 @@ func ApplyJoinDesk(player interfaces.ClientPlayer) error {
 	req := room.RoomJoinDeskReq{}
 	rsp := room.RoomJoinDeskRsp{}
 	client := player.GetClient()
-	err := client.Request(createMsgHead(msgid.MsgID_ROOM_JOIN_DESK_REQ), &req, time.Second*5, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), &rsp)
+	err := client.Request(createMsgHead(msgid.MsgID_ROOM_JOIN_DESK_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), &rsp)
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)
 		return errRequestFailed

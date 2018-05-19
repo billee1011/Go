@@ -3,9 +3,9 @@ package utils
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -37,7 +37,7 @@ func CheckChuPaiNotify(t *testing.T, deskData *DeskData, card uint32, activePlay
 	for _, player := range deskData.Players {
 		messageExpector := player.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
 		ntf := &room.RoomChupaiNtf{}
-		assert.Nil(t, messageExpector.Recv(2*time.Second, ntf))
+		assert.Nil(t, messageExpector.Recv(global.DefaultWaitMessageTime, ntf))
 		assert.Equal(t, card, ntf.GetCard())
 		assert.Equal(t, activePlayer, ntf.GetPlayer())
 	}
@@ -49,7 +49,7 @@ func CheckMoPaiNotify(t *testing.T, deskData *DeskData, mopaiSeat int) *DeskPlay
 	for _, deskPlayer := range deskData.Players {
 		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
 		ntf := &room.RoomMopaiNtf{}
-		assert.Nil(t, expector.Recv(time.Second*1, ntf))
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf))
 		assert.Equal(t, false, ntf.GetBack())
 		if player.Seat == deskPlayer.Seat {
 			assert.Equal(t, uint32(31), ntf.GetCard())

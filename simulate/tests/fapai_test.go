@@ -4,10 +4,10 @@ import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/connect"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +36,7 @@ func Test_Fapai(t *testing.T) {
 
 	for _, expector := range fapaiNtfExpectors {
 		ntf := room.RoomFapaiNtf{}
-		assert.Nil(t, expector.Recv(time.Second*2, &ntf))
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		// 收到消息后，有4个玩家的卡牌数量
 		assert.Equal(t, 4, len(ntf.GetPlayerCardCounts()))
 		cardCount := len(ntf.GetCards())

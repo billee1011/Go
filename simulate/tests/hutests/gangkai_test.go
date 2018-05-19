@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -45,7 +44,7 @@ func Test_Gangkai(t *testing.T) {
 	gangPlayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
 	expector, _ = gangPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableMinggang())
 
 	// 1号玩家 发送明杠请求
@@ -54,7 +53,7 @@ func Test_Gangkai(t *testing.T) {
 	// 1号玩家 摸牌出牌
 	expector, _ = gangPlayer.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
 	mopaiNtf := room.RoomMopaiNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &mopaiNtf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &mopaiNtf))
 	assert.Equal(t, gangPlayer.Player.GetID(), mopaiNtf.GetPlayer())
 	assert.Equal(t, Int8W, mopaiNtf.GetCard())
 
@@ -62,7 +61,7 @@ func Test_Gangkai(t *testing.T) {
 	huPlayer := utils.GetDeskPlayerBySeat(huSeat, deskData)
 	expector, _ = huPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	zxNtf := room.RoomZixunNtf{}
-	assert.Nil(t, expector.Recv(time.Second*1, &zxNtf))
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &zxNtf))
 	assert.True(t, zxNtf.GetEnableZimo())
 	assert.True(t, zxNtf.GetEnableQi())
 	// 1号玩家发送 行牌动作请求 胡

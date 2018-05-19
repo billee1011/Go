@@ -6,7 +6,6 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +30,7 @@ func Test_Chupai(t *testing.T) {
 	for _, deskPlayer := range deskData.Players {
 		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
 		ntf := room.RoomChupaiNtf{}
-		assert.Nil(t, expector.Recv(time.Second*1, &ntf))
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, ntf.GetPlayer(), zjPlayer.Player.GetID())
 		assert.Equal(t, uint32(11), ntf.GetCard())
 	}
