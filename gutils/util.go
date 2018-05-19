@@ -125,3 +125,12 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 	}
 	return room.CardColor(-1)
 }
+
+// MakeRoomCards 构造牌切片
+func MakeRoomCards(card ...room.Card) []*room.Card {
+	result := []*room.Card{}
+	for i := range card {
+		result = append(result, &card[i])
+	}
+	return result
+}

@@ -2,17 +2,18 @@ package global
 
 import (
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/simulate/config"
-	"steve/simulate/utils"
+	"steve/simulate/structs"
 )
 
 func makeRoomCards(card ...room.Card) []*room.Card {
-	return utils.MakeRoomCards(card...)
+	return gutils.MakeRoomCards(card...)
 }
 
 // NewCommonStartGameParams 创建通用启动参数
-func NewCommonStartGameParams() utils.StartGameParams {
-	return utils.StartGameParams{
+func NewCommonStartGameParams() structs.StartGameParams {
+	return structs.StartGameParams{
 		Cards: [][]*room.Card{
 			makeRoomCards(Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card4W),
 			makeRoomCards(Card5W, Card5W, Card5W, Card5W, Card6W, Card6W, Card6W, Card6W, Card7W, Card7W, Card7W, Card7W, Card8W),

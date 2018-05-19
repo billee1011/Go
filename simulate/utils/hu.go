@@ -3,8 +3,8 @@ package utils
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -30,7 +30,7 @@ func CheckHuNotify(t *testing.T, deskData *DeskData, huSeats []int, from int, ca
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_HU_NTF]
 		ntf := room.RoomHuNtf{}
-		expector.Recv(time.Second*1, &ntf)
+		expector.Recv(global.DefaultWaitMessageTime, &ntf)
 		assert.Equal(t, huPlayers, ntf.GetPlayers())
 		assert.Equal(t, fromPlayer, ntf.GetFromPlayerId())
 		assert.Equal(t, card, ntf.GetCard())
@@ -48,7 +48,7 @@ func CheckZiMoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, from
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 		ntf := room.RoomSettleInstantRsp{}
-		expector.Recv(time.Second*1, &ntf)
+		expector.Recv(global.DefaultWaitMessageTime, &ntf)
 		assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	}
 }
@@ -62,7 +62,7 @@ func CheckDianPaoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, f
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 		ntf := room.RoomSettleInstantRsp{}
-		expector.Recv(time.Second*1, &ntf)
+		expector.Recv(global.DefaultWaitMessageTime, &ntf)
 		assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
 	}
 }
