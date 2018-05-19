@@ -1,4 +1,4 @@
-package hutests
+package qitests
 
 import (
 	msgid "steve/client_pb/msgId"
@@ -10,17 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test_Qiangganghu 测试抢杠胡
-// 开始游戏，庄家出9万， 1 号玩家可以碰，其他玩家不可以杠和胡
-// 1号玩家请求碰。 并且打出6万，没人可以碰杠胡。
-// 2号玩家摸8万， 打出9筒， 没人可以碰杠胡
-// 3号玩家摸8万，打出9筒，没人可以碰杠胡。
-// 0号玩家摸8万，并且打出9筒，没人可以碰杠胡
-// 1号玩家摸9万，并且请求执行补杠。 2号玩家可以抢杠胡
+// Test_Qiangganghu_qi 枪杠胡弃测试
+// 开始游戏后，庄家出9W，1 号玩家请求碰再打出6W，继续行牌，出9筒，直到1号玩家摸到9万请求补杠
 // 期望：
-// 1. 所有玩家收到等待抢杠胡通知，杠的玩家为1号玩家， 杠的牌为9W， 并且2号玩家收到的通知中可以抢杠胡
-// 2. 2号玩家请求胡，所有玩家收到胡通知，胡的玩家为2号玩家，胡的牌为9W， 胡牌来源是1号玩家，胡类型为抢杠胡
-func Test_Qiangganghu(t *testing.T) {
+// 1号玩家点补杠后，2号玩家可以抢杠胡，2玩家点弃，1号玩家补杠成功，
+// 1号玩家将收到杠通知，摸牌后的自询通知
+func Test_Qiangganghu_qi(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 
 	params.BankerSeat = 0
@@ -63,6 +58,7 @@ func Test_Qiangganghu(t *testing.T) {
 	assert.Nil(t, utils.SendChupaiReq(deskData, 0, 39))
 	// 1 号玩家等待自询通知， 然后请求杠 9万
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 1))
+	// 发送补杠请求
 	assert.Nil(t, utils.SendGangReq(deskData, 1, 19, room.GangType_BuGang))
 
 	// 所有玩家收到等待抢杠胡通知， 2号玩家可以抢杠胡， 其他玩家不能抢杠胡
@@ -76,12 +72,10 @@ func Test_Qiangganghu(t *testing.T) {
 		assert.Equal(t, gangPlayer.Player.GetID(), ntf.GetFromPlayerId())
 		assert.Equal(t, i == 2, ntf.GetSelfCan())
 	}
-
-	assert.Nil(t, utils.SendHuReq(deskData, 2))
-	utils.CheckHuNotify(t, deskData, []int{2}, 1, 19, room.HuType_HT_QIANGGANGHU)
+	// 2号玩家发送弃请求
+	assert.Nil(t, utils.SendQiReq(deskData, 2))
+	//检查1号家补杠的通知
+	utils.CheckGangNotify(t, deskData, gangPlayer.Player.GetID(), gangPlayer.Player.GetID(), uint32(19), room.GangType_BuGang)
+	// 2号玩家等待接收到自询
+	utils.WaitZixunNtf(deskData, 2)
 }
-
-// makeRoomCards(Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card4W),
-// makeRoomCards(Card5W, Card5W, Card5W, Card5W, Card6W, Card6W, Card6W, Card6W, Card7W, Card7W, Card7W, Card7W, Card8W),
-// makeRoomCards(Card1T, Card1T, Card1T, Card1T, Card2T, Card2T, Card2T, Card2T, Card3T, Card3T, Card3T, Card3T, Card4T),
-// makeRoomCards(Card5T, Card5T, Card5T, Card5T, Card6T, Card6T, Card6T, Card6T, Card7T, Card7T, Card7T, Card7T, Card8T),
