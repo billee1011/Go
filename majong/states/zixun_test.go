@@ -238,3 +238,17 @@ func TestZixunState_chupai(t *testing.T) {
 	// results += FmtPlayerInfo(player)
 	// logrus.Info(results)
 }
+
+// 1w 1w 1w 1w 2w 2w 2w 2w 3w 3w 9t 3w 4w 3w
+func Test_CheckAngang(t *testing.T) {
+	player := &majongpb.Player{}
+	player.HuCards = []*majongpb.HuCard{}
+	player.DingqueColor = majongpb.CardColor_ColorTiao
+	player.HandCards = []*majongpb.Card{
+		&Card1W, &Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card9T, &Card3W, &Card4W, &Card3W,
+	}
+	s := ZiXunState{}
+	enables := s.checkPlayerAngang(player)
+	assert.Equal(t, 3, len(enables))
+	assert.Subset(t, enables, []uint32{11, 12, 13})
+}
