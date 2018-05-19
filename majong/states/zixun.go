@@ -338,7 +338,7 @@ func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Ca
 // checkTing 查听
 func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
 	// zixunNtf.GetCanTingCardInfo()
-	tingInfos := utils.FastCheckTingInfoV2(utils.CardsToUtilCards(player.GetHandCards()), map[utils.Card]bool{})
+	tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards())
 	canTingInfos := []*room.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
 		tingCardInfo := []*room.TingCardInfo{}
