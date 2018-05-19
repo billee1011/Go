@@ -1,6 +1,6 @@
 log_level: debug 
 log_dir: ./log
-log_prefix: gateway
+log_prefix: room
 log_stderr: true 
 
 # rpc_addr: 127.0.0.1
@@ -12,3 +12,5 @@ lis_client_port: 36001
 
 peipai_addr: 127.0.0.1:36002
 
+redis_addr: 127.0.0.1:6379 
+redis_passwd: 
