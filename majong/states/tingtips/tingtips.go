@@ -42,16 +42,25 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	player := utils.GetMajongPlayer(playerID, mjContext)
 	playerCards := player.GetHandCards()
 
-	tingCards := utils.FastCheckTingV2(utils.CardsToUtilCards(playerCards), map[utils.Card]bool{}) // TODO, 目前没有包括特殊牌型
+	// 不存在定缺牌
+	if utils.CheckHasDingQueCard(playerCards, player.GetDingqueColor()) {
+		return
+	}
+	// wuhongwei 增加七对提示
+	tingCards, _ := utils.GetTingCards(playerCards) // TODO, 目前没有包括特殊牌型
 
 	ntf := room.RoomTingInfoNtf{}
 	for _, card := range tingCards {
-		times := calcHuTimes(card, player, int(mjContext.GetGameId()))
-		tingCardInfo := &room.TingCardInfo{
-			TingCard: proto.Uint32(uint32(card)),
-			Times:    proto.Uint32(times),
+		// 胡提示不能是定缺牌
+		if card.GetColor() != player.GetDingqueColor() {
+			newCard, _ := utils.CardToInt(*card)
+			times := calcHuTimes(utils.Card(*newCard), player, int(mjContext.GetGameId()))
+			tingCardInfo := &room.TingCardInfo{
+				TingCard: proto.Uint32(uint32(*newCard)),
+				Times:    proto.Uint32(times),
+			}
+			ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
 		}
-		ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
 	}
 	flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_TINGINFO_NTF),
