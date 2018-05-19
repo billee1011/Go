@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/cardtype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
+	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -54,7 +56,7 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 		}
 	default:
 		{
-			return majongpb.StateID_state_zixun, global.ErrInvalidEvent
+			return majongpb.StateID_state_zixun, nil
 		}
 	}
 }
@@ -277,7 +279,6 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
-
 	if !isPengZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
@@ -290,8 +291,18 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		canQi := s.canQi(canAngang, canBugang, canZimo, hasHu)
 		zixunNtf.EnableQi = proto.Bool(canQi)
 	}
-	//TODO:暂时将所有的手牌都设置为可以出的牌
-	zixunNtf.EnableChupaiCards = utils.ServerCards2Uint32(player.GetHandCards())
+	//分三种情况,1胡过,且摸到牌能胡,chupaicard字段不给值
+	if len(player.GetHuCards()) > 0 {
+		if !*zixunNtf.EnableZimo {
+			//2胡过,且不能自摸,摸什么打什么
+			zixunNtf.EnableChupaiCards = []uint32{utils.ServerCard2Uint32(context.GetLastMopaiCard())}
+		}
+	} else {
+		//3没胡过,所有手牌都可以打
+		zixunNtf.EnableChupaiCards = utils.ServerCards2Uint32(player.GetHandCards())
+	}
+	//查听,打什么,听什么
+	s.checkTing(zixunNtf, player, context)
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
 	toClient := interfaces.ToClientMessage{
@@ -305,7 +316,52 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
-//checkZiMo 查自摸
+func (s *ZiXunState) getPengCards(pengCards []*majongpb.PengCard) []*majongpb.Card {
+	resultCards := []*majongpb.Card{}
+	for _, pengCard := range pengCards {
+		resultCards = append(resultCards, pengCard.GetCard())
+	}
+	return resultCards
+}
+
+func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Card {
+	resultCards := []*majongpb.Card{}
+	for _, gangCard := range gangCards {
+		resultCards = append(resultCards, gangCard.GetCard())
+	}
+	return resultCards
+}
+
+// checkTing 查听
+func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
+	// zixunNtf.GetCanTingCardInfo()
+	tingInfos := utils.FastCheckTingInfoV2(utils.CardsToUtilCards(player.GetHandCards()), map[utils.Card]bool{})
+	canTingInfos := []*room.CanTingCardInfo{}
+	for outCard, tingInfo := range tingInfos {
+		tingCardInfo := []*room.TingCardInfo{}
+		for _, tt := range tingInfo {
+			huCard, _ := utils.IntToCard(int32(tt))
+			times, _ := facade.CalculateCardValue(&cardtype.ScxlCardTypeCalculator{}, interfaces.CardCalcParams{
+				HandCard: player.GetHandCards(),
+				PengCard: s.getPengCards(player.GetPengCards()),
+				GangCard: s.getGangCards(player.GetGangCards()),
+				HuCard:   huCard,
+				GameID:   int(context.GetGameId()),
+			})
+			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
+				TingCard: proto.Uint32(uint32(tt)),
+				Times:    proto.Uint32(times),
+			})
+		}
+		canTingInfos = append(canTingInfos, &room.CanTingCardInfo{
+			OutCard:      proto.Uint32(uint32(outCard)),
+			TingCardInfo: tingCardInfo,
+		})
+	}
+	zixunNtf.CanTingCardInfo = canTingInfos
+}
+
+// checkZiMo 查自摸
 func (s *ZiXunState) checkZiMo(flow interfaces.MajongFlow) bool {
 	context := flow.GetMajongContext()
 	activePlayerID := s.getZixunPlayer(flow)
