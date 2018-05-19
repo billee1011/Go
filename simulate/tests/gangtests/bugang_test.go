@@ -9,6 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestBuGang 补杠模拟测试
+// 游戏流程: 1.庄家出12
+//          2.下家碰12,下家打出17
+//          3.对家摸到18,对家打出22
+//          4.尾家摸到18,尾家打出27
+//          5.庄家摸到18,庄家打出16
+//          6.下家摸到19,此时下家可以补杠12
+//          7.下家选择补杠12,期待:所有人收到下家补杠的广播
 func TestBuGang(t *testing.T) {
 	param := global.NewCommonStartGameParams()
 	param.BankerSeat = 0

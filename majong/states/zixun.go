@@ -337,8 +337,46 @@ func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Ca
 
 // checkTing 查听
 func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
-	// zixunNtf.GetCanTingCardInfo()
-	tingInfos := utils.FastCheckTingInfoV2(utils.CardsToUtilCards(player.GetHandCards()), map[utils.Card]bool{})
+	dqnum := 0
+	for _, card := range player.GetHandCards() {
+		if card.Color == player.DingqueColor {
+			dqnum++
+		}
+	}
+	logrus.WithFields(logrus.Fields{
+		"手中定缺牌的个数": dqnum,
+	}).Info("查听")
+	switch dqnum {
+	//没有定缺牌的时候正常查听
+	case 0:
+		{
+			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards())
+			s.addTingInfo(zixunNtf, player, context, tingInfos)
+		}
+	// 当定缺牌为1的时候,只有定缺牌才有听牌提示
+	case 1:
+		{
+			newTingInfos := map[utils.Card][]utils.Card{}
+			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards())
+			for outCard, tingCard := range tingInfos {
+				card, _ := utils.IntToCard(int32(outCard))
+				if card.GetColor() == player.DingqueColor {
+					newTingInfos[outCard] = tingCard
+				}
+			}
+			//满足条件说明,打出这张定缺牌可以进入听牌状态
+			s.addTingInfo(zixunNtf, player, context, newTingInfos)
+		}
+	// 玩家的定缺牌数量超过1张的时候,不查听
+	default:
+		{
+			return
+		}
+	}
+}
+
+// addTingInfo 自询通知添加听牌信息
+func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card][]utils.Card) {
 	canTingInfos := []*room.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
 		tingCardInfo := []*room.TingCardInfo{}
