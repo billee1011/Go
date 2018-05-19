@@ -1,4 +1,4 @@
-package states
+package global
 
 import (
 	majongpb "steve/server_pb/majong"
@@ -63,7 +63,8 @@ var (
 	Card9B = majongpb.Card{Color: majongpb.CardColor_ColorTong, Point: 9}
 )
 
-func getOriginCards(gameID int) []*majongpb.Card {
+// GetOriginCards 获取gameID游戏的所有牌
+func GetOriginCards(gameID int) []*majongpb.Card {
 	cards := []struct {
 		card  majongpb.Card
 		count int
