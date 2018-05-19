@@ -143,10 +143,11 @@ func notifyDeskPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.
 
 // RoundSettle 单局结算信息
 func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
-	for i := 0; i < len(desk.GetPlayers()); i++ {
+	players := desk.GetPlayers()
+	for i := 0; i < len(players); i++ {
 		balanceRsp := new(room.RoomBalanceInfoRsp)
-		player := desk.GetPlayers()[i]
-		pid := *player.PlayerId
+		player := players[i]
+		pid := player.GetPlayerId()
 		balanceRsp.Pid = player.PlayerId
 		for _, settleInfo := range mjContext.SettleInfos {
 			billDetail := s.getBillDetail(pid, settleInfo)
