@@ -39,11 +39,11 @@ func Test_Duo_Dianpao(t *testing.T) {
 	assert.Nil(t, utils.SendChupaiReq(deskData, bankerSeat, Int9W))
 
 	// 1 号玩家收到出牌问询通知， 可以胡
-	utils.WaitChupaiWenxunNtf(deskData, hu1Seat, false, true, false)
-	// 1 号玩家收到出牌问询通知， 可以胡
-	utils.WaitChupaiWenxunNtf(deskData, hu2Seat, false, true, false)
-	// 1 号玩家收到出牌问询通知， 可以胡
-	utils.WaitChupaiWenxunNtf(deskData, hu2Seat, false, true, false)
+	assert.Nil(t,utils.WaitChupaiWenxunNtf(deskData, hu1Seat, false, true, false))
+	// 2 号玩家收到出牌问询通知， 可以胡
+	assert.Nil(t,utils.WaitChupaiWenxunNtf(deskData, hu2Seat, false, true, false))
+	// 3 号玩家收到出牌问询通知， 可以胡
+	assert.Nil(t,utils.WaitChupaiWenxunNtf(deskData, hu3Seat, false, true, false))
 
 	// 1 号玩家发送胡请求
 	assert.Nil(t, utils.SendHuReq(deskData, hu1Seat))

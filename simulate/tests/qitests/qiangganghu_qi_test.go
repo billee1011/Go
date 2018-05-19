@@ -76,6 +76,6 @@ func Test_Qiangganghu_qi(t *testing.T) {
 	assert.Nil(t, utils.SendQiReq(deskData, 2))
 	//检查1号家补杠的通知
 	utils.CheckGangNotify(t, deskData, gangPlayer.Player.GetID(), gangPlayer.Player.GetID(), uint32(19), room.GangType_BuGang)
-	// 2号玩家等待接收到自询
-	utils.WaitZixunNtf(deskData, 2)
+	// 1号玩家等待接收到自询
+	utils.WaitZixunNtf(deskData, 1)
 }
