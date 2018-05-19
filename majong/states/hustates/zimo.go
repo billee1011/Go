@@ -64,7 +64,7 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	s.notifyHu(card, player.GetPalyerId(), flow)
 	s.doZiMoSettle(card, player.GetPalyerId(), flow)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
-	addHuCard(card, player, player.GetPalyerId(), majongpb.HuType_hu_zimo)
+	addHuCard(card, player, player.GetPalyerId(), majongpb.HuType_hu_zimo, false)
 }
 
 // isAfterGang 判断是否为杠开

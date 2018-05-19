@@ -15,6 +15,7 @@ import (
 	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/states/tingtips"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -39,9 +40,23 @@ func (s *DingqueState) ProcessEvent(eventID majongpb.EventID, eventContext []byt
 		if err != nil || !isFinish {
 			return majongpb.StateID_state_dingque, err
 		}
+		s.notifyTingCards(flow)
+		mjContext := flow.GetMajongContext()
+		mjContext.ZixunType = majongpb.ZixunType_ZXT_NORMAL
 		return majongpb.StateID_state_zixun, nil
 	}
 	return majongpb.StateID_state_dingque, nil
+}
+
+// notifyTingCards 通知玩家听牌信息
+func (s *DingqueState) notifyTingCards(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	for seat, player := range mjContext.GetPlayers() {
+		if seat == int(mjContext.GetZhuangjiaIndex()) {
+			continue
+		}
+		tingtips.NotifyTingCards(flow, player.GetPalyerId())
+	}
 }
 
 //定缺操作

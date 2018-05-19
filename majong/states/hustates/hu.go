@@ -47,8 +47,8 @@ func (s *HuState) OnExit(flow interfaces.MajongFlow) {
 }
 
 // addHuCard 添加胡的牌
-func (s *HuState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
-	addHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao)
+func (s *HuState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64, isReal bool) {
+	addHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao, isReal)
 }
 
 // doHu 执行胡操作
@@ -61,10 +61,12 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 	players := mjContext.GetLastHuPlayers()
 
+	isReal := true
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
 		card := mjContext.GetLastOutCard()
-		s.addHuCard(card, player, playerID)
+		s.addHuCard(card, player, playerID, isReal)
+		isReal = false
 	}
 	s.notifyHu(flow)
 	s.doHuSettle(flow)
@@ -74,9 +76,9 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 // isAfterGang 是否为杠后炮
 // 杠后摸牌、自询出牌则为杠后炮
 func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
-	cpType := mjContext.GetChupaiType()
+	zxType := mjContext.GetZixunType()
 	mpType := mjContext.GetMopaiType()
-	return mpType == majongpb.MopaiType_MT_GANG && cpType == majongpb.ChupaiType_CT_ZIXUN
+	return mpType == majongpb.MopaiType_MT_GANG && zxType == majongpb.ZixunType_ZXT_NORMAL
 }
 
 // HuState 广播胡

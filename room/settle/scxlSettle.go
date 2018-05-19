@@ -9,6 +9,7 @@ import (
 	majongpb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -36,43 +37,75 @@ type playerCoin map[uint64]int64
 
 // Settle 结算信息扣分并通知客户端
 func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"name":        "Settle",
+		"SettleInfos": mjContext.SettleInfos,
+	})
 	if len(mjContext.SettleInfos) != 0 {
+		deskPlayers := desk.GetPlayers()
 		for _, settleInfo := range mjContext.SettleInfos {
 			if !s.handleSettle[settleInfo.Id] {
 				playerCoin := make(playerCoin)
 				billplayerInfos := make([]*room.BillPlayerInfo, 0)
-				for _, player := range desk.GetPlayers() {
-					pid := *player.PlayerId
-					billplayerInfo := &room.BillPlayerInfo{
-						Pid:      player.PlayerId,
-						BillType: room.BillType(settleInfo.SettleType).Enum(),
-					}
+				for i := 0; i < len(deskPlayers); i++ {
+					pid := *deskPlayers[i].PlayerId
 					score := settleInfo.Scores[pid]
-
-					if score < 0 && (-score) >= int64(*player.Coin) {
-						playerCoin[pid] = int64(*player.Coin)
-						billplayerInfo.Score = proto.Int64(int64(*player.Coin))
-						*player.Coin = 0
-					} else {
-						playerCoin[pid] = score
-						billplayerInfo.Score = proto.Int64(score)
-						*player.Coin = uint64(int64(*player.Coin) + score)
+					coin := int64(*deskPlayers[i].Coin)
+					if score != 0 {
+						billplayerInfo := &room.BillPlayerInfo{
+							Pid:      deskPlayers[i].PlayerId,
+							BillType: room.BillType(settleInfo.SettleType).Enum(),
+						}
+						if score < 0 && (-score) >= int64(*deskPlayers[i].Coin) {
+							playerCoin[pid] = int64(*deskPlayers[i].Coin)
+							billplayerInfo.Score = proto.Int64(int64(coin))
+							deskPlayers[i].Coin = proto.Uint64(0)
+						} else {
+							playerCoin[pid] = score
+							billplayerInfo.Score = proto.Int64(score)
+							deskPlayers[i].Coin = proto.Uint64(uint64(coin + score))
+						}
+						global.GetPlayerMgr().GetPlayer(pid).SetCoin(*deskPlayers[i].Coin)
+						s.settleMap[settleInfo.Id] = playerCoin
+						s.roundScore[pid] = s.roundScore[pid] + playerCoin[pid]
+						billplayerInfo.CurrentScore = proto.Int64(int64(*deskPlayers[i].Coin))
+						billplayerInfos = append(billplayerInfos, billplayerInfo)
 					}
-
-					s.settleMap[settleInfo.Id] = playerCoin
-					s.roundScore[pid] = s.roundScore[pid] + playerCoin[pid]
-					billplayerInfo.CurrentScore = proto.Int64(int64(*player.Coin))
-					billplayerInfos = append(billplayerInfos, billplayerInfo)
 				}
 				s.handleSettle[settleInfo.Id] = true
 				// 广播即时结算消息
-				instantSettle := room.RoomSettleInstantRsp{
+				notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 					BillPlayersInfo: billplayerInfos,
-				}
-				notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &instantSettle)
+				})
 			}
 		}
+		if len(mjContext.RevertSettles) != 0 {
+			billplayerInfos := make([]*room.BillPlayerInfo, 0)
+			for i := 0; i < len(deskPlayers); i++ {
+				pid := *deskPlayers[i].PlayerId
+				coin := int64(*deskPlayers[i].Coin)
+				billplayerInfo := &room.BillPlayerInfo{
+					Pid:      deskPlayers[i].PlayerId,
+					BillType: room.BillType_BILL_REFUND.Enum(),
+					Score:    proto.Int64(0),
+				}
+				for _, revertSettle := range mjContext.RevertSettles {
+					if score, ok := s.settleMap[revertSettle][pid]; ok && score != 0 {
+						billplayerInfo.Score = proto.Int64(*billplayerInfo.Score + (-score))
+						deskPlayers[i].Coin = proto.Uint64(uint64(int64(coin) + (-score)))
+					}
+				}
+				global.GetPlayerMgr().GetPlayer(pid).SetCoin(*deskPlayers[i].Coin)
+				billplayerInfo.CurrentScore = proto.Int64(int64(*deskPlayers[i].Coin))
+				billplayerInfos = append(billplayerInfos, billplayerInfo)
+			}
+			// 广播即时结算消息
+			notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+				BillPlayersInfo: billplayerInfos,
+			})
+		}
 	}
+	logEntry.Debugln("room 结算")
 }
 
 func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
@@ -94,6 +127,16 @@ func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Me
 	ms.BroadcastPackage(clientIDs, head, message)
 }
 
+func notifyDeskPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgID, message proto.Message) {
+	clientID := global.GetPlayerMgr().GetPlayer(playerID).GetClientID()
+
+	head := &steve_proto_gaterpc.Header{
+		MsgId: uint32(msgid)}
+	ms := global.GetMessageSender()
+
+	ms.BroadcastPackage([]uint64{clientID}, head, message)
+}
+
 // RoundSettle 单局结算信息
 func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
 	balanceRsp := new(room.RoomBalanceInfoRsp)
@@ -105,10 +148,10 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 				balanceRsp.BillDetail = append(balanceRsp.BillDetail, billDetail)
 			}
 		}
-		balanceRsp.Pid = proto.Uint64(pid)
+		//balanceRsp.Pid = proto.Uint64(roomPlayer.GetPlayerId())
 		balanceRsp.BillPlayersInfo = s.getBillPlayerInfo(pid, mjContext)
+		notifyDeskPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
-	notifyDeskMessage(desk, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 }
 
 // getBillDetail 单次结算详情，包括番型，分数，倍数，以及输赢玩家
@@ -151,57 +194,9 @@ func (s *scxlSettle) getBillPlayerInfo(playerID uint64, context majongpb.MajongC
 		billPlayerInfo.Pid = proto.Uint64(player.GetPalyerId())
 		billPlayerInfo.Score = proto.Int64(s.roundScore[player.GetPalyerId()])
 		if player.PalyerId == playerID {
-			billPlayerInfo.CardsGroup = getCardsGroup(utils.GetPlayerByID(context.Players, playerID))
+			billPlayerInfo.CardsGroup = utils.GetCardsGroup(utils.GetPlayerByID(context.Players, playerID))
 		}
 		billPlayerInfos = append(billPlayerInfos, billPlayerInfo)
 	}
 	return billPlayerInfos
-}
-
-// getCardsGroup 获取玩家牌组信息
-func getCardsGroup(player *majongpb.Player) []*room.CardsGroup {
-	cardsGroupList := make([]*room.CardsGroup, 0)
-	// 碰牌
-	for _, pengCard := range player.PengCards {
-		card, _ := utils.CardToInt(*pengCard.Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  room.CardsGroupType_CGT_PENG.Enum(),
-			Cards: []uint32{uint32(*card)},
-		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
-	}
-	// 杠牌
-	var groupType *room.CardsGroupType
-	for _, gangCard := range player.GangCards {
-		if gangCard.Type == majongpb.GangType_gang_angang {
-			groupType = room.CardsGroupType_CGT_ANGANG.Enum()
-		}
-		if gangCard.Type == majongpb.GangType_gang_minggang {
-			groupType = room.CardsGroupType_CGT_MINGGANG.Enum()
-		}
-		if gangCard.Type == majongpb.GangType_gang_bugang {
-			groupType = room.CardsGroupType_CGT_BUGANG.Enum()
-		}
-		card, _ := utils.CardToInt(*gangCard.Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  groupType,
-			Cards: []uint32{uint32(*card)},
-		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
-	}
-	// 手牌
-	handCards, _ := utils.CardsToInt(player.HandCards)
-	cards := make([]uint32, 0)
-	for _, handCard := range handCards {
-		cards = append(cards, uint32(handCard))
-	}
-	cardsGroup := &room.CardsGroup{
-		Pid:   proto.Uint64(player.PalyerId),
-		Type:  room.CardsGroupType_CGT_HAND.Enum(),
-		Cards: cards,
-	}
-	cardsGroupList = append(cardsGroupList, cardsGroup)
-	return cardsGroupList
 }

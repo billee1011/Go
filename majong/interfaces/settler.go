@@ -48,7 +48,7 @@ type GangSettle interface {
 type RoundSettleParams struct {
 	FlowerPigPlayers []uint64               // 花猪玩家
 	HuPlayers        []uint64               // 胡牌玩家
-	TingPlayersInfo  map[uint64]int         // 听玩家及胡牌最大倍数
+	TingPlayersInfo  map[uint64]int64       // 听玩家及胡牌最大倍数
 	NotTingPlayers   []uint64               // 未听玩家,排除花猪玩家
 	SettleInfos      []*majongpb.SettleInfo // 历史结算信息
 	SettleID         uint64                 // 结算信息id
