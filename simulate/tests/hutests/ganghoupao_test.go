@@ -1,6 +1,7 @@
 package hutests
 
 import (
+	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -105,4 +106,22 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 			assert.Equal(t, billInfo.GetScore(), int64(0))
 		}
 	}
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	expector.Recv(time.Second*3, &ntf)
+	ntf = room.RoomSettleInstantRsp{}
+	for _, billInfo := range ntf.BillPlayersInfo {
+		assert.Equal(t, billInfo.GetBillType(), room.BillType_BILL_CHECKPIG)
+	}
+
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	ntf = room.RoomSettleInstantRsp{}
+	expector.Recv(time.Second*3, &ntf)
+	for _, billInfo := range ntf.BillPlayersInfo {
+		assert.Equal(t, billInfo.GetBillType(), room.BillType_BILL_REFUND)
+	}
+
+	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
+	ntf2 := room.RoomBalanceInfoRsp{}
+	expector.Recv(time.Second*5, &ntf2)
+	fmt.Println(ntf2)
 }
