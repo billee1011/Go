@@ -31,7 +31,7 @@ func WaitChupaiWenxunNtf(desk *DeskData, seat int, canPeng bool, canDianpao bool
 	if ntf.GetEnablePeng() != canPeng {
 		return errors.New("碰标志错误")
 	}
-	if ntf.GetEnableDianpao() == canDianpao {
+	if ntf.GetEnableDianpao() != canDianpao {
 		return errors.New("点炮标志错误")
 	}
 	if ntf.GetEnableMinggang() != canGang {
