@@ -138,21 +138,23 @@ func notifyDeskPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.
 		MsgId: uint32(msgid)}
 	ms := global.GetMessageSender()
 
-	ms.BroadcastPackage([]uint64{clientID}, head, message)
+	ms.SendPackage(clientID, head, message)
 }
 
 // RoundSettle 单局结算信息
 func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
-	balanceRsp := new(room.RoomBalanceInfoRsp)
-	for _, roomPlayer := range desk.GetPlayers() {
-		pid := *roomPlayer.PlayerId
+	players := desk.GetPlayers()
+	for i := 0; i < len(players); i++ {
+		balanceRsp := new(room.RoomBalanceInfoRsp)
+		player := players[i]
+		pid := player.GetPlayerId()
+		balanceRsp.Pid = player.PlayerId
 		for _, settleInfo := range mjContext.SettleInfos {
 			billDetail := s.getBillDetail(pid, settleInfo)
 			if billDetail != nil {
 				balanceRsp.BillDetail = append(balanceRsp.BillDetail, billDetail)
 			}
 		}
-		//balanceRsp.Pid = proto.Uint64(roomPlayer.GetPlayerId())
 		balanceRsp.BillPlayersInfo = s.getBillPlayerInfo(pid, mjContext)
 		notifyDeskPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
@@ -193,8 +195,8 @@ func (s *scxlSettle) getBillDetail(palyerID uint64, settleInfo *majongpb.SettleI
 // getBillPlayerInfo 单局结算玩家详情,包括玩家自己牌型,输赢分数，以及其余每个玩家的输赢分数
 func (s *scxlSettle) getBillPlayerInfo(playerID uint64, context majongpb.MajongContext) []*room.BillPlayerInfo {
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
-	billPlayerInfo := new(room.BillPlayerInfo)
 	for _, player := range context.Players {
+		billPlayerInfo := new(room.BillPlayerInfo)
 		billPlayerInfo.Pid = proto.Uint64(player.GetPalyerId())
 		billPlayerInfo.Score = proto.Int64(s.roundScore[player.GetPalyerId()])
 		if player.PalyerId == playerID {

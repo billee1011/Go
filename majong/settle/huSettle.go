@@ -122,6 +122,7 @@ func NewSettleInfo(settleID uint64) *majongpb.SettleInfo {
 	return &majongpb.SettleInfo{
 		Id:     settleID + 1,
 		Scores: make(map[uint64]int64),
+		HuType: -1,
 	}
 }
 
