@@ -28,6 +28,9 @@ func (w *logWriter) getFile() {
 		now.Sub(w.fileTime) < time.Duration(time.Second*3600) {
 		return
 	}
+	if w.file != nil {
+		w.file.Close()
+	}
 	w.fileTime = now
 	fileName := fmt.Sprintf("%s/%s_%d_%02d_%02d_%02d.log", w.fileDir, w.fileName, now.Year(),
 		now.Month(), now.Day(), now.Hour())
@@ -37,7 +40,7 @@ func (w *logWriter) getFile() {
 	defer syscall.Umask(mask)
 
 	var err error
-	if w.file, err = os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE|os.O_SYNC, 0664); err != nil {
+	if w.file, err = os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0664); err != nil {
 		fmt.Println("open log file failed:", err)
 	}
 }
