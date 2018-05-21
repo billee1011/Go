@@ -114,8 +114,20 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	if s.getZixunPlayer(flow) != pid {
 		return majongpb.StateID_state_zixun, fmt.Errorf("未到玩家：%v 出牌，当前应该出牌的玩家是：%v", pid, s.getZixunPlayer(flow))
 	}
+	//检查玩家是否胡过牌,胡过牌的话,摸啥打啥,能胡不让打
 	card := message.GetCards()
 	activePlayer := utils.GetPlayerByID(context.GetPlayers(), pid)
+	if len(activePlayer.GetHuCards()) > 0 {
+		if !utils.CardEqual(card, context.GetLastMopaiCard()) {
+			return majongpb.StateID_state_zixun, nil
+		}
+		if s.checkZiMo(flow) {
+			return majongpb.StateID_state_zixun, fmt.Errorf("玩家当前只能选择胡牌,不能进行出牌操作")
+		}
+		context.LastOutCard = card
+		context.LastChupaiPlayer = pid
+		return majongpb.StateID_state_chupai, nil
+	}
 	for _, c := range activePlayer.GetHandCards() {
 		if utils.CardEqual(c, card) {
 			context.LastOutCard = card
@@ -221,27 +233,31 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 	return true, nil
 }
 
-// canZiMo 检查自摸 (判断当前事件是否可行)
-func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (bool, error) {
-	context := flow.GetMajongContext()
-	playerID := message.GetHead().GetPlayerId()
-	if s.getZixunPlayer(flow) != message.GetHead().GetPlayerId() {
-		return false, fmt.Errorf("当前玩家不允许操作")
-	}
-	player := utils.GetPlayerByID(context.Players, playerID)
+func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
+	playerID := s.getZixunPlayer(flow)
+	mjContext := flow.GetMajongContext()
+	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
 	handCard := player.GetHandCards()
 	if utils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
-		return false, fmt.Errorf("手中有定缺牌，不能胡牌")
+		return false
 	}
 	l := len(handCard)
 	if l%3 != 2 {
-		return false, fmt.Errorf("手牌数量不正常，不能胡牌")
+		return false
 	}
 	flag := utils.CheckHu(handCard, 0)
 	if !flag {
-		return false, fmt.Errorf("查胡为false，不能胡牌")
+		return false
 	}
-	return true, nil
+	return true
+}
+
+// canZiMo 检查自摸 (判断当前事件是否可行)
+func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (bool, error) {
+	if s.getZixunPlayer(flow) != message.GetHead().GetPlayerId() {
+		return false, fmt.Errorf("当前玩家不允许操作")
+	}
+	return s.canPlayerZimo(flow), nil
 }
 
 func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
@@ -316,6 +332,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		"pengCards": FmtPengCards(player.GetPengCards()),
 		"handCards": FmtMajongpbCards(player.GetHandCards()),
 		"wallCards": FmtMajongpbCards(context.GetWallCards()),
+		"huCards":   FmtHuCards(player.GetHuCards()),
 	}).Infoln("自询通知")
 }
 
