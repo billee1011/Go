@@ -13,6 +13,7 @@ import (
 	"steve/room/interfaces/global"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -31,17 +32,26 @@ type deskPlayer struct {
 type deskEvent struct {
 	eventID      server_pb.EventID
 	eventContext []byte
+	stateNumber  int
+}
+
+// deskContext 牌桌现场
+type deskContext struct {
+	mjContext   server_pb.MajongContext // 牌局现场
+	stateNumber int                     // 状态序号
+	stateTime   time.Time               // 状态时间
 }
 
 type desk struct {
-	deskUID      uint64
-	gameID       int
-	createOption interfaces.CreateDeskOptions // 创建选项
-	mjContext    server_pb.MajongContext
-	settler      interfaces.DeskSettler // 结算器
-	players      map[uint32]deskPlayer  // Seat -> player
-	event        chan deskEvent         // 牌桌事件通道
-	cancel       context.CancelFunc     // 取消事件处理
+	deskUID      uint64                            // 牌桌唯一 ID
+	gameID       int                               // 游戏 ID
+	createOption interfaces.CreateDeskOptions      // 创建选项
+	dContext     *deskContext                      // 牌桌现场
+	settler      interfaces.DeskSettler            // 结算器
+	players      map[uint32]deskPlayer             // Seat -> player
+	event        chan deskEvent                    // 牌桌事件通道
+	cancel       context.CancelFunc                // 取消事件处理
+	eventGen     interfaces.DeskAutoEventGenerator // 自动事件生成器
 }
 
 func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]deskPlayer, error) {
@@ -89,6 +99,7 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
 			players:      deskPlayers,
 			event:        make(chan deskEvent, 16),
+			eventGen:     global.GetDeskAutoEventGeneratorFactory().CreateGenerator(),
 		},
 	}, nil
 }
@@ -154,10 +165,14 @@ func (d *desk) Start(finish func()) error {
 		logEntry.Infoln("处理事件完成")
 		finish()
 	}()
+	go func() {
+		d.timerTask(ctx)
+	}()
 
 	d.event <- deskEvent{
 		eventID:      server_pb.EventID_event_start_game,
 		eventContext: []byte{},
+		stateNumber:  d.dContext.stateNumber,
 	}
 	return nil
 }
@@ -221,6 +236,7 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	d.event <- deskEvent{
 		eventID:      eventID,
 		eventContext: eventConetxtByte,
+		stateNumber:  d.dContext.stateNumber,
 	}
 }
 
@@ -237,11 +253,63 @@ func (d *desk) initMajongContext() error {
 		Option:       &server_pb.MajongCommonOption{},
 		MajongOption: []byte{},
 	}
+	var mjContext server_pb.MajongContext
 	var err error
-	if d.mjContext, err = majong_initial.InitMajongContext(param); err != nil {
+	if mjContext, err = majong_initial.InitMajongContext(param); err != nil {
 		return err
 	}
+	d.dContext = &deskContext{
+		mjContext:   mjContext,
+		stateNumber: 0,
+		stateTime:   time.Now(),
+	}
 	return nil
+}
+
+// genAutoEvent 生成自动事件
+func (d *desk) genAutoEvent() {
+	if d.eventGen == nil {
+		return
+	}
+	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
+	dContext := d.dContext
+	events := d.eventGen.Generate(&dContext.mjContext, dContext.stateTime)
+	for _, event := range events {
+		logrus.WithFields(logrus.Fields{
+			"func_name":    "desk.genAutoEvent",
+			"state_number": dContext.stateNumber,
+			"event_id":     event.ID,
+		}).Debugln("注入自动事件")
+		d.event <- deskEvent{
+			eventID:      event.ID,
+			eventContext: event.Context,
+			stateNumber:  dContext.stateNumber,
+		}
+	}
+}
+
+// timerTask 定时任务，产生自动事件
+func (d *desk) timerTask(ctx context.Context) {
+	defer func() {
+		if x := recover(); x != nil {
+			debug.PrintStack()
+		}
+	}()
+
+	timer := time.After(time.Second * 1)
+	for {
+		select {
+		case <-timer:
+			{
+				d.genAutoEvent()
+				timer = time.After(time.Second * 1)
+			}
+		case <-ctx.Done():
+			{
+				return
+			}
+		}
+	}
 }
 
 func (d *desk) processEvents(ctx context.Context) {
@@ -266,6 +334,9 @@ func (d *desk) processEvents(ctx context.Context) {
 			}
 		case event := <-d.event:
 			{
+				if event.stateNumber != d.dContext.stateNumber {
+					continue
+				}
 				d.processEvent(&event)
 			}
 		}
@@ -284,9 +355,11 @@ func (d *desk) processEvent(event *deskEvent) {
 		"func_name": "desk.ProcessEvent",
 		"event_id":  event.eventID,
 	})
+	stateNumber, mjContext, stateTime := d.dContext.stateNumber, d.dContext.mjContext, d.dContext.stateTime
+	oldState := mjContext.GetCurState()
 
 	result := majong_process.HandleMajongEvent(majong_process.HandleMajongEventParams{
-		MajongContext: d.mjContext,
+		MajongContext: mjContext,
 		EventID:       event.eventID,
 		EventContext:  event.eventContext,
 	})
@@ -294,15 +367,26 @@ func (d *desk) processEvent(event *deskEvent) {
 		logEntry.Debugln("处理事件不成功")
 		return
 	}
+	newContext := result.NewContext
+	newState := newContext.GetCurState()
+	if newState != oldState {
+		stateNumber++
+		stateTime = time.Now()
+	}
+	// dContext 的每次修改都是一块新内存，用来确保并发安全。
+	d.dContext = &deskContext{
+		mjContext:   newContext,
+		stateNumber: stateNumber,
+		stateTime:   stateTime,
+	}
 
 	// 发送消息给玩家
 	d.reply(result.ReplyMsgs)
-	d.mjContext = result.NewContext
-	d.settler.Settle(d, d.mjContext)
+	d.settler.Settle(d, newContext)
 
 	// 游戏结束
-	if d.mjContext.GetCurState() == server_pb.StateID_state_gameover {
-		d.settler.RoundSettle(d, d.mjContext)
+	if newContext.GetCurState() == server_pb.StateID_state_gameover {
+		d.settler.RoundSettle(d, newContext)
 		logEntry.Infoln("游戏结束状态")
 		d.cancel()
 	}

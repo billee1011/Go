@@ -211,7 +211,6 @@ message ReplyClientMessage {
 
 // TimeCheckInfo 时间检测信息
 message TimeCheckInfo {
-    uint32 check_id = 1;    // 检测 ID 
-    uint64 check_time = 2;  // 检测时间戳    
-    bool is_cancel = 3;     // 是否为取消（true 表示取消， false 表示设置）
+    uint64 duration = 1;            // 多久之后作检测
+    int32 type = 2;                 // 检测类型
 }
