@@ -75,13 +75,18 @@ func (s *ZiXunState) getZixunPlayer(flow interfaces.MajongFlow) uint64 {
 //angang 决策杠
 func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequestEvent) (majongpb.StateID, error) {
 	canAnGang, _ := s.canAnGang(flow, message)
+	mjContext := flow.GetMajongContext()
 	if canAnGang {
+		mjContext.GangCard = message.GetCard()
+		mjContext.LastGangPlayer = message.GetHead().GetPlayerId()
 		return majongpb.StateID_state_angang, nil
 	}
 	canBuGang, _ := s.canBuGang(flow, message)
 	if canBuGang {
 		//补杠的时候，可能会有玩家抢杠胡，所以此处也将胡牌玩家列表清空
 		flow.GetMajongContext().LastHuPlayers = flow.GetMajongContext().LastHuPlayers[:0]
+		mjContext.GangCard = message.GetCard()
+		mjContext.LastGangPlayer = message.GetHead().GetPlayerId()
 		hasQGH := s.hasQiangGangHu(flow)
 		if hasQGH {
 			//TODO: 可以在这里广播补杠的消息（也可以在waitqiangganghu的entry中进行广播）
@@ -175,15 +180,13 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 			return false, fmt.Errorf("当前的明杠操作会影响胡牌后的胡牌牌型，不允许暗杠")
 		}
 	}
-	mjContext.GangCard = angangCard
-	mjContext.LastGangPlayer = activePlayer.GetPalyerId()
 	return true, nil
 }
 
 //checkBuGang 检查补杠 (判断当前事件是否可行)
 func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.GangRequestEvent) (bool, error) {
 	context := flow.GetMajongContext()
-	activePlayer := utils.GetPlayerByID(context.Players, context.LastMopaiPlayer)
+	activePlayer := utils.GetPlayerByID(context.Players, s.getZixunPlayer(flow))
 	if len(context.WallCards) == 0 {
 		return false, fmt.Errorf("墙牌为0时，不予补杠")
 	}
@@ -228,8 +231,6 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 			return false, fmt.Errorf("当前的补杠杠操作会影响胡牌后的胡牌牌型，不允许补杠")
 		}
 	}
-	context.GangCard = bugangCard
-	context.LastGangPlayer = activePlayer.GetPalyerId()
 	return true, nil
 }
 
