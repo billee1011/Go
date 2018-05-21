@@ -121,7 +121,7 @@ func (s *QiangganghuState) doQiangGangHuSettle(flow interfaces.MajongFlow) {
 			HandCard: huPlayer.HandCards,
 			PengCard: utils.TransPengCard(huPlayer.PengCards),
 			GangCard: utils.TransGangCard(huPlayer.GangCards),
-			HuCard:   mjContext.GetLastMopaiCard(),
+			HuCard:   mjContext.GetGangCard(),
 		}
 		calculator := new(cardtype.ScxlCardTypeCalculator)
 		cardType, gen := calculator.Calculate(cardParams)
