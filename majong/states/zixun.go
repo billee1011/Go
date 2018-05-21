@@ -397,7 +397,6 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 	canTingInfos := []*room.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
 		tingCardInfo := []*room.TingCardInfo{}
-		// copy(newHand, player.GetHandCards())
 		outCard0, err := utils.IntToCard(int32(outCard))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
