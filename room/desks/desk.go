@@ -38,11 +38,10 @@ type desk struct {
 	gameID       int
 	createOption interfaces.CreateDeskOptions // 创建选项
 	mjContext    server_pb.MajongContext
-	settler      interfaces.DeskSettler   // 结算器
-	players      map[uint32]deskPlayer    // Seat -> player
-	event        chan deskEvent           // 牌桌事件通道
-	autoEvent    chan server_pb.AutoEvent // 自动事件通道
-	cancel       context.CancelFunc       // 取消事件处理
+	settler      interfaces.DeskSettler // 结算器
+	players      map[uint32]deskPlayer  // Seat -> player
+	event        chan deskEvent         // 牌桌事件通道
+	cancel       context.CancelFunc     // 取消事件处理
 }
 
 func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]deskPlayer, error) {
@@ -90,7 +89,6 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
 			players:      deskPlayers,
 			event:        make(chan deskEvent, 16),
-			autoEvent:    make(chan server_pb.AutoEvent, 1),
 		},
 	}, nil
 }
@@ -266,13 +264,6 @@ func (d *desk) processEvents(ctx context.Context) {
 				logEntry.Infoln("done")
 				return
 			}
-		case autoEvent := <-d.autoEvent: // 需要确保 autoEvent 通道有 1 个缓冲区
-			{
-				d.processEvent(&deskEvent{
-					eventID:      autoEvent.GetEventId(),
-					eventContext: autoEvent.GetEventContext(),
-				})
-			}
 		case event := <-d.event:
 			{
 				d.processEvent(&event)
@@ -294,19 +285,20 @@ func (d *desk) processEvent(event *deskEvent) {
 		"event_id":  event.eventID,
 	})
 
-	mjContext, autoEvent, replyMsgs, succeed := majong_process.HandleMajongEvent(d.mjContext, event.eventID, event.eventContext)
-	if !succeed {
+	result := majong_process.HandleMajongEvent(majong_process.HandleMajongEventParams{
+		MajongContext: d.mjContext,
+		EventID:       event.eventID,
+		EventContext:  event.eventContext,
+	})
+	if !result.Succeed {
 		logEntry.Debugln("处理事件不成功")
 		return
 	}
-	// 发送消息给玩家
-	d.reply(replyMsgs)
 
-	d.mjContext = mjContext
+	// 发送消息给玩家
+	d.reply(result.ReplyMsgs)
+	d.mjContext = result.NewContext
 	d.settler.Settle(d, d.mjContext)
-	if autoEvent != nil {
-		d.autoEvent <- *autoEvent
-	}
 
 	// 游戏结束
 	if d.mjContext.GetCurState() == server_pb.StateID_state_gameover {

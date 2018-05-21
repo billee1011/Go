@@ -208,3 +208,10 @@ message ReplyClientMessage {
     int32 msg_id = 2;               // 消息 ID
     bytes msg = 3;    // 消息体
 }
+
+// TimeCheckInfo 时间检测信息
+message TimeCheckInfo {
+    uint32 check_id = 1;    // 检测 ID 
+    uint64 check_time = 2;  // 检测时间戳    
+    bool is_cancel = 3;     // 是否为取消（true 表示取消， false 表示设置）
+}
