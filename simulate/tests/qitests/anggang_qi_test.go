@@ -9,8 +9,10 @@ import (
 )
 
 // Test_AnGang_Qi 测试自询暗杠弃
+// 庄家出3W,所有客户端接受出牌通知,其他玩家无操作,下家摸牌1B
 // 期望：
-// 保留原状态
+// 下家摸牌1B后，将收到自询通知能暗杠6W,7W
+// 下家不杠选择弃，等待下家出牌
 func Test_AnGang_Qi(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()

@@ -12,8 +12,8 @@ import (
 
 // Test_Peng_Qi 测试自询碰弃
 // 期望：
-// 庄家出5W后，1号玩家将收到出牌问询通知，可碰
-// 1号玩家发出弃碰请求，1号玩家将收到自询通知
+// 庄家出5W后，1号玩家将收到出牌问询通知，可碰5W
+// 1号玩家发出弃碰请求后1号玩家摸牌，1号玩家将收到自询通知
 func Test_Peng_Qi(t *testing.T) {
 	var Int5w uint32 = 15
 	params := global.NewCommonStartGameParams()
