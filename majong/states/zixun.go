@@ -397,10 +397,23 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 	canTingInfos := []*room.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
 		tingCardInfo := []*room.TingCardInfo{}
+		// copy(newHand, player.GetHandCards())
+		outCard0, err := utils.IntToCard(int32(outCard))
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"func_name": "utils.IntToCard",
+			}).Error("牌型转换失败")
+		}
+		newHand, success := utils.RemoveCards(player.GetHandCards(), outCard0, 1)
+		if !success {
+			logrus.WithFields(logrus.Fields{
+				"func_name": "addTingInfo",
+			}).Error("牌型移除失败")
+		}
 		for _, tt := range tingInfo {
 			huCard, _ := utils.IntToCard(int32(tt))
 			times, _ := facade.CalculateCardValue(&cardtype.ScxlCardTypeCalculator{}, interfaces.CardCalcParams{
-				HandCard: player.GetHandCards(),
+				HandCard: newHand,
 				PengCard: s.getPengCards(player.GetPengCards()),
 				GangCard: s.getGangCards(player.GetGangCards()),
 				HuCard:   huCard,
