@@ -45,7 +45,9 @@ func FastCheckQiDuiTingInfo(cards []Card, avalibleCards []Card) map[Card][]Card 
 			cm[card] = 0
 			cards = append(cards[:index], cards[index+1:]...)
 			tingCards := FastCheckQiDuiTing(cards, avalibleCards)
-			tingInfo[card] = tingCards
+			if len(tingCards) > 0 {
+				tingInfo[card] = tingCards
+			}
 			cards = append(cards[:index], append([]Card{card}, cards[index:]...)...)
 		}
 	}
