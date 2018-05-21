@@ -16,6 +16,7 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 	if len(game) == 0 {
 		w.WriteHeader(404)
 		w.Write([]byte("配牌失败，需要配牌关键字"))
+		logrus.Debugln("配牌失败，需要配牌关键字")
 		return
 	}
 	value := r.FormValue("cards")
@@ -26,11 +27,13 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(404)
 			w.Write([]byte("墙牌长度应为纯数字"))
+			logrus.Debugln("墙牌长度应为纯数字")
 			return
 		}
 		if lenNum < 54 || lenNum > 108 {
 			w.WriteHeader(404)
 			w.Write([]byte("墙牌长度不能少于54且不能大于108"))
+			logrus.Debugln("墙牌长度不能少于54且不能大于108")
 			return
 		}
 		lens = lenNum
@@ -52,6 +55,7 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(404)
 			w.Write([]byte("庄家index应该为纯数字"))
+			logrus.Debugln("庄家index应该为纯数字")
 			return
 		}
 		zhuangIndex = index
@@ -64,6 +68,7 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(404)
 			w.Write([]byte("配牌失败"))
+			logrus.Debugln("配牌失败")
 			return
 		}
 		cards = append(cards, ca)
@@ -71,6 +76,7 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 	if len(cards) > 108 {
 		w.WriteHeader(404)
 		w.Write([]byte("配牌越界，您的配牌超过了108张"))
+		logrus.Debugln("配牌越界，您的配牌超过了108张")
 		return
 	}
 	cardsNum := make(map[int]int)
@@ -92,15 +98,17 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(404)
 			data := "牌：" + strconv.Itoa(c) + "不存在墙牌中，请检查配牌"
 			w.Write([]byte(data))
+			logrus.Debugln(data)
 			return
 		}
 		if num > 4 {
 			w.WriteHeader(404)
 			data := "牌：" + strconv.Itoa(c) + "的配牌数量为：" + strconv.Itoa(num) + "，超过了配牌值,请重新配牌"
 			w.Write([]byte(data))
+			logrus.Debugln(data)
+			return
 		}
 	}
-	// peipaiValue[game] = value
 	pp := peipaiInfo{
 		Key:    game,
 		Cards:  value,
@@ -109,21 +117,16 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 		Zhuang: zhuangIndex,
 	}
 	addPeiPaiInfo(pp)
-	// for k, info := range peiPaiInfos {
-	// 	logrus.WithFields(logrus.Fields{
-	// 		strconv.Itoa(k): logrus.Fields{
-	// 			"game":   info.Key,
-	// 			"cards":  info.Cards,
-	// 			"len":    info.Len,
-	// 			"fx":     info.Fx,
-	// 			"zhuang": info.Zhuang,
-	// 		},
-	// 	}).Info("所有的配牌信息")
-	// }
-
 	okStr := "ok"
 	w.WriteHeader(200)
 	w.Write([]byte(okStr))
+	logrus.WithFields(logrus.Fields{
+		"游戏":    pp.Key,
+		"墙牌长度":  pp.Len,
+		"配牌":    pp.Cards,
+		"换三张方向": pp.Fx,
+		"庄家座位号": pp.Zhuang,
+	}).Info("配牌成功")
 }
 
 var peipaiValue map[string]string

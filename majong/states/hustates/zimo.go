@@ -147,6 +147,8 @@ func (s *ZimoState) huType2SettleType(huType room.HuType) majongpb.SettleHuType 
 		room.HuType_HT_GANGKAI:           majongpb.SettleHuType_settle_hu_gangkai,
 		room.HuType_HT_HAIDILAO:          majongpb.SettleHuType_settle_hu_haidilao,
 		room.HuType_HT_GANGSHANGHAIDILAO: majongpb.SettleHuType_settle_hu_gangshanghaidilao,
+		room.HuType_HT_TIANHU:            majongpb.SettleHuType_settle_hu_tianhu,
+		room.HuType_HT_DIHU:              majongpb.SettleHuType_settle_hu_dihu,
 	}[huType]
 }
 
