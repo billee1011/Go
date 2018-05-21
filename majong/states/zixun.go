@@ -117,7 +117,10 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	//检查玩家是否胡过牌,胡过牌的话,摸啥打啥,能胡不让打
 	card := message.GetCards()
 	activePlayer := utils.GetPlayerByID(context.GetPlayers(), pid)
-	if len(activePlayer.GetHuCards()) > 0 && utils.CardEqual(card, context.GetLastMopaiCard()) {
+	if len(activePlayer.GetHuCards()) > 0 {
+		if !utils.CardEqual(card, context.GetLastMopaiCard()) {
+			return majongpb.StateID_state_zixun, nil
+		}
 		if s.checkZiMo(flow) {
 			return majongpb.StateID_state_zixun, fmt.Errorf("玩家当前只能选择胡牌,不能进行出牌操作")
 		}
