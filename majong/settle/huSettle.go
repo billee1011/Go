@@ -94,7 +94,7 @@ func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
 			equallyTotal := score / int64(winSum)
 			for _, huPlayerID := range params.HuPlayers {
 				callTransferS.Scores[huPlayerID] = equallyTotal
-				callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - score
+				callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - equallyTotal
 			}
 
 			// 剩余分数
