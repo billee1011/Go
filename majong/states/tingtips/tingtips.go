@@ -47,7 +47,7 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 		return
 	}
 	// wuhongwei 增加七对提示
-	tingCards, _ := utils.GetTingCards(playerCards) // TODO, 目前没有包括特殊牌型
+	tingCards, _ := utils.GetTingCards(playerCards, nil) // TODO, 目前没有包括特殊牌型
 
 	ntf := room.RoomTingInfoNtf{}
 	for _, card := range tingCards {

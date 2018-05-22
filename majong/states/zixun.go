@@ -368,14 +368,14 @@ func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Pla
 	//没有定缺牌的时候正常查听
 	case 0:
 		{
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards())
+			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
 			s.addTingInfo(zixunNtf, player, context, tingInfos)
 		}
 	// 当定缺牌为1的时候,只有定缺牌才有听牌提示
 	case 1:
 		{
 			newTingInfos := map[utils.Card][]utils.Card{}
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards())
+			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
 			for outCard, tingCard := range tingInfos {
 				card, _ := utils.IntToCard(int32(outCard))
 				if card.GetColor() == player.DingqueColor {
