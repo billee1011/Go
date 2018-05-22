@@ -184,7 +184,8 @@ func checkPengPengHu(cardCalcParams interfaces.CardCalcParams) bool {
 	handCardSum := 0
 	cardCount := make(map[int32]int)
 	for _, card := range checkCards {
-		cardCount[card.Point] = cardCount[card.Point] + 1
+		cardValue, _ := utils.CardToInt(*card)
+		cardCount[*cardValue] = cardCount[*cardValue] + 1
 	}
 	cards := []int32{}
 	for cardPoint, v := range cardCount {
