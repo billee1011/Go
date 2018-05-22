@@ -38,6 +38,18 @@ func (jam *joinApplyManager) joinPlayer(playerID uint64) room.RoomError {
 	return room.RoomError_Success
 }
 
+func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
+	result := make([]uint64, 0, len(playerIDs))
+	playerMgr := global.GetPlayerMgr()
+	for _, playerID := range playerIDs {
+		player := playerMgr.GetPlayer(playerID)
+		if player != nil && player.GetClientID() != 0 {
+			result = append(result, playerID)
+		}
+	}
+	return result
+}
+
 func (jam *joinApplyManager) checkMatch() {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "checkMatch",
@@ -55,6 +67,7 @@ func (jam *joinApplyManager) checkMatch() {
 			break
 		}
 		applyPlayers = append(applyPlayers, playerID)
+		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
 
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]

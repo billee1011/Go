@@ -34,6 +34,14 @@ func (pm *playerMgr) getPlayer(playerID uint64) interfaces.Player {
 	return v.(interfaces.Player)
 }
 
+func (pm *playerMgr) OnClientDisconnect(clientID uint64) {
+	player := pm.GetPlayerByClientID(clientID)
+	pm.clientMap.Delete(clientID)
+	if player != nil {
+		player.SetClientID(0)
+	}
+}
+
 func (pm *playerMgr) GetPlayerByClientID(clientID uint64) interfaces.Player {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()

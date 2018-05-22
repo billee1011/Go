@@ -1,6 +1,7 @@
 package core
 
 import (
+	"steve/room/interfaces/global"
 	"steve/structs/net"
 
 	"github.com/Sirupsen/logrus"
@@ -16,4 +17,6 @@ func (co *connectObserver) OnClientConnect(clientID uint64) {
 
 func (co *connectObserver) OnClientDisconnect(clientID uint64) {
 	logrus.WithField("client_id", clientID).Info("client disconnected")
+	playerMgr := global.GetPlayerMgr()
+	playerMgr.OnClientDisconnect(clientID)
 }
