@@ -12,8 +12,8 @@ import (
 
 // Test_MingGang_Qi 测试明杠弃
 // 期望：
-// 庄家出9W后，1号玩家将收到出牌问询通知，可杠
-// 1号玩家发出弃杠请求，1号玩家将收到自询通知
+// 庄家出9W后，1号玩家将收到出牌问询通知，可杠9W
+// 1号玩家发出弃杠请求后，1号玩家摸牌，1号玩家将收到自询通知
 func Test_MingGang_Qi(t *testing.T) {
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()

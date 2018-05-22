@@ -45,6 +45,10 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			}
 		}
 		if hasChupaiwenxun {
+			logrus.WithFields(logrus.Fields{
+				"player":  context.GetLastChupaiPlayer(),
+				"outCard": card,
+			}).Info("出牌信息")
 			return majongpb.StateID_state_chupaiwenxun, nil
 		}
 		player := utils.GetNextPlayerByID(context.GetPlayers(), context.GetLastChupaiPlayer())

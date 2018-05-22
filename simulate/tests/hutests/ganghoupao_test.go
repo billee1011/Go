@@ -83,7 +83,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
-	dianpaoWinScore := 2
+	dianpaoWinScore := 16
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
 			assert.Equal(t, billInfo.GetScore(), int64(-dianpaoWinScore))

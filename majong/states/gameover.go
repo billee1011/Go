@@ -117,11 +117,18 @@ func isNoTingPlayers(player *majongpb.Player) bool {
 	if len(player.HuCards) > 0 {
 		return false
 	}
-	// 查听
-	tingCards, _ := utils.GetTingCards(player.HandCards)
-	// 不能听
-	if len(tingCards) == 0 && !isFlowerPig(player) {
-		return true
+
+	if !hasDingQueCard(player.HandCards, player.DingqueColor) { // 手牌中没有定缺牌，检查该玩家是否可听，不可听返回true
+		// 查听
+		tingCards, _ := utils.GetTingCards(player.HandCards)
+		// 不能听
+		if len(tingCards) == 0 {
+			return true
+		}
+	} else { //  手牌中若有定缺牌，检查该玩家是否是花猪，不是花猪返回true
+		if !isFlowerPig(player) {
+			return true
+		}
 	}
 	return false
 }
