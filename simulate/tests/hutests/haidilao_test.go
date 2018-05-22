@@ -7,8 +7,6 @@ import (
 	"steve/simulate/utils"
 	"testing"
 
-	"fmt"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,26 +54,8 @@ func Test_Zimo_Haidilao(t *testing.T) {
 
 	// 检测所有玩家收到（海底捞算自摸）自摸结算通知,自摸-清一色-2根 = 2 * 4 *4 = 32
 	winScro := 32 * (len(deskData.Players) - 1)
-	checkZiMoSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
 
 	// 检测所有玩家收到海底捞胡类型通知
 	utils.CheckHuNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_HAIDILAO)
-}
-
-// checkZiMoSettleScoreNotify 检查自摸分数结算通知
-func checkZiMoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, zimoSeat int, winScore int64) {
-	zimoplayer := utils.GetDeskPlayerBySeat(zimoSeat, deskData)
-	zimoID := zimoplayer.Player.GetID()
-	expector, _ := zimoplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
-	ntf := room.RoomSettleInstantRsp{}
-	expector.Recv(global.DefaultWaitMessageTime, &ntf)
-	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
-	for _, billInfo := range ntf.BillPlayersInfo {
-		if billInfo.GetPid() == zimoID {
-			assert.Equal(t, billInfo.GetScore(), winScore)
-		} else {
-			assert.Equal(t, billInfo.GetScore(), -(winScore / 3))
-		}
-		fmt.Println(billInfo)
-	}
 }

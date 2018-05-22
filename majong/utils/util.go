@@ -353,7 +353,7 @@ func SeekCardSum(cards []*majongpb.Card, targetCard *majongpb.Card) int {
 }
 
 //GetTingPlayerIDAndMultiple 获取所有听玩家,和返回每个听玩家最大倍数
-func GetTingPlayerIDAndMultiple(players []*majongpb.Player) (map[uint64]int64, error) {
+func GetTingPlayerIDAndMultiple(players []*majongpb.Player, laizi map[Card]bool) (map[uint64]int64, error) {
 	tingPlayers := make(map[uint64]int64, 0)
 	for i := 0; i < len(players); i++ {
 		// 胡过的不算
@@ -361,7 +361,7 @@ func GetTingPlayerIDAndMultiple(players []*majongpb.Player) (map[uint64]int64, e
 			continue
 		}
 		// 查能不能听，能听，返回返回最大番型，及ID
-		isTing, multiple, err := IsCanTingAndGetMultiple(players[i])
+		isTing, multiple, err := IsCanTingAndGetMultiple(players[i], laizi)
 		if err != nil {
 			return nil, err
 		}
@@ -375,12 +375,12 @@ func GetTingPlayerIDAndMultiple(players []*majongpb.Player) (map[uint64]int64, e
 //IsCanTingAndGetMultiple 判断玩家是否能听,和返回能听玩家的最大倍数 TODO
 //未上听者需赔上听者最大可能番数（杠后炮、杠上开花、抢杠胡、海底捞、海底炮不参与）的牌型钱。注：查大叫时，
 //若上听者牌型中有根，则根也要未上听者包给上听者。
-func IsCanTingAndGetMultiple(player *majongpb.Player) (bool, int64, error) {
+func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool, int64, error) {
 	var max int64
 	handCardSum := len(player.HandCards)
 	//只差1张牌就能胡，并且玩家手牌不存在花牌
 	if handCardSum%3 == 1 && !CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
-		tingCards, err := GetTingCards(player.HandCards)
+		tingCards, err := GetTingCards(player.HandCards, laizi)
 		if err != nil {
 			return false, 0, err
 		}
@@ -399,12 +399,11 @@ func IsCanTingAndGetMultiple(player *majongpb.Player) (bool, int64, error) {
 }
 
 //GetTingCards 获取玩家能胡的牌,必须是缺一张
-func GetTingCards(handCards []*majongpb.Card) ([]*majongpb.Card, error) {
+func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]*majongpb.Card, error) {
 	if len(handCards)%3 != 1 {
 		return []*majongpb.Card{}, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
 	}
 	cardsCard := CardsToUtilCards(handCards)
-	laizi := make(map[Card]bool)
 	// 推倒胡
 	huCards := FastCheckTingV2(cardsCard, laizi)
 	// 七对
@@ -462,7 +461,7 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 }
 
 //GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
-func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
+func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card][]Card {
 	tingInfo := make(map[Card][]Card)
 	// 不能少一张
 	if len(handCards)%3 != 2 {
@@ -470,7 +469,6 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card) map[Card][]Card {
 	}
 	// 手牌转查胡的工具牌
 	cardsCard := CardsToUtilCards(handCards)
-	laizi := make(map[Card]bool)
 	// 推倒胡查胡，打那张牌可以胡那些牌
 	tingInfo = FastCheckTingInfoV2(cardsCard, laizi)
 	// 1-9所有牌

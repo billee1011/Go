@@ -213,10 +213,9 @@ func checkQingPeng(cardCalcParams interfaces.CardCalcParams) bool {
 
 // checkJingGouDiao 金钩钓-胡牌时手里只剩一张，并且单钓一这张，其他的牌都被杠或碰了,不计碰碰胡。
 func checkJingGouDiao(cardCalcParams interfaces.CardCalcParams) bool {
-	handCards := cardCalcParams.HandCard
-	if len(handCards) == 1 {
-		huCard := cardCalcParams.HuCard
-		if utils.CardEqual(huCard, handCards[0]) {
+	checkCards := getCheckCards(cardCalcParams.HandCard, cardCalcParams.HuCard)
+	if len(checkCards) == 2 {
+		if utils.CardEqual(checkCards[0], checkCards[1]) {
 			if len(cardCalcParams.PengCard) != 0 {
 				return true
 			}
