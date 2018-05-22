@@ -85,7 +85,7 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, mjContext *majongpb.MajongCont
 		return room.HuType_HT_HAIDILAO
 	}
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
-	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 {
+	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
 		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
 			return room.HuType_HT_TIANHU
 		}
