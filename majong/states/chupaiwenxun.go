@@ -57,7 +57,6 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 		}
 		ntf := room.RoomChupaiWenxunNtf{}
 		ntf.Card = proto.Uint32(utils.ServerCard2Uint32(card))
-		ntf.EnableQi = proto.Bool(true)
 		for _, action := range actions {
 			switch action {
 			case majongpb.Action_action_peng:
@@ -72,7 +71,10 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 				{
 					ntf.EnableDianpao = proto.Bool(true)
 				}
-
+			case majongpb.Action_action_qi:
+				{
+					ntf.EnableQi = proto.Bool(true)
+				}
 			}
 		}
 		logrus.WithFields(logrus.Fields{
