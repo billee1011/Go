@@ -125,6 +125,29 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	return
 }
 
+// HandleRoomContinueReq 玩家申请续局
+func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+
+	rsp := &room.RoomDeskContinueRsp{
+		ErrCode: room.RoomError_Success.Enum(),
+	}
+	rspMsg = []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_ROOM_DESK_CONTINUE_RSP),
+			Body:  rsp,
+		},
+	}
+
+	if player == nil {
+		rsp.ErrCode = room.RoomError_not_login.Enum()
+		return
+	}
+	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
+	return
+}
+
 // HandleRoomDeskQuitReq 处理玩家退出桌面请求
 // 失败先不回复
 func HandleRoomDeskQuitReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
