@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	msgid "steve/client_pb/msgId"
 	iexchanger "steve/structs/exchanger"
 	"steve/structs/net"
 	"steve/structs/proto/base"
@@ -81,9 +82,9 @@ func (e *exchangerImpl) SendPackage(clientID uint64, head *steve_proto_gaterpc.H
 
 func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_gaterpc.Header, body proto.Message) error {
 	entry := logrus.WithFields(logrus.Fields{
-		"name":      "exchangerImpl.SendPackage",
+		"name":      "exchangerImpl.BroadcastPackage",
 		"client_id": clientIDs,
-		"msg_id":    head.MsgId,
+		"msg_id":    msgid.MsgID(head.GetMsgId()),
 	})
 	bodyData := []byte{}
 	var err error
@@ -92,6 +93,7 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 		entry.WithError(err).Errorln(errMarshal)
 		return errMarshal
 	}
+	entry.Debugln("广播消息")
 	err = e.BroadcastPackageBare(clientIDs, head, bodyData)
 	return err
 }

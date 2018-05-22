@@ -38,6 +38,18 @@ func (jam *joinApplyManager) joinPlayer(playerID uint64) room.RoomError {
 	return room.RoomError_Success
 }
 
+func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
+	result := make([]uint64, 0, len(playerIDs))
+	playerMgr := global.GetPlayerMgr()
+	for _, playerID := range playerIDs {
+		player := playerMgr.GetPlayer(playerID)
+		if player != nil && player.GetClientID() != 0 {
+			result = append(result, playerID)
+		}
+	}
+	return result
+}
+
 func (jam *joinApplyManager) checkMatch() {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "checkMatch",
@@ -55,6 +67,7 @@ func (jam *joinApplyManager) checkMatch() {
 			break
 		}
 		applyPlayers = append(applyPlayers, playerID)
+		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
 
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]
@@ -113,6 +126,29 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
 			MsgID: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
+			Body:  rsp,
+		},
+	}
+
+	if player == nil {
+		rsp.ErrCode = room.RoomError_not_login.Enum()
+		return
+	}
+	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
+	return
+}
+
+// HandleRoomContinueReq 玩家申请续局
+func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+
+	rsp := &room.RoomDeskContinueRsp{
+		ErrCode: room.RoomError_Success.Enum(),
+	}
+	rspMsg = []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_ROOM_DESK_CONTINUE_RSP),
 			Body:  rsp,
 		},
 	}

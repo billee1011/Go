@@ -5,6 +5,7 @@ type Player interface {
 	GetID() uint64
 	GetCoin() uint64
 	GetClientID() uint64
+	SetClientID(clientID uint64)
 	SetCoin(coin uint64)
 }
 
@@ -13,4 +14,5 @@ type PlayerMgr interface {
 	AddPlayer(p Player)
 	GetPlayer(ID uint64) Player
 	GetPlayerByClientID(clientID uint64) Player
+	OnClientDisconnect(clientID uint64)
 }

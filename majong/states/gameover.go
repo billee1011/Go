@@ -132,7 +132,7 @@ func isNoTingPlayers(player *majongpb.Player) bool {
 
 	if !hasDingQueCard(player.HandCards, player.DingqueColor) { // 手牌中没有定缺牌，检查该玩家是否可听，不可听返回true
 		// 查听
-		tingCards, _ := utils.GetTingCards(player.HandCards)
+		tingCards, _ := utils.GetTingCards(player.HandCards, nil)
 		// 不能听
 		if len(tingCards) == 0 {
 			return true
@@ -159,7 +159,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 		var maxMulti int64
 		//只差1张牌就能胡，并且玩家手牌不存在花牌
 		if handCardSum%3 == 1 && !hasDingQueCard(players[i].HandCards, players[i].DingqueColor) {
-			tingCards, err := utils.GetTingCards(players[i].HandCards)
+			tingCards, err := utils.GetTingCards(players[i].HandCards, nil)
 			if err != nil {
 				return nil, err
 			}

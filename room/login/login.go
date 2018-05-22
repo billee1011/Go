@@ -31,6 +31,9 @@ func (p *player) GetClientID() uint64 {
 func (p *player) SetCoin(coin uint64) {
 	p.coin = coin
 }
+func (p *player) SetClientID(clientID uint64) {
+	p.clientID = clientID
+}
 
 var maxPlayerID uint64
 var maxPlayerIDMutex sync.Mutex

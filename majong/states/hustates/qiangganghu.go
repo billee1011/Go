@@ -67,6 +67,18 @@ func (s *QiangganghuState) addHuCard(card *majongpb.Card, player *majongpb.Playe
 	addHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao, isReal)
 }
 
+func (s *QiangganghuState) removeSrcCard(card *majongpb.Card, srcPlayer *majongpb.Player) {
+	var succ bool
+	srcPlayer.HandCards, succ = utils.RemoveCards(srcPlayer.GetHandCards(), card, 1)
+	if !succ {
+		logrus.WithFields(logrus.Fields{
+			"func_name":      "QiangganghuState.removeSrcCard",
+			"hand_cards":     srcPlayer.GetHandCards(),
+			"gang_player_id": srcPlayer.GetPalyerId(),
+		}).Errorln("移除杠者的杠牌失败")
+	}
+}
+
 // doHu 执行胡操作
 func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
@@ -76,14 +88,17 @@ func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 	})
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 	players := mjContext.GetLastHuPlayers()
+	srcPlayerID := mjContext.GetLastGangPlayer()
+	srcPlayer := utils.GetPlayerByID(mjContext.GetPlayers(), srcPlayerID)
+	card := mjContext.GetGangCard() // 杠的牌为抢杠胡的牌
 
 	isReal := true
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
-		card := mjContext.GetGangCard() // 杠的牌为抢杠胡的牌
-		s.addHuCard(card, player, playerID, isReal)
+		s.addHuCard(card, player, srcPlayerID, isReal)
 		isReal = false
 	}
+	s.removeSrcCard(card, srcPlayer)
 	s.notifyHu(flow)
 	return
 }

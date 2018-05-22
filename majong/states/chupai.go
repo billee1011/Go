@@ -76,7 +76,9 @@ func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majo
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
 	}
 	if len(player.PossibleActions) > 0 {
-		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qi)
+		if len(player.GetHuCards()) == 0 || !canDianPao {
+			player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qi)
+		}
 	}
 	return canDianPao || canMingGang || canPeng
 }
