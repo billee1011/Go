@@ -29,8 +29,10 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 	for i := 0; i < len(params.HuPlayers); i++ {
 		//底数
 		ante := GetDi()
+		// 倍数
+		value := int64(params.CardValues[params.HuPlayers[i]]) * int64(getHuTypeValue(params.HuType))
 		// 总分
-		total := int64(params.CardValues[params.HuPlayers[i]]) * ante * int64(getHuTypeValue(params.HuType))
+		total := value * ante
 		win := int64(0)
 		lose := int64(0)
 		if params.SettleType == majongpb.SettleType_settle_zimo {
@@ -48,7 +50,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 			}
 			huSettleInfo.Scores[params.SrcPlayer] = lose
 		}
-		huSettleInfo.CardValue = params.CardValues[params.HuPlayers[i]]
+		huSettleInfo.CardValue = uint32(value)
 		huSettleInfo.CardType = params.CardTypes[params.HuPlayers[i]]
 		huSettleInfo.GenCount = params.GenCount[params.HuPlayers[i]]
 
@@ -92,7 +94,7 @@ func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
 			equallyTotal := score / int64(winSum)
 			for _, huPlayerID := range params.HuPlayers {
 				callTransferS.Scores[huPlayerID] = equallyTotal
-				callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - score
+				callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - equallyTotal
 			}
 
 			// 剩余分数
@@ -152,13 +154,13 @@ func getHuTypeValue(huType majongpb.SettleHuType) uint32 {
 	huTypeValues := map[majongpb.SettleHuType]uint32{
 		majongpb.SettleHuType_settle_hu_noramaldianpao:    1,
 		majongpb.SettleHuType_settle_hu_zimo:              2,
-		majongpb.SettleHuType_settle_hu_gangkai:           2,
+		majongpb.SettleHuType_settle_hu_gangkai:           2 * 2,
 		majongpb.SettleHuType_settle_hu_ganghoupao:        2,
 		majongpb.SettleHuType_settle_hu_qiangganghu:       2,
 		majongpb.SettleHuType_settle_hu_haidilao:          2,
 		majongpb.SettleHuType_settle_hu_gangshanghaidilao: 4,
-		majongpb.SettleHuType_settle_hu_tianhu:            32,
-		majongpb.SettleHuType_settle_hu_dihu:              32,
+		majongpb.SettleHuType_settle_hu_tianhu:            32 * 2,
+		majongpb.SettleHuType_settle_hu_dihu:              32 * 2,
 	}
 	return huTypeValues[huType]
 }

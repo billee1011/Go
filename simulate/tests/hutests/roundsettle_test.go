@@ -1,7 +1,6 @@
 package hutests
 
 import (
-	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -82,7 +81,6 @@ func CheckRoundSettleNotify(t *testing.T, deskData *utils.DeskData, gangSeat int
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
 		ntf := room.RoomBalanceInfoRsp{}
-		expector.Recv(global.DefaultWaitMessageTime, &ntf)
-		fmt.Println(ntf)
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	}
 }
