@@ -127,7 +127,7 @@ func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
 				startIndex := getPlayerIndex(params.SrcPlayer, params.AllPlayers)
 				firstPlayerID := getPalyerCloseIndex(startIndex, params.AllPlayers, params.HuPlayers)
 				if firstPlayerID != 0 {
-					callTransferS.Scores[firstPlayerID] = surplusTotal
+					callTransferS.Scores[firstPlayerID] = callTransferS.Scores[firstPlayerID] + surplusTotal
 					callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - surplusTotal
 				}
 			}
