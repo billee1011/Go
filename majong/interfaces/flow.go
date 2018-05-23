@@ -22,6 +22,8 @@ type MajongFlow interface {
 	GetSettler(settlerType SettlerType) Settler
 	PushMessages(playerIDs []uint64, msgs ...ToClientMessage)
 	GetMessages() []majongpb.ReplyClientMessage
+	AppendTimeCheckInfo(timeCheckInfo majongpb.TimeCheckInfo) // 添加时间检测
+	GetTimeCheckInfos() []majongpb.TimeCheckInfo              // 获取时间检测
 }
 
 // BroadcaseMessage 将消息广播给牌桌所有玩家

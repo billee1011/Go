@@ -18,6 +18,7 @@ type flow struct {
 	stateFactory        interfaces.MajongStateFactory
 	transitionValidator interfaces.TransitionValidator
 	msgs                []majongpb.ReplyClientMessage
+	timeCheckInfos      []majongpb.TimeCheckInfo
 }
 
 // NewFlow 创建 Flow
@@ -40,51 +41,86 @@ func (f *flow) SetAutoEvent(autoEvent majongpb.AutoEvent) {
 	f.autoEvent = &autoEvent
 }
 
-var errCreateState = errors.New("创建当前状态对象失败")
+var errCreateState = errors.New("创建状态对象失败")
 var errStateProcess = errors.New("当前状态处理事件失败")
-var errCreateNewState = errors.New("创建新状态对象失败")
 var errTransitionNotExist = errors.New("不存在转换关系")
 
+// stateProcess 派发到状态处理事件
+func (f *flow) stateProcess(entry *logrus.Entry, eventID majongpb.EventID, eventContext []byte) (majongpb.StateID, error) {
+	curStateID := f.context.CurState
+	oldState := f.stateFactory.CreateState(int(f.context.GameId), curStateID)
+	if oldState == nil {
+		entry.Error(errCreateState)
+		return curStateID, errCreateState
+	}
+	newStateID, err := oldState.ProcessEvent(eventID, eventContext, f)
+	if err != nil {
+		entry.WithError(err).Error(errStateProcess)
+		return curStateID, errStateProcess
+	}
+	return newStateID, nil
+}
+
+// switchState 状态切换
+func (f *flow) switchState(entry *logrus.Entry, eventID majongpb.EventID, newStateID majongpb.StateID) error {
+	oldStateID := f.context.CurState
+	entry = entry.WithFields(logrus.Fields{
+		"old_state": f.context.CurState,
+		"new_state": newStateID,
+	})
+	entry.Debugln("状态切换")
+	if newStateID == oldStateID {
+		return nil
+	}
+	if err := f.transitionValidator.Valid(oldStateID, newStateID, eventID, f); err != nil {
+		entry.WithError(err).Error(errTransitionNotExist)
+		return errTransitionNotExist
+	}
+	oldState := f.stateFactory.CreateState(int(f.context.GameId), oldStateID)
+	newState := f.stateFactory.CreateState(int(f.context.GameId), newStateID)
+	if oldState == nil || newState == nil {
+		entry.Error(errCreateState)
+		return errCreateState
+	}
+	oldState.OnExit(f)
+	f.context.CurState = newStateID
+	newState.OnEntry(f)
+	return nil
+}
+
+// processAutoEvent 处理自动事件
+func (f *flow) processAutoEvent(entry *logrus.Entry) error {
+	if f.autoEvent == nil {
+		return nil
+	}
+	ae := f.autoEvent
+	f.autoEvent = nil
+
+	entry.WithFields(logrus.Fields{
+		"event_id": ae.EventId,
+	}).Debugln("处理自动事件")
+
+	return f.ProcessEvent(ae.EventId, ae.EventContext)
+}
+
+// ProcessEvent 处理外部事件
 func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error {
 	entry := logrus.WithFields(logrus.Fields{
+		"func_name":        "flow.ProcessEvent",
 		"event_id":         eventID,
 		"current_state_id": f.context.CurState,
 		"game_id":          f.context.GameId,
 	})
 
-	oldState := f.stateFactory.CreateState(int(f.context.GameId), f.context.CurState)
-	if oldState == nil {
-		entry.Error(errCreateState)
-		return errCreateState
+	var err error
+	var newStateID majongpb.StateID
+	if newStateID, err = f.stateProcess(entry, eventID, eventContext); err != nil {
+		return err
 	}
-	newStateID, err := oldState.ProcessEvent(eventID, eventContext, f)
-	if err != nil {
-		entry.WithError(err).Error(errStateProcess)
-		return errStateProcess
+	if err = f.switchState(entry, eventID, newStateID); err != nil {
+		return err
 	}
-	entry = entry.WithField("new_state_id", newStateID)
-
-	if newStateID == f.context.CurState {
-		entry.Debugln("保留为原状态")
-		return nil
-	}
-	if err := f.transitionValidator.Valid(f.context.CurState, newStateID, eventID, f); err != nil {
-		entry.WithError(err).Error(errTransitionNotExist)
-		return errTransitionNotExist
-	}
-
-	newState := f.stateFactory.CreateState(int(f.context.GameId), newStateID)
-	if newState == nil {
-		entry.Error(errCreateNewState)
-		return errCreateNewState
-	}
-
-	oldState.OnExit(f)
-	f.context.CurState = newStateID
-	newState.OnEntry(f)
-
-	entry.Debugln("切换到新状态完成")
-	return nil
+	return f.processAutoEvent(entry)
 }
 
 func (f *flow) GetSettler(settlerType interfaces.SettlerType) interfaces.Settler {
@@ -119,4 +155,14 @@ func (f *flow) GetMessages() []majongpb.ReplyClientMessage {
 
 func (f *flow) GetAutoEvent() *majongpb.AutoEvent {
 	return f.autoEvent
+}
+
+// AppendTimeCheckInfo 添加时间检测
+func (f *flow) AppendTimeCheckInfo(timeCheckInfo majongpb.TimeCheckInfo) {
+	f.timeCheckInfos = append(f.timeCheckInfos, timeCheckInfo)
+}
+
+// GetTimeCheckInfos 获取时间检测
+func (f *flow) GetTimeCheckInfos() []majongpb.TimeCheckInfo {
+	return f.timeCheckInfos
 }

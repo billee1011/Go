@@ -9,6 +9,9 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/structs"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -69,7 +72,7 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 
 // createPlayerExpectors 创建玩家的麻将逻辑消息期望
 func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.MessageExpector {
-	msgs := []msgid.MsgID{msgid.MsgID_ROOM_CHUPAIWENXUN_NTF, msgid.MsgID_ROOM_PENG_NTF, msgid.MsgID_ROOM_GANG_NTF, msgid.MsgID_ROOM_HU_NTF,
+	msgs := []msgid.MsgID{msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, msgid.MsgID_ROOM_CHUPAIWENXUN_NTF, msgid.MsgID_ROOM_PENG_NTF, msgid.MsgID_ROOM_GANG_NTF, msgid.MsgID_ROOM_HU_NTF,
 		msgid.MsgID_ROOM_ZIXUN_NTF, msgid.MsgID_ROOM_CHUPAI_NTF,
 		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
 		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
@@ -259,26 +262,39 @@ func checkDingqueColor(deskData *DeskData, playerColors []*room.PlayerDingqueCol
 
 // executeDingque 执行定缺
 func executeDingque(deskData *DeskData, colors []room.CardColor) error {
-	finishExpectors := map[uint64]interfaces.MessageExpector{}
-	for playerID, player := range deskData.Players {
+	if colors == nil {
+		logrus.Infoln("定缺花色没配置，不执行定缺")
+		return nil
+	}
+	for _, player := range deskData.Players {
 		seat := player.Seat
 		offset := GetSeatOffset(deskData.BankerSeat, seat, len(deskData.Players))
-
-		client := player.Player.GetClient()
-		finishExpector, _ := client.ExpectMessage(msgid.MsgID_ROOM_DINGQUE_FINISH_NTF)
-		finishExpectors[playerID] = finishExpector
-
-		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_DINGQUE_REQ), &room.RoomDingqueReq{
-			Color: colors[offset].Enum(),
-		})
+		SendDingqueReq(seat, deskData, colors[offset])
 	}
-	for playerID, e := range finishExpectors {
+	WaitDingqueFinish(deskData, global.DefaultWaitMessageTime, colors)
+	return nil
+}
+
+// SendDingqueReq 发送定缺请求
+func SendDingqueReq(seat int, deskData *DeskData, color room.CardColor) error {
+	player := GetDeskPlayerBySeat(seat, deskData)
+	client := player.Player.GetClient()
+	_, err := client.SendPackage(createMsgHead(msgid.MsgID_ROOM_DINGQUE_REQ), &room.RoomDingqueReq{
+		Color: color.Enum(),
+	})
+	return err
+}
+
+// WaitDingqueFinish 等定缺完成通知
+func WaitDingqueFinish(deskData *DeskData, duration time.Duration, expectedColors []room.CardColor) error {
+	for _, player := range deskData.Players {
 		ntf := room.RoomDingqueFinishNtf{}
-		if err := e.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
-			return fmt.Errorf("玩家 %d 未收到定缺完成通知: %v", playerID, err)
+		expector := player.Expectors[msgid.MsgID_ROOM_DINGQUE_FINISH_NTF]
+		if err := expector.Recv(duration, &ntf); err != nil {
+			return err
 		}
-		if !checkDingqueColor(deskData, ntf.GetPlayerDingqueColor(), colors) {
-			return fmt.Errorf("玩家收到的定缺通知中花色不正确。 expected:%v actual:%v", colors, ntf.GetPlayerDingqueColor())
+		if expectedColors != nil && !checkDingqueColor(deskData, ntf.GetPlayerDingqueColor(), expectedColors) {
+			return fmt.Errorf("玩家收到的定缺通知中花色不正确。 expected:%v actual:%v", expectedColors, ntf.GetPlayerDingqueColor())
 		}
 	}
 	return nil

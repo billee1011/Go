@@ -178,5 +178,5 @@ func Test_flow_ProcessEvent_NewStateCreateFail(t *testing.T) {
 	mTransitionValidator.EXPECT().Valid(OLDSTATEID, NEWSTATEID, EVENTID, &f).Return(nil).Times(1)
 
 	// 处理事件
-	assert.Equal(t, errCreateNewState, f.ProcessEvent(EVENTID, nil))
+	assert.Equal(t, errCreateState, f.ProcessEvent(EVENTID, nil))
 }

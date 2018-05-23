@@ -32,6 +32,7 @@ enum EventID {
     event_qiangganghu_finish = 23;      // 抢杠胡完成事件
     event_wenxun_overtime = 24;         // 问询超时事件
     event_peng_finish = 25;             // 碰完成事件
+    event_timer = 26;                   // 定时事件
 }
 
 // RequestEventHead 请求事件通用头
