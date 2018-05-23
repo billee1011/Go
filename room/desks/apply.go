@@ -45,6 +45,8 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 		player := playerMgr.GetPlayer(playerID)
 		if player != nil && player.GetClientID() != 0 {
 			result = append(result, playerID)
+		} else {
+			logrus.WithField("player_id", playerID).Debugln("玩家不在线，移除")
 		}
 	}
 	return result

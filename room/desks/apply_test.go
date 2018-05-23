@@ -38,7 +38,7 @@ func setup(mc *gomock.Controller) {
 }
 
 func apply(clientID uint64) []exchanger.ResponseMsg {
-	header := steve_proto_gaterpc.Header{MsgId: uint32(msgid.MsgID_room_join_desk_req)}
+	header := steve_proto_gaterpc.Header{MsgId: uint32(msgid.MsgID_ROOM_JOIN_DESK_REQ)}
 	req := room.RoomJoinDeskReq{}
 
 	return HandleRoomJoinDeskReq(clientID, &header, req)
@@ -55,7 +55,7 @@ func TestHandleRoomJoinDeskReq(t *testing.T) {
 
 	assert.NotNil(t, rspMsgs)
 	assert.Equal(t, 1, len(rspMsgs))
-	assert.Equal(t, uint32(msgid.MsgID_room_join_desk_rsp), rspMsgs[0].MsgID)
+	assert.Equal(t, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), rspMsgs[0].MsgID)
 
 	rspBody, ok := rspMsgs[0].Body.(*room.RoomJoinDeskRsp)
 	assert.True(t, ok)
@@ -76,7 +76,7 @@ func TestHandleRoomJoinDeskReq_NotLogin(t *testing.T) {
 
 	assert.NotNil(t, rspMsgs)
 	assert.Equal(t, 1, len(rspMsgs))
-	assert.Equal(t, uint32(msgid.MsgID_room_join_desk_rsp), rspMsgs[0].MsgID)
+	assert.Equal(t, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), rspMsgs[0].MsgID)
 
 	rspBody, ok := rspMsgs[0].Body.(*room.RoomJoinDeskRsp)
 	assert.True(t, ok)

@@ -70,6 +70,16 @@ func (_mr *_MockDeskRecorder) Start(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Start", arg0)
 }
 
+func (_m *MockDesk) Stop() error {
+	ret := _m.ctrl.Call(_m, "Stop")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockDeskRecorder) Stop() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Stop")
+}
+
 func (_m *MockDesk) PushRequest(playerID uint64, head *gate_rpc.Header, bodyData []byte) {
 	_m.ctrl.Call(_m, "PushRequest", playerID, head, bodyData)
 }
@@ -115,6 +125,17 @@ func (_m *MockDeskMgr) HandlePlayerRequest(playerID uint64, head *gate_rpc.Heade
 
 func (_mr *_MockDeskMgrRecorder) HandlePlayerRequest(arg0, arg1, arg2 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "HandlePlayerRequest", arg0, arg1, arg2)
+}
+
+func (_m *MockDeskMgr) GetRunDeskByPlayerID(playerID uint64) (Desk, error) {
+	ret := _m.ctrl.Call(_m, "GetRunDeskByPlayerID", playerID)
+	ret0, _ := ret[0].(Desk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDeskMgrRecorder) GetRunDeskByPlayerID(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetRunDeskByPlayerID", arg0)
 }
 
 // Mock of DeskFactory interface

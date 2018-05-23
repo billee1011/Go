@@ -32,6 +32,10 @@ func (p *player) SetCoin(coin uint64) {
 	p.coin = coin
 }
 func (p *player) SetClientID(clientID uint64) {
+	logrus.WithFields(logrus.Fields{
+		"client_id":     clientID,
+		"old_client_id": p.clientID,
+	}).Debugln("设置客户端ID")
 	p.clientID = clientID
 }
 

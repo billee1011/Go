@@ -208,3 +208,9 @@ message ReplyClientMessage {
     int32 msg_id = 2;               // 消息 ID
     bytes msg = 3;    // 消息体
 }
+
+// TimeCheckInfo 时间检测信息
+message TimeCheckInfo {
+    uint64 duration = 1;            // 多久之后作检测
+    int32 type = 2;                 // 检测类型
+}

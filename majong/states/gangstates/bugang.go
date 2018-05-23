@@ -116,6 +116,7 @@ func (s *BuGangState) removePengCard(card *majongpb.Card, player *majongpb.Playe
 		}
 		newPengCards = append(newPengCards, pengCard)
 	}
+	player.PengCards = newPengCards
 }
 
 // setMopaiPlayer 设置摸牌玩家
