@@ -331,6 +331,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		"ntf":       zixunNtf.String(),
 		"player_id": playerID,
 		"pengCards": FmtPengCards(player.GetPengCards()),
+		"gangCards": FmtGangCards(player.GetGangCards()),
 		"handCards": FmtMajongpbCards(player.GetHandCards()),
 		"wallCards": FmtMajongpbCards(context.GetWallCards()),
 		"huCards":   FmtHuCards(player.GetHuCards()),
