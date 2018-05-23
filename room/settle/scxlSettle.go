@@ -37,10 +37,6 @@ type playerCoin map[uint64]int64
 
 // Settle 结算信息扣分并通知客户端
 func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"name":        "Settle",
-		"SettleInfos": mjContext.SettleInfos,
-	})
 	if len(mjContext.SettleInfos) != 0 {
 		deskPlayers := desk.GetPlayers()
 		for _, settleInfo := range mjContext.SettleInfos {
@@ -105,7 +101,6 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 			})
 		}
 	}
-	logEntry.Debugln("room 结算")
 }
 
 func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {

@@ -99,7 +99,6 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	settleInfos, raxbeatIds := roundSettle.Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
 	}
 	mjContext.RevertSettles = raxbeatIds
 }
