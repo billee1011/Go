@@ -162,6 +162,7 @@ func (s *scxlSettle) getBillDetail(palyerID uint64, settleInfo *majongpb.SettleI
 			SetleType: room.SettleType(settleInfo.SettleType).Enum(),
 			HuType:    room.HuType(settleInfo.HuType).Enum(),
 			FanValue:  proto.Uint32(settleInfo.CardValue),
+			GenCount:  proto.Uint32(settleInfo.GenCount),
 			Score:     proto.Int64(s.settleMap[settleInfo.Id][palyerID]),
 		}
 		fanTypes := make([]room.FanType, 0)
