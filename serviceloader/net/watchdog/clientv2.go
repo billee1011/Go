@@ -85,6 +85,9 @@ func (c *clientV2) run(onFinish func()) error {
 		}
 	}()
 
+	if c.callback != nil {
+		defer c.callback.onClientClose()
+	}
 	// done 通道， 在 run 退出后关闭， 其他 goroutine 在 done 通道关闭后停止工作
 	done := make(chan struct{})
 	defer close(done)
