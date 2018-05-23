@@ -27,8 +27,7 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majong
 	total := gangScore * int(ante)
 
 	// 结算信息
-	gangSettleInfo := NewSettleInfo(params.SettleID)
-	gangSettleInfo.SettleType = majongpb.SettleType_settle_gang
+	gangSettleInfo := newGangSettleInfo(params)
 	if params.GangType == majongpb.GangType_gang_minggang {
 		gangSettleInfo.Scores[params.GangPlayer] = int64(total)
 		gangSettleInfo.Scores[params.SrcPlayer] = 0 - int64(total)
@@ -57,4 +56,14 @@ func getGangScore(gangType majongpb.GangType) int {
 		return 2
 	}
 	return 1
+}
+
+// newGangSettleInfo 初始化生成一条新的杠结算信息
+func newGangSettleInfo(params interfaces.GangSettleParams) *majongpb.SettleInfo {
+	return &majongpb.SettleInfo{
+		Id:         params.SettleID + 1,
+		Scores:     make(map[uint64]int64),
+		HuType:     -1,
+		SettleType: majongpb.SettleType_settle_gang,
+	}
 }

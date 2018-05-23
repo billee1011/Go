@@ -20,24 +20,23 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 		"notTinPlayers":   params.NotTingPlayers,
 		"tingPlayersInfo": params.TingPlayersInfo,
 	})
+	setletInfos := make([]*majongpb.SettleInfo, 0)
 	// 查大叫
 	yellSettleInfos := yellSettle(params)
-	// 查花猪
-	flowerPigSettleInfos := flowerPigSettle(params)
-	// 退税
-	taxRebeatIds := taxRebeat(params)
-
-	setletInfos := make([]*majongpb.SettleInfo, 0)
 	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
 		for _, s := range yellSettleInfos {
 			setletInfos = append(setletInfos, s)
 		}
 	}
+	// 查花猪
+	flowerPigSettleInfos := flowerPigSettle(params)
 	if flowerPigSettleInfos != nil && len(flowerPigSettleInfos) > 0 {
 		for _, s := range flowerPigSettleInfos {
 			setletInfos = append(setletInfos, s)
 		}
 	}
+	// 退税
+	taxRebeatIds := taxRebeat(params)
 	logEntry.Infoln("单局结算")
 	return setletInfos, taxRebeatIds
 }
@@ -55,7 +54,7 @@ func yellSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
 			settleInfoMap := make(map[uint64]int64)
 			win := int64(0)
 			lose := int64(0)
-			// 听玩家结算处理c
+			// 听玩家结算处理
 			for playerID, value := range params.TingPlayersInfo {
 				win = int64(value) * ante
 				lose = lose - win
@@ -64,9 +63,8 @@ func yellSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
 			// 结算信息记录
 			if len(settleInfoMap) > 0 {
 				settleInfoMap[noTingPlayer] = lose
-				yellSettleInfo := NewSettleInfo(params.SettleID)
-				yellSettleInfo.Scores = settleInfoMap
-				yellSettleInfo.SettleType = majongpb.SettleType_settle_yell
+				yellSettleInfo := new(majongpb.SettleInfo)
+				yellSettleInfo, params = newRoundSettleInfo(params, settleInfoMap, -1, majongpb.SettleType_settle_yell)
 				yellSettleInfos = append(yellSettleInfos, yellSettleInfo)
 			}
 		}
@@ -104,10 +102,8 @@ func flowerPigSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo
 		// 查花猪玩家结算信息
 		if len(settleInfoMap) > 0 {
 			settleInfoMap[flowerPig] = lose
-			params.SettleID++
-			flowerSettleInfo := NewSettleInfo(params.SettleID)
-			flowerSettleInfo.Scores = settleInfoMap
-			flowerSettleInfo.SettleType = majongpb.SettleType_settle_flowerpig
+			flowerSettleInfo := new(majongpb.SettleInfo)
+			flowerSettleInfo, params = newRoundSettleInfo(params, settleInfoMap, -1, majongpb.SettleType_settle_flowerpig)
 			flowwePigSettleInfos = append(flowwePigSettleInfos, flowerSettleInfo)
 		}
 	}
@@ -132,4 +128,16 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 		}
 	}
 	return taxRebeatIds
+}
+
+// newRoundSettleInfo 初始化生成一条新的结算信息
+func newRoundSettleInfo(params interfaces.RoundSettleParams, scoreMap map[uint64]int64,
+	huType majongpb.SettleHuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.RoundSettleParams) {
+	settleInfo := &majongpb.SettleInfo{
+		Id:         params.SettleID + 1,
+		Scores:     scoreMap,
+		HuType:     huType,
+		SettleType: settleType,
+	}
+	return settleInfo, params
 }

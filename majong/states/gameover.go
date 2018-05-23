@@ -10,6 +10,9 @@ import (
 	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // GameOverState 游戏结束状态
@@ -37,15 +40,24 @@ func (s *GameOverState) OnExit(flow interfaces.MajongFlow) {
 // notifyGameOver 通知玩家游戏结束消息
 func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
+	cardsGroups := make([]*room.PlayerCardsGroup, 0)
 	for _, player := range mjContext.Players {
-		msg := &room.RoomGameOverNtf{
-			HandCards: utils.GetCardsGroup(player),
+		playerCardsGroup := &room.PlayerCardsGroup{
+			PlayerId:   proto.Uint64(player.GetPalyerId()),
+			CardsGroup: utils.GetCardsGroup(player),
 		}
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_GAMEOVER_NTF),
-			Msg:   msg,
-		})
+		cardsGroups = append(cardsGroups, playerCardsGroup)
 	}
+	roomGameOverNtf := &room.RoomGameOverNtf{
+		PlayerCardsGroup: cardsGroups,
+	}
+	// 广播牌局结束消息
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)
+	// 日志
+	logrus.WithFields(logrus.Fields{
+		"msgID":           msgid.MsgID_ROOM_GAMEOVER_NTF,
+		"roomGameOverNtf": roomGameOverNtf,
+	}).Info("-----牌局结束-推倒牌墙")
 }
 
 // roundSettle 处理查花猪，查大叫，退税 结算
@@ -87,7 +99,6 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	settleInfos, raxbeatIds := roundSettle.Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
 	}
 	mjContext.RevertSettles = raxbeatIds
 }
