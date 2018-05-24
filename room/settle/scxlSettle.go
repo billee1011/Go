@@ -56,8 +56,8 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 					realScore = s.calcScore(deskPlayers, combineSInfo)
 					for _, sinfo := range groupsInfos {
 						singleCost := make(map[uint64]int64, 0)
+						cost := int64(0)
 						for pid, score := range sinfo.Scores {
-							cost := int64(0)
 							if score > 0 {
 								cost = realScore[pid]
 								singleCost[pid] = realScore[pid]
