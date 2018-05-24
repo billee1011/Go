@@ -52,6 +52,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		groupIds := make([]uint64, 0)
 		huSettleInfos := make([]*majongpb.SettleInfo, 0)
 		for _, huPlayerID := range params.HuPlayers {
+			scoreInfoMap := make(map[uint64]int64)
 			huSettleInfo := new(majongpb.SettleInfo)
 			// 倍数
 			value := int64(params.CardValues[huPlayerID]) * int64(getHuTypeValue(params.HuType))

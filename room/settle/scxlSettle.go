@@ -123,8 +123,8 @@ func (s *scxlSettle) combineSettleInfo(allSInfo []*majongpb.SettleInfo, settleIn
 		combineSInfo.SettleType = allSInfo[index].SettleType
 		s.handleSettle[id] = true
 	}
-	for _, s := range groupsInfos {
-		for pid, score := range s.Scores {
+	for _, groupsInfo := range groupsInfos {
+		for pid, score := range groupsInfo.Scores {
 			combineSInfo.Scores[pid] = combineSInfo.Scores[pid] + score
 		}
 	}
