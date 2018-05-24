@@ -126,7 +126,8 @@ message SettleInfo {
     repeated CardType card_type = 5;   // 牌组类型(胡牌时)
     uint32 card_value = 6;             // 牌组倍数
     uint32 gen_count=7;                // 根的数目
-    repeated uint64 group_id = 8;      // 一炮多响相关联的结算 id
+    bool call_transfer = 8;            // 结算是否被呼叫转移
+    repeated uint64 group_id = 9;      // 一炮多响相关联的结算 id
 }
 
 // 玩家操作

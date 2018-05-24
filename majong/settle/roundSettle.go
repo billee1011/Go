@@ -116,14 +116,14 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 	taxRebeatIds := make([]uint64, 0)
 	for _, notTingPlayer := range params.NotTingPlayers {
 		for _, settleInfo := range params.SettleInfos {
-			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[notTingPlayer] > 0) {
+			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[notTingPlayer] > 0) && !settleInfo.CallTransfer {
 				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
 			}
 		}
 	}
 	for _, flowerPigPlayer := range params.FlowerPigPlayers {
 		for _, settleInfo := range params.SettleInfos {
-			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[flowerPigPlayer] > 0) {
+			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[flowerPigPlayer] > 0) && !settleInfo.CallTransfer {
 				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
 			}
 		}
@@ -140,5 +140,6 @@ func newRoundSettleInfo(params interfaces.RoundSettleParams, scoreMap map[uint64
 		HuType:     huType,
 		SettleType: settleType,
 	}
+	params.SettleID++
 	return settleInfo, params
 }
