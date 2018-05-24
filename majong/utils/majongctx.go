@@ -38,6 +38,30 @@ func GetPlayerIndex(playerID uint64, players []*majongpb.Player) (int, error) {
 	return 0, errors.New("not exists")
 }
 
+// GetPlayerIDIndex 获取玩家索引
+func GetPlayerIDIndex(playerID uint64, players []uint64) (int, error) {
+	for index, pid := range players {
+		if pid == playerID {
+			return index, nil
+		}
+	}
+	return 0, errors.New("not exists")
+}
+
+// GetPalyerCloseFromTarget 从targets获取离玩家index最近的玩家id
+func GetPalyerCloseFromTarget(index int, allPlayer, targets []uint64) uint64 {
+	for i := 0; i <= len(allPlayer); i++ {
+		nextIndex := (index + i) % len(allPlayer)
+		for _, target := range targets {
+			index, _ := GetPlayerIDIndex(target, allPlayer)
+			if index == nextIndex {
+				return target
+			}
+		}
+	}
+	return 0
+}
+
 // GetCardsGroup 获取玩家牌组信息
 func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 	cardsGroupList := make([]*room.CardsGroup, 0)

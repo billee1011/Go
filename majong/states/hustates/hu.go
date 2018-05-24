@@ -164,6 +164,12 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 	}
 	huSettle := new(settle.HuSettle)
 	settleInfos := huSettle.Settle(params)
+	if s.isAfterGang(mjContext) {
+		lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
+		if lastSettleInfo.SettleType == majongpb.SettleType_settle_gang {
+			lastSettleInfo.CallTransfer = true
+		}
+	}
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++

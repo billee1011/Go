@@ -168,7 +168,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 					HandCard: players[i].HandCards,
 					PengCard: utils.TransPengCard(players[i].PengCards),
 					GangCard: utils.TransGangCard(players[i].GangCards),
-					HuCard:   tingCards[0],
+					HuCard:   tingCards[j],
 				}
 				calculator := new(cardtype.ScxlCardTypeCalculator)
 				total, _ := facade.CalculateCardValue(calculator, cardParams)
