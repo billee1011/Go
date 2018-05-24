@@ -2,6 +2,7 @@ package settle
 
 import (
 	"steve/majong/interfaces"
+	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -48,6 +49,8 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		huSettleInfo.CardValue = uint32(value)
 		settleInfos = append(settleInfos, huSettleInfo)
 	} else if params.SettleType == majongpb.SettleType_settle_dianpao {
+		groupIds := make([]uint64, 0)
+		huSettleInfos := make([]*majongpb.SettleInfo, 0)
 		for _, huPlayerID := range params.HuPlayers {
 			huSettleInfo := new(majongpb.SettleInfo)
 			// 倍数
@@ -60,7 +63,12 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 
 			huSettleInfo, params = newHuSettleInfo(params, params.HuType, params.SettleType, scoreInfoMap, huPlayerID)
 			huSettleInfo.CardValue = uint32(value)
-			settleInfos = append(settleInfos, huSettleInfo)
+			huSettleInfos = append(huSettleInfos, huSettleInfo)
+			groupIds = append(groupIds, huSettleInfo.Id)
+		}
+		for _, settleInfo := range huSettleInfos {
+			settleInfo.GroupId = groupIds
+			settleInfos = append(settleInfos, settleInfo)
 		}
 	}
 	if params.HuType == majongpb.SettleHuType_settle_hu_ganghoupao { // 需呼叫转移
@@ -124,8 +132,8 @@ func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
 			surplusTotal := score % int64(winSum)
 
 			if surplusTotal != 0 {
-				startIndex := getPlayerIndex(params.SrcPlayer, params.AllPlayers)
-				firstPlayerID := getPalyerCloseIndex(startIndex, params.AllPlayers, params.HuPlayers)
+				startIndex, _ := utils.GetPlayerIDIndex(params.SrcPlayer, params.AllPlayers)
+				firstPlayerID := utils.GetPalyerCloseFromTarget(startIndex, params.AllPlayers, params.HuPlayers)
 				if firstPlayerID != 0 {
 					callTransferS.Scores[firstPlayerID] = callTransferS.Scores[firstPlayerID] + surplusTotal
 					callTransferS.Scores[params.SrcPlayer] = callTransferS.Scores[params.SrcPlayer] - surplusTotal
@@ -167,28 +175,6 @@ func newNormalSettleInfo(params interfaces.HuSettleParams, huType majongpb.Settl
 	}
 	params.SettleID++
 	return settleInfo, params
-}
-
-func getPlayerIndex(playerID uint64, allPlayer []uint64) int {
-	for index, player := range allPlayer {
-		if playerID == player {
-			return index
-		}
-	}
-	return -1
-}
-
-func getPalyerCloseIndex(index int, allPlayer, huPlayers []uint64) uint64 {
-	for i := 0; i <= len(allPlayer); i++ {
-		nextIndex := (index + i) % len(allPlayer)
-		for _, huPlayer := range huPlayers {
-			index := getPlayerIndex(huPlayer, allPlayer)
-			if index == nextIndex {
-				return huPlayer
-			}
-		}
-	}
-	return 0
 }
 
 func getHuTypeValue(huType majongpb.SettleHuType) uint32 {

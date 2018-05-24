@@ -37,37 +37,25 @@ type playerCoin map[uint64]int64
 
 // Settle 结算信息扣分并通知客户端
 func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
-	if len(mjContext.SettleInfos) != 0 {
-		deskPlayers := desk.GetPlayers()
+	// 单局所有结算信息
+	settleInfos := mjContext.SettleInfos
+	// 牌局玩家
+	deskPlayers := desk.GetPlayers()
+	if len(settleInfos) != 0 {
 		for _, settleInfo := range mjContext.SettleInfos {
 			if !s.handleSettle[settleInfo.Id] {
-				playerCoin := make(playerCoin)
+				// 玩家结算信息
 				billplayerInfos := make([]*room.BillPlayerInfo, 0)
-				for i := 0; i < len(deskPlayers); i++ {
-					pid := *deskPlayers[i].PlayerId
-					score := settleInfo.Scores[pid]
-					coin := int64(*deskPlayers[i].Coin)
-					if score != 0 {
-						billplayerInfo := &room.BillPlayerInfo{
-							Pid:      deskPlayers[i].PlayerId,
-							BillType: room.BillType(settleInfo.SettleType).Enum(),
-						}
-						if score < 0 && (-score) >= int64(*deskPlayers[i].Coin) {
-							playerCoin[pid] = int64(*deskPlayers[i].Coin)
-							billplayerInfo.Score = proto.Int64(int64(coin))
-							deskPlayers[i].Coin = proto.Uint64(0)
-						} else {
-							playerCoin[pid] = score
-							billplayerInfo.Score = proto.Int64(score)
-							deskPlayers[i].Coin = proto.Uint64(uint64(coin + score))
-						}
-						global.GetPlayerMgr().GetPlayer(pid).SetCoin(*deskPlayers[i].Coin)
-						s.settleMap[settleInfo.Id] = playerCoin
-						s.roundScore[pid] = s.roundScore[pid] + playerCoin[pid]
-						billplayerInfo.CurrentScore = proto.Int64(int64(*deskPlayers[i].Coin))
-						billplayerInfos = append(billplayerInfos, billplayerInfo)
-					}
+				realScore := make(map[uint64]int64, 0)
+				if len(settleInfo.GroupId) > 1 {
+					// 合并一炮多响的多条结算信息
+					combineSInfo := s.combineSettleInfo(mjContext.SettleInfos, settleInfo)
+					realScore = s.calcScore(deskPlayers, combineSInfo)
+				} else {
+					realScore = s.calcScore(deskPlayers, settleInfo)
 				}
+				billplayerInfos = s.calcPlayerSettle(deskPlayers, settleInfo, realScore)
+				s.settleMap[settleInfo.Id] = realScore
 				s.handleSettle[settleInfo.Id] = true
 				// 广播即时结算消息
 				notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
@@ -75,65 +63,126 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 				})
 			}
 		}
-		if len(mjContext.RevertSettles) != 0 {
-			billplayerInfos := make([]*room.BillPlayerInfo, 0)
-			for i := 0; i < len(deskPlayers); i++ {
-				pid := *deskPlayers[i].PlayerId
-				coin := int64(*deskPlayers[i].Coin)
-				billplayerInfo := &room.BillPlayerInfo{
-					Pid:      deskPlayers[i].PlayerId,
-					BillType: room.BillType_BILL_REFUND.Enum(),
-					Score:    proto.Int64(0),
-				}
-				for _, revertSettle := range mjContext.RevertSettles {
-					if score, ok := s.settleMap[revertSettle][pid]; ok && score != 0 {
-						billplayerInfo.Score = proto.Int64(*billplayerInfo.Score + (-score))
-						deskPlayers[i].Coin = proto.Uint64(uint64(int64(coin) + (-score)))
-					}
-				}
-				global.GetPlayerMgr().GetPlayer(pid).SetCoin(*deskPlayers[i].Coin)
-				billplayerInfo.CurrentScore = proto.Int64(int64(*deskPlayers[i].Coin))
-				billplayerInfos = append(billplayerInfos, billplayerInfo)
+	}
+	// 退税
+	revertIds := mjContext.RevertSettles
+	if len(settleInfos) != 0 && len(revertIds) != 0 {
+		billplayerInfos := make([]*room.BillPlayerInfo, 0)
+		for i := 0; i < len(deskPlayers); i++ {
+			pid := deskPlayers[i].GetPlayerId()
+			coin := int64(deskPlayers[i].GetCoin())
+			billplayerInfo := &room.BillPlayerInfo{
+				Pid:      deskPlayers[i].PlayerId,
+				BillType: room.BillType_BILL_REFUND.Enum(),
+				Score:    proto.Int64(0),
 			}
-			// 广播即时结算消息
-			notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
-				BillPlayersInfo: billplayerInfos,
-			})
+			for _, revertID := range revertIds {
+				if score, ok := s.settleMap[revertID][pid]; ok && score != 0 {
+					billplayerInfo.Score = proto.Int64(billplayerInfo.GetScore() - score)
+					deskPlayers[i].Coin = proto.Uint64(uint64(int64(coin) - score))
+				}
+			}
+			// 设置玩家分数
+			global.GetPlayerMgr().GetPlayer(pid).SetCoin(deskPlayers[i].GetCoin())
+			billplayerInfo.CurrentScore = proto.Int64(int64(*deskPlayers[i].Coin))
+			billplayerInfos = append(billplayerInfos, billplayerInfo)
 		}
+		// 即时结算消息
+		notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+			BillPlayersInfo: billplayerInfos,
+		})
 	}
 }
 
-func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
-	players := desk.GetPlayers()
-	clientIDs := []uint64{}
-
-	playerMgr := global.GetPlayerMgr()
-	for _, player := range players {
-		playerID := player.GetPlayerId()
-		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
-			clientIDs = append(clientIDs, p.GetClientID())
+// combineSettleInfo 合并一炮多响的一组SettleInfo成一条
+func (s *scxlSettle) combineSettleInfo(allSInfo []*majongpb.SettleInfo, settleInfo *majongpb.SettleInfo) *majongpb.SettleInfo {
+	combineSInfo := &majongpb.SettleInfo{
+		Scores: make(map[uint64]int64, 0),
+	}
+	groupsInfos := make([]*majongpb.SettleInfo, 0)
+	for _, id := range settleInfo.GroupId {
+		index := settleInfoIndexByID(allSInfo, id)
+		groupsInfos = append(groupsInfos, allSInfo[index])
+		combineSInfo.SettleType = allSInfo[index].SettleType
+		s.handleSettle[id] = true
+	}
+	for _, s := range groupsInfos {
+		for pid, score := range s.Scores {
+			combineSInfo.Scores[pid] = combineSInfo.Scores[pid] + score
 		}
 	}
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid)}
-	ms := global.GetMessageSender()
-
-	logrus.WithFields(logrus.Fields{
-		"msg": message.String(),
-	}).Debugln("通知立即结算")
-
-	ms.BroadcastPackage(clientIDs, head, message)
+	return combineSInfo
 }
 
-func notifyDeskPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgID, message proto.Message) {
-	clientID := global.GetPlayerMgr().GetPlayer(playerID).GetClientID()
-
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid)}
-	ms := global.GetMessageSender()
-
-	ms.SendPackage(clientID, head, message)
+// calcScore 计算分数
+func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *majongpb.SettleInfo) map[uint64]int64 {
+	winScore := int64(0)
+	loseScore := int64(0)
+	losePid := uint64(0)
+	winPid := make([]uint64, 0)
+	realCost := make(map[uint64]int64, 0)
+	for pid, score := range settleInfo.Scores {
+		if score > 0 {
+			winScore = winScore + score
+			winPid = append(winPid, pid)
+		} else if score <= 0 {
+			loseScore = loseScore - score
+			losePid = pid
+		}
+	}
+	losePlayer := getDeskPlayer(deskPlayer, losePid)
+	if abs(loseScore) < int64(losePlayer.GetCoin()) {
+		for _, win := range winPid {
+			realCost[win] = settleInfo.Scores[win]
+		}
+		realCost[losePid] = settleInfo.Scores[losePid]
+	} else {
+		loseCoin := int64(losePlayer.GetCoin())
+		if len(winPid) == 1 {
+			realCost[winPid[0]] = loseCoin
+			realCost[losePid] = -loseCoin
+		} else {
+			maxWinPid := winPid[0]
+			// 多个赢家，按照赢钱的比例平分
+			for _, win := range winPid {
+				rank := float64(settleInfo.Scores[win]) / float64(winScore)
+				realCost[win] = int64(rank * float64(loseCoin))
+				realCost[losePid] = realCost[losePid] - int64(rank*float64(loseCoin))
+				if settleInfo.Scores[win] > settleInfo.Scores[maxWinPid] {
+					maxWinPid = win
+				}
+			}
+			//剩余分数，给赢钱最多的玩家
+			surplusTotal := loseCoin - realCost[losePid]
+			if surplusTotal > 0 {
+				realCost[maxWinPid] = realCost[maxWinPid] + surplusTotal
+				realCost[losePid] = realCost[losePid] - surplusTotal
+			}
+		}
+	}
+	return realCost
+}
+func (s *scxlSettle) calcPlayerSettle(deskPlayers []*room.RoomPlayerInfo, settleInfo *majongpb.SettleInfo, realScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
+	billplayerInfos = make([]*room.BillPlayerInfo, 0)
+	for i := 0; i < len(deskPlayers); i++ {
+		pid := deskPlayers[i].GetPlayerId()
+		score := realScore[pid]
+		if score != 0 {
+			billplayerInfo := newBillplayerInfo(pid, room.BillType(settleInfo.SettleType))
+			// 玩家当前分数
+			coin := int64(deskPlayers[i].GetCoin())
+			// 玩家结算后的分数
+			deskPlayers[i].Coin = proto.Uint64(uint64(coin + score))
+			// 生成玩家结算账单
+			billplayerInfo.Score = proto.Int64(score)
+			billplayerInfo.CurrentScore = proto.Int64(coin)
+			billplayerInfos = append(billplayerInfos, billplayerInfo)
+		}
+		s.roundScore[pid] = s.roundScore[pid] + realScore[pid]
+		// 设置玩家分数
+		global.GetPlayerMgr().GetPlayer(pid).SetCoin(deskPlayers[i].GetCoin())
+	}
+	return
 }
 
 // RoundSettle 单局结算信息
@@ -151,7 +200,7 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 			}
 		}
 		balanceRsp.BillPlayersInfo = s.getBillPlayerInfo(pid, mjContext)
-		notifyDeskPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
+		notifyPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
 }
 
@@ -201,4 +250,86 @@ func (s *scxlSettle) getBillPlayerInfo(playerID uint64, context majongpb.MajongC
 		billPlayerInfos = append(billPlayerInfos, billPlayerInfo)
 	}
 	return billPlayerInfos
+}
+
+// settleInfoIndexByID 根据ettleID获取对应settleInfo的下标index
+func settleInfoIndexByID(settleInfos []*majongpb.SettleInfo, ID uint64) int {
+	for index, s := range settleInfos {
+		if s.Id == ID {
+			return index
+		}
+	}
+	return -1
+}
+
+// calcCost 计算扣除的分数
+func (s *scxlSettle) calcCost(deskPlayer *room.RoomPlayerInfo, settleInfo *majongpb.SettleInfo) int64 {
+	pid := deskPlayer.GetPlayerId()
+	score := settleInfo.Scores[pid]     // 输赢分数
+	coin := int64(deskPlayer.GetCoin()) // 玩家剩余分数
+	cost := int64(0)                    // 实际扣除分数
+	if score != 0 {
+		if abs(score) <= coin { // 剩余分数足够
+			cost = score
+		} else if score < 0 {
+			cost = -coin
+		}
+	}
+	return cost
+}
+
+func getDeskPlayer(deskPlayers []*room.RoomPlayerInfo, pid uint64) *room.RoomPlayerInfo {
+	for _, p := range deskPlayers {
+		if p.GetPlayerId() == pid {
+			return p
+		}
+	}
+	return nil
+}
+
+func newBillplayerInfo(playID uint64, billType room.BillType) *room.BillPlayerInfo {
+	return &room.BillPlayerInfo{
+		Pid:      proto.Uint64(playID),
+		BillType: billType.Enum(),
+	}
+}
+
+func abs(n int64) int64 {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
+func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
+	players := desk.GetPlayers()
+	clientIDs := []uint64{}
+
+	playerMgr := global.GetPlayerMgr()
+	for _, player := range players {
+		playerID := player.GetPlayerId()
+		p := playerMgr.GetPlayer(playerID)
+		if p != nil {
+			clientIDs = append(clientIDs, p.GetClientID())
+		}
+	}
+	head := &steve_proto_gaterpc.Header{
+		MsgId: uint32(msgid)}
+	ms := global.GetMessageSender()
+
+	logrus.WithFields(logrus.Fields{
+		"msg": message.String(),
+	}).Debugln("通知立即结算")
+
+	ms.BroadcastPackage(clientIDs, head, message)
+}
+
+func notifyPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgID, message proto.Message) {
+	clientID := global.GetPlayerMgr().GetPlayer(playerID).GetClientID()
+
+	head := &steve_proto_gaterpc.Header{
+		MsgId: uint32(msgid)}
+	ms := global.GetMessageSender()
+
+	ms.SendPackage(clientID, head, message)
 }
