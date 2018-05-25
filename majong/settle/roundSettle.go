@@ -27,22 +27,20 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 	if flowerPigSettleInfos != nil && len(flowerPigSettleInfos) > 0 {
 		for _, s := range flowerPigSettleInfos {
 			setletInfos = append(setletInfos, s)
+			params.SettleID++
 		}
-		params.SettleID++
 	}
 	// 查大叫
 	yellSettleInfos := yellSettle(params)
 	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
 		for _, s := range yellSettleInfos {
 			setletInfos = append(setletInfos, s)
+			params.SettleID++
 		}
 	}
 	// 退税
 	taxRebeatIds := taxRebeat(params)
 	logEntry.Infoln("单局结算")
-	logrus.WithFields(logrus.Fields{
-		"setletInfos": setletInfos,
-	}).Infoln("单局结算setletInfos")
 	return setletInfos, taxRebeatIds
 }
 
