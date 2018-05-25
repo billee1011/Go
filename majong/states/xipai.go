@@ -43,11 +43,11 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	})
 	gameName := getGameName(flow)
 	PeiPai(cards, flow.GetMajongContext(), gameName)
-	length := peipai.GetLensOfWallCards(gameName)
-	if length != 0 {
-		cards = cards[:length]
-	}
-	//暂时只能配牌和长度，换三张方向的代码已写，具体怎么操作要和向xuzhang了解下
+	//TUDO 这里不改变墙牌长度,改由黄庄的方式控制流局
+	// length := peipai.GetLensOfWallCards(gameName)
+	// if length != 0 {
+	// 	cards = cards[:length]
+	// }
 	return cards
 }
 
