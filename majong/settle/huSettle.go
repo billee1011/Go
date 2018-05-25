@@ -71,12 +71,18 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 			settleInfo.GroupId = groupIds
 			settleInfos = append(settleInfos, settleInfo)
 		}
+		if len(huSettleInfos) != 0 {
+			params.SettleID++
+		}
 	}
 	if params.HuType == majongpb.SettleHuType_settle_hu_ganghoupao { // 需呼叫转移
 		callTransferS := callTransferSettle(params)
 		settleInfos = append(settleInfos, callTransferS)
 	}
 	entry.Info("胡结算")
+	logrus.WithFields(logrus.Fields{
+		"settleInfos": settleInfos,
+	}).Info("胡结算settleInfos")
 	return settleInfos
 }
 

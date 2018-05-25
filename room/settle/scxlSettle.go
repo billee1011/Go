@@ -141,7 +141,7 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 			winScore = winScore + score
 			winPid = append(winPid, p)
 		} else if score <= 0 {
-			loseScore = loseScore - score
+			loseScore = loseScore + score
 			losePids = append(losePids, p)
 		}
 	}

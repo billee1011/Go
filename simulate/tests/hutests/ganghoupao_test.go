@@ -97,6 +97,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
+	fmt.Println(ntf)
 	callTransferScore := 6
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
@@ -106,12 +107,6 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 		} else {
 			assert.Equal(t, billInfo.GetScore(), int64(0))
 		}
-	}
-	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
-	expector.Recv(time.Second*3, &ntf)
-	ntf = room.RoomSettleInstantRsp{}
-	for _, billInfo := range ntf.BillPlayersInfo {
-		assert.Equal(t, billInfo.GetBillType(), room.BillType_BILL_CHECKPIG)
 	}
 
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
