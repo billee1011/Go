@@ -42,9 +42,6 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 	// 牌局玩家
 	deskPlayers := desk.GetPlayers()
 	if len(settleInfos) != 0 {
-		logrus.WithFields(logrus.Fields{
-			"settleInfo": mjContext.SettleInfos,
-		}).Debugln("结算信息settleInfo")
 		for _, settleInfo := range mjContext.SettleInfos {
 			if !s.handleSettle[settleInfo.Id] {
 				// 玩家结算信息
@@ -83,7 +80,7 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 	}
 	// 退税
 	revertIds := mjContext.RevertSettles
-	if len(settleInfos) != 0 && len(revertIds) != 0 {
+	if len(revertIds) != 0 {
 		billplayerInfos := make([]*room.BillPlayerInfo, 0)
 		for i := 0; i < len(deskPlayers); i++ {
 			pid := deskPlayers[i].GetPlayerId()
@@ -208,7 +205,7 @@ func (s *scxlSettle) calcPlayerSettle(deskPlayers []*room.RoomPlayerInfo, settle
 			deskPlayers[i].Coin = proto.Uint64(uint64(coin + score))
 			// 生成玩家结算账单
 			billplayerInfo.Score = proto.Int64(score)
-			billplayerInfo.CurrentScore = proto.Int64(coin)
+			billplayerInfo.CurrentScore = proto.Int64(int64(deskPlayers[i].GetCoin()))
 			billplayerInfos = append(billplayerInfos, billplayerInfo)
 		}
 		s.roundScore[pid] = s.roundScore[pid] + realScore[pid]
@@ -221,70 +218,122 @@ func (s *scxlSettle) calcPlayerSettle(deskPlayers []*room.RoomPlayerInfo, settle
 // RoundSettle 单局结算信息
 func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
 	players := desk.GetPlayers()
+	// 牌局所有settleInfo信息
+	totalSInfos := mjContext.SettleInfos
 	for i := 0; i < len(players); i++ {
-		balanceRsp := new(room.RoomBalanceInfoRsp)
-		player := players[i]
-		pid := player.GetPlayerId()
-		balanceRsp.Pid = player.PlayerId
+		pid := players[i].GetPlayerId()
+		// 玩家单局结算信息
+		balanceRsp := &room.RoomBalanceInfoRsp{
+			Pid:             players[i].PlayerId,
+			BillDetail:      make([]*room.BillDetail, 0),
+			BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
+		}
+		// 玩家单局结算总倍数
 		cardValue := int32(0)
-		for _, settleInfo := range mjContext.SettleInfos {
-			billDetail := s.getBillDetail(pid, settleInfo)
-			if billDetail != nil {
-				balanceRsp.BillDetail = append(balanceRsp.BillDetail, billDetail)
-				cardValue = cardValue + billDetail.GetFanValue()
+		// 玩家退税SettleInfos
+		revertIds := mjContext.RevertSettles
+		revertSInfos := make([]*majongpb.SettleInfo, 0)
+		// 玩家退税分数
+		revertScore := int64(0)
+		for _, sInfo := range totalSInfos {
+			if sInfo.Scores[pid] != 0 {
+				bd := s.createBillDetail(pid, sInfo)
+				cardValue = cardValue + bd.GetFanValue()
+				balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+			}
+			if len(revertIds) != 0 {
+				for _, revertID := range revertIds {
+					if revertID == sInfo.Id && s.settleMap[revertID][pid] != 0 {
+						revertSInfos = append(revertSInfos, sInfo)
+						revertScore = revertScore + s.settleMap[revertID][pid]
+					}
+				}
 			}
 		}
-		balanceRsp.BillPlayersInfo = s.getBillPlayerInfo(pid, cardValue, mjContext)
+		if revertScore != 0 {
+			revertbd := s.createRevertbd(pid, revertScore, revertSInfos)
+			balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
+		}
+		balanceRsp.BillPlayersInfo = s.createBillPInfo(pid, cardValue, mjContext)
+		// 通知总结算
 		notifyPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
 }
 
-// getBillDetail 单次结算详情，包括番型，分数，倍数，以及输赢玩家
-func (s *scxlSettle) getBillDetail(palyerID uint64, settleInfo *majongpb.SettleInfo) *room.BillDetail {
-	if settleInfo.Scores[palyerID] != 0 {
-		billDetail := &room.BillDetail{
-			SetleType: room.SettleType(settleInfo.SettleType).Enum(),
-			HuType:    room.HuType(settleInfo.HuType).Enum(),
-			FanValue:  proto.Int32(int32(settleInfo.CardValue)),
-			GenCount:  proto.Uint32(settleInfo.GenCount),
-			Score:     proto.Int64(s.settleMap[settleInfo.Id][palyerID]),
-		}
-		if s.settleMap[settleInfo.Id][palyerID] < 0 {
-			billDetail.FanValue = proto.Int32(int32(0 - settleInfo.CardValue))
-		}
-		fanTypes := make([]room.FanType, 0)
-		for _, cardType := range settleInfo.CardType {
-			fanTypes = append(fanTypes, room.FanType(cardType))
-		}
-		billDetail.FanType = fanTypes
-		if settleInfo.Scores[palyerID] > 0 {
-			for pid, score := range settleInfo.Scores {
-				if palyerID != pid && score != 0 {
-					billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
-				}
-			}
-		} else {
-			for pid, score := range settleInfo.Scores {
-				if palyerID != pid && score > 0 {
-					billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
-				}
-			}
-		}
-		return billDetail
+// createBillDetail 生成玩家单次结算详情，包括番型，分数，倍数，以及输赢玩家
+func (s *scxlSettle) createBillDetail(pid uint64, sInfo *majongpb.SettleInfo) *room.BillDetail {
+	billDetail := &room.BillDetail{
+		SetleType: room.SettleType(sInfo.SettleType).Enum(),
+		HuType:    room.HuType(sInfo.HuType).Enum(),
+		FanValue:  proto.Int32(int32(sInfo.CardValue)),
+		GenCount:  proto.Uint32(sInfo.GenCount),
+		Score:     proto.Int64(s.settleMap[sInfo.Id][pid]),
 	}
-	return nil
+	// 实际扣除分数
+	realScore := s.settleMap[sInfo.Id]
+	fanTypes := make([]room.FanType, 0)
+	for _, cardType := range sInfo.CardType {
+		fanTypes = append(fanTypes, room.FanType(cardType))
+	}
+	billDetail.FanType = fanTypes
+	if realScore[pid] < 0 { // 输家结算倍数为负数
+		billDetail.FanValue = proto.Int32(int32(0 - sInfo.GetCardValue()))
+	}
+	if realScore[pid] > 0 { // 赢家结算所关联玩家为所有输家
+		for pid, score := range realScore {
+			if score < 0 {
+				billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
+			}
+		}
+	} else if realScore[pid] < 0 { // 输家结算所关联玩家为赢家
+		for pid, score := range realScore {
+			if score > 0 {
+				billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
+			}
+		}
+	}
+	return billDetail
 }
 
-// getBillPlayerInfo 单局结算玩家详情,包括玩家自己牌型,输赢分数，以及其余每个玩家的输赢分数
-func (s *scxlSettle) getBillPlayerInfo(playerID uint64, cardValue int32, context majongpb.MajongContext) []*room.BillPlayerInfo {
+// createRevertbd 生成玩家退税结算详情，包括分数以及输赢玩家
+func (s *scxlSettle) createRevertbd(pid uint64, revertScore int64, revertSInfos []*majongpb.SettleInfo) *room.BillDetail {
+	billDetail := &room.BillDetail{
+		SetleType: room.SettleType_ST_TAXREBEAT.Enum(),
+		Score:     proto.Int64(revertScore),
+	}
+	// 相关联玩家
+	for _, revertSInfo := range revertSInfos {
+		// 实际扣除分数
+		realScore := s.settleMap[revertSInfo.Id]
+		if realScore[pid] > 0 { // 赢家结算所关联玩家为所有输家
+			for pid, score := range realScore {
+				if score < 0 {
+					billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
+				}
+			}
+		} else if realScore[pid] < 0 { // 输家结算所关联玩家为赢家
+			for pid, score := range realScore {
+				if score > 0 {
+					billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
+				}
+			}
+		}
+	}
+	return billDetail
+}
+
+// createBillPInfo 生成单局结算玩家详情,包括玩家自己牌型,输赢分数，以及其余每个玩家的输赢分数
+func (s *scxlSettle) createBillPInfo(currentPid uint64, cardValue int32, context majongpb.MajongContext) []*room.BillPlayerInfo {
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
-		billPlayerInfo := new(room.BillPlayerInfo)
-		billPlayerInfo.Pid = proto.Uint64(player.GetPalyerId())
-		billPlayerInfo.Score = proto.Int64(s.roundScore[player.GetPalyerId()])
-		billPlayerInfo.CardValue = proto.Int32(cardValue)
-		if player.PalyerId == playerID {
-			billPlayerInfo.CardsGroup = utils.GetCardsGroup(utils.GetPlayerByID(context.Players, playerID))
+		playerID := player.GetPalyerId()
+		billPlayerInfo := &room.BillPlayerInfo{
+			Pid:       proto.Uint64(playerID),
+			Score:     proto.Int64(s.roundScore[playerID]),
+			CardValue: proto.Int32(cardValue),
+		}
+		if playerID == currentPid {
+			billPlayerInfo.CardsGroup = utils.GetCardsGroup(player)
 		}
 		billPlayerInfos = append(billPlayerInfos, billPlayerInfo)
 	}
