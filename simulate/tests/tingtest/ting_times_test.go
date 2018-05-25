@@ -56,8 +56,8 @@ func Test_Ting_times(t *testing.T) {
 func Test_ChuPaiwenxun_Actions(t *testing.T) {
 	thisParams := global.NewCommonStartGameParams()
 	thisParams.Cards[0] = []uint32{11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 36, 37, 38}
-	thisParams.Cards[1] = []uint32{23, 23, 24, 17, 25, 25, 26, 26, 26, 27, 27, 27, 28}
-	thisParams.Cards[2] = []uint32{16, 17, 17, 31, 32, 33, 34, 35, 36, 37, 38, 39, 17}
+	thisParams.Cards[1] = []uint32{23, 23, 24, 12, 25, 25, 26, 26, 26, 27, 27, 27, 28}
+	thisParams.Cards[2] = []uint32{16, 17, 12, 31, 32, 33, 34, 35, 36, 37, 38, 39, 17}
 	thisParams.Cards[3] = []uint32{24, 31, 31, 32, 32, 32, 33, 33, 33, 34, 34, 34, 35}
 	thisParams.WallCards = []uint32{35, 16, 15, 35}
 	thisParams.DingqueColor[0] = room.CardColor_CC_TONG
@@ -78,11 +78,11 @@ func Test_ChuPaiwenxun_Actions(t *testing.T) {
 	zixunNtf := room.RoomZixunNtf{}
 	zixunExpectors.Recv(2*time.Second, &zixunNtf)
 	utils.SendHuReq(deskData, deskData.BankerSeat)
-	utils.CheckHuNotify(t, deskData, []int{deskData.BankerSeat}, deskData.BankerSeat, uint32(11), room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, deskData, []int{deskData.BankerSeat}, deskData.BankerSeat, uint32(12), room.HuType_HT_TIANHU)
 	xjSeat := (deskData.BankerSeat + 1) % len(deskData.Players)
 	utils.CheckMoPaiNotify(t, deskData, xjSeat, uint32(35))
-	utils.SendChupaiReq(deskData, xjSeat, uint32(17))
-	utils.CheckChuPaiNotify(t, deskData, uint32(17), xjSeat)
+	utils.SendChupaiReq(deskData, xjSeat, uint32(12))
+	utils.CheckChuPaiNotify(t, deskData, uint32(12), xjSeat)
 	utils.WaitChupaiWenxunNtf0(deskData, 0, false, true, false, false)
 	utils.WaitChupaiWenxunNtf0(deskData, 2, false, true, false, true)
 }

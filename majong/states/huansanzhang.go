@@ -111,7 +111,7 @@ func (s *HuansanzhangState) randDirection(flow interfaces.MajongFlow) room.Direc
 	directios := []room.Direction{room.Direction_ClockWise, room.Direction_Opposite, room.Direction_AntiClockWise}
 	towards := rd.Intn(len(directios))
 
-	gameName := getGameName(flow)
+	gameName := utils.GetGameName(flow)
 	fx := peipai.GetHSZFangXiang(gameName)
 	if fx >= 0 && fx < len(directios) {
 		towards = fx

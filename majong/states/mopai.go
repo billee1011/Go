@@ -84,19 +84,11 @@ func (s *MoPaiState) checkGameOver(flow interfaces.MajongFlow) bool {
 		return true
 	}
 	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
-	length := peipai.GetLensOfWallCards(getGameName(flow))
-	if s.getAllMopaiCount(context) == length-53 {
+	length := peipai.GetLensOfWallCards(utils.GetGameName(flow))
+	if utils.GetAllMopaiCount(context) == length-53 {
 		return true
 	}
 	return false
-}
-
-func (s *MoPaiState) getAllMopaiCount(mjContext *majongpb.MajongContext) int {
-	count := 0
-	for _, player := range mjContext.GetPlayers() {
-		count += int(player.GetMopaiCount())
-	}
-	return count
 }
 
 // OnEntry 进入状态

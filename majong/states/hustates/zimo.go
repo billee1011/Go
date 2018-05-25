@@ -9,6 +9,7 @@ import (
 	"steve/majong/interfaces/facade"
 	"steve/majong/settle"
 	"steve/majong/utils"
+	"steve/peipai"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -74,9 +75,11 @@ func (s *ZimoState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 }
 
 // calcHuType 计算胡牌类型
-func (s *ZimoState) calcHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) room.HuType {
+func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) room.HuType {
+	mjContext := flow.GetMajongContext()
 	afterGang := s.isAfterGang(mjContext)
-	isLast := (len(mjContext.WallCards) == 0)
+	// isLast := (len(mjContext.WallCards) == 0)
+	isLast := s.noCardsToTake(flow)
 	if afterGang && isLast {
 		return room.HuType_HT_GANGSHANGHAIDILAO
 	} else if afterGang {
@@ -96,10 +99,22 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, mjContext *majongpb.MajongCont
 	return room.HuType_HT_ZIMO
 }
 
+func (s *ZimoState) noCardsToTake(flow interfaces.MajongFlow) bool {
+	length := peipai.GetLensOfWallCards(utils.GetGameName(flow))
+	context := flow.GetMajongContext()
+	if utils.GetAllMopaiCount(context) == length-53 {
+		return true
+	}
+	if len(context.WallCards) == 0 {
+		return true
+	}
+	return false
+}
+
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, playerID uint64, flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-	huType := s.calcHuType(playerID, mjContext)
+	// mjContext := flow.GetMajongContext()
+	huType := s.calcHuType(playerID, flow)
 	body := room.RoomHuNtf{
 		Players:      []uint64{playerID},
 		FromPlayerId: proto.Uint64(playerID),
@@ -182,7 +197,7 @@ func (s *ZimoState) doZiMoSettle(card *majongpb.Card, huPlayerID uint64, flow in
 	cardValues[huPlayerID] = cardValue
 	genCount[huPlayerID] = gen
 
-	huType := s.calcHuType(huPlayerID, mjContext)
+	huType := s.calcHuType(huPlayerID, flow)
 	settleType := s.huType2SettleType(huType)
 	params := interfaces.HuSettleParams{
 		HuPlayers:  []uint64{huPlayerID},
