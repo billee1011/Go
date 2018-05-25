@@ -80,6 +80,15 @@ func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majo
 			player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qi)
 		}
 	}
+	logrus.WithFields(logrus.Fields{
+		"func_name":   "checkActions",
+		"player":      player.GetPalyerId(),
+		"check_card":  card,
+		"canPeng":     canPeng,
+		"canMingGang": canMingGang,
+		"canDianPao":  canDianPao,
+		"handCards":   FmtMajongpbCards(player.GetHandCards()),
+	}).Info("检测玩家是否有特殊操作")
 	return canDianPao || canMingGang || canPeng
 }
 

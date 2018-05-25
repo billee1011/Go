@@ -6,6 +6,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
+	"steve/peipai"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -52,9 +53,9 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 
 	players := context.GetPlayers()
 	activePlayer := utils.GetPlayerByID(players, context.GetMopaiPlayer())
-	//TODO：目前只在这个地方改变操作玩家（感觉碰，明杠，点炮这三种情况也需要改变activePlayer）
 	context.ActivePlayer = activePlayer.GetPalyerId()
-	if len(context.WallCards) == 0 {
+	if s.checkGameOver(flow) {
+		// if len(context.WallCards) == 0 {
 		logEntry.Infoln("没牌了")
 		return majongpb.StateID_state_gameover, nil
 	}
@@ -75,6 +76,19 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 
 	s.notifyMopai(flow, context.GetMopaiPlayer(), false, card)
 	return majongpb.StateID_state_zixun, nil
+}
+
+func (s *MoPaiState) checkGameOver(flow interfaces.MajongFlow) bool {
+	context := flow.GetMajongContext()
+	if len(context.WallCards) == 0 {
+		return true
+	}
+	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
+	length := peipai.GetLensOfWallCards(utils.GetGameName(flow))
+	if utils.GetAllMopaiCount(context) == length-53 {
+		return true
+	}
+	return false
 }
 
 // OnEntry 进入状态

@@ -41,23 +41,14 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	rand.Shuffle(len(cards), func(i, j int) {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
-	gameName := getGameName(flow)
+	gameName := utils.GetGameName(flow)
 	PeiPai(cards, flow.GetMajongContext(), gameName)
-	length := peipai.GetLensOfWallCards(gameName)
-	if length != 0 {
-		cards = cards[:length]
-	}
-	//暂时只能配牌和长度，换三张方向的代码已写，具体怎么操作要和向xuzhang了解下
+	//TUDO 这里不改变墙牌长度,改由黄庄的方式控制流局
+	// length := peipai.GetLensOfWallCards(gameName)
+	// if length != 0 {
+	// 	cards = cards[:length]
+	// }
 	return cards
-}
-
-func getGameName(flow interfaces.MajongFlow) string {
-	gameID := flow.GetMajongContext().GetGameId()
-	var gameName string
-	if gameID == 1 {
-		gameName = "scxl"
-	}
-	return gameName
 }
 
 // PeiPai 配牌工具
@@ -125,7 +116,7 @@ func (s *XipaiState) OnEntry(flow interfaces.MajongFlow) {
 
 	mjContext.WallCards = s.xipai(flow)
 	dices := s.randDices()
-	gameName := getGameName(flow)
+	gameName := utils.GetGameName(flow)
 	zjIndex := s.selectZhuangjia(mjContext, dices, gameName)
 	s.pushMessages(len(mjContext.WallCards), dices, zjIndex, flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
