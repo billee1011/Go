@@ -42,9 +42,6 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 	// 牌局玩家
 	deskPlayers := desk.GetPlayers()
 	if len(settleInfos) != 0 {
-		logrus.WithFields(logrus.Fields{
-			"settleInfo": mjContext.SettleInfos,
-		}).Debugln("结算信息settleInfo")
 		for _, settleInfo := range mjContext.SettleInfos {
 			if !s.handleSettle[settleInfo.Id] {
 				// 玩家结算信息
@@ -208,7 +205,7 @@ func (s *scxlSettle) calcPlayerSettle(deskPlayers []*room.RoomPlayerInfo, settle
 			deskPlayers[i].Coin = proto.Uint64(uint64(coin + score))
 			// 生成玩家结算账单
 			billplayerInfo.Score = proto.Int64(score)
-			billplayerInfo.CurrentScore = proto.Int64(coin)
+			billplayerInfo.CurrentScore = proto.Int64(int64(deskPlayers[i].GetCoin()))
 			billplayerInfos = append(billplayerInfos, billplayerInfo)
 		}
 		s.roundScore[pid] = s.roundScore[pid] + realScore[pid]
