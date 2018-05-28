@@ -117,10 +117,12 @@ func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	if newStateID, err = f.stateProcess(entry, eventID, eventContext); err != nil {
 		return err
 	}
-	if err = f.switchState(entry, eventID, newStateID); err != nil {
-		return err
-	}
-	return f.processAutoEvent(entry)
+	// 自动事件交给 room 处理，确保消息时序正确
+	return f.switchState(entry, eventID, newStateID)
+	// if err = f.switchState(entry, eventID, newStateID); err != nil {
+	// 	return err
+	// }
+	// return f.processAutoEvent(entry)
 }
 
 func (f *flow) GetSettler(settlerType interfaces.SettlerType) interfaces.Settler {

@@ -11,6 +11,7 @@ import (
 // HandleMajongEventResult 处理牌局事件的结果
 type HandleMajongEventResult struct {
 	NewContext          server_pb.MajongContext        // 处理后的牌局现场
+	AutoEvent           *server_pb.AutoEvent           // 自动事件
 	TimeCheckInfos      []server_pb.TimeCheckInfo      // 需要取消或者设置的时间检测信息
 	UpdateTimeCheckInfo bool                           // 是否需要更新时间检测
 	ReplyMsgs           []server_pb.ReplyClientMessage // 回复给客户端的消息
@@ -48,6 +49,7 @@ func HandleMajongEvent(params HandleMajongEventParams) (result HandleMajongEvent
 	result.NewContext = *flow.GetMajongContext()
 	result.TimeCheckInfos = flow.GetTimeCheckInfos()
 	result.ReplyMsgs = flow.GetMessages()
+	result.AutoEvent = flow.GetAutoEvent()
 	result.Succeed = true
 	return
 }
