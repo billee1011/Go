@@ -73,8 +73,11 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	context.LastMopaiCard = card
 	context.ZixunType = majongpb.ZixunType_ZXT_NORMAL
 	activePlayer.MopaiCount++
-
-	s.notifyMopai(flow, context.GetMopaiPlayer(), false, card)
+	back := false
+	if context.GetMopaiType() == majongpb.MopaiType_MT_GANG {
+		back = true
+	}
+	s.notifyMopai(flow, context.GetMopaiPlayer(), back, card)
 	return majongpb.StateID_state_zixun, nil
 }
 
