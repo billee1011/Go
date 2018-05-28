@@ -220,6 +220,8 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 
 // executeHSZ 执行换三张
 func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
+	// 等待1ms，确保服务器已经切换到换三张状态
+	time.Sleep(time.Millisecond)
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
 	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
@@ -262,6 +264,8 @@ func checkDingqueColor(deskData *DeskData, playerColors []*room.PlayerDingqueCol
 
 // executeDingque 执行定缺
 func executeDingque(deskData *DeskData, colors []room.CardColor) error {
+	// 等待1ms，确保服务器已经切换到定缺状态
+	time.Sleep(time.Millisecond)
 	if colors == nil {
 		logrus.Infoln("定缺花色没配置，不执行定缺")
 		return nil
