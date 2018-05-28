@@ -57,10 +57,17 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 						for pid, score := range sinfo.Scores {
 							if score > 0 {
 								cost = realScore[pid]
-								singleCost[pid] = realScore[pid]
+								singleCost[pid] = cost
 							} else if score < 0 {
-								singleCost[pid] = 0 - cost
-
+								if cost != 0 {
+									singleCost[pid] = 0 - cost
+								} else {
+									for _, rscore := range realScore {
+										if rscore > 0 {
+											singleCost[pid] = 0 - rscore
+										}
+									}
+								}
 							}
 						}
 						s.settleMap[sinfo.Id] = singleCost
@@ -140,7 +147,7 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 		if score > 0 {
 			winScore = winScore + score
 			winPid = append(winPid, p)
-		} else if score <= 0 {
+		} else if score < 0 {
 			loseScore = loseScore + score
 			losePids = append(losePids, p)
 		}
@@ -154,8 +161,8 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 			} else {
 				cost = int64(0 - losePlayer.GetCoin())
 			}
-			realCost[losePid] = realCost[losePid] + cost
-			realCost[winPid[0]] = realCost[winPid[0]] - cost
+			realCost[losePid] = cost
+			realCost[winPid[0]] = realCost[winPid[0]] - realCost[losePid]
 		}
 	} else {
 		losePid := losePids[0]
@@ -299,7 +306,7 @@ func (s *scxlSettle) createBillDetail(pid uint64, sInfo *majongpb.SettleInfo) *r
 func (s *scxlSettle) createRevertbd(pid uint64, revertScore int64, revertSInfos []*majongpb.SettleInfo) *room.BillDetail {
 	billDetail := &room.BillDetail{
 		SetleType: room.SettleType_ST_TAXREBEAT.Enum(),
-		Score:     proto.Int64(revertScore),
+		Score:     proto.Int64(0 - revertScore),
 	}
 	// 相关联玩家
 	for _, revertSInfo := range revertSInfos {
