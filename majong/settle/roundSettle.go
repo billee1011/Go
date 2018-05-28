@@ -27,6 +27,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 	if flowerPigSettleInfos != nil && len(flowerPigSettleInfos) > 0 {
 		for _, s := range flowerPigSettleInfos {
 			setletInfos = append(setletInfos, s)
+			params.SettleID++
 		}
 	}
 	// 查大叫
@@ -34,6 +35,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
 		for _, s := range yellSettleInfos {
 			setletInfos = append(setletInfos, s)
+			params.SettleID++
 		}
 	}
 	// 退税
