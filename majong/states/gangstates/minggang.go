@@ -76,7 +76,7 @@ func (s *MingGangState) doMinggang(flow interfaces.MajongFlow) {
 	}
 	player.HandCards = newCards
 
-	s.addGangCard(card, player, player.GetPalyerId())
+	s.addGangCard(card, player, mjContext.GetLastChupaiPlayer())
 	s.notifyPlayers(flow, card, player, mjContext.GetLastChupaiPlayer())
 	s.doMingGangSettle(mjContext, player, mjContext.GetLastChupaiPlayer())
 	return

@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"steve/client_pb/room"
+	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
@@ -508,4 +509,23 @@ func TransGangCard(gangCards []*majongpb.GangCard) []*majongpb.Card {
 		cards = append(cards, gangCard.Card)
 	}
 	return cards
+}
+
+// GetGameName 获取游戏名字
+func GetGameName(flow interfaces.MajongFlow) string {
+	gameID := flow.GetMajongContext().GetGameId()
+	var gameName string
+	if gameID == 1 {
+		gameName = "scxl"
+	}
+	return gameName
+}
+
+// GetAllMopaiCount 获取所有人的摸牌数总和
+func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
+	count := 0
+	for _, player := range mjContext.GetPlayers() {
+		count += int(player.GetMopaiCount())
+	}
+	return count
 }

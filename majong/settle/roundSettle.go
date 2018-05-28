@@ -11,7 +11,7 @@ import (
 type RoundSettle struct {
 }
 
-// Settle  单局结算方法
+// Settle  单局结算方法 操作优先级：查花猪＞查大叫＞退税
 func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"name":            "roundSettle",
@@ -21,18 +21,21 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 		"tingPlayersInfo": params.TingPlayersInfo,
 	})
 	setletInfos := make([]*majongpb.SettleInfo, 0)
-	// 查大叫
-	yellSettleInfos := yellSettle(params)
-	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
-		for _, s := range yellSettleInfos {
-			setletInfos = append(setletInfos, s)
-		}
-	}
+
 	// 查花猪
 	flowerPigSettleInfos := flowerPigSettle(params)
 	if flowerPigSettleInfos != nil && len(flowerPigSettleInfos) > 0 {
 		for _, s := range flowerPigSettleInfos {
 			setletInfos = append(setletInfos, s)
+			params.SettleID++
+		}
+	}
+	// 查大叫
+	yellSettleInfos := yellSettle(params)
+	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
+		for _, s := range yellSettleInfos {
+			setletInfos = append(setletInfos, s)
+			params.SettleID++
 		}
 	}
 	// 退税
@@ -115,14 +118,14 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 	taxRebeatIds := make([]uint64, 0)
 	for _, notTingPlayer := range params.NotTingPlayers {
 		for _, settleInfo := range params.SettleInfos {
-			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[notTingPlayer] > 0) {
+			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[notTingPlayer] > 0) && !settleInfo.CallTransfer {
 				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
 			}
 		}
 	}
 	for _, flowerPigPlayer := range params.FlowerPigPlayers {
 		for _, settleInfo := range params.SettleInfos {
-			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[flowerPigPlayer] > 0) {
+			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[flowerPigPlayer] > 0) && !settleInfo.CallTransfer {
 				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
 			}
 		}
@@ -139,5 +142,6 @@ func newRoundSettleInfo(params interfaces.RoundSettleParams, scoreMap map[uint64
 		HuType:     huType,
 		SettleType: settleType,
 	}
+	params.SettleID++
 	return settleInfo, params
 }

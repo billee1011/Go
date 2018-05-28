@@ -266,8 +266,8 @@ func (d *desk) initMajongContext() error {
 	return nil
 }
 
-// genAutoEvent 生成自动事件
-func (d *desk) genAutoEvent() {
+// genTimerEvent 生成计时事件
+func (d *desk) genTimerEvent() {
 	if d.eventGen == nil {
 		return
 	}
@@ -276,10 +276,10 @@ func (d *desk) genAutoEvent() {
 	events := d.eventGen.Generate(&dContext.mjContext, dContext.stateTime)
 	for _, event := range events {
 		logrus.WithFields(logrus.Fields{
-			"func_name":    "desk.genAutoEvent",
+			"func_name":    "desk.genTimerEvent",
 			"state_number": dContext.stateNumber,
 			"event_id":     event.ID,
-		}).Debugln("注入自动事件")
+		}).Debugln("注入计时事件")
 		d.event <- deskEvent{
 			eventID:      event.ID,
 			eventContext: event.Context,
@@ -301,7 +301,7 @@ func (d *desk) timerTask(ctx context.Context) {
 		select {
 		case <-timer:
 			{
-				d.genAutoEvent()
+				d.genTimerEvent()
 				timer = time.After(time.Second * 1)
 			}
 		case <-ctx.Done():
@@ -337,33 +337,23 @@ func (d *desk) processEvents(ctx context.Context) {
 				if event.stateNumber != d.dContext.stateNumber {
 					continue
 				}
-				d.processEvent(&event)
+				d.processEvent(event.eventID, event.eventContext)
 			}
 		}
 	}
 }
 
-// processEvent 处理单个事件
-// step 1. 调用麻将逻辑的接口来处理事件(返回最新麻将现场, 自动事件， 发送给玩家的消息)， 并且更新 mjContext
-// step 2. 将消息发送给玩家
-// step 3. 调用 room 的结算逻辑来处理结算
-// step 4. 如果有自动事件， 将自动事件写入自动事件通道
-// step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
-func (d *desk) processEvent(event *deskEvent) {
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "desk.ProcessEvent",
-		"event_id":  event.eventID,
-	})
+// callEventHandler 调用事件处理器
+func (d *desk) callEventHandler(logEntry *logrus.Entry, eventID server_pb.EventID, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
+	succ = false
 	stateNumber, mjContext, stateTime := d.dContext.stateNumber, d.dContext.mjContext, d.dContext.stateTime
 	oldState := mjContext.GetCurState()
 
-	result := majong_process.HandleMajongEvent(majong_process.HandleMajongEventParams{
+	if result = majong_process.HandleMajongEvent(majong_process.HandleMajongEventParams{
 		MajongContext: mjContext,
-		EventID:       event.eventID,
-		EventContext:  event.eventContext,
-	})
-	if !result.Succeed {
+		EventID:       eventID,
+		EventContext:  eventContext,
+	}); !result.Succeed {
 		logEntry.Debugln("处理事件不成功")
 		return
 	}
@@ -379,17 +369,50 @@ func (d *desk) processEvent(event *deskEvent) {
 		stateNumber: stateNumber,
 		stateTime:   stateTime,
 	}
+	succ = true
+	return
+}
+
+// processEvent 处理单个事件
+// step 1. 调用麻将逻辑的接口来处理事件(返回最新麻将现场, 自动事件， 发送给玩家的消息)， 并且更新 mjContext
+// step 2. 将消息发送给玩家
+// step 3. 调用 room 的结算逻辑来处理结算
+// step 4. 如果有自动事件， 将自动事件写入自动事件通道
+// step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
+func (d *desk) processEvent(eventID server_pb.EventID, eventContext []byte) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "desk.ProcessEvent",
+		"event_id":  eventID,
+	})
+	result, succ := d.callEventHandler(logEntry, eventID, eventContext)
+	if !succ {
+		return
+	}
 
 	// 发送消息给玩家
 	d.reply(result.ReplyMsgs)
-	d.settler.Settle(d, newContext)
+	d.settler.Settle(d, d.dContext.mjContext)
 
+	if d.checkGameOver(logEntry) {
+		return
+	}
+	// 自动事件不为空，继续处理事件
+	if result.AutoEvent != nil {
+		d.processEvent(result.AutoEvent.GetEventId(), result.AutoEvent.GetEventContext())
+	}
+}
+
+// checkGameOver 检查游戏结束
+func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
+	mjContext := d.dContext.mjContext
 	// 游戏结束
-	if newContext.GetCurState() == server_pb.StateID_state_gameover {
-		d.settler.RoundSettle(d, newContext)
+	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
+		d.settler.RoundSettle(d, mjContext)
 		logEntry.Infoln("游戏结束状态")
 		d.cancel()
+		return true
 	}
+	return false
 }
 
 func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
