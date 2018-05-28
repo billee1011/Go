@@ -513,7 +513,7 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 func (s *ZiXunState) checkAnGang(flow interfaces.MajongFlow) (enableAngangCards []uint32) {
 	enableAngangCards = make([]uint32, 0, 0)
 	context := flow.GetMajongContext()
-	if utils.CheckGameOver(flow) {
+	if !utils.HasAvailableWallCards(flow) {
 		// if len(context.WallCards) == 0 {
 		return
 	}
@@ -527,7 +527,7 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 	enableBugangCards := []uint32{}
 	context := flow.GetMajongContext()
 	// 没有墙牌不能杠
-	if utils.CheckGameOver(flow) {
+	if !utils.HasAvailableWallCards(flow) {
 		// if len(context.WallCards) == 0 {
 		return enableBugangCards
 	}

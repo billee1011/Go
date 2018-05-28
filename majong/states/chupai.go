@@ -96,7 +96,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
 	// 没有墙牌不能明杠
 	context := flow.GetMajongContext()
-	if utils.CheckGameOver(flow) {
+	if !utils.HasAvailableWallCards(flow) {
 		// if len(context.WallCards) == 0 {
 		return false
 	}

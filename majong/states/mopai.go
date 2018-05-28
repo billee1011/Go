@@ -54,7 +54,7 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 	players := context.GetPlayers()
 	activePlayer := utils.GetPlayerByID(players, context.GetMopaiPlayer())
 	context.ActivePlayer = activePlayer.GetPalyerId()
-	if utils.CheckGameOver(flow) {
+	if !utils.HasAvailableWallCards(flow) {
 		// if len(context.WallCards) == 0 {
 		logEntry.Infoln("没牌了")
 		return majongpb.StateID_state_gameover, nil
