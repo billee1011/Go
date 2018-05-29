@@ -95,13 +95,15 @@ message AutoEvent {
 
 // SettleType 结算类型
 enum SettleType {
-    settle_gang = 0;          // 杠
-    settle_dianpao = 1;       // 点炮
-    settle_zimo = 2;          // 自摸
-    settle_flowerpig = 3;     // 查花猪
-    settle_yell = 4;          // 查大叫
-    settle_taxrebeat = 5;     // 退税
-    settle_calldiver = 6;     // 呼叫转移
+    settle_angang = 0;              // 暗杠
+    settle_minggang = 1;            // 明杠
+    settle_bugang = 2;              // 补杠
+    settle_dianpao = 3;             // 点炮
+    settle_zimo = 4;                // 自摸
+    settle_flowerpig = 5;           // 查花猪
+    settle_yell = 6;                // 查大叫
+    settle_taxrebeat = 7;           // 退税
+    settle_calldiver = 8;           // 呼叫转移
 }
 
 // SettleHuType 结算类型

@@ -23,19 +23,19 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 	setletInfos := make([]*majongpb.SettleInfo, 0)
 
 	// 查花猪
-	flowerPigSettleInfos := flowerPigSettle(params)
+	flowerPigSettleInfos, fSettleID := flowerPigSettle(params)
+	params.SettleID = fSettleID
 	if flowerPigSettleInfos != nil && len(flowerPigSettleInfos) > 0 {
 		for _, s := range flowerPigSettleInfos {
 			setletInfos = append(setletInfos, s)
-			params.SettleID++
 		}
 	}
 	// 查大叫
-	yellSettleInfos := yellSettle(params)
+	yellSettleInfos, ySettleID := yellSettle(params)
+	params.SettleID = ySettleID
 	if yellSettleInfos != nil && len(yellSettleInfos) > 0 {
 		for _, s := range yellSettleInfos {
 			setletInfos = append(setletInfos, s)
-			params.SettleID++
 		}
 	}
 	// 退税
@@ -47,7 +47,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 // 查大叫结算
 // 未上听者需赔上听者最大可能番数（自摸、杠后炮、杠上开花、抢杠胡、海底捞、海底炮不参与）的牌型钱。
 // 注：查大叫时，若上听者牌型中有根，则根也要未上听者包给上听者。
-func yellSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
+func yellSettle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, uint64) {
 	//底注
 	ante := GetDi()
 	// 查大叫结算信息
@@ -67,18 +67,19 @@ func yellSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
 			if len(settleInfoMap) > 0 {
 				settleInfoMap[noTingPlayer] = lose
 				yellSettleInfo := new(majongpb.SettleInfo)
+				params.SettleID = params.SettleID + 1
 				yellSettleInfo, params = newRoundSettleInfo(params, settleInfoMap, -1, majongpb.SettleType_settle_yell)
 				yellSettleInfos = append(yellSettleInfos, yellSettleInfo)
 			}
 		}
 	}
-	return yellSettleInfos
+	return yellSettleInfos, params.SettleID
 }
 
 // 查花猪结算
 // 1.—花猪赔给未听牌玩家和胡牌玩家16*底分
 // 2.—花猪赔给听牌未胡玩家（查大叫倍数+16）*底分
-func flowerPigSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo {
+func flowerPigSettle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, uint64) {
 	//底注
 	ante := GetDi()
 	// 查花猪信息
@@ -106,11 +107,12 @@ func flowerPigSettle(params interfaces.RoundSettleParams) []*majongpb.SettleInfo
 		if len(settleInfoMap) > 0 {
 			settleInfoMap[flowerPig] = lose
 			flowerSettleInfo := new(majongpb.SettleInfo)
+			params.SettleID = params.SettleID + 1
 			flowerSettleInfo, params = newRoundSettleInfo(params, settleInfoMap, -1, majongpb.SettleType_settle_flowerpig)
 			flowwePigSettleInfos = append(flowwePigSettleInfos, flowerSettleInfo)
 		}
 	}
-	return flowwePigSettleInfos
+	return flowwePigSettleInfos, params.SettleID
 }
 
 // 退稅结算
@@ -118,15 +120,20 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 	taxRebeatIds := make([]uint64, 0)
 	for _, notTingPlayer := range params.NotTingPlayers {
 		for _, settleInfo := range params.SettleInfos {
-			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[notTingPlayer] > 0) && !settleInfo.CallTransfer {
-				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
+			if settleInfo.SettleType == majongpb.SettleType_settle_angang || settleInfo.SettleType == majongpb.SettleType_settle_minggang || settleInfo.SettleType == majongpb.SettleType_settle_bugang {
+				if (settleInfo.Scores[notTingPlayer] > 0) && !settleInfo.CallTransfer {
+					taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
+				}
 			}
+
 		}
 	}
 	for _, flowerPigPlayer := range params.FlowerPigPlayers {
 		for _, settleInfo := range params.SettleInfos {
-			if (settleInfo.SettleType == majongpb.SettleType_settle_gang) && (settleInfo.Scores[flowerPigPlayer] > 0) && !settleInfo.CallTransfer {
-				taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
+			if settleInfo.SettleType == majongpb.SettleType_settle_angang || settleInfo.SettleType == majongpb.SettleType_settle_minggang || settleInfo.SettleType == majongpb.SettleType_settle_bugang {
+				if (settleInfo.Scores[flowerPigPlayer] > 0) && !settleInfo.CallTransfer {
+					taxRebeatIds = append(taxRebeatIds, settleInfo.Id)
+				}
 			}
 		}
 	}
@@ -137,11 +144,10 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 func newRoundSettleInfo(params interfaces.RoundSettleParams, scoreMap map[uint64]int64,
 	huType majongpb.SettleHuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.RoundSettleParams) {
 	settleInfo := &majongpb.SettleInfo{
-		Id:         params.SettleID + 1,
+		Id:         params.SettleID,
 		Scores:     scoreMap,
 		HuType:     huType,
 		SettleType: settleType,
 	}
-	params.SettleID++
 	return settleInfo, params
 }
