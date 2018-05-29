@@ -54,3 +54,28 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 		client:   client,
 	}, nil
 }
+
+// LoginVisitor 登录游客
+func LoginVisitor(client interfaces.Client) (interfaces.ClientPlayer, error) {
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "LoginVisitor",
+	})
+
+	rsp := room.RoomVisitorLoginRsp{}
+	err := client.Request(interfaces.SendHead{
+		Head: interfaces.Head{
+			MsgID: uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_REQ),
+		},
+	}, &room.RoomVisitorLoginReq{}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP), &rsp)
+
+	if err != nil {
+		logEntry.WithError(err).Errorln(errRequestFailed)
+		return nil, err
+	}
+	return &clientPlayer{
+		playerID: rsp.GetPlayerId(),
+		coin:     rsp.GetCoin(),
+		client:   client,
+	}, nil
+}
