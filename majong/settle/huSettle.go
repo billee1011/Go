@@ -44,7 +44,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 			}
 		}
 		scoreInfoMap[huPlayerID] = win
-
+		params.SettleID = params.SettleID + 1
 		huSettleInfo, params = newHuSettleInfo(params, params.HuType, params.SettleType, scoreInfoMap, huPlayerID)
 		huSettleInfo.CardValue = uint32(value)
 		settleInfos = append(settleInfos, huSettleInfo)
@@ -61,7 +61,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 			// 输赢分
 			scoreInfoMap[huPlayerID] = total
 			scoreInfoMap[params.SrcPlayer] = -total
-
+			params.SettleID = params.SettleID + 1
 			huSettleInfo, params = newHuSettleInfo(params, params.HuType, params.SettleType, scoreInfoMap, huPlayerID)
 			huSettleInfo.CardValue = uint32(value)
 			huSettleInfos = append(huSettleInfos, huSettleInfo)
@@ -70,9 +70,6 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		for _, settleInfo := range huSettleInfos {
 			settleInfo.GroupId = groupIds
 			settleInfos = append(settleInfos, settleInfo)
-		}
-		if len(huSettleInfos) != 0 {
-			params.SettleID++
 		}
 	}
 	if params.HuType == majongpb.SettleHuType_settle_hu_ganghoupao { // 需呼叫转移
@@ -87,6 +84,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 }
 
 func callTransferSettle(params interfaces.HuSettleParams) *majongpb.SettleInfo {
+	params.SettleID = params.SettleID + 1
 	callTransferS, params := newNormalSettleInfo(params, -1, majongpb.SettleType_settle_calldiver)
 
 	gangCard := params.GangCard
@@ -161,21 +159,20 @@ func GetDi() int64 {
 func newHuSettleInfo(params interfaces.HuSettleParams, huType majongpb.SettleHuType, settleType majongpb.SettleType,
 	scoreMap map[uint64]int64, huPlayerID uint64) (*majongpb.SettleInfo, interfaces.HuSettleParams) {
 	settleInfo := &majongpb.SettleInfo{
-		Id:         params.SettleID + 1,
+		Id:         params.SettleID,
 		Scores:     scoreMap,
 		SettleType: settleType,
 		HuType:     huType,
 		CardType:   params.CardTypes[huPlayerID],
 		GenCount:   params.GenCount[huPlayerID],
 	}
-	params.SettleID++
 	return settleInfo, params
 }
 
 // newNormalSettleInfo 初始化生成一条新的结算信息
 func newNormalSettleInfo(params interfaces.HuSettleParams, huType majongpb.SettleHuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.HuSettleParams) {
 	settleInfo := &majongpb.SettleInfo{
-		Id:         params.SettleID + 1,
+		Id:         params.SettleID,
 		Scores:     make(map[uint64]int64),
 		HuType:     huType,
 		SettleType: settleType,

@@ -18,3 +18,12 @@ func TestLogin(t *testing.T) {
 	assert.NotNil(t, player)
 	assert.NotEqual(t, 0, player.GetID())
 }
+
+func TestVisitorLogin(t *testing.T) {
+	client := connect.NewTestClient(ServerAddr, ClientVersion)
+	assert.NotNil(t, client)
+	player, err := utils.LoginVisitor(client)
+	assert.Nil(t, err)
+	assert.NotNil(t, player)
+	assert.NotEqual(t, 0, player.GetID())
+}

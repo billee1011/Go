@@ -160,8 +160,12 @@ func (s *QiangganghuState) doQiangGangHuSettle(flow interfaces.MajongFlow) {
 	}
 	huSettle := new(settle.HuSettle)
 	settleInfos := huSettle.Settle(params)
+	maxSID := uint64(0)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
+		if settleInfo.Id > maxSID {
+			maxSID = settleInfo.Id
+		}
 	}
+	mjContext.CurrentSettleId = maxSID
 }

@@ -39,7 +39,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
 				continue
 			}
-			need := s.checkActions(context, player, card)
+			need := s.checkActions(flow, player, card)
 			if need {
 				hasChupaiwenxun = true
 			}
@@ -60,9 +60,9 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 }
 
 //checkActions 检查玩家可以有哪些操作
-func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
-
-	canMingGang := s.checkMingGang(context, player, card)
+func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
+	context := flow.GetMajongContext()
+	canMingGang := s.checkMingGang(flow, player, card)
 	if canMingGang {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_gang)
 	}
@@ -93,9 +93,11 @@ func (s *ChupaiState) checkActions(context *majongpb.MajongContext, player *majo
 }
 
 //checkMingGang 查明杠
-func (s *ChupaiState) checkMingGang(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
+func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
 	// 没有墙牌不能明杠
-	if len(context.WallCards) == 0 {
+	context := flow.GetMajongContext()
+	if !utils.HasAvailableWallCards(flow) {
+		// if len(context.WallCards) == 0 {
 		return false
 	}
 	outCard := context.GetLastOutCard()

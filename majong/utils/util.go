@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
+	"steve/peipai"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
@@ -528,4 +529,18 @@ func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
 		count += int(player.GetMopaiCount())
 	}
 	return count
+}
+
+// HasAvailableWallCards 判断是否有墙牌可摸
+func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
+	context := flow.GetMajongContext()
+	if len(context.WallCards) == 0 {
+		return false
+	}
+	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
+	length := peipai.GetLensOfWallCards(GetGameName(flow))
+	if GetAllMopaiCount(context) == length-53 {
+		return false
+	}
+	return true
 }

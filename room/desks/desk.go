@@ -296,13 +296,13 @@ func (d *desk) timerTask(ctx context.Context) {
 		}
 	}()
 
-	timer := time.After(time.Second * 1)
+	t := time.NewTicker(time.Second * 1)
+	defer t.Stop()
 	for {
 		select {
-		case <-timer:
+		case <-t.C:
 			{
 				d.genTimerEvent()
-				timer = time.After(time.Second * 1)
 			}
 		case <-ctx.Done():
 			{

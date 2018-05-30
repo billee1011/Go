@@ -320,6 +320,11 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}
 	//查听,打什么,听什么
 	s.checkTing(zixunNtf, player, context)
+	//TODO:胡牌类型,用来区分自摸天地胡
+	// if zixunNtf.GetEnableZimo() == true {
+	// 	huType := s.getHuType(playerID, context)
+	// 	zixunNtf.HuType = &huType
+	// }
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
 	toClient := interfaces.ToClientMessage{
@@ -336,6 +341,20 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		"wallCards": FmtMajongpbCards(context.GetWallCards()),
 		"huCards":   FmtHuCards(player.GetHuCards()),
 	}).Infoln("自询通知")
+}
+
+// getHuType 计算胡牌类型
+func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) room.HuType {
+	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
+	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
+		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+			return room.HuType_HT_TIANHU
+		}
+		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+			return room.HuType_HT_DIHU
+		}
+	}
+	return room.HuType_HT_ZIMO
 }
 
 func (s *ZiXunState) getPengCards(pengCards []*majongpb.PengCard) []*majongpb.Card {
@@ -494,7 +513,8 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 func (s *ZiXunState) checkAnGang(flow interfaces.MajongFlow) (enableAngangCards []uint32) {
 	enableAngangCards = make([]uint32, 0, 0)
 	context := flow.GetMajongContext()
-	if len(context.WallCards) == 0 {
+	if !utils.HasAvailableWallCards(flow) {
+		// if len(context.WallCards) == 0 {
 		return
 	}
 	activePlayerID := s.getZixunPlayer(flow)
@@ -507,7 +527,8 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 	enableBugangCards := []uint32{}
 	context := flow.GetMajongContext()
 	// 没有墙牌不能杠
-	if len(context.WallCards) == 0 {
+	if !utils.HasAvailableWallCards(flow) {
+		// if len(context.WallCards) == 0 {
 		return enableBugangCards
 	}
 	activePlayerID := s.getZixunPlayer(flow)
