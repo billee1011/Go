@@ -52,13 +52,22 @@ func allocPlayerID() uint64 {
 
 func loginPlayer(clientID uint64, playerID uint64) *player {
 	playerMgr := global.GetPlayerMgr()
-	p := &player{
-		playerID: playerID,
-		coin:     10000,
-		clientID: clientID,
+	pm := playerMgr.GetPlayer(playerID)
+	if pm == nil {
+		p := &player{
+			playerID: playerID,
+			coin:     10000,
+			clientID: clientID,
+		}
+		playerMgr.AddPlayer(p)
+		return p
 	}
-	playerMgr.AddPlayer(p)
-	return p
+	pm.SetClientID(clientID)
+	return &player{
+		playerID: pm.GetID(),
+		coin:     pm.GetCoin(),
+		clientID: pm.GetClientID(),
+	}
 }
 
 // HandleLogin 处理客户端登录消息
@@ -94,8 +103,18 @@ func HandleVisitorLogin(clientID uint64, header *steve_proto_gaterpc.Header, req
 		"client_id":   clientID,
 		"device_info": req.GetDeviceInfo(),
 	})
-	playerID := allocPlayerID()
-
+	exsit := EqualUser(req.GetDeviceInfo())
+	var playerID uint64
+	if !exsit {
+		playerID = allocPlayerID()
+		YoukeInfos[req.GetDeviceInfo().GetUuid()] = &YoukeInfo{
+			DeviceInfo: req.GetDeviceInfo(),
+			PlayerID:   playerID,
+		}
+	} else {
+		youkeInfo := YoukeInfos[req.GetDeviceInfo().GetUuid()]
+		playerID = youkeInfo.PlayerID
+	}
 	p := loginPlayer(clientID, playerID)
 	userName := fmt.Sprintf("youke%v", playerID)
 
@@ -117,4 +136,30 @@ func HandleVisitorLogin(clientID uint64, header *steve_proto_gaterpc.Header, req
 			},
 		},
 	}
+}
+
+// YoukeInfos 储存游客登录的信息
+var YoukeInfos map[string]*YoukeInfo
+
+// YoukeInfo 游客信息
+type YoukeInfo struct {
+	DeviceInfo *room.DeviceInfo
+	PlayerID   uint64
+}
+
+func init() {
+	YoukeInfos = make(map[string]*YoukeInfo)
+}
+
+// EqualUser 判断游客是否第一次登录
+func EqualUser(dvInfo *room.DeviceInfo) bool {
+	info, ok := YoukeInfos[dvInfo.GetUuid()]
+	if !ok {
+		return false
+	}
+	if info.DeviceInfo.GetDeviceType() == dvInfo.GetDeviceType() &&
+		info.DeviceInfo.GetUuid() == dvInfo.GetUuid() {
+		return true
+	}
+	return false
 }
