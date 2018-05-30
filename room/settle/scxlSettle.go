@@ -79,7 +79,7 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 				}
 				billplayerInfos = s.calcPlayerSettle(deskPlayers, settleInfo, realScore)
 				// 广播即时结算消息
-				notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+				s.notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 					BillPlayersInfo: billplayerInfos,
 				})
 			}
@@ -109,7 +109,7 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 			billplayerInfos = append(billplayerInfos, billplayerInfo)
 		}
 		// 即时结算消息
-		notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+		s.notifyDeskMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 			BillPlayersInfo: billplayerInfos,
 		})
 	}
@@ -122,7 +122,7 @@ func (s *scxlSettle) combineSettleInfo(allSInfo []*majongpb.SettleInfo, settleIn
 	}
 	groupsInfos := make([]*majongpb.SettleInfo, 0)
 	for _, id := range settleInfo.GroupId {
-		index := settleInfoIndexByID(allSInfo, id)
+		index := s.settleInfoIndexByID(allSInfo, id)
 		groupsInfos = append(groupsInfos, allSInfo[index])
 		combineSInfo.SettleType = allSInfo[index].SettleType
 		s.handleSettle[id] = true
@@ -154,9 +154,9 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 	}
 	if len(losePids) > 1 {
 		for _, losePid := range losePids {
-			losePlayer := getDeskPlayer(deskPlayer, losePid)
+			losePlayer := s.getDeskPlayer(deskPlayer, losePid)
 			cost := int64(0)
-			if abs(settleInfo.Scores[losePid]) <= int64(losePlayer.GetCoin()) {
+			if s.abs(settleInfo.Scores[losePid]) <= int64(losePlayer.GetCoin()) {
 				cost = settleInfo.Scores[losePid]
 			} else {
 				cost = int64(0 - losePlayer.GetCoin())
@@ -166,8 +166,8 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 		}
 	} else {
 		losePid := losePids[0]
-		losePlayer := getDeskPlayer(deskPlayer, losePid)
-		if abs(loseScore) < int64(losePlayer.GetCoin()) {
+		losePlayer := s.getDeskPlayer(deskPlayer, losePid)
+		if s.abs(loseScore) < int64(losePlayer.GetCoin()) {
 			for _, win := range winPid {
 				realCost[win] = settleInfo.Scores[win]
 			}
@@ -205,7 +205,7 @@ func (s *scxlSettle) calcPlayerSettle(deskPlayers []*room.RoomPlayerInfo, settle
 		pid := deskPlayers[i].GetPlayerId()
 		score := realScore[pid]
 		if score != 0 {
-			billplayerInfo := newBillplayerInfo(pid, room.BillType(settleInfo.SettleType))
+			billplayerInfo := s.newBillplayerInfo(pid, s.settleType2BillType(settleInfo.SettleType))
 			// 玩家当前分数
 			coin := int64(deskPlayers[i].GetCoin())
 			// 玩家结算后的分数
@@ -263,7 +263,7 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 		}
 		balanceRsp.BillPlayersInfo = s.createBillPInfo(pid, cardValue, mjContext)
 		// 通知总结算
-		notifyPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
+		s.notifyPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
 }
 
@@ -348,7 +348,7 @@ func (s *scxlSettle) createBillPInfo(currentPid uint64, cardValue int32, context
 }
 
 // settleInfoIndexByID 根据ettleID获取对应settleInfo的下标index
-func settleInfoIndexByID(settleInfos []*majongpb.SettleInfo, ID uint64) int {
+func (s *scxlSettle) settleInfoIndexByID(settleInfos []*majongpb.SettleInfo, ID uint64) int {
 	for index, s := range settleInfos {
 		if s.Id == ID {
 			return index
@@ -364,7 +364,7 @@ func (s *scxlSettle) calcCost(deskPlayer *room.RoomPlayerInfo, settleInfo *majon
 	coin := int64(deskPlayer.GetCoin()) // 玩家剩余分数
 	cost := int64(0)                    // 实际扣除分数
 	if score != 0 {
-		if abs(score) <= coin { // 剩余分数足够
+		if s.abs(score) <= coin { // 剩余分数足够
 			cost = score
 		} else if score < 0 {
 			cost = -coin
@@ -373,7 +373,7 @@ func (s *scxlSettle) calcCost(deskPlayer *room.RoomPlayerInfo, settleInfo *majon
 	return cost
 }
 
-func getDeskPlayer(deskPlayers []*room.RoomPlayerInfo, pid uint64) *room.RoomPlayerInfo {
+func (s *scxlSettle) getDeskPlayer(deskPlayers []*room.RoomPlayerInfo, pid uint64) *room.RoomPlayerInfo {
 	for _, p := range deskPlayers {
 		if p.GetPlayerId() == pid {
 			return p
@@ -382,21 +382,21 @@ func getDeskPlayer(deskPlayers []*room.RoomPlayerInfo, pid uint64) *room.RoomPla
 	return nil
 }
 
-func newBillplayerInfo(playID uint64, billType room.BillType) *room.BillPlayerInfo {
+func (s *scxlSettle) newBillplayerInfo(playID uint64, billType room.BillType) *room.BillPlayerInfo {
 	return &room.BillPlayerInfo{
 		Pid:      proto.Uint64(playID),
 		BillType: billType.Enum(),
 	}
 }
 
-func abs(n int64) int64 {
+func (s *scxlSettle) abs(n int64) int64 {
 	if n < 0 {
 		return -n
 	}
 	return n
 }
 
-func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
+func (s *scxlSettle) notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
 	players := desk.GetPlayers()
 	clientIDs := []uint64{}
 
@@ -419,7 +419,7 @@ func notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Me
 	ms.BroadcastPackage(clientIDs, head, message)
 }
 
-func notifyPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgID, message proto.Message) {
+func (s *scxlSettle) notifyPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgID, message proto.Message) {
 	clientID := global.GetPlayerMgr().GetPlayer(playerID).GetClientID()
 
 	head := &steve_proto_gaterpc.Header{
@@ -430,4 +430,18 @@ func notifyPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgI
 		"msg": message.String(),
 	}).Debugln("通知总结算")
 	ms.SendPackage(clientID, head, message)
+}
+
+func (s *scxlSettle) settleType2BillType(settleType majongpb.SettleType) room.BillType {
+	return map[majongpb.SettleType]room.BillType{
+		majongpb.SettleType_settle_angang:    room.BillType_BILL_GANG,
+		majongpb.SettleType_settle_bugang:    room.BillType_BILL_GANG,
+		majongpb.SettleType_settle_minggang:  room.BillType_BILL_GANG,
+		majongpb.SettleType_settle_dianpao:   room.BillType_BILL_DIANPAO,
+		majongpb.SettleType_settle_zimo:      room.BillType_BILL_ZIMO,
+		majongpb.SettleType_settle_yell:      room.BillType_BILL_CHECKSHOUT,
+		majongpb.SettleType_settle_flowerpig: room.BillType_BILL_CHECKPIG,
+		majongpb.SettleType_settle_calldiver: room.BillType_BILL_TRANSFER,
+		majongpb.SettleType_settle_taxrebeat: room.BillType_BILL_REFUND,
+	}[settleType]
 }
