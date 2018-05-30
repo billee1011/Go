@@ -1,7 +1,9 @@
 package loader
 
 import (
+	"steve/serviceloader/rpc"
 	"steve/serviceloader/structs/sgrpc"
+	rpcinterface "steve/structs/rpc"
 	sgrpcinterface "steve/structs/sgrpc"
 
 	"github.com/Sirupsen/logrus"
@@ -28,13 +30,13 @@ func createRPCServer(keyFile string, certFile string) *sgrpc.RPCServerImpl {
 }
 
 // createRPCClient 创建 RPC 客户端
-func createRPCClient(caFile string, caServerName string) *sgrpc.ClientImpl {
+func createRPCClient(caFile string, caServerName string) rpcinterface.Client {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":      "createRPCClient",
 		"ca_file":        caFile,
 		"ca_server_name": caServerName,
 	})
-	result := sgrpc.NewClientImpl(caFile, caServerName)
+	result := rpc.NewClient(caFile, caServerName)
 	if result == nil {
 		logEntry.Panicln("创建 RPC 客户端失败")
 	}

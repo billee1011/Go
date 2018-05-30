@@ -7,6 +7,7 @@ import (
 	"steve/serviceexample/rpcexample/proto"
 	"steve/structs"
 	"steve/structs/service"
+	"time"
 )
 
 type RPCExampleClient struct {
@@ -19,7 +20,21 @@ func (rec *RPCExampleClient) Init(e *structs.Exposer, param ...string) error {
 }
 
 func (rec *RPCExampleClient) Start() error {
-	cc, err := rec.e.RPCClient.GetClientConnByServerName("exampleservice")
+	for i := 0; i < 100; i++ {
+		if err := rec.work(); err != nil {
+			return err
+		}
+		time.Sleep(time.Second)
+	}
+	return nil
+}
+
+func GetService() service.Service {
+	return &RPCExampleClient{}
+}
+
+func (rec *RPCExampleClient) work() error {
+	cc, err := rec.e.RPCClient.GetConnectByServerName("exampleservice")
 	if err != nil {
 		return fmt.Errorf("Get client connection failed:%v", err)
 	}
@@ -35,10 +50,6 @@ func (rec *RPCExampleClient) Start() error {
 	}
 	fmt.Println("receive response from server:", resp.GetEcho())
 	return nil
-}
-
-func GetService() service.Service {
-	return &RPCExampleClient{}
 }
 
 func main() {

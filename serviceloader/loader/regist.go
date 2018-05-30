@@ -30,7 +30,10 @@ func registerServer(rp *registerParams) {
 		"addr":        rp.addr,
 		"port":        rp.port,
 	})
-
+	if rp.serverName == "" {
+		logEntry.Infoln("服务名为空，不注册服务")
+		return
+	}
 	serverID, err := allocServerID(logEntry, rp.redisFactory)
 	if err != nil {
 		logEntry.Panicln(err)
