@@ -224,7 +224,7 @@ func (s *HuansanzhangState) execute(flow interfaces.MajongFlow) (newState majong
 //onRsq 换三张应答
 func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 	// 错误码-成功
-	errCode := room.RoomError_Success
+	errCode := room.RoomError_SUCCESS
 	// 定缺应答 请求-响应
 	toClientRsq := interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_RSP),

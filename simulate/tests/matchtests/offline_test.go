@@ -20,7 +20,7 @@ import (
 func Test_OfflineMatch(t *testing.T) {
 	client1 := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
 	assert.NotNil(t, client1)
-	player1, err := utils.LoginUser(client1, "test_user")
+	player1, err := utils.LoginUser(client1, global.AllocUserName())
 	utils.ApplyJoinDesk(player1)
 	assert.Nil(t, err)
 	client1.Stop()

@@ -9,8 +9,9 @@ import (
 )
 
 type playerMgr struct {
-	playerMap sync.Map // playerID -> player
-	clientMap sync.Map // clientID -> playerID
+	playerMap   sync.Map // playerID -> player
+	clientMap   sync.Map // clientID -> playerID
+	userNameMap sync.Map // userName-> playerID
 
 	mu sync.RWMutex
 }
@@ -20,6 +21,7 @@ func (pm *playerMgr) AddPlayer(p interfaces.Player) {
 	defer pm.mu.Unlock()
 	pm.playerMap.Store(p.GetID(), p)
 	pm.clientMap.Store(p.GetClientID(), p.GetID())
+	pm.userNameMap.Store(p.GetUserName(), p.GetID())
 }
 
 func (pm *playerMgr) GetPlayer(playerID uint64) interfaces.Player {
@@ -46,6 +48,17 @@ func (pm *playerMgr) GetPlayerByClientID(clientID uint64) interfaces.Player {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
 	v, ok := pm.clientMap.Load(clientID)
+	if !ok {
+		return nil
+	}
+	playerID := v.(uint64)
+	return pm.getPlayer(playerID)
+}
+
+func (pm *playerMgr) GetPlayerByUserName(userName string) interfaces.Player {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	v, ok := pm.userNameMap.Load(userName)
 	if !ok {
 		return nil
 	}

@@ -120,7 +120,7 @@ func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.Clie
 		if client == nil {
 			return nil, errCreateClientFailed
 		}
-		player, err := LoginUser(client, fmt.Sprintf("user_%d", i))
+		player, err := LoginUser(client, global.AllocUserName())
 		if err != nil {
 			return nil, fmt.Errorf("登录用户失败：%v", err)
 		}
