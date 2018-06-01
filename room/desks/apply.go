@@ -137,7 +137,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 	if ExsitInDesk(player.GetID()) {
-		rsp.ErrCode = room.RoomError_desk_already_applied.Enum()
+		rsp.ErrCode = room.RoomError_DESK_ALREADY_APPLIED.Enum()
 		return
 	}
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
@@ -163,7 +163,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 	if ExsitInDesk(player.GetID()) {
-		rsp.ErrCode = room.RoomError_desk_already_applied.Enum()
+		rsp.ErrCode = room.RoomError_DESK_ALREADY_APPLIED.Enum()
 		return
 	}
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
