@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package steve.proto.gaterpc;
 
-// 需要使用 Any 
-import "google/protobuf/any.proto";
-
 
 message Header {
     uint32 msg_id = 1;
@@ -20,10 +17,16 @@ message ClientMessage {
     bytes request_data = 3;
 }
 
+// ResponseMessage 回复消息
+message ResponseMessage {
+    Header header = 1;  // 消息头
+    bytes body = 2;     // 消息体
+}
+
 // 处理结果
 message HandleResult {
     // 回复数据， 长度为空时则不需要回复
-    repeated google.protobuf.Any response_datas = 1; 
+    repeated ResponseMessage responses = 1; 
 }
 
 // 消息处理器
