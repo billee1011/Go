@@ -87,7 +87,7 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 		return fmt.Errorf("获取全局对象失败")
 	}
 	// TODO 网关服务绑定， 不同的网关分开发送
-	cc, err := g.RPCClient.GetClientConnByServerName(common.GateServiceName)
+	cc, err := g.RPCClient.GetConnectByServerName(common.GateServiceName)
 	if err != nil {
 		entry.WithError(err).Warn("获取客户端连接失败")
 		return fmt.Errorf("获取客户端连接失败： %v", err)

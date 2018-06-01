@@ -59,7 +59,7 @@ func TestHandleRoomJoinDeskReq(t *testing.T) {
 
 	rspBody, ok := rspMsgs[0].Body.(*room.RoomJoinDeskRsp)
 	assert.True(t, ok)
-	assert.Equal(t, room.RoomError_Success, rspBody.GetErrCode())
+	assert.Equal(t, room.RoomError_SUCCESS, rspBody.GetErrCode())
 }
 
 // TestHandleRoomJoinDeskReq_NotLogin 测试用户未登录
@@ -80,7 +80,7 @@ func TestHandleRoomJoinDeskReq_NotLogin(t *testing.T) {
 
 	rspBody, ok := rspMsgs[0].Body.(*room.RoomJoinDeskRsp)
 	assert.True(t, ok)
-	assert.Equal(t, room.RoomError_not_login, rspBody.GetErrCode())
+	assert.Equal(t, room.RoomError_NOT_LOGIN, rspBody.GetErrCode())
 }
 
 func Test_joinApplyManager_checkMatch(t *testing.T) {

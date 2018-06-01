@@ -5,13 +5,14 @@ import (
 	"steve/structs/exchanger"
 	"steve/structs/net"
 	"steve/structs/redisfactory"
+	"steve/structs/rpc"
 	"steve/structs/sgrpc"
 )
 
 // Exposer provide common interfaces for services
 type Exposer struct {
 	RPCServer       sgrpc.RPCServer
-	RPCClient       sgrpc.RPCClient
+	RPCClient       rpc.Client
 	Configuration   configuration.Configuration
 	WatchDogFactory net.WatchDogFactory
 	Exchanger       exchanger.Exchanger

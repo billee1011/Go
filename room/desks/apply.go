@@ -35,7 +35,7 @@ func (jam *joinApplyManager) joinPlayer(playerID uint64) room.RoomError {
 	// TODO: 检测玩家状态
 	ch := jam.getApplyChannel()
 	ch <- playerID
-	return room.RoomError_Success
+	return room.RoomError_SUCCESS
 }
 
 func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
@@ -123,7 +123,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	player := playerMgr.GetPlayerByClientID(clientID)
 
 	rsp := &room.RoomJoinDeskRsp{
-		ErrCode: room.RoomError_Success.Enum(),
+		ErrCode: room.RoomError_SUCCESS.Enum(),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -133,7 +133,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 
 	if player == nil {
-		rsp.ErrCode = room.RoomError_not_login.Enum()
+		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
 		return
 	}
 	if ExsitInDesk(player.GetID()) {
@@ -149,7 +149,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayerByClientID(clientID)
 	rsp := &room.RoomDeskContinueRsp{
-		ErrCode: room.RoomError_Success.Enum(),
+		ErrCode: room.RoomError_SUCCESS.Enum(),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -159,7 +159,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 
 	if player == nil {
-		rsp.ErrCode = room.RoomError_not_login.Enum()
+		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
 		return
 	}
 	if ExsitInDesk(player.GetID()) {

@@ -2,6 +2,7 @@ package tests
 
 import (
 	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/utils"
 
 	"github.com/golang/protobuf/proto"
@@ -16,10 +17,15 @@ import (
 func TestLogin(t *testing.T) {
 	client := connect.NewTestClient(ServerAddr, ClientVersion)
 	assert.NotNil(t, client)
-	player, err := utils.LoginUser(client, "test_user")
+	userName := global.AllocUserName()
+	player, err := utils.LoginUser(client, userName)
 	assert.Nil(t, err)
 	assert.NotNil(t, player)
 	assert.NotEqual(t, 0, player.GetID())
+	player2, err := utils.LoginUser(client, userName)
+	assert.Nil(t, err)
+	assert.NotNil(t, player2)
+	assert.Equal(t, player2.GetID(), player.GetID())
 }
 
 func TestVisitorLogin(t *testing.T) {

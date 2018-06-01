@@ -7,7 +7,6 @@ import (
 	"steve/simulate/interfaces"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type clientPlayer struct {
@@ -41,7 +40,7 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_REQ),
 		},
 	}, &room.RoomLoginReq{
-		UserName: proto.String("test_user"),
+		UserName: &userName,
 	}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
 
 	if err != nil {

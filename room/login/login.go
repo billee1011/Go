@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"sync"
@@ -18,6 +19,7 @@ type player struct {
 	playerID uint64
 	coin     uint64
 	clientID uint64
+	userName string
 }
 
 func (p *player) GetID() uint64 {
@@ -40,6 +42,10 @@ func (p *player) SetClientID(clientID uint64) {
 	p.clientID = clientID
 }
 
+func (p *player) GetUserName() string {
+	return p.userName
+}
+
 var maxPlayerID uint64
 var maxPlayerIDMutex sync.Mutex
 
@@ -50,116 +56,137 @@ func allocPlayerID() uint64 {
 	return maxPlayerID
 }
 
-func loginPlayer(clientID uint64, playerID uint64) *player {
+func loginPlayerByUserName(clientID uint64, userName string) interfaces.Player {
 	playerMgr := global.GetPlayerMgr()
-	pm := playerMgr.GetPlayer(playerID)
+	pm := playerMgr.GetPlayerByUserName(userName)
 	if pm == nil {
 		p := &player{
-			playerID: playerID,
+			playerID: allocPlayerID(),
 			coin:     10000,
 			clientID: clientID,
+			userName: userName,
 		}
 		playerMgr.AddPlayer(p)
 		return p
 	}
 	pm.SetClientID(clientID)
-	return &player{
-		playerID: pm.GetID(),
-		coin:     pm.GetCoin(),
-		clientID: pm.GetClientID(),
-	}
+	return pm
 }
 
 // HandleLogin 处理客户端登录消息
-func HandleLogin(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomLoginReq) []exchanger.ResponseMsg {
+func HandleLogin(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomLoginReq) (ret []exchanger.ResponseMsg) {
 	logentry := logrus.WithFields(logrus.Fields{
 		"func_name": "HandleLogin",
 		"client_id": clientID,
 		"user_name": req.GetUserName(),
 	})
-	playerID := allocPlayerID()
-
-	p := loginPlayer(clientID, playerID)
-	logentry = logentry.WithFields(logrus.Fields{
-		"player_id": p.playerID,
-		"coin":      p.coin,
-	})
-	logentry.Infoln("玩家登录")
-	return []exchanger.ResponseMsg{
+	rsp := &room.RoomLoginRsp{}
+	ret = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
 			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_RSP),
-			Body: &room.RoomLoginRsp{
-				PlayerId: proto.Uint64(p.GetID()),
-				Coin:     proto.Uint64(p.GetCoin()),
-			},
+			Body:  rsp,
 		},
 	}
+	userName := req.GetUserName()
+	if userName == "" {
+		rsp.ErrCode = room.RoomError_EMPTY_USER_NAME.Enum()
+		return
+	}
+
+	p := loginPlayerByUserName(clientID, userName)
+	logentry = logentry.WithFields(logrus.Fields{
+		"player_id": p.GetID(),
+		"coin":      p.GetCoin(),
+	})
+	rsp.Coin = proto.Uint64(p.GetCoin())
+	rsp.PlayerId = proto.Uint64(p.GetID())
+	logentry.Infoln("玩家登录")
+	return
+}
+
+func loginNewVisitor(clientID uint64, deviceInfo *room.DeviceInfo) interfaces.Player {
+	playerMgr := global.GetPlayerMgr()
+	playerID := allocPlayerID()
+	p := &player{
+		playerID: playerID,
+		coin:     10000,
+		clientID: clientID,
+		userName: fmt.Sprintf("youke_%v", playerID),
+	}
+	playerMgr.AddPlayer(p)
+	saveYoukeInfo(deviceInfo, playerID)
+	return p
+}
+
+func loginExistVisitor(clientID uint64, youkeInfo *YoukeInfo) interfaces.Player {
+	playerMgr := global.GetPlayerMgr()
+	pm := playerMgr.GetPlayer(youkeInfo.PlayerID)
+	if pm == nil {
+		logrus.WithFields(logrus.Fields{
+			"func_name":  "loginExistVisitor",
+			"youke_info": youkeInfo,
+		}).Panicln("游客不存在")
+	}
+	pm.SetClientID(clientID)
+	return pm
 }
 
 // HandleVisitorLogin 处理游客登录
-func HandleVisitorLogin(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomVisitorLoginReq) []exchanger.ResponseMsg {
+func HandleVisitorLogin(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomVisitorLoginReq) (ret []exchanger.ResponseMsg) {
+	deviceInfo := req.GetDeviceInfo()
 	logentry := logrus.WithFields(logrus.Fields{
 		"func_name":   "HandleVisitorLogin",
 		"client_id":   clientID,
-		"device_info": req.GetDeviceInfo(),
+		"device_info": deviceInfo,
 	})
-	exsit := EqualUser(req.GetDeviceInfo())
-	var playerID uint64
-	if !exsit {
-		playerID = allocPlayerID()
-		YoukeInfos[req.GetDeviceInfo().GetUuid()] = &YoukeInfo{
-			DeviceInfo: req.GetDeviceInfo(),
-			PlayerID:   playerID,
-		}
-	} else {
-		youkeInfo := YoukeInfos[req.GetDeviceInfo().GetUuid()]
-		playerID = youkeInfo.PlayerID
-	}
-	p := loginPlayer(clientID, playerID)
-	userName := fmt.Sprintf("youke%v", playerID)
-
-	logentry = logentry.WithFields(logrus.Fields{
-		"player_id": p.playerID,
-		"coin":      p.coin,
-		"user_name": userName,
-	})
-	logentry.Infoln("游客玩家登录")
-
-	return []exchanger.ResponseMsg{
+	rsp := &room.RoomVisitorLoginRsp{}
+	ret = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
 			MsgID: uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP),
-			Body: &room.RoomVisitorLoginRsp{
-				ErrCode:  room.RoomError_Success.Enum(),
-				UserName: proto.String(userName),
-				PlayerId: proto.Uint64(p.GetID()),
-				Coin:     proto.Uint64(p.GetCoin()),
-			},
+			Body:  rsp,
 		},
 	}
+	youkeInfo := getYoukeInfo(deviceInfo)
+	var player interfaces.Player
+	if youkeInfo == nil {
+		player = loginNewVisitor(clientID, deviceInfo)
+	} else {
+		player = loginExistVisitor(clientID, youkeInfo)
+	}
+	logentry = logentry.WithFields(logrus.Fields{
+		"player_id": player.GetID(),
+		"coin":      player.GetCoin(),
+		"user_name": player.GetUserName(),
+	})
+	logentry.Infoln("游客登录")
+	rsp.Coin = proto.Uint64(player.GetCoin())
+	rsp.ErrCode = room.RoomError_SUCCESS.Enum()
+	rsp.PlayerId = proto.Uint64(player.GetID())
+	rsp.UserName = proto.String(player.GetUserName())
+	return
 }
 
-// YoukeInfos 储存游客登录的信息
-var YoukeInfos map[string]*YoukeInfo
+// youkeInfos 储存游客登录的信息
+// var youkeInfos = map[string]*YoukeInfo{}
+
+var youkeInfos sync.Map
 
 // YoukeInfo 游客信息
 type YoukeInfo struct {
-	DeviceInfo *room.DeviceInfo
-	PlayerID   uint64
+	PlayerID uint64
 }
 
-func init() {
-	YoukeInfos = make(map[string]*YoukeInfo)
-}
-
-// EqualUser 判断游客是否第一次登录
-func EqualUser(dvInfo *room.DeviceInfo) bool {
-	info, ok := YoukeInfos[dvInfo.GetUuid()]
+// getYoukeInfo 获取设备游客信息
+func getYoukeInfo(dvInfo *room.DeviceInfo) *YoukeInfo {
+	iinfo, ok := youkeInfos.Load(dvInfo.GetUuid())
 	if !ok {
-		return false
+		return nil
 	}
-	if info.DeviceInfo.GetDeviceType() == dvInfo.GetDeviceType() &&
-		info.DeviceInfo.GetUuid() == dvInfo.GetUuid() {
-		return true
-	}
-	return false
+	return iinfo.(*YoukeInfo)
+}
+
+func saveYoukeInfo(dvInfo *room.DeviceInfo, playerID uint64) {
+	youkeInfos.Store(dvInfo.GetUuid(), &YoukeInfo{
+		PlayerID: playerID,
+	})
 }

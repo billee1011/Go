@@ -165,7 +165,7 @@ func checkDingQueReq(dingQueColor majongpb.CardColor) bool {
 //onRsq 定缺应答
 func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
 	// 错误码-成功
-	errCode := room.RoomError_Success
+	errCode := room.RoomError_SUCCESS
 	// 定缺应答 请求-响应
 	toClientRsq := interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_DINGQUE_RSP),
