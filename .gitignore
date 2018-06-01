@@ -7,3 +7,4 @@ client_pb
 simulate/config/config.go
 room/config.yml
 room/toclient.yml
+*.db
