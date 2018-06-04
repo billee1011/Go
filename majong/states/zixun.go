@@ -320,11 +320,10 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}
 	//查听,打什么,听什么
 	s.checkTing(zixunNtf, player, context)
-	//TODO:胡牌类型,用来区分自摸天地胡
-	// if zixunNtf.GetEnableZimo() == true {
-	// 	huType := s.getHuType(playerID, context)
-	// 	zixunNtf.HuType = &huType
-	// }
+	if zixunNtf.GetEnableZimo() == true {
+		huType := s.getHuType(playerID, context)
+		zixunNtf.HuType = &huType
+	}
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
 	toClient := interfaces.ToClientMessage{
