@@ -8,13 +8,13 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type messageSenderServer struct {
+type sender struct {
 	core *gatewayCore
 }
 
-var _ steve_proto_gaterpc.MessageSenderServer = new(messageSenderServer)
+var _ steve_proto_gaterpc.MessageSenderServer = new(sender)
 
-func (mss *messageSenderServer) SendMessage(ctx context.Context, req *steve_proto_gaterpc.SendMessageRequest) (*steve_proto_gaterpc.SendMessageResult, error) {
+func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.SendMessageRequest) (*steve_proto_gaterpc.SendMessageResult, error) {
 	header := steve_proto_base.Header{
 		MsgId:   proto.Uint32(req.GetHeader().GetMsgId()),
 		Version: proto.String("1.0"), // TODO
