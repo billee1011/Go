@@ -1,7 +1,9 @@
-package autoevent
+package scxlai
 
 import (
+	"steve/gutils"
 	"steve/room/interfaces"
+	"steve/room/interfaces/global"
 	"steve/server_pb/majong"
 	"time"
 
@@ -9,40 +11,41 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type dingqueHandler struct {
+type dingqueStateAI struct {
 	maxDingqueTime time.Duration // 最大定缺时间
 }
 
-func newDingqueHandler() *dingqueHandler {
-	return &dingqueHandler{
-		maxDingqueTime: 10 * time.Second,
-	}
+// 注册 AI
+func init() {
+	g := global.GetDeskAutoEventGenerator()
+	g.RegisterAI(gGameID, majong.StateID_state_dingque, &dingqueStateAI{})
 }
 
-func (h *dingqueHandler) Generate(mjContext *majong.MajongContext, stateTime time.Time) (result []interfaces.Event) {
-	duration := time.Now().Sub(stateTime)
-	if duration < h.maxDingqueTime {
+// GenerateAIEvent 生成 AI 事件
+// 无论是超时、托管还是机器人，都选最少的牌作为定缺牌， 并且产生相应的事件
+func (h *dingqueStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (result interfaces.AIEventGenerateResult, err error) {
+	result, err = interfaces.AIEventGenerateResult{
+		Events: []interfaces.AIEvent{},
+	}, nil
+
+	mjContext := params.MajongContext
+	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
+	if player.GetHasDingque() {
 		return
 	}
-	players := mjContext.GetPlayers()
-	for _, player := range players {
-		if player.GetHasDingque() {
-			continue
-		}
-		if event := h.dingque(player); event != nil {
-			result = append(result, *event)
-		}
+	if event := h.dingque(player); event != nil {
+		result.Events = append(result.Events, *event)
 	}
 	return
 }
 
 // allColor 所有的麻将花色
-func (h *dingqueHandler) allColor() []majong.CardColor {
+func (h *dingqueStateAI) allColor() []majong.CardColor {
 	return []majong.CardColor{majong.CardColor_ColorWan, majong.CardColor_ColorTiao, majong.CardColor_ColorTong}
 }
 
 // getColor 获取定缺花色
-func (h *dingqueHandler) getColor(player *majong.Player) majong.CardColor {
+func (h *dingqueStateAI) getColor(player *majong.Player) majong.CardColor {
 	cards := player.GetHandCards()
 	colorMap := map[majong.CardColor]int{}
 
@@ -62,7 +65,7 @@ func (h *dingqueHandler) getColor(player *majong.Player) majong.CardColor {
 }
 
 // dingque 生成定缺请求事件
-func (h *dingqueHandler) dingque(player *majong.Player) *interfaces.Event {
+func (h *dingqueStateAI) dingque(player *majong.Player) *interfaces.AIEvent {
 	color := h.getColor(player)
 	mjContext := majong.DingqueRequestEvent{
 		Head: &majong.RequestEventHead{
@@ -74,13 +77,13 @@ func (h *dingqueHandler) dingque(player *majong.Player) *interfaces.Event {
 	data, err := proto.Marshal(&mjContext)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"func_name": "dingqueHandler.dingque",
+			"func_name": "dingqueStateAI.dingque",
 			"player_id": player.GetPalyerId(),
 			"color":     color,
 		}).Errorln("事件序列化失败")
 		return nil
 	}
-	return &interfaces.Event{
+	return &interfaces.AIEvent{
 		ID:      majong.EventID_event_dingque_request,
 		Context: data,
 	}

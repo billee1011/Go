@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"steve/client_pb/room"
+	"steve/gutils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
@@ -10,12 +11,7 @@ import (
 
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家
 func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
-	for _, player := range mjContext.GetPlayers() {
-		if player.GetPalyerId() == playerID {
-			return player
-		}
-	}
-	return nil
+	return gutils.GetMajongPlayer(playerID, mjContext)
 }
 
 // ExistPossibleAction 玩家是否存在指定的可能行为
