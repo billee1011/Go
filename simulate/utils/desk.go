@@ -275,7 +275,7 @@ func executeDingque(deskData *DeskData, colors []room.CardColor) error {
 		offset := GetSeatOffset(deskData.BankerSeat, seat, len(deskData.Players))
 		SendDingqueReq(seat, deskData, colors[offset])
 	}
-	WaitDingqueFinish(deskData, global.DefaultWaitMessageTime, colors)
+	WaitDingqueFinish(deskData, global.DefaultWaitMessageTime, colors, []int{0, 1, 2, 3})
 	return nil
 }
 
@@ -290,9 +290,10 @@ func SendDingqueReq(seat int, deskData *DeskData, color room.CardColor) error {
 }
 
 // WaitDingqueFinish 等定缺完成通知
-func WaitDingqueFinish(deskData *DeskData, duration time.Duration, expectedColors []room.CardColor) error {
-	for _, player := range deskData.Players {
+func WaitDingqueFinish(deskData *DeskData, duration time.Duration, expectedColors []room.CardColor, waitSeats []int) error {
+	for _, seat := range waitSeats {
 		ntf := room.RoomDingqueFinishNtf{}
+		player := GetDeskPlayerBySeat(seat, deskData)
 		expector := player.Expectors[msgid.MsgID_ROOM_DINGQUE_FINISH_NTF]
 		if err := expector.Recv(duration, &ntf); err != nil {
 			return err

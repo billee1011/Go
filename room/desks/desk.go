@@ -3,13 +3,13 @@ package desks
 import (
 	"context"
 	"errors"
-	"fmt"
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
 	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
@@ -25,15 +25,16 @@ var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
 
-type deskPlayer struct {
-	playerID uint64
-	seat     uint32 // 座号
-}
-
 // deskEvent 房间事件
 type deskEvent struct {
 	event       interfaces.Event
 	stateNumber int
+}
+
+// enterQuitInfo 退出以及进入信息
+type enterQuitInfo struct {
+	playerID uint64
+	quit     bool // true 为退出， false 为进入
 }
 
 // deskContext 牌桌现场
@@ -49,14 +50,16 @@ type desk struct {
 	createOption interfaces.CreateDeskOptions // 创建选项
 	dContext     *deskContext                 // 牌桌现场
 	settler      interfaces.DeskSettler       // 结算器
-	players      map[uint32]deskPlayer        // Seat -> player
+	players      map[uint32]*deskPlayer       // Seat -> player
 	event        chan deskEvent               // 牌桌事件通道
+	enterQuits   chan enterQuitInfo           // 退出以及进入信息
 	cancel       context.CancelFunc           // 取消事件处理
+	tuoGuanMgr   interfaces.TuoGuanMgr        // 托管管理器
 }
 
-func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]deskPlayer, error) {
+func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]*deskPlayer, error) {
 	playerMgr := global.GetPlayerMgr()
-	deskPlayers := make(map[uint32]deskPlayer, 4)
+	deskPlayers := make(map[uint32]*deskPlayer, 4)
 	seat := uint32(0)
 	for _, playerID := range players {
 		player := playerMgr.GetPlayer(playerID)
@@ -64,10 +67,7 @@ func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]deskP
 			logEntry.WithField("player_id", playerID).Errorln(errPlayerNotExist)
 			return nil, errPlayerNotExist
 		}
-		deskPlayers[seat] = deskPlayer{
-			playerID: playerID,
-			seat:     seat,
-		}
+		deskPlayers[seat] = newDeskPlayer(playerID, seat)
 		seat++
 	}
 	return deskPlayers, nil
@@ -99,6 +99,8 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
 			players:      deskPlayers,
 			event:        make(chan deskEvent, 16),
+			tuoGuanMgr:   newTuoGuanMgr(),
+			enterQuits:   make(chan enterQuitInfo),
 		},
 	}, nil
 }
@@ -115,7 +117,6 @@ func (d *desk) GetGameID() int {
 
 // GetPlayers 获取牌桌玩家数据
 func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
-
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.GetPlayers",
 		"desk_uid":  d.deskUID,
@@ -132,10 +133,19 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 			return nil
 		}
 		result = append(result, &room.RoomPlayerInfo{
-			PlayerId: proto.Uint64(deskPlayer.playerID),
+			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
 			Coin:     proto.Uint64(player.GetCoin()),
 			Seat:     proto.Uint32(uint32(seat)),
 		})
+	}
+	return result
+}
+
+// GetDeskPlayers 获取牌桌玩家
+func (d *desk) GetDeskPlayers() []interfaces.DeskPlayer {
+	result := []interfaces.DeskPlayer{}
+	for _, deskPlayer := range d.players {
+		result = append(result, deskPlayer)
 	}
 	return result
 }
@@ -179,6 +189,22 @@ func (d *desk) Start(finish func()) error {
 	return nil
 }
 
+// PlayerQuit 玩家退出
+func (d *desk) PlayerQuit(playerID uint64) {
+	d.enterQuits <- enterQuitInfo{
+		playerID: playerID,
+		quit:     true,
+	}
+}
+
+// PlayerEnter 玩家进入
+func (d *desk) PlayerEnter(playerID uint64) {
+	d.enterQuits <- enterQuitInfo{
+		playerID: playerID,
+		quit:     false,
+	}
+}
+
 // Stop 停止桌面
 // step1，桌面解散开始
 // step2，广播桌面解散通知
@@ -190,12 +216,12 @@ func (d *desk) Stop() error {
 		"desk_uid":  d.deskUID,
 		"game_id":   d.gameID,
 	})
-	players := d.GetPlayers()
+	players := d.GetDeskPlayers()
 	clientIDs := []uint64{}
 
 	playerMgr := global.GetPlayerMgr()
 	for _, player := range players {
-		playerID := player.GetPlayerId()
+		playerID := player.GetPlayerID()
 		p := playerMgr.GetPlayer(playerID)
 		if p != nil {
 			clientIDs = append(clientIDs, p.GetClientID())
@@ -246,6 +272,11 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	}
 }
 
+// GetTuoGuanMgr 获取托管管理器
+func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
+	return d.tuoGuanMgr
+}
+
 func (d *desk) initMajongContext() error {
 	players := make([]uint64, len(d.players))
 
@@ -277,17 +308,21 @@ func (d *desk) genTimerEvent() {
 	g := global.GetDeskAutoEventGenerator()
 	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
 	dContext := d.dContext
+	tuoGuanPlayers := d.tuoGuanMgr.GetTuoGuanPlayers()
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":       "desk.genTimerEvent",
+		"state_number":    dContext.stateNumber,
+		"tuoguan_players": tuoGuanPlayers,
+	})
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
 		MajongContext:  &dContext.mjContext,
 		CurTime:        time.Now(),
 		StateTime:      dContext.stateTime,
 		RobotLv:        map[uint64]int{},
-		TuoGuanPlayers: []uint64{},
+		TuoGuanPlayers: tuoGuanPlayers,
 	})
 	for _, event := range result.Events {
-		logrus.WithFields(logrus.Fields{
-			"func_name":    "desk.genTimerEvent",
-			"state_number": dContext.stateNumber,
+		logEntry.WithFields(logrus.Fields{
 			"event_id":     event.ID,
 			"event_player": event.PlayerID,
 			"event_type":   event.EventType,
@@ -343,14 +378,55 @@ func (d *desk) processEvents(ctx context.Context) {
 				logEntry.Infoln("done")
 				return
 			}
+		case enterQuitInfo := <-d.enterQuits:
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}
 		case event := <-d.event:
 			{
 				if event.stateNumber != d.dContext.stateNumber {
 					continue
 				}
 				d.processEvent(event.event.ID, event.event.Context)
+				if event.event.EventType == interfaces.OverTimeEvent && event.event.PlayerID != 0 {
+					d.tuoGuanMgr.OnPlayerTimeOut(event.event.PlayerID)
+				}
 			}
 		}
+	}
+}
+
+// getDeskPlayer 获取牌桌玩家
+func (d *desk) getDeskPlayer(playerID uint64) *deskPlayer {
+	for _, deskPlayer := range d.players {
+		if deskPlayer.GetPlayerID() == playerID {
+			return deskPlayer
+		}
+	}
+	return nil
+}
+
+// handleEnterQuit 处理退出进入信息
+func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "handleEnterQuit",
+		"player_id": eqi.playerID,
+		"quit":      eqi.quit,
+	})
+	deskPlayer := d.getDeskPlayer(eqi.playerID)
+	if deskPlayer == nil {
+		logEntry.Errorln("玩家不在牌桌上")
+		return
+	}
+	if eqi.quit {
+		deskPlayer.quitDesk()
+		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
+		logEntry.Debugln("玩家退出")
+	} else {
+		deskPlayer.enterDesk()
+		// TODO : 处理恢复牌局
+		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
+		logEntry.Debugln("玩家进入")
 	}
 }
 
@@ -430,20 +506,57 @@ func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
 	if replyMsgs == nil {
 		return
 	}
-	msgSender := global.GetMessageSender()
-	playerMgr := global.GetPlayerMgr()
 	for _, msg := range replyMsgs {
-
-		clientIDs := []uint64{}
-		for _, playerID := range msg.GetPlayers() {
-			player := playerMgr.GetPlayer(playerID)
-			clientIDs = append(clientIDs, player.GetClientID())
-		}
-		if msg.GetMsgId() == int32(msgid.MsgID_ROOM_XIPAI_NTF) {
-			fmt.Println("洗牌通知：", clientIDs)
-		}
-		msgSender.BroadcastPackageBare(clientIDs, &steve_proto_gaterpc.Header{
-			MsgId: uint32(msg.GetMsgId()),
-		}, msg.GetMsg())
+		d.BroadcastMessage(msg.GetPlayers(), msgid.MsgID(msg.GetMsgId()), msg.GetMsg(), true)
 	}
+}
+
+// removeQuit 移除已经退出的玩家
+func (d *desk) removeQuit(playerIDs []uint64) []uint64 {
+	deskPlayerIDs := map[uint64]bool{}
+	deskPlayers := d.GetDeskPlayers()
+	for _, deskPlayer := range deskPlayers {
+		playerID := deskPlayer.GetPlayerID()
+		deskPlayerIDs[playerID] = deskPlayer.IsQuit()
+	}
+	result := []uint64{}
+	for _, playerID := range playerIDs {
+		if quited, _ := deskPlayerIDs[playerID]; !quited {
+			result = append(result, playerID)
+		}
+	}
+	return result
+}
+
+// allPlayerIDs 获取所有玩家的 ID
+func (d *desk) allPlayerIDs() []uint64 {
+	result := []uint64{}
+	deskPlayers := d.GetDeskPlayers()
+	for _, deskPlayer := range deskPlayers {
+		playerID := deskPlayer.GetPlayerID()
+		result = append(result, playerID)
+	}
+	return result
+}
+
+// BroadcastMessage 向玩家广播消息
+func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":       "BroadcastMessage",
+		"dest_player_ids": playerIDs,
+		"msg_id":          msgID,
+	})
+	// 是否针对所有玩家
+	if playerIDs == nil || len(playerIDs) == 0 {
+		playerIDs = d.allPlayerIDs()
+		logEntry = logEntry.WithField("all_player_ids", playerIDs)
+	}
+	playerIDs = d.removeQuit(playerIDs)
+	logEntry = logEntry.WithField("real_dest_player_ids", playerIDs)
+
+	if len(playerIDs) == 0 {
+		return
+	}
+	facade.BroadCastMessageBare(playerIDs, msgID, body)
+	logEntry.Debugln("广播消息")
 }

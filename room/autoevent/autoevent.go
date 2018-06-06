@@ -32,9 +32,9 @@ func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces
 	return AI
 }
 
-// getStateDuration 获取状态超时时间， 暂时返回 15 秒
+// getStateDuration 获取状态超时时间， 暂时返回 10 秒
 func (aeg *autoEventGenerator) getStateDuration() time.Duration {
-	return time.Second * 15 // TODO
+	return time.Second * 10 // TODO
 }
 
 // addAIEvents 将 AI 产生的事件添加到结果中

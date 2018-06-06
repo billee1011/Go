@@ -178,15 +178,13 @@ func HandleRoomDeskQuitReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	if player == nil {
 		return
 	}
+	playerID := player.GetID()
 	deskMgr := global.GetDeskMgr()
-	desk, err := deskMgr.GetRunDeskByPlayerID(player.GetID())
+	desk, err := deskMgr.GetRunDeskByPlayerID(playerID)
 	if err != nil {
 		return
 	}
-	err = desk.Stop()
-	if err != nil {
-		return
-	}
+	desk.PlayerQuit(playerID)
 	return
 }
 
