@@ -13,10 +13,10 @@ import (
 // Test_DingqueTuoguan 测试定缺时，退出房间托管
 // 步骤：
 //	1. 登录4个用户，并且申请开局, 执行换三张
-//  2. 用户0打出8Ｗ
-//  3. 用户1请求退出游戏
+//  2. 用户0-2在收到换三张完成通知后，请求定缺，花色为万
+//  3. 用户 3 请求退出游戏，
 // 期望：
-// 	1. 最迟1秒后，用户0,2，3收到用户1弃通知， 用户1不会收到弃通知
+// 	1. 最迟1秒后，用户0-2收到定缺完成通知， 用户3不会收到定缺完成通知
 func Test_DingqueTuoguan(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.DingqueColor = nil
