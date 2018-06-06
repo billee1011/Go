@@ -36,7 +36,7 @@ func (c *gatewayCore) Start() error {
 }
 
 func (c *gatewayCore) registSender() error {
-	return c.e.RPCServer.RegisterService(steve_proto_gaterpc.RegisterMessageSenderServer, &messageSenderServer{
+	return c.e.RPCServer.RegisterService(steve_proto_gaterpc.RegisterMessageSenderServer, &sender{
 		core: c,
 	})
 }
@@ -50,7 +50,7 @@ func (c *gatewayCore) startWatchDog() error {
 		"listen_port": listenPort,
 	})
 
-	mo := &messageObserver{
+	mo := &receiver{
 		core: c,
 	}
 	co := &connectObserver{}

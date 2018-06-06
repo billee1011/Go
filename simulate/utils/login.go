@@ -7,7 +7,6 @@ import (
 	"steve/simulate/interfaces"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type clientPlayer struct {
@@ -41,7 +40,7 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_REQ),
 		},
 	}, &room.RoomLoginReq{
-		UserName: proto.String("test_user"),
+		UserName: &userName,
 	}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
 
 	if err != nil {
@@ -56,7 +55,7 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 }
 
 // LoginVisitor 登录游客
-func LoginVisitor(client interfaces.Client) (interfaces.ClientPlayer, error) {
+func LoginVisitor(client interfaces.Client, RoomVisitorLoginReq *room.RoomVisitorLoginReq) (interfaces.ClientPlayer, error) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "LoginVisitor",
@@ -67,7 +66,7 @@ func LoginVisitor(client interfaces.Client) (interfaces.ClientPlayer, error) {
 		Head: interfaces.Head{
 			MsgID: uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_REQ),
 		},
-	}, &room.RoomVisitorLoginReq{}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP), &rsp)
+	}, RoomVisitorLoginReq, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP), &rsp)
 
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)

@@ -41,15 +41,20 @@ func (s *GameOverState) OnExit(flow interfaces.MajongFlow) {
 func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	cardsGroups := make([]*room.PlayerCardsGroup, 0)
+	gameflow := true
 	for _, player := range mjContext.Players {
 		playerCardsGroup := &room.PlayerCardsGroup{
 			PlayerId:   proto.Uint64(player.GetPalyerId()),
 			CardsGroup: utils.GetCardsGroup(player),
 		}
 		cardsGroups = append(cardsGroups, playerCardsGroup)
+		if len(player.HuCards) != 0 && gameflow {
+			gameflow = false
+		}
 	}
 	roomGameOverNtf := &room.RoomGameOverNtf{
 		PlayerCardsGroup: cardsGroups,
+		GameFlow:         proto.Bool(gameflow),
 	}
 	// 广播牌局结束消息
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)

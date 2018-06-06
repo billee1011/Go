@@ -4,6 +4,7 @@ import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/connect"
+	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
@@ -18,7 +19,7 @@ func Test_Xipai(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		client := connect.NewTestClient(ServerAddr, ClientVersion)
 		assert.NotNil(t, client)
-		player, err := utils.LoginUser(client, "test_user")
+		player, err := utils.LoginUser(client, global.AllocUserName())
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 

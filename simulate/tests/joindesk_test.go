@@ -23,7 +23,7 @@ func TestApplyJoinDesk(t *testing.T) {
 		assert.NotNil(t, client)
 
 		// 登录用户
-		player, err := utils.LoginUser(client, "test_user")
+		player, err := utils.LoginUser(client, global.AllocUserName())
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 

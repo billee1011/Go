@@ -1,4 +1,4 @@
-package exchanger
+package msgrange
 
 import (
 	"fmt"
@@ -12,13 +12,13 @@ type messageRange struct {
 
 var gServerMessageRange = map[string]messageRange{
 	common.RoomServiceName: messageRange{
-		minMsgID: 0x0000,
-		maxMsgID: 0xffff,
-	},
-	common.HallServiceName: messageRange{
 		minMsgID: 0x10000,
 		maxMsgID: 0x1ffff,
 	},
+	// common.HallServiceName: messageRange{
+	// 	minMsgID: 0x10000,
+	// 	maxMsgID: 0x1ffff,
+	// },
 }
 
 // GetMessageServer 获取消息处理服务名字

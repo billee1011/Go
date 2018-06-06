@@ -1,7 +1,11 @@
 package tests
 
 import (
+	"steve/client_pb/room"
+	"steve/simulate/global"
 	"steve/simulate/utils"
+
+	"github.com/golang/protobuf/proto"
 
 	"steve/simulate/connect"
 
@@ -13,17 +17,39 @@ import (
 func TestLogin(t *testing.T) {
 	client := connect.NewTestClient(ServerAddr, ClientVersion)
 	assert.NotNil(t, client)
-	player, err := utils.LoginUser(client, "test_user")
+	userName := global.AllocUserName()
+	player, err := utils.LoginUser(client, userName)
 	assert.Nil(t, err)
 	assert.NotNil(t, player)
 	assert.NotEqual(t, 0, player.GetID())
+	player2, err := utils.LoginUser(client, userName)
+	assert.Nil(t, err)
+	assert.NotNil(t, player2)
+	assert.Equal(t, player2.GetID(), player.GetID())
 }
 
 func TestVisitorLogin(t *testing.T) {
-	client := connect.NewTestClient(ServerAddr, ClientVersion)
-	assert.NotNil(t, client)
-	player, err := utils.LoginVisitor(client)
-	assert.Nil(t, err)
-	assert.NotNil(t, player)
-	assert.NotEqual(t, 0, player.GetID())
+	var playerID uint64
+	loginCount := 5
+	for i := loginCount; i > 0; i-- {
+		client := connect.NewTestClient(ServerAddr, ClientVersion)
+		assert.NotNil(t, client)
+		visitorLoginReq := &room.RoomVisitorLoginReq{
+			DeviceInfo: &room.DeviceInfo{
+				DeviceType: room.DeviceType_DT_ANDROID.Enum(),
+				Uuid:       proto.String("1013210cc"),
+			},
+		}
+		player, err := utils.LoginVisitor(client, visitorLoginReq)
+		if i == loginCount {
+			playerID = player.GetID()
+		}
+		assert.Nil(t, err)
+		assert.NotNil(t, player)
+		assert.NotEqual(t, 0, player.GetID())
+		if i != loginCount {
+			assert.Equal(t, playerID, player.GetID())
+		}
+		client.Stop()
+	}
 }

@@ -20,7 +20,7 @@ func Test_Fapai(t *testing.T) {
 		// 登录玩家
 		client := connect.NewTestClient(ServerAddr, ClientVersion)
 		assert.NotNil(t, client)
-		player, err := utils.LoginUser(client, "test_user")
+		player, err := utils.LoginUser(client, global.AllocUserName())
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 

@@ -17,6 +17,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+
+	_ "steve/room/ai" // 加载 AI 包
 )
 
 var errInitMajongContext = errors.New("初始化麻将现场失败")
@@ -30,9 +32,8 @@ type deskPlayer struct {
 
 // deskEvent 房间事件
 type deskEvent struct {
-	eventID      server_pb.EventID
-	eventContext []byte
-	stateNumber  int
+	event       interfaces.Event
+	stateNumber int
 }
 
 // deskContext 牌桌现场
@@ -43,15 +44,14 @@ type deskContext struct {
 }
 
 type desk struct {
-	deskUID      uint64                            // 牌桌唯一 ID
-	gameID       int                               // 游戏 ID
-	createOption interfaces.CreateDeskOptions      // 创建选项
-	dContext     *deskContext                      // 牌桌现场
-	settler      interfaces.DeskSettler            // 结算器
-	players      map[uint32]deskPlayer             // Seat -> player
-	event        chan deskEvent                    // 牌桌事件通道
-	cancel       context.CancelFunc                // 取消事件处理
-	eventGen     interfaces.DeskAutoEventGenerator // 自动事件生成器
+	deskUID      uint64                       // 牌桌唯一 ID
+	gameID       int                          // 游戏 ID
+	createOption interfaces.CreateDeskOptions // 创建选项
+	dContext     *deskContext                 // 牌桌现场
+	settler      interfaces.DeskSettler       // 结算器
+	players      map[uint32]deskPlayer        // Seat -> player
+	event        chan deskEvent               // 牌桌事件通道
+	cancel       context.CancelFunc           // 取消事件处理
 }
 
 func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]deskPlayer, error) {
@@ -99,7 +99,6 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
 			players:      deskPlayers,
 			event:        make(chan deskEvent, 16),
-			eventGen:     global.GetDeskAutoEventGeneratorFactory().CreateGenerator(),
 		},
 	}, nil
 }
@@ -170,9 +169,12 @@ func (d *desk) Start(finish func()) error {
 	}()
 
 	d.event <- deskEvent{
-		eventID:      server_pb.EventID_event_start_game,
-		eventContext: []byte{},
-		stateNumber:  d.dContext.stateNumber,
+		event: interfaces.Event{
+			ID:        server_pb.EventID_event_start_game,
+			Context:   []byte{},
+			EventType: interfaces.NormalEvent,
+		},
+		stateNumber: d.dContext.stateNumber,
 	}
 	return nil
 }
@@ -234,9 +236,13 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	}
 
 	d.event <- deskEvent{
-		eventID:      eventID,
-		eventContext: eventConetxtByte,
-		stateNumber:  d.dContext.stateNumber,
+		event: interfaces.Event{
+			ID:        eventID,
+			Context:   eventConetxtByte,
+			EventType: interfaces.NormalEvent,
+			PlayerID:  playerID,
+		},
+		stateNumber: d.dContext.stateNumber,
 	}
 }
 
@@ -268,22 +274,27 @@ func (d *desk) initMajongContext() error {
 
 // genTimerEvent 生成计时事件
 func (d *desk) genTimerEvent() {
-	if d.eventGen == nil {
-		return
-	}
+	g := global.GetDeskAutoEventGenerator()
 	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
 	dContext := d.dContext
-	events := d.eventGen.Generate(&dContext.mjContext, dContext.stateTime)
-	for _, event := range events {
+	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
+		MajongContext:  &dContext.mjContext,
+		CurTime:        time.Now(),
+		StateTime:      dContext.stateTime,
+		RobotLv:        map[uint64]int{},
+		TuoGuanPlayers: []uint64{},
+	})
+	for _, event := range result.Events {
 		logrus.WithFields(logrus.Fields{
 			"func_name":    "desk.genTimerEvent",
 			"state_number": dContext.stateNumber,
 			"event_id":     event.ID,
+			"event_player": event.PlayerID,
+			"event_type":   event.EventType,
 		}).Debugln("注入计时事件")
 		d.event <- deskEvent{
-			eventID:      event.ID,
-			eventContext: event.Context,
-			stateNumber:  dContext.stateNumber,
+			event:       event,
+			stateNumber: dContext.stateNumber,
 		}
 	}
 }
@@ -337,7 +348,7 @@ func (d *desk) processEvents(ctx context.Context) {
 				if event.stateNumber != d.dContext.stateNumber {
 					continue
 				}
-				d.processEvent(event.eventID, event.eventContext)
+				d.processEvent(event.event.ID, event.event.Context)
 			}
 		}
 	}

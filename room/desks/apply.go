@@ -35,7 +35,7 @@ func (jam *joinApplyManager) joinPlayer(playerID uint64) room.RoomError {
 	// TODO: 检测玩家状态
 	ch := jam.getApplyChannel()
 	ch <- playerID
-	return room.RoomError_Success
+	return room.RoomError_SUCCESS
 }
 
 func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
@@ -123,7 +123,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	player := playerMgr.GetPlayerByClientID(clientID)
 
 	rsp := &room.RoomJoinDeskRsp{
-		ErrCode: room.RoomError_Success.Enum(),
+		ErrCode: room.RoomError_SUCCESS.Enum(),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -133,7 +133,11 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 
 	if player == nil {
-		rsp.ErrCode = room.RoomError_not_login.Enum()
+		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
+		return
+	}
+	if ExsitInDesk(player.GetID()) {
+		rsp.ErrCode = room.RoomError_DESK_ALREADY_APPLIED.Enum()
 		return
 	}
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
@@ -144,9 +148,8 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayerByClientID(clientID)
-
 	rsp := &room.RoomDeskContinueRsp{
-		ErrCode: room.RoomError_Success.Enum(),
+		ErrCode: room.RoomError_SUCCESS.Enum(),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -156,7 +159,11 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 
 	if player == nil {
-		rsp.ErrCode = room.RoomError_not_login.Enum()
+		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
+		return
+	}
+	if ExsitInDesk(player.GetID()) {
+		rsp.ErrCode = room.RoomError_DESK_ALREADY_APPLIED.Enum()
 		return
 	}
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
@@ -181,4 +188,14 @@ func HandleRoomDeskQuitReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 	return
+}
+
+// ExsitInDesk 是否在游戏中
+func ExsitInDesk(playerID uint64) bool {
+	deskMgr := global.GetDeskMgr()
+	desk, _ := deskMgr.GetRunDeskByPlayerID(playerID)
+	if desk == nil {
+		return false
+	}
+	return true
 }
