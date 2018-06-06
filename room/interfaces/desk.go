@@ -1,9 +1,30 @@
 package interfaces
 
 import (
-	"steve/client_pb/room"
+	msgid "steve/client_pb/msgId"
+	room "steve/client_pb/room"
 	"steve/structs/proto/gate_rpc"
 )
+
+// TuoGuanMgr 牌桌托管管理器
+type TuoGuanMgr interface {
+	// GetTuoGuanPlayers 获取托管玩家
+	GetTuoGuanPlayers() []uint64
+	// OnPlayerTimeOut 玩家超时
+	OnPlayerTimeOut(playerID uint64)
+	// SetTuoGuan 设置玩家托管
+	SetTuoGuan(playerID uint64, set bool, notify bool)
+}
+
+// DeskPlayer 牌桌玩家
+type DeskPlayer interface {
+	// GetPlayerID 获取玩家 ID
+	GetPlayerID() uint64
+	// GetSeat 获取座号
+	GetSeat() int
+	// IsQuit 是否已经退出
+	IsQuit() bool
+}
 
 // Desk 牌桌
 type Desk interface {
@@ -13,8 +34,11 @@ type Desk interface {
 	// GetGameID 获取游戏 ID
 	GetGameID() int
 
-	// GetPlayers 获取牌桌玩家数据
+	// GetPlayers 获取牌桌玩家数据 (将会被废弃，不要使用， 改为 GetDeskPlayers 代替)
 	GetPlayers() []*room.RoomPlayerInfo
+
+	// GetDeskPlayers 获取牌桌玩家
+	GetDeskPlayers() []DeskPlayer
 
 	// Start 启动牌桌逻辑
 	// finish : 当牌桌逻辑完成时调用
@@ -25,6 +49,20 @@ type Desk interface {
 
 	// PushRequest 压入玩家请求
 	PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
+
+	// PlayerQuit 玩家退出
+	PlayerQuit(playerID uint64)
+
+	// PlayerEnter 玩家进入
+	PlayerEnter(playerID uint64)
+
+	// GetTuoGuanMgr 获取托管管理器
+	GetTuoGuanMgr() TuoGuanMgr
+
+	// BroadcastMessage 广播消息给牌桌玩家
+	// playerIDs ： 目标玩家，如果为 nil 或者长度为0，则针对牌桌所有玩家
+	// exceptQuit ： 已经退出的玩家是否排除
+	BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool)
 }
 
 // DeskMgr 牌桌管理器
