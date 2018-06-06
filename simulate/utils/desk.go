@@ -72,7 +72,8 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 
 // createPlayerExpectors 创建玩家的麻将逻辑消息期望
 func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.MessageExpector {
-	msgs := []msgid.MsgID{msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, msgid.MsgID_ROOM_CHUPAIWENXUN_NTF, msgid.MsgID_ROOM_PENG_NTF, msgid.MsgID_ROOM_GANG_NTF, msgid.MsgID_ROOM_HU_NTF,
+	msgs := []msgid.MsgID{msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF, msgid.MsgID_ROOM_CHUPAIWENXUN_NTF,
+		msgid.MsgID_ROOM_PENG_NTF, msgid.MsgID_ROOM_GANG_NTF, msgid.MsgID_ROOM_HU_NTF, msgid.MsgID_ROOM_TUOGUAN_NTF,
 		msgid.MsgID_ROOM_ZIXUN_NTF, msgid.MsgID_ROOM_CHUPAI_NTF,
 		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
 		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
@@ -222,13 +223,17 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 	// 等待1ms，确保服务器已经切换到换三张状态
 	time.Sleep(time.Millisecond)
+	if HszCards == nil {
+		logrus.Infoln("换三张牌没配置，不执行换三张")
+		return nil
+	}
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
 	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
 		cards := HszCards[offset]
 
 		client := player.Player.GetClient()
-		fe, _ := client.ExpectMessage(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF)
+		fe := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF]
 		finishNtfExpectors[playerID] = fe
 		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
 			Cards: cards,
@@ -289,6 +294,17 @@ func SendDingqueReq(seat int, deskData *DeskData, color room.CardColor) error {
 	return err
 }
 
+// SendHuansanzhangReq 发送换三张请求
+func SendHuansanzhangReq(seat int, deskData *DeskData, hszCards []uint32, sure bool) error {
+	player := GetDeskPlayerBySeat(seat, deskData)
+	client := player.Player.GetClient()
+	_, err := client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
+		Cards: hszCards,
+		Sure:  proto.Bool(sure),
+	})
+	return err
+}
+
 // WaitDingqueFinish 等定缺完成通知
 func WaitDingqueFinish(deskData *DeskData, duration time.Duration, expectedColors []room.CardColor, waitSeats []int) error {
 	for _, seat := range waitSeats {
@@ -300,6 +316,67 @@ func WaitDingqueFinish(deskData *DeskData, duration time.Duration, expectedColor
 		}
 		if expectedColors != nil && !checkDingqueColor(deskData, ntf.GetPlayerDingqueColor(), expectedColors) {
 			return fmt.Errorf("玩家收到的定缺通知中花色不正确。 expected:%v actual:%v", expectedColors, ntf.GetPlayerDingqueColor())
+		}
+	}
+	return nil
+}
+
+// WaitHuansanzhangFinish 等待换三张完成
+func WaitHuansanzhangFinish(deskData *DeskData, duration time.Duration, waitSeats []int, expectInCards []uint32, expectSeat int) error {
+	for _, seat := range waitSeats {
+		ntf := room.RoomHuansanzhangFinishNtf{}
+		player := GetDeskPlayerBySeat(seat, deskData)
+		expector := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF]
+		if err := expector.Recv(duration, &ntf); err != nil {
+			return err
+		}
+		if expectInCards != nil && seat == expectSeat {
+			for _, expectInCard := range expectInCards {
+				result := func(targetCard uint32, cards []uint32) (rs bool) {
+					rs = false
+					for _, card := range cards {
+						if card == targetCard {
+							rs = true
+							break
+						}
+					}
+					return
+				}(expectInCard, ntf.GetInCards())
+				if !result {
+					return fmt.Errorf("玩家收到的换三张通知中牌不正确。 expected:%v actual:%v", expectInCards, ntf.GetInCards())
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// WaitMoPaiNtf 等待摸牌通知
+func WaitMoPaiNtf(deskData *DeskData, duration time.Duration, waitSeats []int, moCard uint32, moSeat int) error {
+	for _, seat := range waitSeats {
+		ntf := room.RoomMopaiNtf{}
+		player := GetDeskPlayerBySeat(seat, deskData)
+		expector := player.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
+		if err := expector.Recv(duration, &ntf); err != nil {
+			return err
+		}
+		if seat == moSeat && moSeat != -1 {
+			if moCard != 0 && ntf.GetCard() != moCard {
+				return fmt.Errorf("玩家摸到的牌不正确。 expected:%v actual:%v", moCard, ntf.GetCard())
+			}
+		}
+	}
+	return nil
+}
+
+// WaitTuoGuanNtf 等待托管通知
+func WaitTuoGuanNtf(deskData *DeskData, duration time.Duration, waitSeats []int) error {
+	for _, seat := range waitSeats {
+		ntf := room.RoomTuoGuanNtf{}
+		player := GetDeskPlayerBySeat(seat, deskData)
+		expector := player.Expectors[msgid.MsgID_ROOM_TUOGUAN_NTF]
+		if err := expector.Recv(duration, &ntf); err != nil {
+			return err
 		}
 	}
 	return nil
