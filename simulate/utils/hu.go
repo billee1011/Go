@@ -6,6 +6,7 @@ import (
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -32,6 +33,25 @@ func CheckHuNotify(t *testing.T, deskData *DeskData, huSeats []int, from int, ca
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_HU_NTF]
 		ntf := room.RoomHuNtf{}
 		expector.Recv(global.DefaultWaitMessageTime, &ntf)
+		assert.Equal(t, huPlayers, ntf.GetPlayers())
+		assert.Equal(t, fromPlayer, ntf.GetFromPlayerId())
+		assert.Equal(t, card, ntf.GetCard())
+		assert.Equal(t, huType, ntf.GetHuType())
+	}
+}
+
+// CheckHuNotify0 检查胡通知
+func CheckHuNotify0(t *testing.T, deskData *DeskData, duration time.Duration, huSeats []int, from int, card uint32, huType room.HuType) {
+	huPlayers := []uint64{}
+	for _, seat := range huSeats {
+		huPlayers = append(huPlayers, GetDeskPlayerBySeat(seat, deskData).Player.GetID())
+	}
+	fromPlayer := GetDeskPlayerBySeat(from, deskData).Player.GetID()
+
+	for _, player := range deskData.Players {
+		expector, _ := player.Expectors[msgid.MsgID_ROOM_HU_NTF]
+		ntf := room.RoomHuNtf{}
+		expector.Recv(duration, &ntf)
 		assert.Equal(t, huPlayers, ntf.GetPlayers())
 		assert.Equal(t, fromPlayer, ntf.GetFromPlayerId())
 		assert.Equal(t, card, ntf.GetCard())

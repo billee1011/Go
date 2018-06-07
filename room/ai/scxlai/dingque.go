@@ -19,6 +19,9 @@ type dingqueStateAI struct {
 func init() {
 	g := global.GetDeskAutoEventGenerator()
 	g.RegisterAI(gGameID, majong.StateID_state_dingque, &dingqueStateAI{})
+	g.RegisterAI(gGameID, majong.StateID_state_zixun, &zixunStateAI{})
+	g.RegisterAI(gGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
+
 }
 
 // GenerateAIEvent 生成 AI 事件
