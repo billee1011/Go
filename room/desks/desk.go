@@ -351,7 +351,7 @@ func (d *desk) timerTask(ctx context.Context) {
 		}
 	}()
 
-	t := time.NewTicker(time.Second * 1)
+	t := time.NewTicker(time.Millisecond * 200)
 	defer t.Stop()
 	for {
 		select {
