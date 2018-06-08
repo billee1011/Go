@@ -13,7 +13,7 @@ import (
 
 //TestChat 聊天测试
 //游戏过程中庄家发送聊天信息
-//期望：除了庄家，其他玩家都收到，庄家发送的聊天信息
+//期望：所有玩家都收到，庄家发送的聊天信息
 func TestChat(t *testing.T) {
 	// 开始游戏
 	params := global.NewCommonStartGameParams()
@@ -27,11 +27,9 @@ func TestChat(t *testing.T) {
 	assert.Nil(t, utils.WaitZixunNtf(deskData, bankerSeat))
 	assert.Nil(t, sendChatReq(deskData, bankerSeat, 3, "大家好!"))
 
-	// 期望除了庄家，都接收到庄家发送来的聊天信息
+	// 所有人都要收到庄家发送来的聊天信息
 	for _, player := range deskData.Players {
-		if bankerSeat != player.Seat {
-			assert.Nil(t, waitChatRsp(deskData, player.Seat, bankerSeat, 3, "大家好!"))
-		}
+		assert.Nil(t, waitChatRsp(deskData, player.Seat, bankerSeat, 3, "大家好!"))
 	}
 }
 
