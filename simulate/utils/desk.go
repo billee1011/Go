@@ -76,6 +76,7 @@ func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.
 		msgid.MsgID_ROOM_ZIXUN_NTF, msgid.MsgID_ROOM_CHUPAI_NTF,
 		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
 		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
+		msgid.MsgID_ROOM_CHAT_NTF,
 	}
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
 	for _, msg := range msgs {
