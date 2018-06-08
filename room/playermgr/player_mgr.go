@@ -66,8 +66,17 @@ func (pm *playerMgr) GetPlayerByUserName(userName string) interfaces.Player {
 	return pm.getPlayer(playerID)
 }
 
-func (pm *playerMgr) OnClientReconnect(clientID uint64, playerID uint64) {
+func (pm *playerMgr) UpdatePlayerClientID(playerID uint64, clientID uint64) {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+	player := pm.getPlayer(playerID)
+	if player == nil {
+		return
+	}
+	oldClientID := player.GetClientID()
+	pm.clientMap.Delete(oldClientID)
 	pm.clientMap.Store(clientID, playerID)
+	player.SetClientID(clientID)
 }
 
 var setupOnce = sync.Once{}
