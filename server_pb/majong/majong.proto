@@ -91,6 +91,7 @@ message Player {
 message AutoEvent {
     EventID event_id = 1;       // 事件 ID 
     bytes event_context = 2;    // 事件现场
+    uint32 wait_time = 3;       // 多长时间（ms）后产生该事件
 }
 
 // SettleType 结算类型
@@ -181,6 +182,7 @@ message MajongContext {
     Card gang_card = 19;        // 杠的牌
     MopaiType mopai_type = 20;  // 摸牌类型
     ZixunType zixun_type = 21;  // 自询类型
+    bool excuted_huansanzhang = 22; // 换三张是否已经执行完成
 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
@@ -188,7 +190,9 @@ message MajongContext {
 
 // MajongCommonOption 麻将通用玩法选项
 message MajongCommonOption {
-
+    uint32 max_cartoon_time = 1;    // 通用最大动画时间
+    uint32 max_fapai_cartoon_time = 2;  // 发牌动画最大时间
+    uint32 max_huansanzhang_cartoon_time = 3; // 换三张动画最大时间
 }
 
 // SichuanxueliuOption 四川血流麻将玩法

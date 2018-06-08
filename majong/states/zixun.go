@@ -133,6 +133,10 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		context.LastChupaiPlayer = pid
 		return majongpb.StateID_state_chupai, nil
 	}
+	logrus.WithFields(logrus.Fields{
+		"reqCard":  card,
+		"hanCards": FmtMajongpbCards(activePlayer.GetHandCards()),
+	}).Infof("玩家%v出牌请求", activePlayer.GetPalyerId())
 	for _, c := range activePlayer.GetHandCards() {
 		if utils.CardEqual(c, card) {
 			context.LastOutCard = card
@@ -268,7 +272,8 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	var hasQGanghu bool
 	for _, player := range ctx.GetPlayers() {
 		player.PossibleActions = []majongpb.Action{}
-		if player.GetPalyerId() != ctx.GetLastGangPlayer() {
+		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
+			!utils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
 			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
 			if flag {
 				hasQGanghu = true
@@ -561,8 +566,16 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 	return enableBugangCards
 }
 
+func (s *ZiXunState) sortCards(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	playerID := s.getZixunPlayer(flow)
+	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
+	utils.SortCards(player.GetHandCards())
+}
+
 // OnEntry 进入状态
 func (s *ZiXunState) OnEntry(flow interfaces.MajongFlow) {
+	s.sortCards(flow)
 	s.checkActions(flow)
 }
 

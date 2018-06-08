@@ -45,6 +45,18 @@ func CheckChuPaiNotify(t *testing.T, deskData *DeskData, card uint32, seat int) 
 	}
 }
 
+//CheckChuPaiNotify0 检查出牌广播
+func CheckChuPaiNotify0(t *testing.T, deskData *DeskData, duration time.Duration, card uint32, seat int) {
+	activePlayer := GetDeskPlayerBySeat(seat, deskData)
+	for _, player := range deskData.Players {
+		messageExpector := player.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
+		ntf := &room.RoomChupaiNtf{}
+		assert.Nil(t, messageExpector.Recv(duration, ntf))
+		assert.Equal(t, card, ntf.GetCard())
+		assert.Equal(t, activePlayer.Player.GetID(), ntf.GetPlayer())
+	}
+}
+
 //CheckMoPaiNotify 检查摸牌广播
 func CheckMoPaiNotify(t *testing.T, deskData *DeskData, mopaiSeat int, card uint32) *DeskPlayer {
 	player := GetDeskPlayerBySeat(mopaiSeat, deskData)
