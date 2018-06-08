@@ -301,6 +301,8 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
+	player.ZixunRecord = &majongpb.ZixunRecord{}
+	record := player.GetZixunRecord()
 	if !isPengZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
@@ -326,9 +328,20 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	//查听,打什么,听什么
 	s.checkTing(zixunNtf, player, context)
 	if zixunNtf.GetEnableZimo() == true {
-		huType := s.getHuType(playerID, context)
-		zixunNtf.HuType = &huType
+		roomHuType, majongHuType := s.getHuType(playerID, context)
+		zixunNtf.HuType = &roomHuType
+		record.HuType = majongHuType
 	}
+	s.recordZixunMsg(record, zixunNtf)
+	logrus.WithFields(logrus.Fields{
+		"EnableAngangCards": record.GetEnableAngangCards(),
+		"EnableBugangCards": record.GetEnableBugangCards(),
+		"EnableZimo":        record.GetEnableZimo(),
+		"EnableQi":          record.GetEnableQi(),
+		"EnableChupaiCards": record.GetEnableChupaiCards(),
+		"HuType":            record.GetHuType(),
+		"CanTingCardInfo":   record.GetCanTingCardInfo(),
+	}).Infoln("自询记录")
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
 	toClient := interfaces.ToClientMessage{
@@ -347,18 +360,26 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
+func (s *ZiXunState) recordZixunMsg(record *majongpb.ZixunRecord, ntf *room.RoomZixunNtf) {
+	record.EnableAngangCards = ntf.GetEnableAngangCards()
+	record.EnableBugangCards = ntf.GetEnableBugangCards()
+	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
+	record.EnableQi = ntf.GetEnableQi()
+	record.EnableZimo = ntf.GetEnableZimo()
+}
+
 // getHuType 计算胡牌类型
-func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) room.HuType {
+func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) (room.HuType, majongpb.HuType) {
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
 	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
 		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
-			return room.HuType_HT_TIANHU
+			return room.HuType_HT_TIANHU, majongpb.HuType_hu_tianhu
 		}
 		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
-			return room.HuType_HT_DIHU
+			return room.HuType_HT_DIHU, majongpb.HuType_hu_dihu
 		}
 	}
-	return room.HuType_HT_ZIMO
+	return room.HuType_HT_ZIMO, majongpb.HuType_hu_zimo
 }
 
 func (s *ZiXunState) getPengCards(pengCards []*majongpb.PengCard) []*majongpb.Card {
@@ -420,8 +441,10 @@ func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Pla
 // addTingInfo 自询通知添加听牌信息
 func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card][]utils.Card) {
 	canTingInfos := []*room.CanTingCardInfo{}
+	recordCanTingInfos := []*majongpb.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
 		tingCardInfo := []*room.TingCardInfo{}
+		recordTingCardInfo := []*majongpb.TingCardInfo{}
 		outCard0, err := utils.IntToCard(int32(outCard))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -447,13 +470,22 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				TingCard: proto.Uint32(uint32(tt)),
 				Times:    proto.Uint32(times),
 			})
+			recordTingCardInfo = append(recordTingCardInfo, &majongpb.TingCardInfo{
+				TingCard: uint32(tt),
+				Times:    times,
+			})
 		}
 		canTingInfos = append(canTingInfos, &room.CanTingCardInfo{
 			OutCard:      proto.Uint32(uint32(outCard)),
 			TingCardInfo: tingCardInfo,
 		})
+		recordCanTingInfos = append(recordCanTingInfos, &majongpb.CanTingCardInfo{
+			OutCard:      uint32(outCard),
+			TingCardInfo: recordTingCardInfo,
+		})
 	}
 	zixunNtf.CanTingCardInfo = canTingInfos
+	player.ZixunRecord.CanTingCardInfo = recordCanTingInfos
 }
 
 // checkZiMo 查自摸
