@@ -17,4 +17,5 @@ type PlayerMgr interface {
 	GetPlayerByClientID(clientID uint64) Player
 	OnClientDisconnect(clientID uint64)
 	GetPlayerByUserName(userName string) Player
+	OnClientReconnect(clientID uint64, playerID uint64)
 }

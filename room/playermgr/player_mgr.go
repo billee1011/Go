@@ -66,6 +66,10 @@ func (pm *playerMgr) GetPlayerByUserName(userName string) interfaces.Player {
 	return pm.getPlayer(playerID)
 }
 
+func (pm *playerMgr) OnClientReconnect(clientID uint64, playerID uint64) {
+	pm.clientMap.Store(clientID, playerID)
+}
+
 var setupOnce = sync.Once{}
 
 func init() {

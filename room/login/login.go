@@ -69,6 +69,7 @@ func loginPlayerByUserName(clientID uint64, userName string) interfaces.Player {
 		playerMgr.AddPlayer(p)
 		return p
 	}
+	playerMgr.OnClientReconnect(clientID, pm.GetID())
 	pm.SetClientID(clientID)
 	return pm
 }
@@ -127,6 +128,7 @@ func loginExistVisitor(clientID uint64, youkeInfo *YoukeInfo) interfaces.Player 
 			"youke_info": youkeInfo,
 		}).Panicln("游客不存在")
 	}
+	playerMgr.OnClientReconnect(clientID, pm.GetID())
 	pm.SetClientID(clientID)
 	return pm
 }
