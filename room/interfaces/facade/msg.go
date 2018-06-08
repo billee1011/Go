@@ -1,7 +1,9 @@
 package facade
 
 import (
+	"fmt"
 	msgid "steve/client_pb/msgId"
+	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/structs/proto/gate_rpc"
 
@@ -41,4 +43,41 @@ func BroadCastMessageBare(playerIDs []uint64, msgID msgid.MsgID, body []byte) er
 	return sender.BroadcastPackageBare(clientIDs, &steve_proto_gaterpc.Header{
 		MsgId: uint32(msgID),
 	}, body)
+}
+
+// BroadCastDeskMessage 广播消息给牌卓玩家
+func BroadCastDeskMessage(desk interfaces.Desk, playerIDs []uint64, msgID msgid.MsgID, body proto.Message, exceptQuit bool) error {
+	msgBody, err := proto.Marshal(body)
+	if err != nil {
+		return err
+	}
+	desk.BroadcastMessage(playerIDs, msgID, msgBody, exceptQuit)
+	return nil
+}
+
+func find(datas []uint64, data uint64) bool {
+	for _, d := range datas {
+		if d == data {
+			return true
+		}
+	}
+	return false
+}
+
+// BroadCastDeskMessageExcept 广播消息给牌桌玩家
+func BroadCastDeskMessageExcept(desk interfaces.Desk, expcetPlayers []uint64, exceptQuit bool, msgID msgid.MsgID, body proto.Message) error {
+	playerIDs := []uint64{}
+	deskPlayers := desk.GetDeskPlayers()
+	for _, deskPlayer := range deskPlayers {
+		playerID := deskPlayer.GetPlayerID()
+		if find(expcetPlayers, playerID) {
+			continue
+		}
+		playerIDs = append(playerIDs, playerID)
+	}
+	if len(playerIDs) == 0 {
+		return fmt.Errorf("没有广播玩家")
+	}
+	err := BroadCastDeskMessage(desk, playerIDs, msgID, body, exceptQuit)
+	return err
 }
