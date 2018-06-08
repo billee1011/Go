@@ -161,6 +161,15 @@ func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[u
 	return result
 }
 
+func sendCartoonFinish(cartoonType room.CartoonType, deskData *DeskData, seat int) error {
+	player := GetDeskPlayerBySeat(seat, deskData)
+	zjClient := player.Player.GetClient()
+	_, err := zjClient.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_CARTOON_FINISH_REQ), &room.RoomCartoonFinishReq{
+		CartoonType: cartoonType.Enum(),
+	})
+	return err
+}
+
 // checkXipaiNtf 检查洗牌通知
 func checkXipaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]uint32, wallCards []uint32) error {
 	totalCardCount := len(wallCards)
@@ -216,7 +225,7 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 			return err
 		}
 	}
-	return nil
+	return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData, 0)
 }
 
 // executeHSZ 执行换三张
@@ -246,7 +255,7 @@ func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 			return fmt.Errorf("玩家 %v 未收到换三张完成通知:%v", playerID, err)
 		}
 	}
-	return nil
+	return sendCartoonFinish(room.CartoonType_CTNT_HUANSANZHANG, deskData, 0)
 }
 
 // checkDingqueColor 检查定缺花色是否正确

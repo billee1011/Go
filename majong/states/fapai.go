@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
+	"steve/majong/states/common"
 	"steve/majong/utils"
 
 	majongpb "steve/server_pb/majong"
@@ -22,10 +23,17 @@ const (
 
 // ProcessEvent 处理事件
 func (f *FapaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
-	if eventID == majongpb.EventID_event_fapai_finish {
-		return majongpb.StateID(majongpb.StateID_state_huansanzhang), nil
+	switch eventID {
+	case majongpb.EventID_event_fapai_finish:
+		{
+			return f.nextState(), nil
+		}
+	case majongpb.EventID_event_cartoon_finish_request:
+		{
+			return f.onCartoonFinish(flow, eventContext)
+		}
 	}
-	return majongpb.StateID(majongpb.StateID_state_fapai), nil
+	return f.curState(), nil
 }
 
 // OnEntry 进入状态给每位玩家发手牌
@@ -36,11 +44,27 @@ func (f *FapaiState) OnEntry(flow interfaces.MajongFlow) {
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_fapai_finish,
 		EventContext: nil,
+		WaitTime:     flow.GetMajongContext().GetOption().GetMaxFapaiCartoonTime(),
 	})
 }
 
 // OnExit 退出状态
 func (f *FapaiState) OnExit(flow interfaces.MajongFlow) {
+}
+
+// nextState 下个状态
+func (f *FapaiState) nextState() majongpb.StateID {
+	return majongpb.StateID_state_huansanzhang
+}
+
+// curState 当前状态
+func (f *FapaiState) curState() majongpb.StateID {
+	return majongpb.StateID_state_fapai
+}
+
+// onCartoonFinish 动画播放完毕
+func (f *FapaiState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
+	return common.OnCartoonFinish(f.curState(), f.nextState(), room.CartoonType_CTNT_FAPAI, eventContext)
 }
 
 var errCardsNotEnough = errors.New("墙牌不足")

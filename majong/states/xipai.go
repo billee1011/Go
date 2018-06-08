@@ -122,6 +122,7 @@ func (s *XipaiState) OnEntry(flow interfaces.MajongFlow) {
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_xipai_finish,
 		EventContext: nil,
+		// WaitTime:     mjContext.GetOption().GetMaxCartoonTime(),
 	})
 }
 

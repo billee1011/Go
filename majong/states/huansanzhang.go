@@ -7,6 +7,7 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
+	"steve/majong/states/common"
 	"steve/majong/utils"
 	"steve/peipai"
 	majongpb "steve/server_pb/majong"
@@ -28,15 +29,45 @@ func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
 
 // ProcessEvent 处理换三张事件
 func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
-	if eventID == majongpb.EventID_event_huansanzhang_request {
-		return s.onReq(eventID, eventContext, flow)
+	switch eventID {
+	case majongpb.EventID_event_huansanzhang_request:
+		{
+			return s.onReq(eventID, eventContext, flow)
+		}
+	case majongpb.EventID_event_huansanzhang_finish:
+		{
+			return s.nextState(), nil
+		}
+	case majongpb.EventID_event_cartoon_finish_request:
+		{
+			return s.onCartoonFinish(flow, eventContext)
+		}
 	}
-	return majongpb.StateID_state_huansanzhang, global.ErrInvalidEvent
+	return majongpb.StateID_state_huansanzhang, nil
 }
 
 // OnExit 退出换三张状态
 func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
 
+}
+
+// nextState 下个状态
+func (s *HuansanzhangState) nextState() majongpb.StateID {
+	return majongpb.StateID_state_dingque
+}
+
+// curState 当前状态
+func (s *HuansanzhangState) curState() majongpb.StateID {
+	return majongpb.StateID_state_huansanzhang
+}
+
+// onCartoonFinish 动画播放完毕
+func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
+	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
+	if !finished {
+		return s.curState(), global.ErrInvalidEvent
+	}
+	return common.OnCartoonFinish(s.curState(), s.nextState(), room.CartoonType_CTNT_HUANSANZHANG, eventContext)
 }
 
 // checkReq 检测玩家请求是否合法
@@ -216,8 +247,13 @@ func (s *HuansanzhangState) execute(flow interfaces.MajongFlow) (newState majong
 			exchangesOut[from] = cards
 		}
 	}
+	mjContext.ExcutedHuansanzhang = true
 	s.notifyFinish(flow, dir, exchangesIn, exchangesOut)
-	newState = majongpb.StateID_state_dingque
+	flow.SetAutoEvent(majongpb.AutoEvent{
+		EventId:      majongpb.EventID_event_huansanzhang_finish,
+		EventContext: nil,
+		WaitTime:     mjContext.GetOption().GetMaxHuansanzhangCartoonTime(),
+	})
 	return
 }
 
