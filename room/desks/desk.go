@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
 	"steve/room/interfaces"
@@ -413,6 +414,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		"player_id": eqi.playerID,
 		"quit":      eqi.quit,
 	})
+	var msgs []server_pb.ReplyClientMessage
 	deskPlayer := d.getDeskPlayer(eqi.playerID)
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
@@ -424,10 +426,12 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
-		// TODO : 处理恢复牌局
+		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
 		logEntry.Debugln("玩家进入")
 	}
+	// 发送消息给玩家
+	d.reply(msgs)
 }
 
 // callEventHandler 调用事件处理器
@@ -560,3 +564,194 @@ func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []by
 	facade.BroadCastMessageBare(playerIDs, msgID, body)
 	logEntry.Debugln("广播消息")
 }
+
+func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMessage {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "recoverGameForPlayer",
+		"playerID":  playerID,
+	})
+
+	mjContext := d.dContext.mjContext
+	bankerSeat := mjContext.GetZhuangjiaIndex()
+	totalCardsNum := uint32(108) //global.GetOriginCards(mjContext.GetGameId()),该函数在麻将里面，room调用不到
+	remainCardsNum := uint32(len(mjContext.GetWallCards()))
+
+	// 获取本状态已经停留的时间
+	var costTime uint32
+	nowTime := time.Now().Unix()
+	stateEntryTime := d.dContext.stateTime.Unix()
+	if nowTime > stateEntryTime {
+		costTime = uint32(nowTime - stateEntryTime)
+	}
+
+	gameStage := d.getGameStage()
+
+	gameDeskInfo := room.GameDeskInfo{
+		GameStage:   &gameStage,               // 需要根据状态确定
+		Players:     d.getRecoverPlayerInfo(), // 需要构造
+		Dices:       mjContext.GetDices(),
+		BankerSeat:  &bankerSeat,
+		EastSeat:    &bankerSeat,
+		TotalCards:  &totalCardsNum,
+		RemainCards: &remainCardsNum,
+		CostTime:    &costTime,
+		OperatePid:  d.getOperatePlayerID(),
+		DoorCard:    d.getDoorCard(),
+		// ZixunInfo        *RoomZixunNtf
+		// WenxunInfo       *RoomChupaiWenxunNtf
+		// QghInfo          *RoomWaitQianggangHuNtf
+	}
+	rsp := room.RoomResumeGameRsp{
+		ResumeRes: room.RoomError_SUCCESS.Enum(),
+		GameInfo:  &gameDeskInfo,
+	}
+	body, err := proto.Marshal(&rsp)
+	if err != nil {
+		logEntry.WithError(err).Errorln("序列化失败")
+		return nil
+	}
+	msg := server_pb.ReplyClientMessage{
+		Players: []uint64{playerID},
+		MsgId:   int32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
+		Msg:     body,
+	}
+	return []server_pb.ReplyClientMessage{msg}
+}
+
+func (d *desk) getOperatePlayerID() *uint64 {
+	mjContext := d.dContext.mjContext
+	state := mjContext.GetCurState()
+	var playerID uint64
+	// TODO 状态的定义在mjpb
+	switch state {
+	case 1: // 自询状态 刚开局是庄家，其他情况是最近摸牌者
+		playerID = mjContext.GetLastMopaiPlayer()
+	case 2: // 他询状态， 出牌者
+		playerID = mjContext.GetLastChupaiPlayer()
+	case 3: // 等待抢杠胡 杠牌玩家
+		playerID = mjContext.GetLastGangPlayer()
+	default:
+		return nil
+	}
+	return &playerID
+}
+
+func (d *desk) getGameStage() (stage room.GameStage) {
+	switch d.dContext.mjContext.GetCurState() {
+	case server_pb.StateID_state_huansanzhang:
+		stage = room.GameStage_GAMESTAGE_HUANSANZHANG
+	case server_pb.StateID_state_dingque:
+		stage = room.GameStage_GAMESTAGE_DINGQUE
+	default:
+		stage = room.GameStage_GAMESTAGE_PLAYCARD
+	}
+	return
+}
+
+func (d *desk) getDoorCard() *uint32 {
+	mjContext := &d.dContext.mjContext
+	if mjContext.GetCurState() == server_pb.StateID_state_zixun {
+		DoorCard := uint32(mjContext.GetLastMopaiCard().GetPoint())
+		return &DoorCard
+	}
+	return nil
+}
+
+func (d *desk) getRecoverPlayerInfo() (recoverPlayerInfo []*room.GamePlayerInfo) {
+	mjContext := &d.dContext.mjContext
+	roomPlayerInfos := d.GetPlayers()
+	for _, roomPlayerInfo := range roomPlayerInfos {
+		var player *server_pb.Player
+		for _, player = range mjContext.GetPlayers() {
+			if player.GetPalyerId() == roomPlayerInfo.GetPlayerId() {
+				break
+			}
+		}
+		playerID := player.GetPalyerId()
+		svrHandCard := player.GetHandCards()
+		handCardCount := uint32(len(svrHandCard))
+		gamePlayerInfo := &room.GamePlayerInfo{
+			PlayerInfo:    roomPlayerInfo,
+			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
+			HandCardCount: &handCardCount,
+		}
+
+		// 手牌组
+		cltHandCard := gutils.ServerCards2Numbers(svrHandCard)
+		handCardGroup := &room.CardsGroup{
+			Cards: cltHandCard,
+			Type:  room.CardsGroupType_CGT_HAND.Enum(),
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, handCardGroup)
+		// 吃牌组
+		//chiCardGroup
+
+		// 碰牌组,每一次碰牌填1张还是三张
+		var pengCardGroups []*room.CardsGroup
+		for _, pengCard := range player.GetPengCards() {
+			srcPlayerID := pengCard.GetSrcPlayer()
+			pengCardGroup := &room.CardsGroup{
+				Cards: []uint32{gutils.ServerCard2Number(pengCard.GetCard())},
+				Type:  room.CardsGroupType_CGT_PENG.Enum(),
+				Pid:   &srcPlayerID,
+			}
+			pengCardGroups = append(pengCardGroups, pengCardGroup)
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, pengCardGroups...)
+		// 杠牌组
+		var gangCardGroups []*room.CardsGroup
+		for _, gangCard := range player.GetGangCards() {
+			groupType := gutils.SvrGangType2CardGroupType(gangCard.GetType())
+			srcPlayerID := gangCard.GetSrcPlayer()
+			gangCardGroup := &room.CardsGroup{
+				Cards: []uint32{gutils.ServerCard2Number(gangCard.GetCard())},
+				Type:  &groupType,
+				Pid:   &srcPlayerID,
+			}
+			gangCardGroups = append(gangCardGroups, gangCardGroup)
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, gangCardGroups...)
+		// 胡牌组
+		var huCardGroups []*room.CardsGroup
+		for _, huCard := range player.GetHuCards() {
+			srcPlayerID := huCard.GetSrcPlayer()
+			huCardGroup := &room.CardsGroup{
+				Cards: []uint32{gutils.ServerCard2Number(huCard.GetCard())},
+				Type:  room.CardsGroupType_CGT_HU.Enum(),
+				Pid:   &srcPlayerID,
+			}
+			huCardGroups = append(huCardGroups, huCardGroup)
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huCardGroups...)
+		// 花牌组
+
+		// 出牌组
+		outCardGroup := &room.CardsGroup{
+			Cards: gutils.ServerCards2Numbers(player.GetOutCards()),
+			Type:  room.CardsGroupType_CGT_OUT.Enum(),
+			Pid:   &playerID,
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, outCardGroup)
+	}
+	return
+}
+
+// // 麻将组类型
+// enum CardsGroupType{
+//     CGT_HAND = 0;     // 手牌
+//     CGT_CHI = 1;      // 吃牌
+//     CGT_PENG = 2;     // 碰牌
+//     CGT_MINGGANG = 3; // 明杠牌
+//     CGT_ANGANG = 4;   // 暗杠牌
+//     CGT_BUGANG = 5;   // 补杠牌
+//     CGT_HU = 6;       // 胡的牌
+//     CGT_HUA = 7;      // 花牌
+// 	CGT_OUT = 8;      // 出去的牌
+// }
+
+// // 麻将组
+// message CardsGroup {
+//     repeated uint32 cards = 1;           // 牌
+//     optional CardsGroupType type = 2;    // 麻将组类型
+//     optional uint64 pid = 3;             // 吃碰杠谁的牌
+// }
