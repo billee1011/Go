@@ -1,4 +1,4 @@
-package timertests
+package tuoguantest
 
 import (
 	msgid "steve/client_pb/msgId"
@@ -12,7 +12,7 @@ import (
 )
 
 //Test_Qiangganghu01 庄家打出9w,下家碰并且打出6w,接下来对家,尾家,庄家分别摸牌并打出9b,下家摸牌,并且请求补杠,此时对家可以抢杠胡
-// 期待: 對家不進行操作,倒計時結束時,默认选过
+// 期待: 對家托管,默认选过
 func Test_Qiangganghu01(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 
@@ -69,10 +69,11 @@ func Test_Qiangganghu01(t *testing.T) {
 		assert.Equal(t, gangPlayer.Player.GetID(), ntf.GetFromPlayerId())
 		assert.Equal(t, i == 2, ntf.GetSelfCan())
 	}
+	assert.Nil(t, utils.SendQuitReq(deskData, 2))
 	player := utils.GetDeskPlayerBySeat(1, deskData)
 	expector, _ := player.Expectors[msgid.MsgID_ROOM_GANG_NTF]
 	ntf := room.RoomGangNtf{}
-	assert.Nil(t, expector.Recv(time.Second*16, &ntf))
+	assert.Nil(t, expector.Recv(time.Second*10, &ntf))
 	assert.Equal(t, uint32(19), ntf.GetCard())
 	assert.Equal(t, room.GangType_BuGang, ntf.GetGangType())
 	assert.Equal(t, player.Player.GetID(), ntf.GetFromPlayerId())
@@ -80,7 +81,7 @@ func Test_Qiangganghu01(t *testing.T) {
 }
 
 //Test_Qiangganghu02 庄家打出9w,下家碰并且打出1b,接下来对家自摸,尾家,庄家分别摸牌并打出9b,下家摸牌,并且请求补杠,此时对家可以抢杠胡
-// 期待: 對家不進行操作,倒計時結束時,默认选抢杠胡
+// 期待: 對家托管,默认选抢杠胡
 func Test_Qiangganghu02(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 
@@ -142,7 +143,7 @@ func Test_Qiangganghu02(t *testing.T) {
 		assert.Equal(t, gangPlayer.Player.GetID(), ntf.GetFromPlayerId())
 		assert.Equal(t, i == 2, ntf.GetSelfCan())
 	}
-	//玩家2之前开过胡,倒计时结束后,默认给胡
-	time.Sleep(time.Second * 16)
-	utils.CheckHuNotify(t, deskData, []int{2}, 1, uint32(19), room.HuType_HT_QIANGGANGHU)
+	//玩家2之前开过胡,托管默认给胡
+	assert.Nil(t, utils.SendQuitReq(deskData, 2))
+	utils.CheckHuNotifyBySeats(t, deskData, []int{2}, 1, uint32(19), room.HuType_HT_QIANGGANGHU, []int{0, 1, 3})
 }

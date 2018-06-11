@@ -6,7 +6,6 @@ import (
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,35 +22,21 @@ func SendHuReq(deskData *DeskData, seat int) error {
 
 // CheckHuNotify 检查胡通知
 func CheckHuNotify(t *testing.T, deskData *DeskData, huSeats []int, from int, card uint32, huType room.HuType) {
+	CheckHuNotifyBySeats(t, deskData, huSeats, from, card, huType, []int{0, 1, 2, 3})
+}
+
+// CheckHuNotifyBySeats 指定玩家检查胡通知
+func CheckHuNotifyBySeats(t *testing.T, deskData *DeskData, huSeats []int, from int, card uint32, huType room.HuType, otherSeats []int) {
 	huPlayers := []uint64{}
 	for _, seat := range huSeats {
 		huPlayers = append(huPlayers, GetDeskPlayerBySeat(seat, deskData).Player.GetID())
 	}
 	fromPlayer := GetDeskPlayerBySeat(from, deskData).Player.GetID()
-
-	for _, player := range deskData.Players {
+	for _, oseat := range otherSeats {
+		player := GetDeskPlayerBySeat(oseat, deskData)
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_HU_NTF]
 		ntf := room.RoomHuNtf{}
 		expector.Recv(global.DefaultWaitMessageTime, &ntf)
-		assert.Equal(t, huPlayers, ntf.GetPlayers())
-		assert.Equal(t, fromPlayer, ntf.GetFromPlayerId())
-		assert.Equal(t, card, ntf.GetCard())
-		assert.Equal(t, huType, ntf.GetHuType())
-	}
-}
-
-// CheckHuNotify0 检查胡通知
-func CheckHuNotify0(t *testing.T, deskData *DeskData, duration time.Duration, huSeats []int, from int, card uint32, huType room.HuType) {
-	huPlayers := []uint64{}
-	for _, seat := range huSeats {
-		huPlayers = append(huPlayers, GetDeskPlayerBySeat(seat, deskData).Player.GetID())
-	}
-	fromPlayer := GetDeskPlayerBySeat(from, deskData).Player.GetID()
-
-	for _, player := range deskData.Players {
-		expector, _ := player.Expectors[msgid.MsgID_ROOM_HU_NTF]
-		ntf := room.RoomHuNtf{}
-		expector.Recv(duration, &ntf)
 		assert.Equal(t, huPlayers, ntf.GetPlayers())
 		assert.Equal(t, fromPlayer, ntf.GetFromPlayerId())
 		assert.Equal(t, card, ntf.GetCard())

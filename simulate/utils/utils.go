@@ -33,10 +33,11 @@ func MakeRoomCards(card ...room.Card) []*room.Card {
 	return result
 }
 
-//CheckChuPaiNotify 检查出牌广播
-func CheckChuPaiNotify(t *testing.T, deskData *DeskData, card uint32, seat int) {
+// CheckChuPaiNotifyWithSeats 指定玩家检查出牌广播
+func CheckChuPaiNotifyWithSeats(t *testing.T, deskData *DeskData, card uint32, seat int, expectedSeats []int) {
 	activePlayer := GetDeskPlayerBySeat(seat, deskData)
-	for _, player := range deskData.Players {
+	for _, s := range expectedSeats {
+		player := GetDeskPlayerBySeat(s, deskData)
 		messageExpector := player.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
 		ntf := &room.RoomChupaiNtf{}
 		assert.Nil(t, messageExpector.Recv(global.DefaultWaitMessageTime, ntf))
@@ -45,16 +46,9 @@ func CheckChuPaiNotify(t *testing.T, deskData *DeskData, card uint32, seat int) 
 	}
 }
 
-//CheckChuPaiNotify0 检查出牌广播
-func CheckChuPaiNotify0(t *testing.T, deskData *DeskData, duration time.Duration, card uint32, seat int) {
-	activePlayer := GetDeskPlayerBySeat(seat, deskData)
-	for _, player := range deskData.Players {
-		messageExpector := player.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
-		ntf := &room.RoomChupaiNtf{}
-		assert.Nil(t, messageExpector.Recv(duration, ntf))
-		assert.Equal(t, card, ntf.GetCard())
-		assert.Equal(t, activePlayer.Player.GetID(), ntf.GetPlayer())
-	}
+//CheckChuPaiNotify 检查出牌广播
+func CheckChuPaiNotify(t *testing.T, deskData *DeskData, card uint32, seat int) {
+	CheckChuPaiNotifyWithSeats(t, deskData, card, seat, []int{0, 1, 2, 3})
 }
 
 //CheckMoPaiNotify 检查摸牌广播
