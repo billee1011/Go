@@ -57,7 +57,7 @@ func (tg *tuoGuanMgr) SetTuoGuan(playerID uint64, set bool, notify bool) {
 		tg.players[playerID] = player
 	}
 	player.tuoGuaning = set
-	tg.notifyTuoguan(playerID, notify)
+	tg.notifyTuoguan(playerID, set)
 }
 
 // OnPlayerTimeOut 处理完成超时事件
