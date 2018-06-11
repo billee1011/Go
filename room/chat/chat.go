@@ -7,8 +7,9 @@ import (
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/Sirupsen/logrus"
-	"github.com/gogo/protobuf/proto"
 )
 
 // 所有聊天类型
