@@ -30,8 +30,15 @@ message PengCard {
 
 // 胡类型
 enum HuType { 
-    hu_zimo = 0;        // 自摸
-    hu_dianpao = 1;     // 点炮
+    hu_ganghoupao = 0;         // 杠后炮
+    hu_qiangganghu = 1;        // 抢杠胡
+    hu_dianpao = 2;            // 点炮
+    hu_gangkai = 3;            // 杠开
+    hu_haidilao = 4;           // 海底捞
+    hu_gangshanghaidilao = 5;  // 杠上海底捞
+    hu_zimo = 6;               // 自摸
+    hu_tianhu = 7;             // 天胡
+    hu_dihu = 8;               // 地胡
 }
 
 // 牌组类型
@@ -65,6 +72,29 @@ message ChiCard {
     uint64 src_player = 3; // 吃牌来源玩家
 }
 
+// TingCardInfo 听牌信息
+message TingCardInfo{
+    uint32 ting_card = 1; // 听的牌
+    uint32 times = 2;   // 胡牌倍数
+}
+
+// CanTingCardInfo 出本张牌可以听
+message CanTingCardInfo{
+    uint32 out_card = 1; // 要出的牌
+    repeated TingCardInfo ting_card_info = 2; // 听的牌和倍数
+}
+
+// ZixunRecord 自询
+message ZixunRecord {
+    repeated uint32 enable_angang_cards = 1;  // 能暗杠的牌
+    repeated uint32 enable_bugang_cards = 2;  // 能补杠的牌
+    bool enable_zimo = 3;          // 是否能自摸
+    repeated uint32 enable_chupai_cards = 4;  // 可以出的牌
+    repeated CanTingCardInfo can_ting_card_info = 5; // 每张牌对应的听的牌和倍数
+    bool enable_qi = 6; //是否可弃牌
+    HuType hu_type = 7;  // 胡牌类型
+}
+
 // Player 玩家数据
 message Player {
     uint64 palyer_id = 1;                   // 玩家 ID 
@@ -82,6 +112,7 @@ message Player {
     bool huansanzhang_sure = 13;            // 换三张是否已确认
     repeated Card huansanzhang_cards = 14;  // 换三张的牌
     int32 mopai_count = 15;                 // 已经摸牌的次数
+    ZixunRecord zixun_record = 16;          // 自询记录
 
 
     map<string, bytes> properties = 256;    // 其他的一些属性
@@ -91,6 +122,7 @@ message Player {
 message AutoEvent {
     EventID event_id = 1;       // 事件 ID 
     bytes event_context = 2;    // 事件现场
+    uint32 wait_time = 3;       // 多长时间（ms）后产生该事件
 }
 
 // SettleType 结算类型
@@ -182,13 +214,17 @@ message MajongContext {
     MopaiType mopai_type = 20;  // 摸牌类型
     ZixunType zixun_type = 21;  // 自询类型
     repeated uint32 dices = 22; // 骰子
+    bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
+
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
 }
 
 // MajongCommonOption 麻将通用玩法选项
 message MajongCommonOption {
-
+    uint32 max_cartoon_time = 1;    // 通用最大动画时间
+    uint32 max_fapai_cartoon_time = 2;  // 发牌动画最大时间
+    uint32 max_huansanzhang_cartoon_time = 3; // 换三张动画最大时间
 }
 
 // SichuanxueliuOption 四川血流麻将玩法

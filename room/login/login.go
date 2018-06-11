@@ -69,7 +69,7 @@ func loginPlayerByUserName(clientID uint64, userName string) interfaces.Player {
 		playerMgr.AddPlayer(p)
 		return p
 	}
-	pm.SetClientID(clientID)
+	playerMgr.UpdatePlayerClientID(pm.GetID(), clientID)
 	return pm
 }
 
@@ -125,9 +125,10 @@ func loginExistVisitor(clientID uint64, youkeInfo *YoukeInfo) interfaces.Player 
 		logrus.WithFields(logrus.Fields{
 			"func_name":  "loginExistVisitor",
 			"youke_info": youkeInfo,
-		}).Panicln("游客不存在")
+		}).Errorln("游客不存在")
+		return nil
 	}
-	pm.SetClientID(clientID)
+	playerMgr.UpdatePlayerClientID(pm.GetID(), clientID)
 	return pm
 }
 
@@ -152,6 +153,10 @@ func HandleVisitorLogin(clientID uint64, header *steve_proto_gaterpc.Header, req
 		player = loginNewVisitor(clientID, deviceInfo)
 	} else {
 		player = loginExistVisitor(clientID, youkeInfo)
+	}
+	if player == nil {
+		rsp.ErrCode = room.RoomError_FAILED.Enum()
+		return
 	}
 	logentry = logentry.WithFields(logrus.Fields{
 		"player_id": player.GetID(),

@@ -45,6 +45,12 @@ type deskContext struct {
 	stateTime   time.Time               // 状态时间
 }
 
+type autoEvent struct {
+	aevent      *server_pb.AutoEvent // 自动事件
+	stateNumber int                  // 对应的状态序号
+	createTime  time.Time            // 创建时间
+}
+
 type desk struct {
 	deskUID      uint64                       // 牌桌唯一 ID
 	gameID       int                          // 游戏 ID
@@ -286,9 +292,12 @@ func (d *desk) initMajongContext() error {
 	}
 
 	param := server_pb.InitMajongContextParams{
-		GameId:       int32(d.gameID),
-		Players:      players,
-		Option:       &server_pb.MajongCommonOption{},
+		GameId:  int32(d.gameID),
+		Players: players,
+		Option: &server_pb.MajongCommonOption{
+			MaxFapaiCartoonTime:        10 * 1000,
+			MaxHuansanzhangCartoonTime: 10 * 1000,
+		},
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
@@ -343,7 +352,7 @@ func (d *desk) timerTask(ctx context.Context) {
 		}
 	}()
 
-	t := time.NewTicker(time.Second * 1)
+	t := time.NewTicker(time.Millisecond * 200)
 	defer t.Stop()
 	for {
 		select {
@@ -464,6 +473,23 @@ func (d *desk) callEventHandler(logEntry *logrus.Entry, eventID server_pb.EventI
 	return
 }
 
+// pushAutoEvent 一段时间后压入自动事件
+func (d *desk) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNumber int) {
+	time.Sleep(time.Millisecond * time.Duration(autoEvent.GetWaitTime()))
+	if d.dContext.stateNumber != stateNumber {
+		return
+	}
+	d.event <- deskEvent{
+		event: interfaces.Event{
+			ID:        autoEvent.EventId,
+			Context:   autoEvent.EventContext,
+			EventType: interfaces.NormalEvent,
+			PlayerID:  0,
+		},
+		stateNumber: stateNumber,
+	}
+}
+
 // processEvent 处理单个事件
 // step 1. 调用麻将逻辑的接口来处理事件(返回最新麻将现场, 自动事件， 发送给玩家的消息)， 并且更新 mjContext
 // step 2. 将消息发送给玩家
@@ -489,7 +515,11 @@ func (d *desk) processEvent(eventID server_pb.EventID, eventContext []byte) {
 	}
 	// 自动事件不为空，继续处理事件
 	if result.AutoEvent != nil {
-		d.processEvent(result.AutoEvent.GetEventId(), result.AutoEvent.GetEventContext())
+		if result.AutoEvent.GetWaitTime() == 0 {
+			d.processEvent(result.AutoEvent.GetEventId(), result.AutoEvent.GetEventContext())
+		} else {
+			go d.pushAutoEvent(result.AutoEvent, d.dContext.stateNumber)
+		}
 	}
 }
 

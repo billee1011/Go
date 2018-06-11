@@ -22,13 +22,18 @@ func SendHuReq(deskData *DeskData, seat int) error {
 
 // CheckHuNotify 检查胡通知
 func CheckHuNotify(t *testing.T, deskData *DeskData, huSeats []int, from int, card uint32, huType room.HuType) {
+	CheckHuNotifyBySeats(t, deskData, huSeats, from, card, huType, []int{0, 1, 2, 3})
+}
+
+// CheckHuNotifyBySeats 指定玩家检查胡通知
+func CheckHuNotifyBySeats(t *testing.T, deskData *DeskData, huSeats []int, from int, card uint32, huType room.HuType, otherSeats []int) {
 	huPlayers := []uint64{}
 	for _, seat := range huSeats {
 		huPlayers = append(huPlayers, GetDeskPlayerBySeat(seat, deskData).Player.GetID())
 	}
 	fromPlayer := GetDeskPlayerBySeat(from, deskData).Player.GetID()
-
-	for _, player := range deskData.Players {
+	for _, oseat := range otherSeats {
+		player := GetDeskPlayerBySeat(oseat, deskData)
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_HU_NTF]
 		ntf := room.RoomHuNtf{}
 		expector.Recv(global.DefaultWaitMessageTime, &ntf)

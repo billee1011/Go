@@ -37,7 +37,7 @@ func Test_Qiangganghu(t *testing.T) {
 	params.Cards[2][11] = 39
 	// 3 号玩家初始手牌： 25,25,25,25,26,26,26,26,27,27,27,27,39
 	params.Cards[3][12] = 39
-
+	params.DingqueColor[2] = room.CardColor_CC_TONG
 	// 墙牌改为 8W, 8W, 8W, 9W， 3B
 	params.WallCards = []uint32{18, 18, 18, 19, 33}
 
