@@ -314,16 +314,7 @@ func (d *desk) initMajongContext() error {
 }
 
 func (d *desk) getTuoguanPlayers() []uint64 {
-	players := d.tuoGuanMgr.GetTuoGuanPlayers()
-	result := []uint64{}
-	playerMgr := global.GetPlayerMgr()
-	for _, playerID := range players {
-		player := playerMgr.GetPlayer(playerID)
-		if player != nil && player.GetClientID() != 0 {
-			result = append(result, playerID)
-		}
-	}
-	return result
+	return d.tuoGuanMgr.GetTuoGuanPlayers()
 }
 
 // genTimerEvent 生成计时事件
