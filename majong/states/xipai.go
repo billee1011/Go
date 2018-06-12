@@ -80,17 +80,17 @@ func PeiPai(wallCards []*majongpb.Card, context *majongpb.MajongContext, gameNam
 }
 
 // randDices 随机筛子
-func (s *XipaiState) randDices() [2]int {
+func (s *XipaiState) randDices() []uint32 {
 	rand.Seed(int64(time.Now().Nanosecond()))
-	return [2]int{
-		rand.Intn(6) + 1,
-		rand.Intn(6) + 1,
+	return []uint32{
+		uint32(rand.Int31n(6)) + 1,
+		uint32(rand.Int31n(6)) + 1,
 	}
 }
 
 // selectZhuangjia 选择庄家
-func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices [2]int, gameName string) int {
-	totalDice := dices[0] + dices[1]
+func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices []uint32, gameName string) int {
+	totalDice := int(dices[0] + dices[1])
 
 	mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
 	zhuangIndex := peipai.GetZhuangIndex(gameName)
@@ -101,10 +101,9 @@ func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices [2
 }
 
 // pushMessages 发送消息给玩家
-func (s *XipaiState) pushMessages(cardCount int, dices [2]int, zjIndex int, flow interfaces.MajongFlow) {
-	protoDices := []uint32{uint32(dices[0]), uint32(dices[1])}
+func (s *XipaiState) pushMessages(cardCount int, dices []uint32, zjIndex int, flow interfaces.MajongFlow) {
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_XIPAI_NTF, &room.RoomXipaiNtf{
-		Dices:      protoDices,
+		Dices:      dices,
 		TotalCard:  proto.Uint32(uint32(cardCount)),
 		BankerSeat: proto.Uint32(uint32(zjIndex)),
 	})
@@ -116,6 +115,7 @@ func (s *XipaiState) OnEntry(flow interfaces.MajongFlow) {
 
 	mjContext.WallCards = s.xipai(flow)
 	dices := s.randDices()
+	mjContext.Dices = append(mjContext.Dices, dices...)
 	gameName := utils.GetGameName(flow)
 	zjIndex := s.selectZhuangjia(mjContext, dices, gameName)
 	s.pushMessages(len(mjContext.WallCards), dices, zjIndex, flow)
