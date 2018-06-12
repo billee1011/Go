@@ -8,6 +8,23 @@
   version = "v1.0.4"
 
 [[projects]]
+  name = "github.com/bsm/grpclb"
+  packages = [
+    "balancer",
+    "discovery/consul",
+    "grpclb_backend_v1",
+    "grpclb_balancer_v1"
+  ]
+  revision = "8ee3dbe8dee53600a5f95f474ddc27c2ed937a72"
+  version = "v0.4.3"
+
+[[projects]]
+  name = "github.com/coreos/bbolt"
+  packages = ["."]
+  revision = "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -268,6 +285,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3eef7224beb634e3d52366c9a7661647ac31c8e999e043db3175138b4c59644e"
+  inputs-digest = "6d7bd63c0eadca29ec4dedcff179e7bb658a5b900041361c117282aa4eac4652"
   solver-name = "gps-cdcl"
   solver-version = 1
