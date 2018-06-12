@@ -105,25 +105,40 @@ func (aeg *autoEventGenerator) isTuoGuan(playerID uint64, tuoGuanPlayers []uint6
 	return false
 }
 
-// GenerateV2 利用 AI 生成自动事件
-func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGenerateParams) (result interfaces.AutoEventGenerateResult) {
-	AI := aeg.getAI(params.MajongContext)
-	if AI == nil {
-		return
-	}
-	if overTime, result := aeg.handleOverTime(AI, params.CurTime, params.StateTime, params.MajongContext); overTime {
-		return result
-	}
-	result = interfaces.AutoEventGenerateResult{
+// handleTuoGuan 执行所有玩家的托管
+func (aeg *autoEventGenerator) handleTuoGuan(tuoGuanPlayers []uint64, AI interfaces.MajongAI, curTime time.Time, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
+	result := interfaces.AutoEventGenerateResult{
 		Events: []interfaces.Event{},
 	}
-	mjContext := params.MajongContext
+	tuoguanOprTime := 1 * time.Second
+	if curTime.Sub(stateTime) < tuoguanOprTime {
+		return result
+	}
 	players := mjContext.GetPlayers()
 	for _, player := range players {
 		playerID := player.GetPalyerId()
-		if aeg.isTuoGuan(playerID, params.TuoGuanPlayers) {
+		if aeg.isTuoGuan(playerID, tuoGuanPlayers) {
 			aeg.handlePlayerTuoGuan(&result, AI, player, mjContext)
 		}
+	}
+	return result
+}
+
+// GenerateV2 利用 AI 生成自动事件
+func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGenerateParams) (result interfaces.AutoEventGenerateResult) {
+	mjContext := params.MajongContext
+	AI := aeg.getAI(mjContext)
+	if AI == nil {
+		return
+	}
+	if overTime, result := aeg.handleOverTime(AI, params.CurTime, params.StateTime, mjContext); overTime {
+		return result
+	}
+	result = aeg.handleTuoGuan(params.TuoGuanPlayers, AI, params.CurTime, params.StateTime, mjContext)
+
+	players := mjContext.GetPlayers()
+	for _, player := range players {
+		playerID := player.GetPalyerId()
 		if lv, exist := params.RobotLv[playerID]; exist {
 			aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.RobotAI, lv)
 		}
