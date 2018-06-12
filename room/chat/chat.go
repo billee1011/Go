@@ -1,12 +1,13 @@
 package chat
 
 import (
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
+
+	"github.com/golang/protobuf/proto"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -66,9 +67,12 @@ func broadChatNotify(playerID uint64, ntf *room.RoomDeskChatNtf) {
 	// 获取桌面
 	desk, err := global.GetDeskMgr().GetRunDeskByPlayerID(playerID)
 	printErr("---广播聊天通知：获取当前桌面失败---", playerID, err)
-	// 广播聊天消息(playerID为不发玩家，true为退出玩家不发送聊天消息)
-	err = facade.BroadCastDeskMessageExcept(desk, []uint64{playerID}, true, msgid.MsgID_ROOM_CHAT_NTF, ntf)
-	printErr("---广播聊天通知：广播失败---", playerID, err)
+	// err = facade.BroadCastDeskMessageExcept(desk, []uint64{playerID}, true, msgid.MsgID_ROOM_CHAT_NTF, ntf)
+	// 聊天通知序列化
+	msgBody, err := proto.Marshal(ntf)
+	printErr("---广播聊天通知：序列化失败---", playerID, err)
+	// 广播聊天消息([]uint64{}为所有玩家，true为退出玩家不发送聊天消息)
+	desk.BroadcastMessage([]uint64{}, msgid.MsgID_ROOM_CHAT_NTF, msgBody, true)
 }
 
 // 打印错误日志
