@@ -23,7 +23,9 @@ func OnCartoonFinish(curState majongpb.StateID, nextState majongpb.StateID, need
 		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
 		return curState, global.ErrUnmarshalEvent
 	}
-	if req.GetCartoonType() != int32(needCartoonType) {
+	reqCartoonType := req.GetCartoonType()
+	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
+	if reqCartoonType != int32(needCartoonType) {
 		return curState, nil
 	}
 	return nextState, nil
