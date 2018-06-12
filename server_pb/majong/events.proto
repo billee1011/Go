@@ -33,6 +33,9 @@ enum EventID {
     event_wenxun_overtime = 24;         // 问询超时事件
     event_peng_finish = 25;             // 碰完成事件
     event_timer = 26;                   // 定时事件
+
+    event_huansanzhang_finish = 27;    // 换三张完成事件
+    event_cartoon_finish_request = 28;  // 动画完成请求事件
 }
 
 // RequestEventHead 请求事件通用头
@@ -95,4 +98,9 @@ message HuRequestEvent {
 // QiRequestEvent 弃请求事件
 message QiRequestEvent {
     RequestEventHead head = 1; // 请求头
+}
+
+// CartoonFinishRequestEvent 动画完成时间
+message CartoonFinishRequestEvent {
+    int32 cartoon_type = 1; // 动画类型 ，参考 client_pb.CartoonType
 }

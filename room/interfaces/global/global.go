@@ -11,7 +11,7 @@ var gMessageSender interfaces.MessageSender
 var gReqEventTranslator interfaces.ReqEventTranslator
 var gDeskIDAllocator interfaces.DeskIDAllocator
 var gSettleFactory interfaces.DeskSettlerFactory
-var gDeskEventGeneratorFactory interfaces.DeskAutoEventGeneratorFactory
+var gDeskAutoEventGenerator interfaces.DeskAutoEventGenerator
 
 // SetPlayerMgr 设置玩家管理器
 func SetPlayerMgr(pm interfaces.PlayerMgr) {
@@ -83,12 +83,12 @@ func GetDeskSettleFactory() interfaces.DeskSettlerFactory {
 	return gSettleFactory
 }
 
-// SetDeskAutoEventGeneratorFacotry 设置自动事件产生器工厂
-func SetDeskAutoEventGeneratorFacotry(f interfaces.DeskAutoEventGeneratorFactory) {
-	gDeskEventGeneratorFactory = f
+// SetDeskAutoEventGenerator 设置自动事件产生器
+func SetDeskAutoEventGenerator(g interfaces.DeskAutoEventGenerator) {
+	gDeskAutoEventGenerator = g
 }
 
-// GetDeskAutoEventGeneratorFactory 获取自动事件产生器工厂
-func GetDeskAutoEventGeneratorFactory() interfaces.DeskAutoEventGeneratorFactory {
-	return gDeskEventGeneratorFactory
+// GetDeskAutoEventGenerator 获取自动事件产生器
+func GetDeskAutoEventGenerator() interfaces.DeskAutoEventGenerator {
+	return gDeskAutoEventGenerator
 }

@@ -9,6 +9,7 @@ import (
 	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type joinApplyManager struct {
@@ -68,6 +69,10 @@ func (jam *joinApplyManager) checkMatch() {
 		if !ok {
 			break
 		}
+
+		if jam.replicateApplyProc(applyPlayers, playerID) {
+			continue
+		}
 		applyPlayers = append(applyPlayers, playerID)
 		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
 
@@ -88,6 +93,22 @@ func (jam *joinApplyManager) checkMatch() {
 			deskMgr.RunDesk(result.Desk)
 		}
 	}
+}
+
+func (jam *joinApplyManager) replicateApplyProc(applyPlayers []uint64, newPlayerID uint64) bool {
+	for _, playerID := range applyPlayers {
+		if playerID == newPlayerID {
+			header := &steve_proto_gaterpc.Header{
+				MsgId: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
+			}
+			rsp := &room.RoomJoinDeskRsp{
+				ErrCode: room.RoomError_DESK_ALREADY_APPLIED.Enum(),
+			}
+			SendMessageByPlayerID(playerID, header, rsp)
+			return true
+		}
+	}
+	return false
 }
 
 func notifyDeskCreate(desk interfaces.Desk) {
@@ -136,6 +157,10 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
 		return
 	}
+	if _, exist := ExistInDesk(player.GetID()); exist {
+		rsp.ErrCode = room.RoomError_DESK_GAME_PLAYING.Enum()
+		return
+	}
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
 	return
 }
@@ -144,7 +169,6 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayerByClientID(clientID)
-
 	rsp := &room.RoomDeskContinueRsp{
 		ErrCode: room.RoomError_SUCCESS.Enum(),
 	}
@@ -159,6 +183,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
 		return
 	}
+
 	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
 	return
 }
@@ -171,14 +196,66 @@ func HandleRoomDeskQuitReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	if player == nil {
 		return
 	}
+	playerID := player.GetID()
 	deskMgr := global.GetDeskMgr()
-	desk, err := deskMgr.GetRunDeskByPlayerID(player.GetID())
+	desk, err := deskMgr.GetRunDeskByPlayerID(playerID)
 	if err != nil {
 		return
 	}
-	err = desk.Stop()
-	if err != nil {
-		return
-	}
+	desk.PlayerQuit(playerID)
 	return
+}
+
+// ExistInDesk 是否在游戏中
+func ExistInDesk(playerID uint64) (interfaces.Desk, bool) {
+	deskMgr := global.GetDeskMgr()
+	desk, _ := deskMgr.GetRunDeskByPlayerID(playerID)
+	if desk == nil {
+		return nil, false
+	}
+	return desk, true
+}
+
+// HandleResumeGameReq 恢复对局请求
+func HandleResumeGameReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+	playerID := player.GetID()
+
+	desk, exist := ExistInDesk(playerID)
+	if !exist {
+		body := &room.RoomResumeGameRsp{
+			ResumeRes: room.RoomError_DESK_NO_GAME_PLAYING.Enum(),
+		}
+		return []exchanger.ResponseMsg{
+			exchanger.ResponseMsg{
+				MsgID: uint32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
+				Body:  body,
+			},
+		}
+	}
+
+	desk.PlayerEnter(playerID)
+	return
+}
+
+// SendMessageByPlayerID 获取到playerID发送消息
+func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":   "sendMessageFromRoom",
+		"newPlayerID": playerID,
+		"head":        msgid.MsgID_name[int32(head.MsgId)],
+	})
+	playerMgr := global.GetPlayerMgr()
+	p := playerMgr.GetPlayer(playerID)
+	if p != nil {
+		logEntry.Errorln("获取player失败")
+		return
+	}
+	clientID := p.GetClientID()
+	ms := global.GetMessageSender()
+	err := ms.SendPackage(clientID, head, body)
+	if err != nil {
+		logEntry.WithError(err).Errorln("发送消息失败")
+	}
 }

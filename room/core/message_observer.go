@@ -61,6 +61,7 @@ func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Heade
 		"msg_id":    msgID,
 		"client_id": clientID,
 	})
+	// logEntry.Debugln("收到客户端消息")
 
 	handler := o.core.exchanger.getHandler(msgID)
 	if handler == nil {

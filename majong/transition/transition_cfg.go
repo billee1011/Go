@@ -36,6 +36,7 @@ var transitionCfg = `
         # 发牌完成事件 转移到 换三张状态
           events: 
             - event_fapai_finish
+            - event_cartoon_finish_request
           next_state: state_huansanzhang
     - 
       # 换三张状态
@@ -43,14 +44,16 @@ var transitionCfg = `
       # 转换表
       transition:
         - 
-          # 玩家换三张请求事件 转移到 换三张状态
+          # 玩家换三张请求事件/动画完成 转移到 换三张状态
           events: 
             - event_huansanzhang_request
+            - event_cartoon_finish_request
           next_state: state_huansanzhang
         - 
-          # 玩家换三张请求事件 转移到 定缺状态
+          # 换三张完成/动画完成 转移到 定缺状态
           events: 
-            - event_huansanzhang_request
+            - event_huansanzhang_finish
+            - event_cartoon_finish_request
           next_state: state_dingque
     - 
       # 定缺状态

@@ -77,9 +77,6 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		settleInfos = append(settleInfos, callTransferS)
 	}
 	entry.Info("胡结算")
-	logrus.WithFields(logrus.Fields{
-		"settleInfos": settleInfos,
-	}).Info("胡结算settleInfos")
 	return settleInfos
 }
 
