@@ -39,9 +39,9 @@ func (s *ChupaiwenxunState) OnEntry(flow interfaces.MajongFlow) {
 	s.notifyPossibleActions(flow)
 }
 
-// OnExit 退出状态
+// OnExit 退出状态 清除本状态数据
 func (s *ChupaiwenxunState) OnExit(flow interfaces.MajongFlow) {
-
+	s.clearActionRec(flow)
 }
 
 // notifyPossibleActions 通知出牌问询
@@ -416,4 +416,13 @@ func (s *ChupaiwenxunState) doQi(flow interfaces.MajongFlow, playerIDs []uint64)
 	err = errors.New("出牌玩家不存在")
 	logEntry.Errorln(err)
 	return
+}
+
+func (s *ChupaiwenxunState) clearActionRec(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	for _, player := range mjContext.GetPlayers() {
+		player.PossibleActions = []majongpb.Action{}
+		player.HasSelected = false
+		player.SelectedAction = majongpb.Action(-1)
+	}
 }

@@ -611,7 +611,7 @@ func (s *ZiXunState) OnEntry(flow interfaces.MajongFlow) {
 	s.checkActions(flow)
 }
 
-// OnExit 退出状态
+// OnExit 退出状态 清除本状态数据
 func (s *ZiXunState) OnExit(flow interfaces.MajongFlow) {
 
 }
