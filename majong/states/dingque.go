@@ -43,6 +43,7 @@ func (s *DingqueState) ProcessEvent(eventID majongpb.EventID, eventContext []byt
 		s.notifyTingCards(flow)
 		mjContext := flow.GetMajongContext()
 		mjContext.ZixunType = majongpb.ZixunType_ZXT_NORMAL
+		//mjContext.LastMopaiPlayer = mjContext.GetZhuangjiaIndex
 		return majongpb.StateID_state_zixun, nil
 	}
 	return majongpb.StateID_state_dingque, nil

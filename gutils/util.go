@@ -57,8 +57,8 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 }
 
 // ServerCard2Number 服务器的 Card 转换成数字
-func ServerCard2Number(card *majongpb.Card) int {
-	var color int
+func ServerCard2Number(card *majongpb.Card) uint32 {
+	var color uint32
 	if card.Color == majongpb.CardColor_ColorWan {
 		color = 1
 	} else if card.Color == majongpb.CardColor_ColorTiao {
@@ -68,13 +68,13 @@ func ServerCard2Number(card *majongpb.Card) int {
 	} else if card.Color == majongpb.CardColor_ColorFeng {
 		color = 4
 	}
-	value := color*10 + int(card.Point)
+	value := color*10 + uint32(card.Point)
 	return value
 }
 
 // ServerCards2Numbers 服务器的 Card 数组转 int 数组
-func ServerCards2Numbers(cards []*majongpb.Card) []int {
-	result := []int{}
+func ServerCards2Numbers(cards []*majongpb.Card) []uint32 {
+	result := []uint32{}
 	for _, c := range cards {
 		result = append(result, ServerCard2Number(c))
 	}
@@ -133,4 +133,17 @@ func MakeRoomCards(card ...room.Card) []*room.Card {
 		result = append(result, &card[i])
 	}
 	return result
+}
+
+// SvrGangType2CardGroupType server的杠类型转换为恢复牌局的麻将组类型
+func SvrGangType2CardGroupType(gangType majongpb.GangType) (groupType room.CardsGroupType) {
+	switch gangType {
+	case majongpb.GangType_gang_angang:
+		groupType = room.CardsGroupType_CGT_ANGANG
+	case majongpb.GangType_gang_minggang:
+		groupType = room.CardsGroupType_CGT_MINGGANG
+	case majongpb.GangType_gang_bugang:
+		groupType = room.CardsGroupType_CGT_BUGANG
+	}
+	return
 }

@@ -213,7 +213,8 @@ message MajongContext {
     Card gang_card = 19;        // 杠的牌
     MopaiType mopai_type = 20;  // 摸牌类型
     ZixunType zixun_type = 21;  // 自询类型
-    bool excuted_huansanzhang = 22; // 换三张是否已经执行完成
+    repeated uint32 dices = 22; // 骰子
+    bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项

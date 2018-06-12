@@ -162,13 +162,16 @@ func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[u
 	return result
 }
 
-func sendCartoonFinish(cartoonType room.CartoonType, deskData *DeskData, seat int) error {
-	player := GetDeskPlayerBySeat(seat, deskData)
-	zjClient := player.Player.GetClient()
-	_, err := zjClient.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_CARTOON_FINISH_REQ), &room.RoomCartoonFinishReq{
-		CartoonType: cartoonType.Enum(),
-	})
-	return err
+func sendCartoonFinish(cartoonType room.CartoonType, deskData *DeskData) error {
+	for _, player := range deskData.Players {
+		client := player.Player.GetClient()
+		if _, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_CARTOON_FINISH_REQ), &room.RoomCartoonFinishReq{
+			CartoonType: cartoonType.Enum(),
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // checkXipaiNtf 检查洗牌通知
@@ -226,13 +229,11 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 			return err
 		}
 	}
-	return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData, 0)
+	return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData)
 }
 
 // executeHSZ 执行换三张
 func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
-	// 等待1ms，确保服务器已经切换到换三张状态
-	time.Sleep(time.Millisecond)
 	if HszCards == nil {
 		logrus.Infoln("换三张牌没配置，不执行换三张")
 		return nil
@@ -256,7 +257,7 @@ func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 			return fmt.Errorf("玩家 %v 未收到换三张完成通知:%v", playerID, err)
 		}
 	}
-	return sendCartoonFinish(room.CartoonType_CTNT_HUANSANZHANG, deskData, 0)
+	return sendCartoonFinish(room.CartoonType_CTNT_HUANSANZHANG, deskData)
 }
 
 // checkDingqueColor 检查定缺花色是否正确
@@ -279,8 +280,6 @@ func checkDingqueColor(deskData *DeskData, playerColors []*room.PlayerDingqueCol
 
 // executeDingque 执行定缺
 func executeDingque(deskData *DeskData, colors []room.CardColor) error {
-	// 等待1ms，确保服务器已经切换到定缺状态
-	time.Sleep(time.Millisecond)
 	if colors == nil {
 		logrus.Infoln("定缺花色没配置，不执行定缺")
 		return nil
