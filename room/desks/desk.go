@@ -313,12 +313,25 @@ func (d *desk) initMajongContext() error {
 	return nil
 }
 
+func (d *desk) getTuoguanPlayers() []uint64 {
+	players := d.tuoGuanMgr.GetTuoGuanPlayers()
+	result := []uint64{}
+	playerMgr := global.GetPlayerMgr()
+	for _, playerID := range players {
+		player := playerMgr.GetPlayer(playerID)
+		if player != nil && player.GetClientID() != 0 {
+			result = append(result, playerID)
+		}
+	}
+	return result
+}
+
 // genTimerEvent 生成计时事件
 func (d *desk) genTimerEvent() {
 	g := global.GetDeskAutoEventGenerator()
 	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
 	dContext := d.dContext
-	tuoGuanPlayers := d.tuoGuanMgr.GetTuoGuanPlayers()
+	tuoGuanPlayers := d.getTuoguanPlayers()
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":       "desk.genTimerEvent",
 		"state_number":    dContext.stateNumber,
@@ -368,6 +381,15 @@ func (d *desk) timerTask(ctx context.Context) {
 	}
 }
 
+// needCompareStateNumber 判断事件是否需要比较 stateNumber
+func (d *desk) needCompareStateNumber(event *deskEvent) bool {
+	if event.event.ID == server_pb.EventID_event_huansanzhang_request ||
+		event.event.ID == server_pb.EventID_event_dingque_request {
+		return false
+	}
+	return true
+}
+
 func (d *desk) processEvents(ctx context.Context) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.processEvent",
@@ -394,7 +416,7 @@ func (d *desk) processEvents(ctx context.Context) {
 			}
 		case event := <-d.event:
 			{
-				if event.stateNumber != d.dContext.stateNumber {
+				if d.needCompareStateNumber(&event) && event.stateNumber != d.dContext.stateNumber {
 					continue
 				}
 				d.processEvent(event.event.ID, event.event.Context)
