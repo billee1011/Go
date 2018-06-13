@@ -380,6 +380,22 @@ func (d *desk) needCompareStateNumber(event *deskEvent) bool {
 	return true
 }
 
+// recordTuoguanOverTimeCount 记录托管超时计数
+func (d *desk) recordTuoguanOverTimeCount(event interfaces.Event) {
+	if event.EventType != interfaces.OverTimeEvent {
+		return
+	}
+	playerID := event.PlayerID
+	if playerID == 0 {
+		return
+	}
+	id := event.ID
+	if id == server_pb.EventID_event_huansanzhang_request || id == server_pb.EventID_event_dingque_request {
+		return
+	}
+	d.tuoGuanMgr.OnPlayerTimeOut(playerID)
+}
+
 func (d *desk) processEvents(ctx context.Context) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.processEvent",
@@ -410,9 +426,7 @@ func (d *desk) processEvents(ctx context.Context) {
 					continue
 				}
 				d.processEvent(event.event.ID, event.event.Context)
-				if event.event.EventType == interfaces.OverTimeEvent && event.event.PlayerID != 0 {
-					d.tuoGuanMgr.OnPlayerTimeOut(event.event.PlayerID)
-				}
+				d.recordTuoguanOverTimeCount(event.event)
 			}
 		}
 	}

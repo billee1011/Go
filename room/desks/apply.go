@@ -7,6 +7,7 @@ import (
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
+	"sync"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -16,7 +17,17 @@ type joinApplyManager struct {
 	applyChannel chan uint64
 }
 
-var gJoinApplyMgr = newApplyMgr(true)
+var gJoinApplyMgr *joinApplyManager
+var once sync.Once
+
+func getJoinApplyMgr() *joinApplyManager {
+	once.Do(initApplyMgr)
+	return gJoinApplyMgr
+}
+
+func initApplyMgr() {
+	gJoinApplyMgr = newApplyMgr(true)
+}
 
 func newApplyMgr(runChecker bool) *joinApplyManager {
 	mgr := &joinApplyManager{
@@ -161,7 +172,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		rsp.ErrCode = room.RoomError_DESK_GAME_PLAYING.Enum()
 		return
 	}
-	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
+	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
 	return
 }
 
@@ -184,7 +195,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 
-	rsp.ErrCode = gJoinApplyMgr.joinPlayer(player.GetID()).Enum()
+	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
 	return
 }
 

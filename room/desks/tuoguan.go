@@ -75,6 +75,12 @@ func (tg *tuoGuanMgr) OnPlayerTimeOut(playerID uint64) {
 		player.tuoGuaning = true
 		tg.notifyTuoguan(playerID, true)
 	}
+	logrus.WithFields(logrus.Fields{
+		"func_name":       "tuoGuanMgr.OnPlayerTimeOut",
+		"player_id":       playerID,
+		"over_time_count": player.overTimerCount,
+		"tuoguan":         player.tuoGuaning,
+	}).Debugln("玩家超时计数")
 }
 
 // notifyTuoguan 通知玩家托管状态
