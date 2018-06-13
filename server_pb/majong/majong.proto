@@ -215,6 +215,7 @@ message MajongContext {
     ZixunType zixun_type = 21;  // 自询类型
     repeated uint32 dices = 22; // 骰子
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
+    uint32 card_total_num = 24; // 本局游戏的所有牌数量 
 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项

@@ -42,7 +42,9 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
 	gameName := utils.GetGameName(flow)
-	PeiPai(cards, flow.GetMajongContext(), gameName)
+	mjContext := flow.GetMajongContext()
+	mjContext.CardTotalNum = uint32(len(cards))
+	PeiPai(cards, mjContext, gameName)
 	//TUDO 这里不改变墙牌长度,改由黄庄的方式控制流局
 	// length := peipai.GetLensOfWallCards(gameName)
 	// if length != 0 {

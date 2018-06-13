@@ -7,5 +7,5 @@ const (
 	ClientVersion = "1.0"
 
 	// PeipaiURL 配牌服务地址
-	PeipaiURL = "http://127.0.0.1:36002"
+	PeipaiURL = "http://127.0.0.1:36102"
 )

@@ -53,9 +53,9 @@ func (s *WaitQiangganghuState) OnEntry(flow interfaces.MajongFlow) {
 	}
 }
 
-// OnExit 退出状态
+// OnExit 退出状态 清除本状态数据
 func (s *WaitQiangganghuState) OnExit(flow interfaces.MajongFlow) {
-
+	s.clearActionRec(flow)
 }
 
 // onHuRequest 处理胡请求
@@ -145,4 +145,13 @@ func (s *WaitQiangganghuState) makeDecision(flow interfaces.MajongFlow) (newStat
 	}
 	mjContext.LastHuPlayers = huPlayers
 	return majongpb.StateID_state_qiangganghu, nil
+}
+
+func (s *WaitQiangganghuState) clearActionRec(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	for _, player := range mjContext.GetPlayers() {
+		player.PossibleActions = []majongpb.Action{}
+		player.HasSelected = false
+		player.SelectedAction = majongpb.Action(-1)
+	}
 }

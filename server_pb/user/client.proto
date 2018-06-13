@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package user;
+
+
+// ClientDisconnect 客户端断开连接
+message ClientDisconnect {
+    uint64 client_id = 1;  // 客户端 ID 
+}
+

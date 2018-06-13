@@ -135,8 +135,8 @@ func MakeRoomCards(card ...room.Card) []*room.Card {
 	return result
 }
 
-// SvrGangType2CardGroupType server的杠类型转换为恢复牌局的麻将组类型
-func SvrGangType2CardGroupType(gangType majongpb.GangType) (groupType room.CardsGroupType) {
+// GangTypeSvr2Client server的杠类型转换为恢复牌局的麻将组类型，server_pb-->client_pb
+func GangTypeSvr2Client(gangType majongpb.GangType) (groupType room.CardsGroupType) {
 	switch gangType {
 	case majongpb.GangType_gang_angang:
 		groupType = room.CardsGroupType_CGT_ANGANG
@@ -146,4 +146,56 @@ func SvrGangType2CardGroupType(gangType majongpb.GangType) (groupType room.Cards
 		groupType = room.CardsGroupType_CGT_BUGANG
 	}
 	return
+}
+
+// HuTypeSvr2Client 胡类型转换，server_pb-->client_pb
+func HuTypeSvr2Client(recordHuType majongpb.HuType) *room.HuType {
+	var huType room.HuType
+	switch recordHuType {
+	case majongpb.HuType_hu_dianpao:
+		huType = room.HuType_HT_DIANPAO
+	case majongpb.HuType_hu_dihu:
+		huType = room.HuType_HT_DIHU
+	case majongpb.HuType_hu_ganghoupao:
+		huType = room.HuType_HT_GANGHOUPAO
+	case majongpb.HuType_hu_gangkai:
+		huType = room.HuType_HT_GANGKAI
+	case majongpb.HuType_hu_gangshanghaidilao:
+		huType = room.HuType_HT_GANGSHANGHAIDILAO
+	case majongpb.HuType_hu_haidilao:
+		huType = room.HuType_HT_HAIDILAO
+	case majongpb.HuType_hu_qiangganghu:
+		huType = room.HuType_HT_QIANGGANGHU
+	case majongpb.HuType_hu_tianhu:
+		huType = room.HuType_HT_TIANHU
+	case majongpb.HuType_hu_zimo:
+		huType = room.HuType_HT_ZIMO
+	default:
+		return nil
+	}
+	return &huType
+}
+
+// CanTingCardInfoSvr2Client 玩家停牌信息转换，server_pb-->client_pb
+func CanTingCardInfoSvr2Client(minfos []*majongpb.CanTingCardInfo) []*room.CanTingCardInfo {
+	rinfos := []*room.CanTingCardInfo{}
+	for _, minfo := range minfos {
+		rinfo := &room.CanTingCardInfo{}
+		rinfo.OutCard = proto.Uint32(minfo.GetOutCard())
+		rinfo.TingCardInfo = tingCardInfoSvr2Client(minfo.GetTingCardInfo())
+		rinfos = append(rinfos, rinfo)
+	}
+	return rinfos
+}
+
+// tingCardInfoSvr2Client 具体听牌信息转换，server_pb-->client_pb
+func tingCardInfoSvr2Client(minfos []*majongpb.TingCardInfo) []*room.TingCardInfo {
+	rinfos := []*room.TingCardInfo{}
+	for _, minfo := range minfos {
+		rinfo := &room.TingCardInfo{}
+		rinfo.TingCard = proto.Uint32(minfo.GetTingCard())
+		rinfo.Times = proto.Uint32(minfo.GetTimes())
+		rinfos = append(rinfos, rinfo)
+	}
+	return rinfos
 }
