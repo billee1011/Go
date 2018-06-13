@@ -26,12 +26,19 @@ func newConnectPool(caFile string, tlsServerName string) *connectPool {
 }
 
 func (cp *connectPool) getConnect(addr string) (*grpc.ClientConn, error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "connectPool.getConnect",
+		"addr":      addr,
+	})
 	ico, ok := cp.connects.Load(addr)
 	if ok {
 		co := ico.(*grpc.ClientConn)
-		if co.GetState() == connectivity.Ready {
+		state := co.GetState()
+		logEntry = logEntry.WithField("state", state)
+		if state == connectivity.Ready || state == connectivity.Idle {
 			return co, nil
 		}
+		logEntry.Infoln("状态无效")
 		cp.connects.Delete(addr)
 	}
 	return cp.newConnect(addr)
@@ -42,7 +49,7 @@ func (cp *connectPool) newConnect(addr string) (*grpc.ClientConn, error) {
 	defer cp.connectMu.Unlock()
 
 	co, err := cp.connect(addr)
-	if err != nil {
+	if err == nil {
 		cp.connects.Store(addr, co)
 	}
 	return co, err

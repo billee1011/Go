@@ -1,4 +1,4 @@
-package core
+package exchanger
 
 import (
 	"reflect"
@@ -12,7 +12,8 @@ import (
 )
 
 type messageObserver struct {
-	core *roomCore
+	exchanger *exchangerImpl
+	watchDog  net.WatchDog
 }
 
 var _ net.MessageObserver = new(messageObserver)
@@ -61,9 +62,8 @@ func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Heade
 		"msg_id":    msgID,
 		"client_id": clientID,
 	})
-	// logEntry.Debugln("收到客户端消息")
 
-	handler := o.core.exchanger.getHandler(msgID)
+	handler := o.exchanger.getHandler(msgID)
 	if handler == nil {
 		logEntry.Warnln("未处理的客户端消息")
 		return
@@ -83,6 +83,6 @@ func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Heade
 			logEntry.Panic("bodyData nil")
 		}
 
-		o.core.dog.SendPackage(clientID, &responseHeader, bodyData)
+		o.watchDog.SendPackage(clientID, &responseHeader, bodyData)
 	}
 }

@@ -50,6 +50,7 @@ func runRPCServer(server sgrpcinterface.RPCServer, addr string, port int) {
 		"addr":      addr,
 		"port":      port,
 	})
+	logEntry.Infoln("启动 RPC 服务")
 	if addr == "" || port == 0 {
 		logEntry.Info("未配置 RPC 地址或者端口，不启动 RPC 服务")
 		return
@@ -61,4 +62,5 @@ func runRPCServer(server sgrpcinterface.RPCServer, addr string, port int) {
 	if err := s.Work(addr, port); err != nil {
 		logEntry.WithError(err).Panicln("启动 RPC 服务失败")
 	}
+	logEntry.Infoln("RPC 服务完成")
 }

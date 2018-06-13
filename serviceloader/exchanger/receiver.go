@@ -46,12 +46,16 @@ func (r *receiver) HandleClientMessage(ctx context.Context, msg *steve_proto_gat
 	header := msg.GetHeader()
 	msgID := header.GetMsgId()
 	handler := r.handlerOf(msgID)
-
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "receiver.HandleClientMessage",
 		"msg_id":    msgID,
 		"client_id": msg.GetClientId(),
 	})
+	if handler == nil {
+		logEntry.Warnln("没有对应的消息处理器")
+		return &steve_proto_gaterpc.HandleResult{}, nil
+	}
+
 	responses := r.callHandler(logEntry, handler, msg.GetClientId(), header, msg.GetRequestData())
 	return r.packResults(responses)
 }

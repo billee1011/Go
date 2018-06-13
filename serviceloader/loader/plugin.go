@@ -21,6 +21,7 @@ func initService(name string, ep *structs.Exposer) service.Service {
 	if err := service.Init(ep); err != nil {
 		logEntry.Panicln(err)
 	}
+	logEntry.Infoln("初始化服务完成")
 	return service
 }
 

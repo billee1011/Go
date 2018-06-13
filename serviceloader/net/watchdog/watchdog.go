@@ -40,6 +40,11 @@ type clientCallbackImpl struct {
 }
 
 func (cc *clientCallbackImpl) onRecvPkg(header *steve_proto_base.Header, body []byte) {
+	// logrus.WithFields(logrus.Fields{
+	// 	"func_name": "clientCallbackImpl.onRecvPkg",
+	// 	"msg_id":    header.GetMsgId(),
+	// 	"client_id": cc.clientID,
+	// }).Debugln("收到客户端消息")
 	if cc.dog.msgObserver != nil {
 		cc.dog.msgObserver.OnRecv(cc.clientID, header, body)
 	}
@@ -144,6 +149,11 @@ func (dog *watchDogImpl) pushClientMessage(clientID uint64, header *steve_proto_
 }
 
 func (dog *watchDogImpl) BroadPackage(clientIDs []uint64, header *steve_proto_base.Header, body []byte) error {
+	// logrus.WithFields(logrus.Fields{
+	// 	"func_name":  "watchDogImpl.BroadPackage",
+	// 	"client_ids": clientIDs,
+	// 	"msg_id":     header.GetMsgId(),
+	// }).Debugln("watchdog 广播消息")
 	for _, clientID := range clientIDs {
 		dog.pushClientMessage(clientID, header, body)
 	}

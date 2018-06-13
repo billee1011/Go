@@ -7,15 +7,15 @@ rpc_addr: 127.0.0.1
 rpc_port: 36100
 rpc_server_name: room
 
-lis_client_addr: 127.0.0.1
-lis_client_port: 36001
+# lis_client_addr: 127.0.0.1
+# lis_client_port: 36001
 
 peipai_addr: 127.0.0.1:36102
 
 redis_addr: 127.0.0.1:6379 
 redis_passwd: 
 
-independent: true 
+independent: false 
 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 

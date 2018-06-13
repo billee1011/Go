@@ -3,7 +3,9 @@ package core
 import (
 	"fmt"
 	"steve/peipai"
+	"steve/room/core/exchanger"
 	"steve/room/interfaces/global"
+	"steve/room/loader_balancer"
 	"steve/room/registers"
 	"steve/structs"
 	"steve/structs/net"
@@ -19,10 +21,18 @@ import (
 	_ "steve/room/settle"
 )
 
-type roomCore struct {
-	e         *structs.Exposer
-	exchanger exchangerImpl
+var flags struct {
+	useGateway bool
+}
 
+func parseFlags() {
+	flags.useGateway = !viper.GetBool("independent")
+
+	logrus.WithField("flag", flags).Infoln("解析 flags ")
+}
+
+type roomCore struct {
+	e   *structs.Exposer
 	dog net.WatchDog
 }
 
@@ -33,21 +43,26 @@ func NewService() service.Service {
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	logrus.Info("room init")
+	parseFlags()
 	c.e = e
-	e.Exchanger = &c.exchanger
-	structs.SetGlobalExposer(c.e)
-	global.SetMessageSender(&c.exchanger)
-
-	registers.RegisterHandlers(&c.exchanger)
+	if !flags.useGateway {
+		e.Exchanger = exchanger.CreateLocalExchanger(&connectObserver{})
+	}
+	global.SetMessageSender(e.Exchanger)
+	registers.RegisterHandlers(e.Exchanger)
+	registerLbReporter(e)
 	return nil
 }
 
 func (c *roomCore) Start() error {
 	go startPeipai()
-	return c.startWatchDog()
+	if !flags.useGateway {
+		return c.startLocalExchanger()
+	}
+	return nil
 }
 
-func (c *roomCore) startWatchDog() error {
+func (c *roomCore) startLocalExchanger() error {
 	listenIP := viper.GetString(ListenClientAddr)
 	listenPort := viper.GetInt(ListenClientPort)
 
@@ -55,23 +70,10 @@ func (c *roomCore) startWatchDog() error {
 		"listen_ip":   listenIP,
 		"listen_port": listenPort,
 	})
-
-	mo := &messageObserver{
-		core: c,
-	}
-	co := &connectObserver{}
-
-	c.dog = c.e.WatchDogFactory.NewWatchDog(nil, mo, co)
-	c.exchanger.watchDog = c.dog
-
-	if c.dog == nil {
-		logEntry.Error("创建 watchdog 失败")
-		return fmt.Errorf("创建 watchdog 失败")
-	}
 	logEntry.Info("准备监听")
 
 	addr := fmt.Sprintf("%s:%d", listenIP, listenPort)
-	return c.dog.Start(addr, net.TCP)
+	return exchanger.StartLocalExchanger(c.e.Exchanger, addr, net.TCP)
 }
 
 func startPeipai() error {
@@ -90,4 +92,10 @@ func startPeipai() error {
 	}
 	logEntry.Info("未配置配牌")
 	return nil
+}
+
+func registerLbReporter(exposer *structs.Exposer) {
+	if err := lb.RegisterLBReporter(exposer.RPCServer); err != nil {
+		logrus.WithError(err).Panicln("注册负载上报服务失败")
+	}
 }

@@ -5,19 +5,18 @@ import (
 	"net"
 	"reflect"
 
+	"github.com/Sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
 func NewRPCServer(opts ...grpc.ServerOption) *RPCServerImpl {
 	return &RPCServerImpl{
-		svr:       grpc.NewServer(opts...),
-		registers: []interface{}{},
+		svr: grpc.NewServer(opts...),
 	}
 }
 
 type RPCServerImpl struct {
-	svr       *grpc.Server
-	registers []interface{} // registers
+	svr *grpc.Server
 }
 
 func isValidRegister(f interface{}, service interface{}) error {
@@ -42,17 +41,18 @@ func (rsi *RPCServerImpl) RegisterService(f interface{}, service interface{}) er
 	if err := isValidRegister(f, service); err != nil {
 		return err
 	}
-	rsi.registers = append(rsi.registers, func() {
-		vf := reflect.ValueOf(f)
-		vf.Call([]reflect.Value{reflect.ValueOf(rsi.svr), reflect.ValueOf(service)})
+	logEntry := logrus.WithField("func_name", "RPCServerImpl.RegisterService.register")
+	logEntry.WithFields(logrus.Fields{
+		"register_func": reflect.TypeOf(f),
+		"service":       reflect.TypeOf(service),
+	}).Infoln("注册服务")
+	reflect.ValueOf(f).Call([]reflect.Value{
+		reflect.ValueOf(rsi.svr), reflect.ValueOf(service),
 	})
 	return nil
 }
 
 func (rsi *RPCServerImpl) startServer(lis net.Listener) error {
-	for _, register := range rsi.registers {
-		reflect.ValueOf(register).Call([]reflect.Value{})
-	}
 	return rsi.svr.Serve(lis)
 }
 
@@ -65,9 +65,6 @@ func (rsi *RPCServerImpl) stopServer(graceful bool) {
 }
 
 func (rsi *RPCServerImpl) Work(addr string, port int) error {
-	if 0 == len(rsi.registers) {
-		return nil
-	}
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", addr, port))
 	if err != nil {
 		return err
