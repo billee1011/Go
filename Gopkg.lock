@@ -13,7 +13,8 @@
     "balancer",
     "discovery/consul",
     "grpclb_backend_v1",
-    "grpclb_balancer_v1"
+    "grpclb_balancer_v1",
+    "load"
   ]
   revision = "8ee3dbe8dee53600a5f95f474ddc27c2ed937a72"
   version = "v0.4.3"
@@ -68,6 +69,12 @@
   ]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
   name = "github.com/hashicorp/consul"
@@ -132,6 +139,12 @@
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+
+[[projects]]
+  name = "github.com/nsqio/go-nsq"
+  packages = ["."]
+  revision = "eee57a3ac4174c55924125bb15eeeda8cffb6e6f"
+  version = "v1.0.7"
 
 [[projects]]
   name = "github.com/pelletier/go-toml"
@@ -285,6 +298,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6d7bd63c0eadca29ec4dedcff179e7bb658a5b900041361c117282aa4eac4652"
+  inputs-digest = "edebae7506f066d2b342f613f955fbc2e7e377c5031ee1b7e1c123ebc395588d"
   solver-name = "gps-cdcl"
   solver-version = 1
