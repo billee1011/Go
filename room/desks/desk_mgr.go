@@ -119,7 +119,7 @@ func (dm *deskMgr) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterp
 // GetRunDeskByPlayerID
 func (dm *deskMgr) GetRunDeskByPlayerID(playerID uint64) (desk interfaces.Desk, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "deskMgr.RoomDeskQuitReq",
+		"func_name": "deskMgr.GetRunDeskByPlayerID",
 		"player_id": playerID,
 	})
 

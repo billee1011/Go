@@ -10,7 +10,7 @@ import (
 )
 
 // ApplyJoinDesk 申请加入牌桌
-func ApplyJoinDesk(player interfaces.ClientPlayer) error {
+func ApplyJoinDesk(player interfaces.ClientPlayer) (*room.RoomJoinDeskRsp, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "ApplyJoinDesk",
 		"user_id":   player.GetID(),
@@ -22,7 +22,7 @@ func ApplyJoinDesk(player interfaces.ClientPlayer) error {
 	err := client.Request(createMsgHead(msgid.MsgID_ROOM_JOIN_DESK_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), &rsp)
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)
-		return errRequestFailed
+		return nil, errRequestFailed
 	}
-	return nil
+	return &rsp, nil
 }
