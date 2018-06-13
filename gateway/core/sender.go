@@ -31,6 +31,7 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 
 	err := mss.core.dog.BroadPackage(req.GetClientId(), &header, req.GetData())
 	if err != nil {
+		logEntry.WithError(err).Warningln("广播消息失败")
 		result.Ok = false
 	} else {
 		result.Ok = true
