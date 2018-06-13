@@ -123,5 +123,9 @@ func (s *sender) aquireClientGate(clientID uint64) *grpc.ClientConn {
 	if cc, err := g.RPCClient.GetConnectByServerName(common.GateServiceName); err == nil {
 		return cc
 	}
+	// logrus.WithFields(logrus.Fields{
+	// 	"func_name": "sender.aquireClientGate",
+	// 	"client_id": clientID,
+	// }).Debugln("客户端不在线")
 	return nil
 }

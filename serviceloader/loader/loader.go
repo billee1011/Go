@@ -3,6 +3,7 @@ package loader
 import (
 	"runtime/debug"
 	"steve/serviceloader/net/watchdog"
+	"steve/serviceloader/pubsub"
 	"steve/serviceloader/redisfactory"
 	"steve/serviceloader/structs/configuration"
 	"steve/structs"
@@ -37,6 +38,8 @@ func createExposer(opt option) *structs.Exposer {
 	exposer.WatchDogFactory = watchdog.NewFactory()
 	exposer.Exchanger = createExchanger(exposer.RPCServer)
 	exposer.RedisFactory = redisfactory.NewFactory(opt.redisAddr, opt.redisPasswd)
+	exposer.Publisher = pubsub.CreatePublisher()
+	exposer.Subscriber = pubsub.CreateSubscriber()
 	structs.SetGlobalExposer(exposer)
 	return exposer
 }
@@ -52,8 +55,8 @@ func run(service service.Service, exposer *structs.Exposer, opt option) {
 	}()
 
 	go func() {
-		defer recoverPanic()
 		defer wg.Done()
+		defer recoverPanic()
 		runService(service)
 	}()
 	wg.Wait()

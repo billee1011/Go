@@ -41,6 +41,7 @@ func registerServer(rp *registerParams) {
 	if err := registerToConsul(logEntry, rp.serverName, rp.addr, rp.port, serverID); err != nil {
 		logEntry.Panicln(err)
 	}
+	logEntry.Infoln("注册服务到 consul 完成")
 }
 
 // registerToConsul 向 consul 注册服务

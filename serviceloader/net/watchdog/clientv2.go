@@ -56,10 +56,13 @@ func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err 
 	defer func() {
 		if x := recover(); x != nil {
 			err = fmt.Errorf("client closed")
-			// debug.PrintStack()
+			fmt.Println(x)
+			debug.PrintStack()
 		}
 	}()
-
+	if body == nil {
+		body = []byte{}
+	}
 	if body == nil || head == nil {
 		panic("发送数据为空")
 	}
@@ -69,6 +72,10 @@ func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err 
 		header: proto.Clone(head).(*steve_proto_base.Header),
 		body:   body,
 	}
+	// logrus.WithFields(logrus.Fields{
+	// 	"func_name": "clientV2.pushMessage",
+	// 	"msg_id":    head.GetMsgId(),
+	// }).Infoln("clientV2 推送消息")
 	return
 }
 

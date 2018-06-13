@@ -1,10 +1,11 @@
-package core
+package exchanger
 
 import (
 	"errors"
 	"fmt"
 	"reflect"
 	msgid "steve/client_pb/msgId"
+	"steve/structs"
 	iexchanger "steve/structs/exchanger"
 	"steve/structs/net"
 	"steve/structs/proto/base"
@@ -124,4 +125,22 @@ func (e *exchangerImpl) getHandler(msgID uint32) *wrapHandler {
 	}
 	h := v.(wrapHandler)
 	return &h
+}
+
+// CreateLocalExchanger 创建本地 exchanger， 不通过网关
+func CreateLocalExchanger(connObsv net.ConnectObserver) iexchanger.Exchanger {
+	mo := &messageObserver{}
+	watchDog := structs.GetGlobalExposer().WatchDogFactory.NewWatchDog(nil, mo, connObsv)
+	mo.watchDog = watchDog
+	exchanger := &exchangerImpl{
+		watchDog: watchDog,
+	}
+	mo.exchanger = exchanger
+	return exchanger
+}
+
+// StartLocalExchanger 启动本地 exchanger
+func StartLocalExchanger(exchanger iexchanger.Exchanger, addr string, serverType net.ServerType) error {
+	localExchanger := exchanger.(*exchangerImpl)
+	return localExchanger.watchDog.Start(addr, serverType)
 }

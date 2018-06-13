@@ -299,6 +299,7 @@ func (c *client) recvLoop() {
 			}).Errorln("消息体大小错误")
 			break
 		}
+		logrus.WithField("msg_id", header.GetMsgId()).Infoln("收到消息")
 		c.checkRequests(header, data[1+headsz:])
 		c.checkExpects(header, data[1+headsz:])
 	}
