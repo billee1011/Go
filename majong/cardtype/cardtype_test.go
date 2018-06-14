@@ -1,6 +1,8 @@
 package cardtype
 
 import (
+	"steve/gutils"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -10,7 +12,7 @@ import (
 )
 
 var playerParams = interfaces.CardCalcParams{
-	GameID: 0,
+	GameID: gutils.SCXLGameID,
 }
 
 func init() {
@@ -23,7 +25,7 @@ func init() {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   playerParams.GameID,
+		GameID:   gutils.SCXLGameID,
 	}
 }
 
@@ -45,13 +47,13 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_PingHu}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(1))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -74,13 +76,13 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingYiSe}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -103,14 +105,14 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QiDui}
 
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -133,13 +135,13 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_LongQiDui}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(8))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -162,14 +164,14 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingQiDui}
 
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(16))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -192,13 +194,13 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingLongQiDui}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(32))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -221,13 +223,13 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_PengPengHu}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(2))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -250,14 +252,14 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingPeng}
 
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(8))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -280,13 +282,13 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_JingGouDiao}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(4))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -309,13 +311,13 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingJingGouDiao}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(16))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -338,13 +340,13 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_ShiBaLuoHan}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(64))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -367,13 +369,13 @@ func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	cardTypes, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingShiBaLuoHan}
 	assert.Equal(t, cardTypes, testFanTypes)
 	assert.Equal(t, genCount, uint32(0))
-	valuer, gen := new(ScxlCardTypeCalculator).CardTypeValue(cardTypes, genCount)
+	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
 	assert.Equal(t, valuer, uint32(256))
 	assert.Equal(t, gen, uint32(0))
 }
@@ -396,8 +398,8 @@ func TestCardGenSum(t *testing.T) {
 		PengCard: pengCards,
 		GangCard: gangCards,
 		HuCard:   HuCard,
-		GameID:   0,
+		GameID:   gutils.SCXLGameID,
 	}
-	_, genCount := new(ScxlCardTypeCalculator).Calculate(playerParams)
+	_, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	assert.Equal(t, genCount, uint32(4))
 }
