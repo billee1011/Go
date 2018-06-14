@@ -3,7 +3,7 @@ package scxlai
 import (
 	"fmt"
 	"steve/gutils"
-	"steve/majong/states"
+	// "steve/majong/states"
 	"steve/majong/utils"
 	"steve/room/interfaces"
 	"steve/server_pb/majong"
@@ -50,8 +50,8 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 	}
 	canhu := utils.CheckHu(player.GetHandCards(), uint32(*bugangCard))
 	entry := logrus.WithFields(logrus.Fields{
-		"playerID":    player.GetPalyerId(),
-		"handCards":   states.FmtMajongpbCards(player.GetHandCards()),
+		"playerID": player.GetPalyerId(),
+		// "handCards":   states.FmtMajongpbCards(player.GetHandCards()),
 		"bugangCards": *bugangCard,
 		"canhu":       canhu,
 	})
