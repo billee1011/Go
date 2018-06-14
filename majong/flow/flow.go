@@ -2,14 +2,17 @@ package flow
 
 import (
 	"errors"
+	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/states"
 	"steve/majong/transition"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
 
 	"github.com/Sirupsen/logrus"
+
+	_ "steve/majong/cardtype"       // init cardtype
+	_ "steve/majong/states/factory" // init state facotry
 )
 
 type flow struct {
@@ -27,7 +30,7 @@ func NewFlow(mjContext majongpb.MajongContext) interfaces.MajongFlow {
 
 	return &flow{
 		context:             mjContext,
-		stateFactory:        states.NewFactory(),
+		stateFactory:        global.GetMajongStateFactory(),
 		transitionValidator: transitionFactory.CreateTransitionValidator(int(mjContext.GetGameId())),
 		msgs:                make([]majongpb.ReplyClientMessage, 0),
 	}

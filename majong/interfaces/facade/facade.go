@@ -23,6 +23,7 @@ func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgid.MsgID, msg proto.M
 
 // CalculateCardValue 计算牌型倍数,根数
 func CalculateCardValue(ctc interfaces.CardTypeCalculator, cardParams interfaces.CardCalcParams) (cardValue, genCount uint32) {
-	cardValue, genCount = ctc.CardTypeValue(ctc.Calculate(cardParams))
+	types, gen := ctc.Calculate(cardParams)
+	cardValue, genCount = ctc.CardTypeValue(cardParams.GameID, types, gen)
 	return
 }

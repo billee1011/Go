@@ -8,7 +8,7 @@ import (
 type CardTypeCalculator interface {
 	Calculate(params CardCalcParams) (cardTypes []majongpb.CardType, gengCount uint32)
 	// CardTypeValue 牌型的倍数,根数
-	CardTypeValue(cardTypes []majongpb.CardType, gengCount uint32) (uint32, uint32)
+	CardTypeValue(gameID int, cardTypes []majongpb.CardType, gengCount uint32) (uint32, uint32)
 }
 
 // CardCalcParams 计算牌型的参数
