@@ -12,6 +12,7 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	_ "steve/majong/cardtype"       // init cardtype
+	_ "steve/majong/settle"         // init settles
 	_ "steve/majong/states/factory" // init state facotry
 )
 
@@ -128,11 +129,6 @@ func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	// return f.processAutoEvent(entry)
 }
 
-func (f *flow) GetSettler(settlerType interfaces.SettlerType) interfaces.Settler {
-	logrus.Warn("TODO")
-	return nil
-}
-
 func (f *flow) PushMessages(playerIDs []uint64, msgs ...interfaces.ToClientMessage) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "flow.PushMessages",
@@ -160,14 +156,4 @@ func (f *flow) GetMessages() []majongpb.ReplyClientMessage {
 
 func (f *flow) GetAutoEvent() *majongpb.AutoEvent {
 	return f.autoEvent
-}
-
-// AppendTimeCheckInfo 添加时间检测
-func (f *flow) AppendTimeCheckInfo(timeCheckInfo majongpb.TimeCheckInfo) {
-	f.timeCheckInfos = append(f.timeCheckInfos, timeCheckInfo)
-}
-
-// GetTimeCheckInfos 获取时间检测
-func (f *flow) GetTimeCheckInfos() []majongpb.TimeCheckInfo {
-	return f.timeCheckInfos
 }

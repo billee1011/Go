@@ -6,7 +6,6 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
-	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -163,8 +162,7 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 		params.HuType = huType
 		params.GangCard = *GangCards[len(GangCards)-1]
 	}
-	huSettle := new(settle.HuSettle)
-	settleInfos := huSettle.Settle(params)
+	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
 	if s.isAfterGang(mjContext) {
 		lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
 		if lastSettleInfo.SettleType == majongpb.SettleType_settle_angang || lastSettleInfo.SettleType == majongpb.SettleType_settle_minggang || lastSettleInfo.SettleType == majongpb.SettleType_settle_bugang {

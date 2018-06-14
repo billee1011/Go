@@ -1,4 +1,4 @@
-package settle
+package scxl
 
 import (
 	"steve/majong/interfaces"

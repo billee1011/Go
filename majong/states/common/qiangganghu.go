@@ -6,7 +6,6 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
-	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -159,8 +158,7 @@ func (s *QiangganghuState) doQiangGangHuSettle(flow interfaces.MajongFlow) {
 		GenCount:   genCount,
 		SettleID:   mjContext.CurrentSettleId,
 	}
-	huSettle := new(settle.HuSettle)
-	settleInfos := huSettle.Settle(params)
+	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
 	maxSID := uint64(0)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
