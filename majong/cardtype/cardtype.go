@@ -1,8 +1,8 @@
 package cardtype
 
 import (
+	"steve/majong/cardtype/fan"
 	"steve/majong/interfaces"
-	"steve/majong/settle/fan"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -42,7 +42,7 @@ func (ctc *scxlCardTypeCalculator) CardTypeValue(gameID int, cardTypes []majongp
 	// 叠乘番型
 	for _, cardType := range cardTypes {
 		fanCardType := majongpb.CardType(cardType)
-		if multiple, isExist := fan.FanValue[fanCardType]; isExist {
+		if multiple, isExist := fan.ScxlFanValue[fanCardType]; isExist {
 			total = total * multiple
 		}
 	}
