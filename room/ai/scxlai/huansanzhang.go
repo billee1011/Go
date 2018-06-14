@@ -34,6 +34,7 @@ func (h *huansanzhangStateAI) GenerateAIEvent(params interfaces.AIEventGenerateP
 func (h *huansanzhangStateAI) getHszCards(player *majong.Player) (hszCards []*majong.Card) {
 	if len(player.HuansanzhangCards) == 3 {
 		hszCards = player.HuansanzhangCards
+		return hszCards
 	}
 	// 随即获取最小花色的三张牌
 	cards := player.GetHandCards()
