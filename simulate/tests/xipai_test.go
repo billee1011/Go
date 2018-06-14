@@ -27,7 +27,8 @@ func Test_Xipai(t *testing.T) {
 		assert.Nil(t, err)
 		xipaiExpectors[i] = expector
 
-		assert.Nil(t, utils.ApplyJoinDesk(player))
+		_, err = utils.ApplyJoinDesk(player)
+		assert.Nil(t, err)
 	}
 
 	for _, e := range xipaiExpectors {

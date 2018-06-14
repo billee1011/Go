@@ -13,6 +13,7 @@ type clientPlayer struct {
 	playerID uint64
 	coin     uint64
 	client   interfaces.Client
+	usrName  string
 }
 
 func (p *clientPlayer) GetID() uint64 {
@@ -24,6 +25,10 @@ func (p *clientPlayer) GetCoin() uint64 {
 
 func (p *clientPlayer) GetClient() interfaces.Client {
 	return p.client
+}
+
+func (p *clientPlayer) GetUsrName() string {
+	return p.usrName
 }
 
 // LoginUser 登录用户
@@ -51,6 +56,7 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 		playerID: rsp.GetPlayerId(),
 		coin:     rsp.GetCoin(),
 		client:   client,
+		usrName:  userName,
 	}, nil
 }
 
@@ -77,4 +83,19 @@ func LoginVisitor(client interfaces.Client, RoomVisitorLoginReq *room.RoomVisito
 		coin:     rsp.GetCoin(),
 		client:   client,
 	}, nil
+}
+
+func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPlayer, deskData *DeskData) {
+	oldPlayer, exist := deskData.Players[player.GetID()]
+	if !exist {
+		return
+	}
+
+	newPlayer := DeskPlayer{
+		Player:    player,
+		Seat:      oldPlayer.Seat,
+		Expectors: createPlayerExpectors(player.GetClient()),
+	}
+	deskData.Players[player.GetID()] = newPlayer
+	return
 }
