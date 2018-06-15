@@ -3,6 +3,7 @@ package tests
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/config"
 	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -19,7 +20,7 @@ func TestApplyJoinDesk(t *testing.T) {
 
 	for i := 0; i < 4; i++ {
 		// 创建客户端连接
-		client := connect.NewTestClient(ServerAddr, ClientVersion)
+		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
 		assert.NotNil(t, client)
 
 		// 登录用户

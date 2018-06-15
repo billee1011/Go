@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/config"
 	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -32,7 +33,7 @@ type DeskData struct {
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params structs.StartGameParams) (*DeskData, error) {
-	players, err := createAndLoginUsers(params.ServerAddr, params.ClientVer)
+	players, err := createAndLoginUsers(config.ServerAddr, params.ClientVer)
 	if err != nil {
 		return nil, err
 	}
