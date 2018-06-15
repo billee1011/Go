@@ -456,17 +456,18 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		return
 	}
 	if eqi.quit {
+		msgs = getDeskQuitRspMsg(eqi.playerID)
+		d.reply(msgs)
 		deskPlayer.quitDesk()
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
-		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
+		msgs = d.recoverGameForPlayer(eqi.playerID)
+		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
 	}
-	// 发送消息给玩家
-	d.reply(msgs)
 }
 
 // callEventHandler 调用事件处理器
@@ -643,10 +644,11 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
 		OperatePid:  getOperatePlayerID(mjContext),
 		DoorCard:    getDoorCard(mjContext),
-		ZixunInfo:   getZixunInfo(playerID, mjContext),
-		WenxunInfo:  getWenxunInfo(playerID, mjContext),
-		QghInfo:     getQghInfo(playerID, mjContext),
 	}
+	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
+	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
+	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = getQghInfo(playerID, mjContext)
+
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
@@ -661,4 +663,26 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 			MsgId:   int32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
 			Msg:     rsp,
 		}}
+}
+
+func getDeskQuitRspMsg(playerID uint64) []server_pb.ReplyClientMessage {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "handleEnterQuit",
+		"player_id": playerID,
+	})
+	msg := room.RoomDeskQuitRsp{
+		ErrCode: room.RoomError_SUCCESS.Enum(),
+	}
+	body, err := proto.Marshal(&msg)
+	if err != nil {
+		logEntry.WithError(err).Errorln("序列化失败")
+		return nil
+	}
+	return []server_pb.ReplyClientMessage{
+		server_pb.ReplyClientMessage{
+			Players: []uint64{playerID},
+			MsgId:   int32(msgid.MsgID_ROOM_DESK_QUIT_RSP),
+			Msg:     body,
+		},
+	}
 }
