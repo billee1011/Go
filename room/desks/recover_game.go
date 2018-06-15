@@ -21,14 +21,22 @@ func getOperatePlayerID(mjContext *server_pb.MajongContext) *uint64 {
 	state := mjContext.GetCurState()
 	var playerID uint64
 	switch state {
-	case 1: // 自询状态 刚开局是庄家，其他情况是最近摸牌者
-		playerID = mjContext.GetLastMopaiPlayer()
-	case 2: // 他询状态， 出牌者
+	case server_pb.StateID_state_chupai, server_pb.StateID_state_hu, server_pb.StateID_state_chupaiwenxun:
 		playerID = mjContext.GetLastChupaiPlayer()
-	case 3: // 等待抢杠胡 杠牌玩家
+	case server_pb.StateID_state_angang, server_pb.StateID_state_gang, server_pb.StateID_state_waitqiangganghu:
 		playerID = mjContext.GetLastGangPlayer()
-	default:
-		return nil
+	case server_pb.StateID_state_zimo, server_pb.StateID_state_zixun, server_pb.StateID_state_bugang:
+		playerID = mjContext.GetLastMopaiPlayer()
+	case server_pb.StateID_state_peng:
+		playerID = mjContext.GetLastPengPlayer()
+	case server_pb.StateID_state_mopai:
+		playerID = mjContext.GetMopaiPlayer()
+	case server_pb.StateID_state_qiangganghu:
+		if players := mjContext.GetLastHuPlayers(); len(players) > 0 {
+			playerID = players[0]
+		}
+	default: // 前端要求必须有一个有效值
+		playerID = mjContext.GetLastMopaiPlayer()
 	}
 	return &playerID
 }

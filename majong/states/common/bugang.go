@@ -12,9 +12,9 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
-	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -140,8 +140,11 @@ func (s *BuGangState) doBuGangSettle(mjContext *majongpb.MajongContext, player *
 		SettleID:   mjContext.CurrentSettleId,
 	}
 
-	buGangSettle := new(settle.GangSettle)
-	settleInfo := buGangSettle.Settle(param)
-	mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-	mjContext.CurrentSettleId++
+	f := global.GetGameSettlerFactory()
+	gameID := int(mjContext.GetGameId())
+	settleInfo := facade.SettleGang(f, gameID, param)
+	if settleInfo != nil {
+		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
+		mjContext.CurrentSettleId++
+	}
 }
