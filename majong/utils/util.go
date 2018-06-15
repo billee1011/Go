@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/peipai"
 	majongpb "steve/server_pb/majong"
@@ -29,16 +30,6 @@ func GetNextPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 		}
 	}
 	return nil
-}
-
-//CheckHasDingQueCard 检查牌里面是否含有定缺的牌
-func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool {
-	for _, card := range cards {
-		if card.Color == color {
-			return true
-		}
-	}
-	return false
 }
 
 //CardsToUtilCards 用来辅助查ting胡的工具,将Card转为适合查胡的工具
@@ -381,7 +372,7 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 	var max int64
 	handCardSum := len(player.HandCards)
 	//只差1张牌就能胡，并且玩家手牌不存在花牌
-	if handCardSum%3 == 1 && !CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
+	if handCardSum%3 == 1 && !gutils.CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
 		tingCards, err := GetTingCards(player.HandCards, laizi)
 		if err != nil {
 			return false, 0, err

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -134,7 +135,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	}
 	logrus.WithFields(logrus.Fields{
 		"reqCard":  card,
-		"hanCards": FmtMajongpbCards(activePlayer.GetHandCards()),
+		"hanCards": gutils.FmtMajongpbCards(activePlayer.GetHandCards()),
 	}).Infof("玩家%v出牌请求", activePlayer.GetPalyerId())
 	for _, c := range activePlayer.GetHandCards() {
 		if utils.CardEqual(c, card) {
@@ -242,7 +243,7 @@ func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
 	mjContext := flow.GetMajongContext()
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
 	handCard := player.GetHandCards()
-	if utils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
+	if gutils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
 		return false
 	}
 	l := len(handCard)
@@ -272,7 +273,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	for _, player := range ctx.GetPlayers() {
 		player.PossibleActions = []majongpb.Action{}
 		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
-			!utils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
+			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
 			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
 			if flag {
 				hasQGanghu = true
@@ -351,11 +352,11 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	logrus.WithFields(logrus.Fields{
 		"ntf":       zixunNtf.String(),
 		"player_id": playerID,
-		"pengCards": FmtPengCards(player.GetPengCards()),
-		"gangCards": FmtGangCards(player.GetGangCards()),
-		"handCards": FmtMajongpbCards(player.GetHandCards()),
-		"wallCards": FmtMajongpbCards(context.GetWallCards()),
-		"huCards":   FmtHuCards(player.GetHuCards()),
+		"pengCards": gutils.FmtPengCards(player.GetPengCards()),
+		"gangCards": gutils.FmtGangCards(player.GetGangCards()),
+		"handCards": gutils.FmtMajongpbCards(player.GetHandCards()),
+		"wallCards": gutils.FmtMajongpbCards(context.GetWallCards()),
+		"huCards":   gutils.FmtHuCards(player.GetHuCards()),
 	}).Infoln("自询通知")
 }
 
@@ -493,7 +494,7 @@ func (s *ZiXunState) checkZiMo(flow interfaces.MajongFlow) bool {
 	activePlayerID := s.getZixunPlayer(flow)
 	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
 	handCard := activePlayer.GetHandCards()
-	if utils.CheckHasDingQueCard(handCard, activePlayer.GetDingqueColor()) {
+	if gutils.CheckHasDingQueCard(handCard, activePlayer.GetDingqueColor()) {
 		return false
 	}
 	l := len(handCard)
@@ -536,8 +537,8 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 	}
 	logrus.WithFields(logrus.Fields{
 		"func_name": "ZiXunState.checkPlayerAngang",
-		"hand_card": FmtMajongpbCards(handCard),
-		"hu_cards":  FmtHuCards(huCards),
+		"hand_card": gutils.FmtMajongpbCards(handCard),
+		"hu_cards":  gutils.FmtHuCards(huCards),
 		"card_num":  cardNum,
 		"result":    result,
 	}).Debugln("查暗杠")

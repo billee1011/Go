@@ -3,8 +3,7 @@ package scxlai
 import (
 	"fmt"
 	"steve/gutils"
-	// "steve/majong/states"
-	"steve/majong/utils"
+
 	"steve/room/interfaces"
 	"steve/server_pb/majong"
 	"time"
@@ -36,7 +35,6 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 	var aiEvent interfaces.AIEvent
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	bugangCard, _ := utils.CardToInt(*mjContext.GangCard)
 	if player.GetPalyerId() == mjContext.GetLastGangPlayer() {
 		return result, fmt.Errorf("玩家%v是补杠的玩家,不允许抢杠", player.GetPalyerId())
 
@@ -45,15 +43,21 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 		return result, fmt.Errorf("玩家%v手牌不符合查胡要求", player.GetPalyerId())
 	}
 
-	if utils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
+	if gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
 		return result, fmt.Errorf("")
 	}
-	canhu := utils.CheckHu(player.GetHandCards(), uint32(*bugangCard))
+	canhu := false
+	for _, act := range player.GetPossibleActions() {
+		if act == majong.Action_action_hu {
+			canhu = true
+			break
+		}
+	}
 	entry := logrus.WithFields(logrus.Fields{
-		"playerID": player.GetPalyerId(),
-		// "handCards":   states.FmtMajongpbCards(player.GetHandCards()),
-		"bugangCards": *bugangCard,
-		"canhu":       canhu,
+		"playerID":   player.GetPalyerId(),
+		"handCards":  gutils.FmtMajongpbCards(player.GetHandCards()),
+		"bugangCard": gutils.FmtMajongpbCards([]*majong.Card{mjContext.GetGangCard()}),
+		"canhu":      canhu,
 	})
 	if canhu {
 		if len(player.GetHuCards()) > 0 {
