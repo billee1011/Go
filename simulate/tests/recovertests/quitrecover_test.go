@@ -20,7 +20,7 @@ func Test_QuitRecover(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.WallCards = []uint32{31, 31, 31, 31, 32, 32, 32, 32}
 	quitSeat := params.BankerSeat
-	mopaiSeat := (quitSeat + 1) % 4
+	mopaiSeat := (quitSeat + 1) % len(params.Cards)
 	// step 1
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

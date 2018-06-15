@@ -23,7 +23,7 @@ func Test_DisconnectRecover(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.WallCards = []uint32{31, 31, 31, 31, 32, 32, 32, 32}
 	disconnectSeat := params.BankerSeat
-	mopaiSeat := (disconnectSeat + 1) % 4
+	mopaiSeat := (disconnectSeat + 1) % len(params.Cards)
 	// step 1
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
