@@ -3,7 +3,7 @@ package settle
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/majong/utils"
+	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
@@ -164,7 +164,7 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 			realCost[losePid] = cost
 			realCost[winPid[0]] = realCost[winPid[0]] - realCost[losePid]
 		}
-	} else {
+	} else if len(losePids) == 1 {
 		losePid := losePids[0]
 		losePlayer := s.getDeskPlayer(deskPlayer, losePid)
 		if s.abs(loseScore) < int64(losePlayer.GetCoin()) {
@@ -340,7 +340,7 @@ func (s *scxlSettle) createBillPInfo(currentPid uint64, cardValue int32, context
 			CardValue: proto.Int32(cardValue),
 		}
 		if playerID == currentPid {
-			billPlayerInfo.CardsGroup = utils.GetCardsGroup(player)
+			billPlayerInfo.CardsGroup = gutils.GetCardsGroup(player)
 		}
 		billPlayerInfos = append(billPlayerInfos, billPlayerInfo)
 	}

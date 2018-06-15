@@ -83,6 +83,15 @@ func ServerCards2Numbers(cards []*majongpb.Card) []uint32 {
 	return result
 }
 
+// ServerCards2Int32 服务器的 Card 数组转 int 数组
+func ServerCards2Int32(cards []*majongpb.Card) []int32 {
+	result := []int32{}
+	for _, c := range cards {
+		result = append(result, int32(ServerCard2Number(c)))
+	}
+	return result
+}
+
 // CardsToRoomCards 将Card转换为room package中的Card
 func CardsToRoomCards(cards []*majongpb.Card) []*room.Card {
 	var rCards []*room.Card
@@ -294,4 +303,52 @@ func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool 
 		}
 	}
 	return false
+}
+
+// GetCardsGroup 获取玩家牌组信息
+func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
+	cardsGroupList := make([]*room.CardsGroup, 0)
+	// 碰牌
+	for _, pengCard := range player.PengCards {
+		card := ServerCard2Number((*pengCard).Card)
+		cardsGroup := &room.CardsGroup{
+			Pid:   proto.Uint64(player.PalyerId),
+			Type:  room.CardsGroupType_CGT_PENG.Enum(),
+			Cards: []uint32{uint32(card)},
+		}
+		cardsGroupList = append(cardsGroupList, cardsGroup)
+	}
+	// 杠牌
+	var groupType *room.CardsGroupType
+	for _, gangCard := range player.GangCards {
+		if gangCard.Type == majongpb.GangType_gang_angang {
+			groupType = room.CardsGroupType_CGT_ANGANG.Enum()
+		}
+		if gangCard.Type == majongpb.GangType_gang_minggang {
+			groupType = room.CardsGroupType_CGT_MINGGANG.Enum()
+		}
+		if gangCard.Type == majongpb.GangType_gang_bugang {
+			groupType = room.CardsGroupType_CGT_BUGANG.Enum()
+		}
+		card := ServerCard2Number((*gangCard).Card)
+		cardsGroup := &room.CardsGroup{
+			Pid:   proto.Uint64(player.PalyerId),
+			Type:  groupType,
+			Cards: []uint32{uint32(card)},
+		}
+		cardsGroupList = append(cardsGroupList, cardsGroup)
+	}
+	// 手牌
+	handCards := ServerCards2Numbers(player.HandCards)
+	cards := make([]uint32, 0)
+	for _, handCard := range handCards {
+		cards = append(cards, uint32(handCard))
+	}
+	cardsGroup := &room.CardsGroup{
+		Pid:   proto.Uint64(player.PalyerId),
+		Type:  room.CardsGroupType_CGT_HAND.Enum(),
+		Cards: cards,
+	}
+	cardsGroupList = append(cardsGroupList, cardsGroup)
+	return cardsGroupList
 }

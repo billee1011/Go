@@ -92,7 +92,7 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		cardsGroupList = append(cardsGroupList, cardsGroup)
 	}
 	// 手牌
-	handCards, _ := CardsToInt(player.HandCards)
+	handCards := gutils.ServerCards2Numbers(player.HandCards)
 	cards := make([]uint32, 0)
 	for _, handCard := range handCards {
 		cards = append(cards, uint32(handCard))

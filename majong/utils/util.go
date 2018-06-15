@@ -71,28 +71,6 @@ func CardToInt(card majongpb.Card) (*int32, error) {
 	return &value, nil
 }
 
-//CardsToInt 将Card转换成牌值（int32）
-func CardsToInt(cards []*majongpb.Card) ([]int32, error) {
-	var cardsInt []int32
-	var color int32
-	for _, card := range cards {
-		switch card.GetColor() {
-		case majongpb.CardColor_ColorWan:
-			color = 1
-		case majongpb.CardColor_ColorTiao:
-			color = 2
-		case majongpb.CardColor_ColorTong:
-			color = 3
-		default:
-			return nil, fmt.Errorf("cant trans card ")
-		}
-		tValue := card.Point
-		value := color*10 + tValue
-		cardsInt = append(cardsInt, value)
-	}
-	return cardsInt, nil
-}
-
 //DeleteIntCardFromLast 从int32类型的牌组中，找到对应的目标牌，并且移除
 func DeleteIntCardFromLast(cards []int32, targetCard int32) ([]int32, bool) {
 	index := -1
@@ -534,4 +512,9 @@ func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
 		return false
 	}
 	return true
+}
+
+// CardsToInt card 转换
+func CardsToInt(cards []*majongpb.Card) ([]int32, error) {
+	return gutils.ServerCards2Int32(cards), nil
 }
