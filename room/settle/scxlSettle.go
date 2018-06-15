@@ -164,7 +164,7 @@ func (s *scxlSettle) calcScore(deskPlayer []*room.RoomPlayerInfo, settleInfo *ma
 			realCost[losePid] = cost
 			realCost[winPid[0]] = realCost[winPid[0]] - realCost[losePid]
 		}
-	} else {
+	} else if len(losePids) == 1 {
 		losePid := losePids[0]
 		losePlayer := s.getDeskPlayer(deskPlayer, losePid)
 		if s.abs(loseScore) < int64(losePlayer.GetCoin()) {
