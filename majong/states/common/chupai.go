@@ -3,6 +3,7 @@ package common
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -86,7 +87,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 		"canPeng":     canPeng,
 		"canMingGang": canMingGang,
 		"canDianPao":  canDianPao,
-		"handCards":   FmtMajongpbCards(player.GetHandCards()),
+		"handCards":   gutils.FmtMajongpbCards(player.GetHandCards()),
 	}).Info("检测玩家是否有特殊操作")
 	return canDianPao || canMingGang || canPeng
 }
@@ -159,7 +160,7 @@ func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongp
 func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	cpCard := context.GetLastOutCard()
 	color := player.GetDingqueColor()
-	hasDingQueCard := utils.CheckHasDingQueCard(player.HandCards, color)
+	hasDingQueCard := gutils.CheckHasDingQueCard(player.HandCards, color)
 	if hasDingQueCard {
 		return false
 	}

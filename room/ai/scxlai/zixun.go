@@ -3,7 +3,6 @@ package scxlai
 import (
 	"fmt"
 	"steve/gutils"
-	"steve/majong/utils"
 	"steve/room/interfaces"
 	"steve/server_pb/majong"
 	"time"
@@ -57,8 +56,9 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 		}
 	case majong.ZixunType_ZXT_NORMAL:
 		{
-			canHu := utils.CheckHu(handCards, 0)
-			if len(player.GetHuCards()) > 0 && canHu && !utils.CheckHasDingQueCard(handCards, player.GetDingqueColor()) {
+			zxRecord := player.GetZixunRecord()
+			canHu := zxRecord.GetEnableZimo()
+			if len(player.GetHuCards()) > 0 && canHu && !gutils.CheckHasDingQueCard(handCards, player.GetDingqueColor()) {
 				aiEvent = h.hu(player)
 			} else {
 				if player.GetMopaiCount() == 0 {

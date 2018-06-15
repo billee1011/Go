@@ -3,6 +3,7 @@ package utils
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -42,7 +43,7 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	playerCards := player.GetHandCards()
 
 	// 不存在定缺牌
-	if CheckHasDingQueCard(playerCards, player.GetDingqueColor()) {
+	if gutils.CheckHasDingQueCard(playerCards, player.GetDingqueColor()) {
 		return
 	}
 	// wuhongwei 增加七对提示
