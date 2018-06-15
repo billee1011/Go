@@ -53,7 +53,12 @@ func RoomChatMsgReq(clientID uint64, header *steve_proto_gaterpc.Header, req roo
 		return
 	}
 	// 广播聊天通知
-	broadChatNotify(playerID, ntf)
+	err := broadChatNotify(playerID, ntf)
+	if err != nil {
+		logentry.WithFields(logrus.Fields{
+			"err": err,
+		}).Infoln("---广播聊天失败---")
+	}
 	//日志信息
 	logentry.WithFields(logrus.Fields{
 		"chatType": strChatType,
@@ -63,25 +68,18 @@ func RoomChatMsgReq(clientID uint64, header *steve_proto_gaterpc.Header, req roo
 }
 
 // 广播聊天通知
-func broadChatNotify(playerID uint64, ntf *room.RoomDeskChatNtf) {
+func broadChatNotify(playerID uint64, ntf *room.RoomDeskChatNtf) error {
 	// 获取桌面
 	desk, err := global.GetDeskMgr().GetRunDeskByPlayerID(playerID)
-	printErr("---广播聊天通知：获取当前桌面失败---", playerID, err)
-	// err = facade.BroadCastDeskMessageExcept(desk, []uint64{playerID}, true, msgid.MsgID_ROOM_CHAT_NTF, ntf)
+	if err != nil {
+		return err
+	}
 	// 聊天通知序列化
 	msgBody, err := proto.Marshal(ntf)
-	printErr("---广播聊天通知：序列化失败---", playerID, err)
+	if err != nil {
+		return err
+	}
 	// 广播聊天消息([]uint64{}为所有玩家，true为退出玩家不发送聊天消息)
 	desk.BroadcastMessage([]uint64{}, msgid.MsgID_ROOM_CHAT_NTF, msgBody, true)
-}
-
-// 打印错误日志
-func printErr(str string, playerID uint64, err error) {
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "broadChatNotify",
-			"playerID":  playerID,
-			"err":       err,
-		}).Info(str)
-	}
+	return nil
 }
