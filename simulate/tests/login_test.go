@@ -2,6 +2,7 @@ package tests
 
 import (
 	"steve/client_pb/room"
+	"steve/simulate/config"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 
@@ -15,7 +16,7 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	client := connect.NewTestClient(ServerAddr, ClientVersion)
+	client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
 	assert.NotNil(t, client)
 	userName := global.AllocUserName()
 	player, err := utils.LoginUser(client, userName)
@@ -32,7 +33,7 @@ func TestVisitorLogin(t *testing.T) {
 	var playerID uint64
 	loginCount := 5
 	for i := loginCount; i > 0; i-- {
-		client := connect.NewTestClient(ServerAddr, ClientVersion)
+		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
 		assert.NotNil(t, client)
 		visitorLoginReq := &room.RoomVisitorLoginReq{
 			DeviceInfo: &room.DeviceInfo{

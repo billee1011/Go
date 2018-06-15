@@ -3,6 +3,7 @@ package tests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/config"
 	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -18,7 +19,7 @@ func Test_Fapai(t *testing.T) {
 
 	for i := 0; i < 4; i++ {
 		// 登录玩家
-		client := connect.NewTestClient(ServerAddr, ClientVersion)
+		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
 		assert.NotNil(t, client)
 		player, err := utils.LoginUser(client, global.AllocUserName())
 		assert.Nil(t, err)
