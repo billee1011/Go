@@ -94,8 +94,9 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 		var pengCardGroups []*room.CardsGroup
 		for _, pengCard := range player.GetPengCards() {
 			srcPlayerID := pengCard.GetSrcPlayer()
+			cards := []uint32{gutils.ServerCard2Number(pengCard.GetCard())}
 			pengCardGroup := &room.CardsGroup{
-				Cards: []uint32{gutils.ServerCard2Number(pengCard.GetCard())},
+				Cards: append(cards, cards[0], cards[0]),
 				Type:  room.CardsGroupType_CGT_PENG.Enum(),
 				Pid:   &srcPlayerID,
 			}
@@ -107,8 +108,9 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 		for _, gangCard := range player.GetGangCards() {
 			groupType := gutils.GangTypeSvr2Client(gangCard.GetType())
 			srcPlayerID := gangCard.GetSrcPlayer()
+			cards := []uint32{gutils.ServerCard2Number(gangCard.GetCard())}
 			gangCardGroup := &room.CardsGroup{
-				Cards: []uint32{gutils.ServerCard2Number(gangCard.GetCard())},
+				Cards: append(cards, cards[0], cards[0], cards[0]),
 				Type:  &groupType,
 				Pid:   &srcPlayerID,
 			}
@@ -141,27 +143,27 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 	return
 }
 
-func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) *room.RoomZixunNtf {
+func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomZixunNtf) {
 	if mjContext.GetCurState() != server_pb.StateID_state_zixun {
-		return nil
+		return proto.Bool(false), nil
 	}
 
 	if mjContext.GetLastMopaiPlayer() != playerID {
-		return nil
+		return proto.Bool(false), nil
 	}
 	player := gutils.GetMajongPlayer(playerID, mjContext)
-	return zixunTransform(player.GetZixunRecord())
+	return proto.Bool(true), zixunTransform(player.GetZixunRecord())
 }
 
-func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) *room.RoomChupaiWenxunNtf {
+func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomChupaiWenxunNtf) {
 	if mjContext.GetCurState() != server_pb.StateID_state_chupaiwenxun {
-		return nil
+		return proto.Bool(false), nil
 	}
 
 	player := gutils.GetMajongPlayer(playerID, mjContext)
 	enableActions := player.GetPossibleActions()
 	if len(enableActions) == 0 || player.GetHasSelected() {
-		return nil
+		return proto.Bool(false), nil
 	}
 
 	outCard := gutils.ServerCard2Number(mjContext.GetLastOutCard())
@@ -180,18 +182,18 @@ func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) *room.Ro
 			wenXunInfo.EnableQi = proto.Bool(true)
 		}
 	}
-	return wenXunInfo
+	return proto.Bool(true), wenXunInfo
 }
 
-func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) *room.RoomWaitQianggangHuNtf {
+func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomWaitQianggangHuNtf) {
 	if mjContext.GetCurState() != server_pb.StateID_state_waitqiangganghu {
-		return nil
+		return proto.Bool(false), nil
 	}
 
 	player := gutils.GetMajongPlayer(playerID, mjContext)
 	enableActions := player.GetPossibleActions()
 	if len(enableActions) == 0 || player.GetHasSelected() {
-		return nil
+		return proto.Bool(false), nil
 	}
 
 	outCard := gutils.ServerCard2Number(mjContext.GetLastOutCard())
@@ -201,7 +203,7 @@ func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) *room.RoomW
 		SelfCan:      proto.Bool(len(player.GetPossibleActions()) != 0),
 		FromPlayerId: &gangPlayerID,
 	}
-	return qghInfo
+	return proto.Bool(true), qghInfo
 }
 
 func zixunTransform(record *server_pb.ZixunRecord) *room.RoomZixunNtf {
