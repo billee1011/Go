@@ -58,3 +58,15 @@ type RoundSettleParams struct {
 type RoundSettle interface {
 	Settle(params RoundSettleParams) ([]*majongpb.SettleInfo, []uint64)
 }
+
+// SettlerFactory 结算器工厂
+type SettlerFactory interface {
+	CreateGangSettler() GangSettle
+	CreateHuSettler() HuSettle
+	CreateRoundSettle() RoundSettle
+}
+
+// GameSettlerFactory 根据游戏 ID 创建结算器工厂
+type GameSettlerFactory interface {
+	CreateSettlerFactory(gameID int) SettlerFactory
+}

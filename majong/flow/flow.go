@@ -2,14 +2,18 @@ package flow
 
 import (
 	"errors"
+	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/states"
 	"steve/majong/transition"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
 
 	"github.com/Sirupsen/logrus"
+
+	_ "steve/majong/cardtype"       // init cardtype
+	_ "steve/majong/settle"         // init settles
+	_ "steve/majong/states/factory" // init state facotry
 )
 
 type flow struct {
@@ -27,7 +31,7 @@ func NewFlow(mjContext majongpb.MajongContext) interfaces.MajongFlow {
 
 	return &flow{
 		context:             mjContext,
-		stateFactory:        states.NewFactory(),
+		stateFactory:        global.GetMajongStateFactory(),
 		transitionValidator: transitionFactory.CreateTransitionValidator(int(mjContext.GetGameId())),
 		msgs:                make([]majongpb.ReplyClientMessage, 0),
 	}
@@ -125,11 +129,6 @@ func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
 	// return f.processAutoEvent(entry)
 }
 
-func (f *flow) GetSettler(settlerType interfaces.SettlerType) interfaces.Settler {
-	logrus.Warn("TODO")
-	return nil
-}
-
 func (f *flow) PushMessages(playerIDs []uint64, msgs ...interfaces.ToClientMessage) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "flow.PushMessages",
@@ -157,14 +156,4 @@ func (f *flow) GetMessages() []majongpb.ReplyClientMessage {
 
 func (f *flow) GetAutoEvent() *majongpb.AutoEvent {
 	return f.autoEvent
-}
-
-// AppendTimeCheckInfo 添加时间检测
-func (f *flow) AppendTimeCheckInfo(timeCheckInfo majongpb.TimeCheckInfo) {
-	f.timeCheckInfos = append(f.timeCheckInfos, timeCheckInfo)
-}
-
-// GetTimeCheckInfos 获取时间检测
-func (f *flow) GetTimeCheckInfos() []majongpb.TimeCheckInfo {
-	return f.timeCheckInfos
 }
