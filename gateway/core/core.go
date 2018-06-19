@@ -2,6 +2,9 @@ package core
 
 import (
 	"fmt"
+	"steve/gateway/config"
+	"steve/gateway/gateservice"
+	"steve/server_pb/gateway"
 	"steve/structs"
 	"steve/structs/net"
 	"steve/structs/proto/gate_rpc"
@@ -24,11 +27,10 @@ func NewService() service.Service {
 
 func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 	c.e = e
-	return c.registSender()
-	// if err := c.registSender(); err != nil {
-	// 	return err
-	// }
-	// return nil
+	if err := c.registSender(); err != nil {
+		return err
+	}
+	return c.registerGateService()
 }
 
 func (c *gatewayCore) Start() error {
@@ -41,9 +43,13 @@ func (c *gatewayCore) registSender() error {
 	})
 }
 
+func (c *gatewayCore) registerGateService() error {
+	return c.e.RPCServer.RegisterService(gateway.RegisterGateServiceServer, gateservice.New())
+}
+
 func (c *gatewayCore) startWatchDog() error {
-	listenIP := viper.GetString(ListenClientAddr)
-	listenPort := viper.GetInt(ListenClientPort)
+	listenIP := viper.GetString(config.ListenClientAddr)
+	listenPort := viper.GetInt(config.ListenClientPort)
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"listen_ip":   listenIP,

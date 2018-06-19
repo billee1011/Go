@@ -1,8 +1,0 @@
-syntax = "proto2";
-
-package steve.proto.msg; 
-
-
-enum ErrorCode {
-    err_OK = 0; 
-}

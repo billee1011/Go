@@ -1,12 +1,17 @@
 package utils
 
 import (
+	"fmt"
+	"steve/client_pb/login"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/facade"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
+	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type clientPlayer struct {
@@ -98,4 +103,22 @@ func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPl
 	}
 	deskData.Players[player.GetID()] = newPlayer
 	return
+}
+
+// GenerateAccountName 生成账号名字
+func GenerateAccountName(accountID uint64) string {
+	return fmt.Sprintf("account_%v", accountID)
+}
+
+// RequestAuth 请求认证
+func RequestAuth(client interfaces.Client, accountID uint64, accountName string, expireDuration time.Duration) (*login.LoginAuthRsp, error) {
+	expire := time.Now().Add(expireDuration)
+	request := &login.LoginAuthReq{
+		AccountId:   proto.Uint64(accountID),
+		AccountName: proto.String(accountName),
+		Expire:      proto.Int64(expire.Unix()),
+	}
+	response := &login.LoginAuthRsp{}
+	err := facade.Request(client, msgid.MsgID_LOGIN_AUTH_REQ, request, global.DefaultWaitMessageTime, msgid.MsgID_LOGIN_AUTH_RSP, response)
+	return response, err
 }

@@ -1,0 +1,27 @@
+
+#### service loader configs
+# log 
+log_level: debug 
+log_dir: ./log
+log_prefix: login 
+log_stderr: true 
+
+# redis 
+redis_addr: 127.0.0.1:6379 
+redis_passwd: 
+
+# nsq 
+nsqd_addr: 127.0.0.1:4150
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161
+
+# rpc_addr: 127.0.0.1
+# rpc_port: 36100
+# rpc_server_name: room
+
+
+#### login configs 
+# listen address
+lis_client_addr: 127.0.0.1
+lis_client_port: 36201
+
