@@ -9,12 +9,15 @@ import (
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
+	"steve/room/hszswitch/hszswitch"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
 	"time"
+
+	"google.golang.org/grpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -291,7 +294,7 @@ func (d *desk) initMajongContext() error {
 		players[seat] = player.playerID
 	}
 	// TODO 暂时这样，不能影响血流
-	flag := d.GetGameID() != gutils.SCXZGameID
+	flag := d.getHszSwitch(d.gameID)
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,
@@ -300,6 +303,7 @@ func (d *desk) initMajongContext() error {
 			MaxHuansanzhangCartoonTime: 10 * 1000,
 			HasHuansanzhang:            flag,
 		},
+		// MajongOption: mjOption,
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
@@ -313,6 +317,64 @@ func (d *desk) initMajongContext() error {
 		stateTime:   time.Now(),
 	}
 	return nil
+}
+
+func (d *desk) getHszSwitch(gameID int) bool {
+	switch gameID {
+	case gutils.SCXLGameID:
+		return true
+	case gutils.SCXZGameID:
+		return d.getXuezhanOpen()
+	default:
+		return true
+	}
+}
+
+func (d *desk) getXuezhanOpen() bool {
+	conn, err := grpc.Dial("127.0.0.1:8082", grpc.WithInsecure())
+	if err != nil {
+		return true
+	}
+	defer conn.Close()
+	client := hszswitch.NewSwitchHandlerClient(conn)
+	hs, err := client.GetHSZSwitch(context.Background(), &hszswitch.DoNothing{})
+	if err != nil {
+		return true
+	}
+	return hs.Hsz
+}
+
+func (d *desk) getOptionByGameID(gameID int) []byte {
+	switch gameID {
+	case gutils.SCXLGameID:
+		return []byte{}
+	case gutils.SCXZGameID:
+		return d.getXuezhanOption()
+	default:
+		return []byte{}
+	}
+}
+
+func (d *desk) getXuezhanOption() []byte {
+	b := make([]byte, 0)
+	conn, err := grpc.Dial("127.0.0.1:8082", grpc.WithInsecure())
+	if err != nil {
+		return b
+	}
+	defer conn.Close()
+	client := hszswitch.NewSwitchHandlerClient(conn)
+	hs, err := client.GetHSZSwitch(context.Background(), &hszswitch.DoNothing{})
+	if err != nil {
+		return b
+	}
+	option := &server_pb.SichuanxuezhanOption{
+		OpenHuansanzhang: hs.Hsz,
+	}
+	b, err = proto.Marshal(option)
+	if err != nil {
+		return b
+	}
+	return b
 }
 
 func (d *desk) getTuoguanPlayers() []uint64 {

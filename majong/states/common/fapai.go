@@ -61,6 +61,27 @@ func (f *FapaiState) nextState(mjcontext *majongpb.MajongContext) majongpb.State
 	return newState
 }
 
+// func (f *FapaiState) getNextStateByOption(mjContext *majongpb.MajongContext) majongpb.StateID {
+// 	gameID := mjContext.GetGameId()
+// 	switch gameID {
+// 	case gutils.SCXLGameID:
+// 		return majongpb.StateID_state_huansanzhang
+// 	case gutils.SCXZGameID:
+// 		option := &majongpb.SichuanxuezhanOption{}
+// 		b := mjContext.GetMajongOption()
+// 		err := proto.Unmarshal(b, option)
+// 		if err == nil {
+// 			open := option.GetOpenHuansanzhang()
+// 			logrus.Infof("当前游戏的换三张开关为:%v", open)
+// 			if !open {
+// 				return majongpb.StateID_state_dingque
+// 			}
+// 			return majongpb.StateID_state_huansanzhang
+// 		}
+// 	}
+// 	return majongpb.StateID_state_huansanzhang
+// }
+
 // curState 当前状态
 func (f *FapaiState) curState() majongpb.StateID {
 	return majongpb.StateID_state_fapai

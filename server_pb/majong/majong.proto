@@ -233,6 +233,10 @@ message MajongCommonOption {
 message SichuanxueliuOption {
     bool open_huansanzhang = 1;
 }
+// SichuanxuezhanOption 四川血流麻将玩法
+message SichuanxuezhanOption {
+    bool open_huansanzhang = 1;
+}
 
 // InitMajongContextParams 麻将现场初始化参数
 message InitMajongContextParams {
