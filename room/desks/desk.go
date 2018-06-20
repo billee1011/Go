@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
 	"steve/room/interfaces"
@@ -289,13 +290,15 @@ func (d *desk) initMajongContext() error {
 	for seat, player := range d.players {
 		players[seat] = player.playerID
 	}
-
+	// TODO 暂时这样，不能影响血流
+	flag := d.GetGameID() != gutils.SCXZGameID
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
+			HasHuansanzhang:            flag,
 		},
 		MajongOption: []byte{},
 	}

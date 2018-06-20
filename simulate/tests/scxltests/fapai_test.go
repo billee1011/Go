@@ -29,8 +29,8 @@ func Test_Fapai(t *testing.T) {
 		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_FAPAI_NTF)
 		assert.Nil(t, err)
 		fapaiNtfExpectors[i] = expector
-
-		_, err = utils.ApplyJoinDesk(player)
+		gameID := room.GameId(1)
+		_, err = utils.ApplyJoinDesk(player, &gameID)
 		assert.Nil(t, err)
 	}
 

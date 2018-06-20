@@ -25,7 +25,7 @@ func (f *FapaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 	switch eventID {
 	case majongpb.EventID_event_fapai_finish:
 		{
-			return f.nextState(), nil
+			return f.nextState(flow.GetMajongContext()), nil
 		}
 	case majongpb.EventID_event_cartoon_finish_request:
 		{
@@ -52,8 +52,13 @@ func (f *FapaiState) OnExit(flow interfaces.MajongFlow) {
 }
 
 // nextState 下个状态
-func (f *FapaiState) nextState() majongpb.StateID {
-	return majongpb.StateID_state_huansanzhang
+func (f *FapaiState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
+	newState := f.getNextState(mjcontext)
+	logrus.WithFields(logrus.Fields{
+		"func_name": "nextState",
+		"nextState": newState,
+	}).Infoln("发牌下一状态")
+	return newState
 }
 
 // curState 当前状态
@@ -63,7 +68,7 @@ func (f *FapaiState) curState() majongpb.StateID {
 
 // onCartoonFinish 动画播放完毕
 func (f *FapaiState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
-	return OnCartoonFinish(f.curState(), f.nextState(), room.CartoonType_CTNT_FAPAI, eventContext)
+	return OnCartoonFinish(f.curState(), f.nextState(flow.GetMajongContext()), room.CartoonType_CTNT_FAPAI, eventContext)
 }
 
 var errCardsNotEnough = errors.New("墙牌不足")
@@ -127,4 +132,14 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 			Msg:   msg,
 		})
 	}
+}
+
+// 下一状态获取
+func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+	// 判断是否换三张
+	isHsz := mjContext.GetOption().GetHasHuansanzhang()
+	if isHsz {
+		return majongpb.StateID_state_huansanzhang
+	}
+	return majongpb.StateID_state_dingque
 }
