@@ -4,22 +4,26 @@ package majong;
 
 // StateID 状态 ID 
 enum StateID {
-    state_init = 0;             // 初始状态
-    state_xipai = 1;            // 洗牌状态
-    state_fapai = 2;            // 发牌状态
-    state_huansanzhang = 3;     // 换三张状态
-    state_dingque = 4;          // 定缺状态
-    state_chupai = 5;           // 出牌状态
-    state_angang = 6;           // 暗杠状态
-    state_zimo = 7;             // 自摸状态
-    state_peng = 8;             // 碰状态
-    state_gang = 9;             // 杠状态
-    state_hu = 10;              // 胡状态
-    state_mopai = 11;           // 摸牌状态
-    state_zixun = 12;           // 自询状态
-    state_bugang = 13;          // 补杠状态
-    state_waitqiangganghu = 14; // 等待抢杠胡状态
-    state_qiangganghu = 15;     // 抢杠胡状态
-    state_chupaiwenxun = 16;    // 出牌问询状态
-    state_gameover = 17;        // 游戏结束状态
+    state_init = 0;                 // 初始状态
+    state_xipai = 1;                // 洗牌状态
+    state_fapai = 2;                // 发牌状态
+    state_huansanzhang = 3;         // 换三张状态
+    state_dingque = 4;              // 定缺状态
+    state_chupai = 5;               // 出牌状态
+    state_angang = 6;               // 暗杠状态
+    state_zimo = 7;                 // 自摸状态
+    state_peng = 8;                 // 碰状态
+    state_gang = 9;                 // 杠状态
+    state_hu = 10;                  // 胡状态
+    state_mopai = 11;               // 摸牌状态
+    state_zixun = 12;               // 自询状态
+    state_bugang = 13;              // 补杠状态
+    state_waitqiangganghu = 14;     // 等待抢杠胡状态
+    state_qiangganghu = 15;         // 抢杠胡状态
+    state_chupaiwenxun = 16;        // 出牌问询状态
+    state_gameover = 17;            // 游戏结束状态
+    state_gang_settle = 18;          // 杠结算状态
+    state_zimo_settle = 19;          // 自摸结算状态
+    state_hu_settle = 20;       // 点炮结算状态
+    state_qiangganghu_settle = 21;  // 枪杠胡结算状态
 }

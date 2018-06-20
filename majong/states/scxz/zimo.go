@@ -1,4 +1,4 @@
-package common
+package scxz
 
 import (
 	msgid "steve/client_pb/msgId"
@@ -6,6 +6,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/states/common"
 	"steve/majong/utils"
 	"steve/peipai"
 	majongpb "steve/server_pb/majong"
@@ -26,7 +27,7 @@ var _ interfaces.MajongState = new(ZimoState)
 func (s *ZimoState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_zimo_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID_state_mopai, nil
+		return majongpb.StateID_state_zimo_settle, nil
 	}
 	return majongpb.StateID_state_zimo, global.ErrInvalidEvent
 }
@@ -61,9 +62,8 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	mjContext.LastHuPlayers = []uint64{player.GetPalyerId()}
 	huType := s.calcHuType(player.GetPalyerId(), flow)
 	s.notifyHu(card, huType, player.GetPalyerId(), flow)
-	s.doZiMoSettle(card, player.GetPalyerId(), flow)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
-	AddHuCard(card, player, player.GetPalyerId(), huType, false)
+	common.AddHuCard(card, player, player.GetPalyerId(), huType, false)
 }
 
 // isAfterGang 判断是否为杠开
@@ -136,7 +136,7 @@ func (s *ZimoState) setMopaiPlayer(flow interfaces.MajongFlow) {
 		return
 	}
 	players := mjContext.GetPlayers()
-	mjContext.MopaiPlayer = CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
+	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 

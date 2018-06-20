@@ -34,8 +34,8 @@ func OnCartoonFinish(curState majongpb.StateID, nextState majongpb.StateID, need
 	return nextState, nil
 }
 
-// addHuCard 添加胡的牌
-func addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64, huType majongpb.HuType, isReal bool) {
+// AddHuCard 添加胡的牌
+func AddHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64, huType majongpb.HuType, isReal bool) {
 	player.HuCards = append(player.GetHuCards(), &majongpb.HuCard{
 		Card:      card,
 		Type:      huType,
@@ -74,11 +74,11 @@ func calcStep(src int, dest int, total int) int {
 	return dest - src
 }
 
-// calcMopaiPlayer 计算摸牌玩家 ID
+// CalcMopaiPlayer 计算摸牌玩家 ID
 // huPlayers 胡的玩家 ID 列表
 // srcPlayer 原玩家
 // players 全部玩家
-func calcMopaiPlayer(logEntry *logrus.Entry, huPlayers []uint64, srcPlayer uint64, players []*majongpb.Player) uint64 {
+func CalcMopaiPlayer(logEntry *logrus.Entry, huPlayers []uint64, srcPlayer uint64, players []*majongpb.Player) uint64 {
 	huIndexs := []int{}
 	for _, player := range huPlayers {
 		index, err := utils.GetPlayerIndex(player, players)

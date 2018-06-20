@@ -1,11 +1,10 @@
-package common
+package scxz
 
 import (
-	"steve/client_pb/msgId"
-	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/states/common"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -13,90 +12,40 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// HuState 胡状态
-// 进入胡状态时， 执行胡操作。设置胡完成事件
-// 收到胡完成事件时，设置摸牌玩家，返回摸牌状态
-type HuState struct {
+// HuSettleState 杠结算状态
+type HuSettleState struct {
 }
 
-var _ interfaces.MajongState = new(HuState)
+var _ interfaces.MajongState = new(HuSettleState)
 
 // ProcessEvent 处理事件
-func (s *HuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
-	if eventID == majongpb.EventID_event_hu_finish {
-		s.setMopaiPlayer(flow)
-		return majongpb.StateID_state_mopai, nil
+// 点炮逻辑执行完后，进入点炮结算状态
+// 1.处理结算完成事件，返回摸牌状态
+// 2.处理玩家认输事件，返回游戏结束状态
+func (s *HuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+	s.setMopaiPlayer(flow)
+	if eventID == majongpb.EventID_event_settle_finish {
+		message := &majongpb.SettleFinishEvent{}
+		err := proto.Unmarshal(eventContext, message)
+		if err != nil {
+			return majongpb.StateID_state_hu_settle, global.ErrInvalidEvent
+		}
+		return s.settleOver(flow, message)
 	}
-	return majongpb.StateID_state_hu, global.ErrInvalidEvent
+	return majongpb.StateID(majongpb.StateID_state_hu_settle), global.ErrInvalidEvent
 }
 
 // OnEntry 进入状态
-func (s *HuState) OnEntry(flow interfaces.MajongFlow) {
-	s.doHu(flow)
-	flow.SetAutoEvent(majongpb.AutoEvent{
-		EventId:      majongpb.EventID_event_hu_finish,
-		EventContext: nil,
-	})
+func (s *HuSettleState) OnEntry(flow interfaces.MajongFlow) {
+	s.doHuSettle(flow)
 }
 
 // OnExit 退出状态
-func (s *HuState) OnExit(flow interfaces.MajongFlow) {
-
-}
-
-// addHuCard 添加胡的牌
-func (s *HuState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64, isReal bool) {
-	AddHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao, isReal)
-}
-
-// doHu 执行胡操作
-func (s *HuState) doHu(flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "HuState.doHu",
-	})
-	logEntry = utils.WithMajongContext(logEntry, mjContext)
-	players := mjContext.GetLastHuPlayers()
-
-	isReal := true
-	for _, playerID := range players {
-		player := utils.GetMajongPlayer(playerID, mjContext)
-		card := mjContext.GetLastOutCard()
-		s.addHuCard(card, player, playerID, isReal)
-		isReal = false
-	}
-	s.notifyHu(flow)
-	s.doHuSettle(flow)
-	return
-}
-
-// isAfterGang 是否为杠后炮
-// 杠后摸牌、自询出牌则为杠后炮
-func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
-	zxType := mjContext.GetZixunType()
-	mpType := mjContext.GetMopaiType()
-	return mpType == majongpb.MopaiType_MT_GANG && zxType == majongpb.ZixunType_ZXT_NORMAL
-}
-
-// HuState 广播胡
-func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-	huType := room.HuType_HT_DIANPAO.Enum()
-	if s.isAfterGang(mjContext) {
-		huType = room.HuType_HT_GANGHOUPAO.Enum()
-	}
-	body := room.RoomHuNtf{
-		Players:      mjContext.GetLastHuPlayers(),
-		FromPlayerId: proto.Uint64(mjContext.GetLastChupaiPlayer()),
-		Card:         proto.Uint32(uint32(utils.ServerCard2Number(mjContext.GetLastOutCard()))),
-		HuType:       huType,
-	}
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
+func (s *HuSettleState) OnExit(flow interfaces.MajongFlow) {
 }
 
 // setMopaiPlayer 设置摸牌玩家
-func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
+func (s *HuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "QiangganghuState.setMopaiPlayer",
@@ -106,12 +55,12 @@ func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	srcPlayer := mjContext.GetLastChupaiPlayer()
 	players := mjContext.GetPlayers()
 
-	mjContext.MopaiPlayer = CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
+	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
 // doHuSettle 胡的结算
-func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
+func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 
 	allPlayers := make([]uint64, 0)
@@ -177,4 +126,29 @@ func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
 		}
 	}
 	mjContext.CurrentSettleId = maxSID
+}
+
+//settleOver 结算完成
+func (s *HuSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) (majongpb.StateID, error) {
+	mjContext := flow.GetMajongContext()
+	playerIds := message.GetPlayerId()
+	if len(playerIds) != 0 {
+		for _, pid := range playerIds {
+			player := utils.GetMajongPlayer(pid, mjContext)
+			if player == nil {
+				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
+			}
+			player.State = majongpb.PlayerState_give_up
+		}
+		return majongpb.StateID_state_gameover, nil
+	}
+	return majongpb.StateID(majongpb.StateID_state_mopai), nil
+}
+
+// isAfterGang 是否为杠后炮
+// 杠后摸牌、自询出牌则为杠后炮
+func (s *HuSettleState) isAfterGang(mjContext *majongpb.MajongContext) bool {
+	zxType := mjContext.GetZixunType()
+	mpType := mjContext.GetMopaiType()
+	return mpType == majongpb.MopaiType_MT_GANG && zxType == majongpb.ZixunType_ZXT_NORMAL
 }

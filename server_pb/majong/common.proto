@@ -15,4 +15,3 @@ message Card {
     CardColor color = 1;    // 卡牌花色
     int32 point = 2;    // 卡牌点数
 }
-

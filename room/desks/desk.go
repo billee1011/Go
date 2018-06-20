@@ -268,15 +268,12 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 		logEntry.WithError(err).Errorln("序列化事件现场失败")
 	}
 
-	d.event <- deskEvent{
-		event: interfaces.Event{
-			ID:        eventID,
-			Context:   eventConetxtByte,
-			EventType: interfaces.NormalEvent,
-			PlayerID:  playerID,
-		},
-		stateNumber: d.dContext.stateNumber,
-	}
+	d.PushEvent(interfaces.Event{
+		ID:        eventID,
+		Context:   eventConetxtByte,
+		EventType: interfaces.NormalEvent,
+		PlayerID:  playerID,
+	})
 }
 
 // GetTuoGuanMgr 获取托管管理器
@@ -503,21 +500,26 @@ func (d *desk) callEventHandler(logEntry *logrus.Entry, eventID server_pb.EventI
 	return
 }
 
+// PushEvent 压入事件
+func (d *desk) PushEvent(event interfaces.Event) {
+	d.event <- deskEvent{
+		event:       event,
+		stateNumber: d.dContext.stateNumber,
+	}
+}
+
 // pushAutoEvent 一段时间后压入自动事件
 func (d *desk) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNumber int) {
 	time.Sleep(time.Millisecond * time.Duration(autoEvent.GetWaitTime()))
 	if d.dContext.stateNumber != stateNumber {
 		return
 	}
-	d.event <- deskEvent{
-		event: interfaces.Event{
-			ID:        autoEvent.EventId,
-			Context:   autoEvent.EventContext,
-			EventType: interfaces.NormalEvent,
-			PlayerID:  0,
-		},
-		stateNumber: stateNumber,
-	}
+	d.PushEvent(interfaces.Event{
+		ID:        autoEvent.EventId,
+		Context:   autoEvent.EventContext,
+		EventType: interfaces.NormalEvent,
+		PlayerID:  0,
+	})
 }
 
 // processEvent 处理单个事件

@@ -72,7 +72,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 			settleInfos = append(settleInfos, settleInfo)
 		}
 	}
-	if params.HuType == majongpb.SettleHuType_settle_hu_ganghoupao { // 需呼叫转移
+	if params.HuType == majongpb.HuType_hu_ganghoupao { // 需呼叫转移
 		callTransferS := callTransferSettle(params)
 		settleInfos = append(settleInfos, callTransferS)
 	}
@@ -153,7 +153,7 @@ func GetDi() int64 {
 }
 
 // newHuSettleInfo 初始化生成一条新的胡结算信息
-func newHuSettleInfo(params interfaces.HuSettleParams, huType majongpb.SettleHuType, settleType majongpb.SettleType,
+func newHuSettleInfo(params interfaces.HuSettleParams, huType majongpb.HuType, settleType majongpb.SettleType,
 	scoreMap map[uint64]int64, huPlayerID uint64) (*majongpb.SettleInfo, interfaces.HuSettleParams) {
 	settleInfo := &majongpb.SettleInfo{
 		Id:         params.SettleID,
@@ -167,7 +167,7 @@ func newHuSettleInfo(params interfaces.HuSettleParams, huType majongpb.SettleHuT
 }
 
 // newNormalSettleInfo 初始化生成一条新的结算信息
-func newNormalSettleInfo(params interfaces.HuSettleParams, huType majongpb.SettleHuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.HuSettleParams) {
+func newNormalSettleInfo(params interfaces.HuSettleParams, huType majongpb.HuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.HuSettleParams) {
 	settleInfo := &majongpb.SettleInfo{
 		Id:         params.SettleID,
 		Scores:     make(map[uint64]int64),
@@ -178,17 +178,17 @@ func newNormalSettleInfo(params interfaces.HuSettleParams, huType majongpb.Settl
 	return settleInfo, params
 }
 
-func getHuTypeValue(huType majongpb.SettleHuType) uint32 {
-	huTypeValues := map[majongpb.SettleHuType]uint32{
-		majongpb.SettleHuType_settle_hu_noramaldianpao:    1,
-		majongpb.SettleHuType_settle_hu_zimo:              2,
-		majongpb.SettleHuType_settle_hu_gangkai:           2 * 2,
-		majongpb.SettleHuType_settle_hu_ganghoupao:        2,
-		majongpb.SettleHuType_settle_hu_qiangganghu:       2,
-		majongpb.SettleHuType_settle_hu_haidilao:          2,
-		majongpb.SettleHuType_settle_hu_gangshanghaidilao: 4,
-		majongpb.SettleHuType_settle_hu_tianhu:            32 * 2,
-		majongpb.SettleHuType_settle_hu_dihu:              32 * 2,
+func getHuTypeValue(huType majongpb.HuType) uint32 {
+	huTypeValues := map[majongpb.HuType]uint32{
+		majongpb.HuType_hu_dianpao:           1,
+		majongpb.HuType_hu_zimo:              2,
+		majongpb.HuType_hu_gangkai:           2 * 2,
+		majongpb.HuType_hu_ganghoupao:        2,
+		majongpb.HuType_hu_qiangganghu:       2,
+		majongpb.HuType_hu_haidilao:          2,
+		majongpb.HuType_hu_gangshanghaidilao: 4,
+		majongpb.HuType_hu_tianhu:            32 * 2,
+		majongpb.HuType_hu_dihu:              32 * 2,
 	}
 	return huTypeValues[huType]
 }
