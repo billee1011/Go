@@ -14,6 +14,7 @@ func makeRoomCards(card ...room.Card) []*room.Card {
 // NewCommonStartGameParams 创建通用启动参数
 func NewCommonStartGameParams() structs.StartGameParams {
 	return structs.StartGameParams{
+		GameID: room.GameId(1),
 		Cards: [][]uint32{
 			{11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14},
 			{15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 18},
@@ -26,6 +27,7 @@ func NewCommonStartGameParams() structs.StartGameParams {
 		ServerAddr: config.ServerAddr,
 		ClientVer:  config.ClientVersion,
 
+		IsHsz: true,
 		HszCards: [][]uint32{
 			{11, 11, 11},
 			{15, 15, 15},
@@ -33,5 +35,6 @@ func NewCommonStartGameParams() structs.StartGameParams {
 			{25, 25, 25},
 		},
 		DingqueColor: []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO},
+		PeiPaiGame:   "scxl",
 	}
 }
