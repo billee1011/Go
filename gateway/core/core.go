@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/gateway/config"
 	"steve/gateway/gateservice"
+	"steve/gateway/register"
 	"steve/server_pb/gateway"
 	"steve/structs"
 	"steve/structs/net"
@@ -32,6 +33,7 @@ func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 	if err := c.registSender(); err != nil {
 		return err
 	}
+	register.RegisteHandlers(e.Exchanger)
 	return c.registerGateService()
 }
 

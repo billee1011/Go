@@ -6,6 +6,8 @@ const (
 	// ClientVersion 客户端版本号
 	ClientVersion = "1.0"
 
+	// LoginServerAddr 登录服地址
+	LoginServerAddr = "127.0.0.1:36201"
 	// PeipaiURL 配牌服务地址
 	PeipaiURL = "http://127.0.0.1:36102"
 )

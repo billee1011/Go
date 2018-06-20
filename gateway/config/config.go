@@ -16,7 +16,7 @@ const (
 	AuthKey = "auth_key"
 )
 
-func initDefaultConfig() {
+func init() {
 	viper.SetDefault(ListenClientAddr, "127.0.0.1")
 	viper.SetDefault(ListenClientPort, 36001)
 	viper.SetDefault(ListenClientAddrInquire, "127.0.0.1")

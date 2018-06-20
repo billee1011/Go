@@ -20,7 +20,7 @@ import (
 //	1. 收到服务器响应
 //	2. 错误码为成功， 玩家 ID 不为0， 网关 IP 和网关端口合法，到期时间大于当前时间， token 不为空
 func Test_Auth(t *testing.T) {
-	client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
+	client := connect.NewTestClient(config.LoginServerAddr, config.ClientVersion)
 	assert.NotNil(t, client)
 
 	accountID := global.AllocAccountID()
@@ -49,10 +49,10 @@ func Test_AuthAgain(t *testing.T) {
 	accountID := global.AllocAccountID()
 	accountName := utils.GenerateAccountName(accountID)
 
-	client1 := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
+	client1 := connect.NewTestClient(config.LoginServerAddr, config.ClientVersion)
 	response1, _ := utils.RequestAuth(client1, accountID, accountName, time.Second*5)
 
-	client2 := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
+	client2 := connect.NewTestClient(config.LoginServerAddr, config.ClientVersion)
 	response2, _ := utils.RequestAuth(client2, accountID, accountName, time.Second*5)
 
 	assert.Equal(t, response1.GetPlayerId(), response2.GetPlayerId())

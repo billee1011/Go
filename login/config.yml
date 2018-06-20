@@ -25,3 +25,5 @@ nsqlookupd_addrs:
 lis_client_addr: 127.0.0.1
 lis_client_port: 36201
 
+# 认证秘钥
+auth_key: stevegame.cn

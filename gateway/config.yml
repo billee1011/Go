@@ -17,3 +17,6 @@ lis_client_addr_inquire: 127.0.0.1
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
   - 127.0.0.1:4161
+
+# 认证秘钥
+auth_key: stevegame.cn

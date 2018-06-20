@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
+	"steve/client_pb/gate"
 	"steve/client_pb/login"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
@@ -121,4 +123,29 @@ func RequestAuth(client interfaces.Client, accountID uint64, accountName string,
 	response := &login.LoginAuthRsp{}
 	err := facade.Request(client, msgid.MsgID_LOGIN_AUTH_REQ, request, global.DefaultWaitMessageTime, msgid.MsgID_LOGIN_AUTH_RSP, response)
 	return response, err
+}
+
+// RequestGateAuth 请求向网关服认证
+func RequestGateAuth(client interfaces.Client, playerID uint64, expire int64, token string) error {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "RequestGateAuth",
+		"player_id": playerID,
+		"expire":    expire,
+		"token":     token,
+	})
+	request := &gate.GateAuthReq{
+		PlayerId: proto.Uint64(playerID),
+		Expire:   proto.Int64(expire),
+		Token:    proto.String(token),
+	}
+	response := &gate.GateAuthRsp{}
+	err := facade.Request(client, msgid.MsgID_GATE_AUTH_REQ, request, global.DefaultWaitMessageTime, msgid.MsgID_GATE_AUTH_RSP, response)
+	if err != nil {
+		entry.WithError(err).Errorln("请求失败")
+		return errors.New("请求失败")
+	}
+	if response.GetErrCode() != gate.ErrCode_SUCCESS {
+		return fmt.Errorf("网关认证失败，错误码：%v", response.GetErrCode())
+	}
+	return nil
 }

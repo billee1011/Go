@@ -1,6 +1,12 @@
 package exchanger
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+	"steve/structs/proto/gate_rpc"
+
+	"github.com/golang/protobuf/proto"
+)
 
 // Handler 消息处理器
 type Handler struct {
@@ -27,4 +33,35 @@ type HandlerMgr interface {
 
 	// GetHandler 获取消息处理器
 	GetHandler(msgID uint32) *Handler
+}
+
+var byteSliceType = reflect.TypeOf([]byte{})
+
+// CallHandler 调用消息处理器
+func CallHandler(handler *Handler, clientID uint64, header *steve_proto_gaterpc.Header, body []byte) ([]ResponseMsg, error) {
+
+	var callResults []reflect.Value
+	f := reflect.ValueOf(handler.HandlerFunc)
+
+	if handler.MsgType == byteSliceType {
+		callResults = f.Call([]reflect.Value{
+			reflect.ValueOf(clientID),
+			reflect.ValueOf(header),
+			reflect.ValueOf(body),
+		})
+	} else {
+		bodyMsg := reflect.New(handler.MsgType).Interface()
+		if err := proto.Unmarshal(body, bodyMsg.(proto.Message)); err != nil {
+			return []ResponseMsg{}, fmt.Errorf("反序列化消息体失败: %v", err)
+		}
+		callResults = f.Call([]reflect.Value{
+			reflect.ValueOf(clientID),
+			reflect.ValueOf(header),
+			reflect.ValueOf(bodyMsg).Elem(),
+		})
+	}
+	if callResults == nil || len(callResults) == 0 || callResults[0].IsNil() {
+		return []ResponseMsg{}, nil
+	}
+	return callResults[0].Interface().([]ResponseMsg), nil
 }

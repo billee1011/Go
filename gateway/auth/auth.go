@@ -10,6 +10,7 @@ import (
 	"steve/structs/proto/gate_rpc"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -35,21 +36,35 @@ func HandleAuthReq(clientID uint64, header *steve_proto_gaterpc.Header, req gate
 }
 
 func checkRequest(clientID uint64, header *steve_proto_gaterpc.Header, req *gate.GateAuthReq, response *gate.GateAuthRsp) bool {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "checkRequest",
+		"client_id": clientID,
+		"req_token": req.GetToken(),
+		"expire":    req.GetExpire(),
+	})
 	expire := time.Unix(req.GetExpire(), 0)
 	if time.Now().After(expire) {
 		response.ErrCode = gate.ErrCode_ERR_EXPIRE_TOKEN.Enum()
+		entry.Debugln("token 过期")
 		return false
 	}
 	gateIP := viper.GetString(config.ListenClientAddrInquire)
 	gatePort := viper.GetInt(config.ListenClientPort)
 	key := viper.GetString(config.AuthKey)
-
 	correctToken := auth.GenerateAuthToken(req.GetPlayerId(), gateIP, gatePort, req.GetExpire(), key)
+
+	entry = entry.WithFields(logrus.Fields{
+		"gate_ip":       gateIP,
+		"gate_port":     gatePort,
+		"key":           key,
+		"correct_token": correctToken,
+	})
 	if correctToken != req.GetToken() {
 		response.ErrCode = gate.ErrCode_ERR_INVALID_TOKEN.Enum()
+		entry.Infoln("token 验证失败")
 		return false
 	}
-	return false
+	return true
 }
 
 func saveConnectPlayerMap(clientID uint64, header *steve_proto_gaterpc.Header, req *gate.GateAuthReq, response *gate.GateAuthRsp) bool {
