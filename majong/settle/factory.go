@@ -6,6 +6,7 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/settle/null"
 	"steve/majong/settle/scxl"
+	"steve/majong/settle/scxz"
 )
 
 type gameSettlerFactory struct {
@@ -23,6 +24,7 @@ func (f *gameSettlerFactory) CreateSettlerFactory(gameID int) interfaces.Settler
 func init() {
 	factories := map[int]interfaces.SettlerFactory{
 		gutils.SCXLGameID: &scxl.SettlerFactory{},
+		gutils.SCXZGameID: &scxz.SettlerFactory{},
 	}
 	global.SetGameSettlerFactory(&gameSettlerFactory{
 		factories: factories,
