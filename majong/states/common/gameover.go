@@ -104,20 +104,11 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	mjContext.RevertSettles = raxbeatIds
 }
 
-//isFlowerPig 判断玩家是否是花猪,如果玩家从开局到牌局结束打出的牌全为定缺牌（碰、杠不影响），结束后该玩家手上还有定缺牌，此时该玩家不被查花猪
+//isFlowerPig 修改为： 判断玩家是否是花猪,牌局结束结束后该玩家手上还有定缺牌，此时该玩家被查花猪
 func isFlowerPig(player *majongpb.Player) bool {
-	outCardDingQue := true
-	for _, card := range player.OutCards {
-		if card.Color != player.DingqueColor {
-			outCardDingQue = false
-		}
-	}
-	if !outCardDingQue {
-		// 玩家手牌中是否存在定缺牌
-		for _, card := range player.HandCards {
-			if card.Color == player.DingqueColor {
-				return true
-			}
+	for _, card := range player.HandCards {
+		if card.Color == player.DingqueColor {
+			return true
 		}
 	}
 	return false
@@ -137,10 +128,11 @@ func isNoTingPlayers(player *majongpb.Player) bool {
 		if len(tingCards) == 0 {
 			return true
 		}
-	} else { //  手牌中若有定缺牌，检查该玩家是否是花猪，不是花猪返回true
-		if !isFlowerPig(player) {
-			return true
-		}
+	} else { //  手牌中若有定缺牌，必是花猪
+		// if !isFlowerPig(player) {
+		// 	return true
+		// }
+		return false
 	}
 	return false
 }
