@@ -17,7 +17,7 @@ func GetNormalPlayersByGameID(gameID int32, players []*majongpb.Player) []*majon
 	newPlalyers := make([]*majongpb.Player, 0)
 	for _, player := range players {
 		// 不等与正常行牌的，不能检查胡，碰，杠，摸牌。。。
-		if player.GetPlayerState() != majongpb.PlayerState_normal {
+		if player.GetXpState() != majongpb.XingPaiState_normal {
 			playersID = append(playersID, player.GetPalyerId())
 			continue
 		}
@@ -35,14 +35,14 @@ func GetNormalPlayersByGameID(gameID int32, players []*majongpb.Player) []*majon
 
 //IsNormalPlayerByGameID 判断玩家是否是正常玩家，根据游戏ID(非SCXZ返回fale，在SCXZ下是正常状态下返回fale)
 func IsNormalPlayerByGameID(gameID int32, player *majongpb.Player) bool {
-	if gameID != gutils.SCXZGameID || player.GetPlayerState() == majongpb.PlayerState_normal {
+	if gameID != gutils.SCXZGameID || player.GetXpState() == majongpb.XingPaiState_normal {
 		return true
 	}
 	defer func() {
 		logrus.WithFields(logrus.Fields{
 			"func_name":    "IsNormalPlayerByGameID",
 			"gameID":       gameID,
-			"playerStatus": player.GetPlayerState(),
+			"playerStatus": player.GetXpState(),
 		}).Info("判断玩家是否是正常玩家")
 	}()
 	return false
@@ -58,7 +58,7 @@ func GetNextNormalPlayerByID(gameID int32, srcPlayerID uint64, players []*majong
 	curPlayerID, i := srcPlayerID, 0
 	for i < 4 {
 		palyer := GetNextPlayerByID(players, curPlayerID)
-		if gameID != gutils.SCXZGameID || palyer.GetPlayerState() == majongpb.PlayerState_normal {
+		if gameID != gutils.SCXZGameID || palyer.GetXpState() == majongpb.XingPaiState_normal {
 			log.WithFields(logrus.Fields{
 				"nextPlayerID": palyer.GetPalyerId(),
 			}).Infoln("获取下个正常状态的玩家")
