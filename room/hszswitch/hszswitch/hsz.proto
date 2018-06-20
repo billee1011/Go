@@ -1,0 +1,15 @@
+syntax = "proto3";
+package hszswitch;
+
+message HszSwitch{
+    bool hsz = 1;
+}
+
+message DoNothing{
+
+}
+
+// 消息处理器
+service SwitchHandler {
+    rpc GetHSZSwitch(DoNothing) returns (HszSwitch) {}
+}
