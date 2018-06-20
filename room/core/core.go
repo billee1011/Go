@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"steve/peipai"
+	"steve/room/config"
 	"steve/room/core/exchanger"
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
@@ -63,8 +64,8 @@ func (c *roomCore) Start() error {
 }
 
 func (c *roomCore) startLocalExchanger() error {
-	listenIP := viper.GetString(ListenClientAddr)
-	listenPort := viper.GetInt(ListenClientPort)
+	listenIP := viper.GetString(config.ListenClientAddr)
+	listenPort := viper.GetInt(config.ListenClientPort)
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"listen_ip":   listenIP,
@@ -77,7 +78,7 @@ func (c *roomCore) startLocalExchanger() error {
 }
 
 func startPeipai() error {
-	peipaiAddr := viper.GetString(ListenPeipaiAddr)
+	peipaiAddr := viper.GetString(config.ListenPeipaiAddr)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "startPeipai",
 		"addr":      peipaiAddr,
