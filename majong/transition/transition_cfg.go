@@ -295,6 +295,12 @@ var transitionCfg = `
             - event_fapai_finish
             - event_cartoon_finish_request
           next_state: state_huansanzhang
+        -
+        # 发牌完成事件 转移到 定缺状态
+          events: 
+            - event_fapai_finish
+            - event_cartoon_finish_request
+          next_state: state_dingque
     - 
       # 换三张状态
       state: state_huansanzhang

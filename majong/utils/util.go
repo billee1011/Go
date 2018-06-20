@@ -488,6 +488,9 @@ func GetGameName(flow interfaces.MajongFlow) string {
 	if gameID == 1 {
 		gameName = "scxl"
 	}
+	if gameID == 2 {
+		gameName = "scxz"
+	}
 	return gameName
 }
 

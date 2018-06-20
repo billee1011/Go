@@ -27,8 +27,8 @@ func Test_Xipai(t *testing.T) {
 		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_XIPAI_NTF)
 		assert.Nil(t, err)
 		xipaiExpectors[i] = expector
-
-		_, err = utils.ApplyJoinDesk(player)
+		gameID := room.GameId(1)
+		_, err = utils.ApplyJoinDesk(player, &gameID)
 		assert.Nil(t, err)
 	}
 

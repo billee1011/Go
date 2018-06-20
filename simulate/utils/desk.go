@@ -38,13 +38,14 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 		return nil, err
 	}
 	// TODO : game name
-	if err := peipai("scxl", params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
+	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
 	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
 	// hszNotifyExpectors := createHSZNotifyExpector(players)
-	seatMap, err := joinDesk(players)
+	gameID := params.GameID // 设置游戏ID
+	seatMap, err := joinDesk(players, &gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +61,15 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 		}
 	}
 	checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
-	checkFapaiNtf(fapaiNtfExpectors, &dd, params.Cards, params.WallCards)
-	// 执行换三张
-	if err := executeHSZ(&dd, params.HszCards); err != nil {
+	if err := checkFapaiNtf(fapaiNtfExpectors, &dd, params.Cards, params.WallCards); err != nil {
 		return nil, err
+	}
+	// 是否执行换三张
+	if gameID == 1 || params.IsHsz {
+		// 执行换三张
+		if err := executeHSZ(&dd, params.HszCards); err != nil {
+			return nil, err
+		}
 	}
 	if err := executeDingque(&dd, params.DingqueColor); err != nil {
 		return nil, err
@@ -132,11 +138,11 @@ func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.Clie
 	return players, nil
 }
 
-func joinDesk(players []interfaces.ClientPlayer) (map[int]uint64, error) {
+func joinDesk(players []interfaces.ClientPlayer, gameID *room.GameId) (map[int]uint64, error) {
 	expectors := []interfaces.MessageExpector{}
 	for _, player := range players {
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
-		if _, err := ApplyJoinDesk(player); err != nil {
+		if _, err := ApplyJoinDesk(player, gameID); err != nil {
 			return nil, err
 		}
 		expectors = append(expectors, e)

@@ -7,6 +7,8 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	majongpb "steve/server_pb/majong"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // InitState 初始化状态
@@ -26,7 +28,11 @@ func (s *InitState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, 
 
 // notifyPlayers 通知玩家游戏开始
 func (s *InitState) notifyPlayers(flow interfaces.MajongFlow) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_START_GAME_NTF, &room.RoomStartGameNtf{})
+	//通知前端是否要进行换三张
+	isHsz := flow.GetMajongContext().GetOption().GetHasHuansanzhang()
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_START_GAME_NTF, &room.RoomStartGameNtf{
+		NeedHsz: proto.Bool(isHsz),
+	})
 }
 
 // OnEntry 进入状态
