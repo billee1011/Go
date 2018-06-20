@@ -50,20 +50,22 @@ func IsNormalPlayerByGameID(gameID int32, player *majongpb.Player) bool {
 
 //GetNextNormalPlayerByID 获取下个正常状态的玩家
 func GetNextNormalPlayerByID(gameID int32, srcPlayerID uint64, players []*majongpb.Player) uint64 {
-	palyer := GetNextPlayerByID(players, srcPlayerID)
-	if gameID != gutils.SCXZGameID {
-		return palyer.GetPalyerId()
+	log := logrus.WithFields(logrus.Fields{
+		"func_name":   "GetNextNormalPlayerByID",
+		"gameID":      gameID,
+		"srcPlayerID": srcPlayerID,
+	})
+	curPlayerID, i := srcPlayerID, 0
+	for i < 4 {
+		palyer := GetNextPlayerByID(players, curPlayerID)
+		if gameID != gutils.SCXZGameID || palyer.GetPlayerState() == majongpb.PlayerState_normal {
+			log.WithFields(logrus.Fields{
+				"nextPlayerID": palyer.GetPalyerId(),
+			}).Infoln("获取下个正常状态的玩家")
+			return palyer.GetPalyerId()
+		}
+		curPlayerID = palyer.GetPalyerId()
 	}
-	for palyer.GetPlayerState() != majongpb.PlayerState_normal {
-		palyer = GetNextPlayerByID(players, srcPlayerID)
-	}
-	defer func() {
-		logrus.WithFields(logrus.Fields{
-			"func_name":   "GetNextNormalPlayerByID",
-			"gameID":      gameID,
-			"srcPlayerID": srcPlayerID,
-			"nextPlayer":  palyer.GetPalyerId(),
-		}).Info("获取下个正常状态的玩家")
-	}()
-	return palyer.GetPalyerId()
+	log.Errorln("获取下个正常状态的玩家失败！")
+	return srcPlayerID
 }
