@@ -21,23 +21,23 @@ var _ net.MessageObserver = new(messageObserver)
 var byteSliceType = reflect.TypeOf([]byte{})
 
 // callHandler 根据消息类型反序列化消息体和回调处理器
-func (o *messageObserver) callHandler(logEntry *logrus.Entry, handler *wrapHandler, clientID uint64,
+func (o *messageObserver) callHandler(logEntry *logrus.Entry, handler *iexchanger.Handler, clientID uint64,
 	header *steve_proto_base.Header, body []byte) []iexchanger.ResponseMsg {
 
 	callHeader := steve_proto_gaterpc.Header{
 		MsgId: header.GetMsgId(),
 	}
 	var callResults []reflect.Value
-	f := reflect.ValueOf(handler.handleFunc)
+	f := reflect.ValueOf(handler.HandlerFunc)
 
-	if handler.msgType == byteSliceType {
+	if handler.MsgType == byteSliceType {
 		callResults = f.Call([]reflect.Value{
 			reflect.ValueOf(clientID),
 			reflect.ValueOf(&callHeader),
 			reflect.ValueOf(body),
 		})
 	} else {
-		bodyMsg := reflect.New(handler.msgType).Interface()
+		bodyMsg := reflect.New(handler.MsgType).Interface()
 		if err := proto.Unmarshal(body, bodyMsg.(proto.Message)); err != nil {
 			logEntry.WithError(err).Errorln("反序列化消息体失败")
 			return []iexchanger.ResponseMsg{}
@@ -63,7 +63,7 @@ func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Heade
 		"client_id": clientID,
 	})
 
-	handler := o.exchanger.getHandler(msgID)
+	handler := o.exchanger.GetHandler(msgID)
 	if handler == nil {
 		logEntry.Warnln("未处理的客户端消息")
 		return

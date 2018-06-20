@@ -16,18 +16,10 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// wrapHandler 包装了的消息处理器
-type wrapHandler struct {
-	// handleFunc 消息处理函数，具体类型参考 iexchanger.Exchanger 函数
-	handleFunc interface{}
-	// msgType 通过反射获取到的消息实际类型
-	msgType reflect.Type
-}
-
 type exchangerImpl struct {
 	// handleMap 存储注册的消息处理器
 	// key 为消息 ID uint32
-	// value 为消息处理器 wrapHandler
+	// value 为消息处理器 iexchanger.Handler
 	handleMap sync.Map
 
 	// watchDog
@@ -68,9 +60,9 @@ func (e *exchangerImpl) RegisterHandle(msgID uint32, handler interface{}) error 
 		return fmt.Errorf("处理函数的返回值需要可以转换成 []proto.Message 类型")
 	}
 
-	if _, loaded := e.handleMap.LoadOrStore(msgID, wrapHandler{
-		handleFunc: handler,
-		msgType:    msgType,
+	if _, loaded := e.handleMap.LoadOrStore(msgID, iexchanger.Handler{
+		HandlerFunc: handler,
+		MsgType:     msgType,
 	}); loaded {
 		return fmt.Errorf("该消息 ID 已经被注册过了")
 	}
@@ -118,12 +110,12 @@ func (e *exchangerImpl) BroadcastPackageBare(clientIDs []uint64, head *steve_pro
 	return err
 }
 
-func (e *exchangerImpl) getHandler(msgID uint32) *wrapHandler {
+func (e *exchangerImpl) GetHandler(msgID uint32) *iexchanger.Handler {
 	v, ok := e.handleMap.Load(msgID)
 	if !ok || v == nil {
 		return nil
 	}
-	h := v.(wrapHandler)
+	h := v.(iexchanger.Handler)
 	return &h
 }
 
