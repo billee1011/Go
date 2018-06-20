@@ -1,8 +1,6 @@
 package matchtests
 
 import (
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -18,12 +16,15 @@ import (
 // 预期：
 //  后4个玩家都收到了创建房间通知和游戏开始通知
 func Test_OfflineMatch(t *testing.T) {
-	client1 := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-	assert.NotNil(t, client1)
-	player1, err := utils.LoginUser(client1, global.AllocUserName())
+	accountID := global.AllocAccountID()
+	accountName := utils.GenerateAccountName(accountID)
+	player1, err := utils.LoginPlayer(accountID, accountName)
+	assert.Nil(t, err)
+	assert.NotNil(t, player1)
+
 	utils.ApplyJoinDesk(player1)
 	assert.Nil(t, err)
-	client1.Stop()
+	player1.GetClient().Stop()
 	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
 
 	params := global.NewCommonStartGameParams()

@@ -23,12 +23,8 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 }
 
 func handleRoomReq(clientID uint64, header *steve_proto_gaterpc.Header, body []byte) (rspMsg []exchanger.ResponseMsg) {
-	playerMgr := global.GetPlayerMgr()
-	player := playerMgr.GetPlayerByClientID(clientID)
-	if player == nil {
-		return
-	}
+	playerID := header.GetPlayerId()
 	deskMgr := global.GetDeskMgr()
-	deskMgr.HandlePlayerRequest(player.GetID(), header, body)
+	deskMgr.HandlePlayerRequest(playerID, header, body)
 	return []exchanger.ResponseMsg{}
 }

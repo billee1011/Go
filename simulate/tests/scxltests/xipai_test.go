@@ -3,8 +3,6 @@ package tests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
@@ -18,11 +16,12 @@ func Test_Xipai(t *testing.T) {
 	xipaiExpectors := map[int]interfaces.MessageExpector{}
 
 	for i := 0; i < 4; i++ {
-		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-		assert.NotNil(t, client)
-		player, err := utils.LoginUser(client, global.AllocUserName())
+		accountID := global.AllocAccountID()
+		accountName := utils.GenerateAccountName(accountID)
+		player, err := utils.LoginPlayer(accountID, accountName)
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
+		client := player.GetClient()
 
 		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_XIPAI_NTF)
 		assert.Nil(t, err)

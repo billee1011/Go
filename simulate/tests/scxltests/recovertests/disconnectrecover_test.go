@@ -3,8 +3,6 @@ package recovertests
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -44,13 +42,13 @@ func Test_DisconnectRecover(t *testing.T) {
 	expector, _ = mopaiPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf2 := &room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf2))
-	client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-	assert.NotNil(t, client)
-	player, err := utils.LoginUser(client, disconnectPlayer.Player.GetUsrName())
+
+	accountID := disconnectPlayer.Player.GetAccountID()
+	accountName := utils.GenerateAccountName(accountID)
+	player, err := utils.LoginPlayer(accountID, accountName)
 	assert.Nil(t, err)
 	assert.NotNil(t, player)
-	assert.Equal(t, disconnectPlayer.Player.GetID(), player.GetID())
-
+	client := player.GetClient()
 	// step 4
 	utils.UpdatePlayerClientInfo(client, player, deskData)
 	assert.Nil(t, utils.SendRecoverGameReq(disconnectSeat, deskData))

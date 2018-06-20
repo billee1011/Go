@@ -176,7 +176,14 @@ func newPlayer(accountID uint64) uint64 {
 		entry.WithError(err).Errorln("创建玩家失败")
 		return 0
 	}
+	initPlayerData(playerID)
 	return playerID
+}
+
+func initPlayerData(playerID uint64) {
+	// TODO： 初始化金币
+	player.SetPlayerCoin(playerID, 10000)
+
 }
 
 // generateToken 生成认证码

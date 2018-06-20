@@ -6,7 +6,8 @@ import (
 	"steve/client_pb/gate"
 	"steve/client_pb/login"
 	msgid "steve/client_pb/msgId"
-	"steve/client_pb/room"
+	"steve/simulate/config"
+	"steve/simulate/connect"
 	"steve/simulate/facade"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -17,10 +18,11 @@ import (
 )
 
 type clientPlayer struct {
-	playerID uint64
-	coin     uint64
-	client   interfaces.Client
-	usrName  string
+	playerID  uint64
+	coin      uint64
+	client    interfaces.Client
+	usrName   string
+	accountID uint64
 }
 
 func (p *clientPlayer) GetID() uint64 {
@@ -38,58 +40,48 @@ func (p *clientPlayer) GetUsrName() string {
 	return p.usrName
 }
 
-// LoginUser 登录用户
-func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlayer, error) {
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "LoginUser",
-		"user_name": userName,
-	})
-
-	rsp := room.RoomLoginRsp{}
-	err := client.Request(interfaces.SendHead{
-		Head: interfaces.Head{
-			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_REQ),
-		},
-	}, &room.RoomLoginReq{
-		UserName: &userName,
-	}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
-
-	if err != nil {
-		logEntry.WithError(err).Errorln(errRequestFailed)
-		return nil, err
-	}
-	return &clientPlayer{
-		playerID: rsp.GetPlayerId(),
-		coin:     rsp.GetCoin(),
-		client:   client,
-		usrName:  userName,
-	}, nil
+func (p *clientPlayer) GetAccountID() uint64 {
+	return p.accountID
 }
 
-// LoginVisitor 登录游客
-func LoginVisitor(client interfaces.Client, RoomVisitorLoginReq *room.RoomVisitorLoginReq) (interfaces.ClientPlayer, error) {
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "LoginVisitor",
-	})
-
-	rsp := room.RoomVisitorLoginRsp{}
-	err := client.Request(interfaces.SendHead{
-		Head: interfaces.Head{
-			MsgID: uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_REQ),
-		},
-	}, RoomVisitorLoginReq, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP), &rsp)
-
+// LoginPlayer 登录玩家
+func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer, error) {
+	loginClient := connect.NewTestClient(config.LoginServerAddr, config.ClientVersion)
+	if loginClient == nil {
+		return nil, errors.New("连接登录服失败")
+	}
+	loginResponse, err := RequestAuth(loginClient, accountID, accountName, time.Minute*5)
 	if err != nil {
-		logEntry.WithError(err).Errorln(errRequestFailed)
-		return nil, err
+		return nil, fmt.Errorf("发起登录服认证请求失败：%v", err)
+	}
+	if loginResponse.GetErrCode() != login.ErrorCode_SUCCESS {
+		return nil, fmt.Errorf("登录服认证失败， 错误码： %v", loginResponse.GetErrCode())
+	}
+
+	playerID := loginResponse.GetPlayerId()
+	expire := loginResponse.GetExpire()
+	token := loginResponse.GetGateToken()
+
+	gateIP := loginResponse.GetGateIp()
+	gatePort := loginResponse.GetGatePort()
+	gateAddr := fmt.Sprintf("%s:%d", gateIP, gatePort)
+
+	gateClient := connect.NewTestClient(gateAddr, config.ClientVersion)
+	if gateClient == nil {
+		return nil, fmt.Errorf("连接网关服失败，网关地址：%v", gateAddr)
+	}
+	err = RequestGateAuth(gateClient, playerID, expire, token)
+	if err != nil {
+		return nil, fmt.Errorf("网关认证失败: %v", err)
 	}
 	return &clientPlayer{
-		playerID: rsp.GetPlayerId(),
-		coin:     rsp.GetCoin(),
-		client:   client,
+		playerID:  playerID,
+		coin:      0, // TODO, 从服务器加载数据
+		client:    gateClient,
+		usrName:   "", // TODO: delete
+		accountID: accountID,
 	}, nil
+
 }
 
 func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPlayer, deskData *DeskData) {

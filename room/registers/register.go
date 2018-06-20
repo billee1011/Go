@@ -4,7 +4,6 @@ import (
 	"steve/client_pb/msgId"
 	"steve/room/chat"
 	"steve/room/desks"
-	"steve/room/login"
 	"steve/structs/exchanger"
 )
 
@@ -17,8 +16,6 @@ func RegisterHandlers(e exchanger.Exchanger) {
 		}
 	}
 
-	registe(msgid.MsgID_ROOM_LOGIN_REQ, login.HandleLogin)                     // 登录请求
-	registe(msgid.MsgID_ROOM_VISITOR_LOGIN_REQ, login.HandleVisitorLogin)      // 游客登录请求
 	registe(msgid.MsgID_ROOM_JOIN_DESK_REQ, desks.HandleRoomJoinDeskReq)       // 加入牌桌请求
 	registe(msgid.MsgID_ROOM_DESK_QUIT_REQ, desks.HandleRoomDeskQuitReq)       // 退出牌桌请求
 	registe(msgid.MsgID_ROOM_DESK_CONTINUE_REQ, desks.HandleRoomContinueReq)   // 续局请求

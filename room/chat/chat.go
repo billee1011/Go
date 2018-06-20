@@ -27,7 +27,7 @@ func init() {
 //RoomChatMsgReq 房间玩家的聊天信息请求
 func RoomChatMsgReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskChatReq) (ret []exchanger.ResponseMsg) {
 	// 获取聊天发起者ID
-	playerID := global.GetPlayerMgr().GetPlayerByClientID(clientID).GetID()
+	playerID := header.GetPlayerId()
 	// 日志
 	logentry := logrus.WithFields(logrus.Fields{
 		"func_name": "RoomChatMsgReq",

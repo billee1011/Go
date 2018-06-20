@@ -1,9 +1,7 @@
 package core
 
 import (
-	"fmt"
 	"steve/peipai"
-	"steve/room/core/exchanger"
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
 	"steve/room/registers"
@@ -21,16 +19,6 @@ import (
 	_ "steve/room/settle"
 )
 
-var flags struct {
-	useGateway bool
-}
-
-func parseFlags() {
-	flags.useGateway = !viper.GetBool("independent")
-
-	logrus.WithField("flag", flags).Infoln("解析 flags ")
-}
-
 type roomCore struct {
 	e   *structs.Exposer
 	dog net.WatchDog
@@ -43,11 +31,7 @@ func NewService() service.Service {
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	logrus.Info("room init")
-	parseFlags()
 	c.e = e
-	if !flags.useGateway {
-		e.Exchanger = exchanger.CreateLocalExchanger(&connectObserver{})
-	}
 	global.SetMessageSender(e.Exchanger)
 	registers.RegisterHandlers(e.Exchanger)
 	registerLbReporter(e)
@@ -56,24 +40,7 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 
 func (c *roomCore) Start() error {
 	go startPeipai()
-	if !flags.useGateway {
-		return c.startLocalExchanger()
-	}
 	return nil
-}
-
-func (c *roomCore) startLocalExchanger() error {
-	listenIP := viper.GetString(ListenClientAddr)
-	listenPort := viper.GetInt(ListenClientPort)
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"listen_ip":   listenIP,
-		"listen_port": listenPort,
-	})
-	logEntry.Info("准备监听")
-
-	addr := fmt.Sprintf("%s:%d", listenIP, listenPort)
-	return exchanger.StartLocalExchanger(c.e.Exchanger, addr, net.TCP)
 }
 
 func startPeipai() error {

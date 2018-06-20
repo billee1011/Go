@@ -6,7 +6,6 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/structs"
@@ -119,13 +118,11 @@ var errCreateClientFailed = errors.New("创建客户端连接失败")
 func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
 	players := []interfaces.ClientPlayer{}
 	for i := 0; i < 4; i++ {
-		client := connect.NewTestClient(ServerAddr, ClientVer)
-		if client == nil {
-			return nil, errCreateClientFailed
-		}
-		player, err := LoginUser(client, global.AllocUserName())
+		accountID := global.AllocAccountID()
+		accountName := GenerateAccountName(accountID)
+		player, err := LoginPlayer(accountID, accountName)
 		if err != nil {
-			return nil, fmt.Errorf("登录用户失败：%v", err)
+			return nil, fmt.Errorf("登录用户失败： %v", err)
 		}
 		players = append(players, player)
 	}
