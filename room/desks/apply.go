@@ -15,6 +15,7 @@ import (
 
 type joinApplyManager struct {
 	applyChannel chan uint64
+	applyXueZhan chan uint64
 }
 
 var gJoinApplyMgr *joinApplyManager
@@ -32,6 +33,7 @@ func initApplyMgr() {
 func newApplyMgr(runChecker bool) *joinApplyManager {
 	mgr := &joinApplyManager{
 		applyChannel: make(chan uint64, 1024),
+		applyXueZhan: make(chan uint64, 1024),
 	}
 	if runChecker {
 		go mgr.checkMatch()
@@ -39,13 +41,23 @@ func newApplyMgr(runChecker bool) *joinApplyManager {
 	return mgr
 }
 
-func (jam *joinApplyManager) getApplyChannel() chan uint64 {
-	return jam.applyChannel
+func (jam *joinApplyManager) getApplyChannel(gameID room.GameId) chan uint64 {
+	switch gameID {
+	case room.GameId_GAMEID_XUELIU:
+		return jam.applyChannel
+	case room.GameId_GAMEID_XUEZHAN:
+		return jam.applyXueZhan
+	default:
+		return nil
+	}
 }
 
-func (jam *joinApplyManager) joinPlayer(playerID uint64) room.RoomError {
+func (jam *joinApplyManager) joinPlayer(playerID uint64, gameID room.GameId) room.RoomError {
 	// TODO: 检测玩家状态
-	ch := jam.getApplyChannel()
+	ch := jam.getApplyChannel(gameID)
+	if ch == nil {
+		return room.RoomError_FAILED
+	}
 	ch <- playerID
 	return room.RoomError_SUCCESS
 }
@@ -65,14 +77,19 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 }
 
 func (jam *joinApplyManager) checkMatch() {
+	go jam.doApply(room.GameId_GAMEID_XUELIU)
+	go jam.doApply(room.GameId_GAMEID_XUEZHAN)
+
+}
+
+func (jam *joinApplyManager) doApply(gameid room.GameId) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "checkMatch",
 	})
 	deskFactory := global.GetDeskFactory()
 	deskMgr := global.GetDeskMgr()
 	applyPlayers := make([]uint64, 0, 4)
-
-	ch := jam.getApplyChannel()
+	ch := jam.getApplyChannel(gameid)
 
 	for {
 		playerID, ok := <-ch
@@ -90,7 +107,8 @@ func (jam *joinApplyManager) checkMatch() {
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]
 			applyPlayers = applyPlayers[4:]
-			result, err := deskFactory.CreateDesk(players, 1, interfaces.CreateDeskOptions{})
+			//TODO:gameID这里是写死的,需要从协议里面拿
+			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})
 			if err != nil {
 				logEntry.WithFields(
 					logrus.Fields{
@@ -150,6 +168,7 @@ func notifyDeskCreate(desk interfaces.Desk) {
 
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求
 // 	将玩家加入到申请列表中， 并且回复；
+//TODO:RoomJoinDeskReq消息中需要加入gameID字段
 func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (rspMsg []exchanger.ResponseMsg) {
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayerByClientID(clientID)
@@ -172,7 +191,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		rsp.ErrCode = room.RoomError_DESK_GAME_PLAYING.Enum()
 		return
 	}
-	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
+	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID(), req.GetGameId()).Enum()
 	return
 }
 
@@ -195,7 +214,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 
-	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
+	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID(), 1).Enum()
 	return
 }
 
