@@ -21,11 +21,13 @@ type receiver struct {
 func (r *receiver) HandleClientMessage(ctx context.Context, msg *steve_proto_gaterpc.ClientMessage) (*steve_proto_gaterpc.HandleResult, error) {
 	header := msg.GetHeader()
 	msgID := header.GetMsgId()
+	playerID := header.GetPlayerId()
 	handler := r.handlerOf(msgID)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "receiver.HandleClientMessage",
 		"msg_id":    msgID,
 		"client_id": msg.GetClientId(),
+		"player_id": playerID,
 	})
 	if handler == nil {
 		logEntry.Warnln("没有对应的消息处理器")

@@ -55,10 +55,9 @@ func (o *messageObserver) callHandler(logEntry *logrus.Entry, handler *iexchange
 }
 
 func (o *messageObserver) OnRecv(clientID uint64, header *steve_proto_base.Header, body []byte) {
-	logEntry := logrus.WithField("name", "msgHandler.HandleClientMessage")
-
 	msgID := header.GetMsgId()
-	logEntry = logEntry.WithFields(logrus.Fields{
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "messageObserver.OnRecv",
 		"msg_id":    msgID,
 		"client_id": clientID,
 	})

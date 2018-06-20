@@ -11,10 +11,14 @@ const (
 
 	// ListenClientAddrInquire 客户端连接地址
 	ListenClientAddrInquire = "lis_client_addr_inquire"
+
+	// AuthKey 认证秘钥
+	AuthKey = "auth_key"
 )
 
 func initDefaultConfig() {
 	viper.SetDefault(ListenClientAddr, "127.0.0.1")
 	viper.SetDefault(ListenClientPort, 36001)
 	viper.SetDefault(ListenClientAddrInquire, "127.0.0.1")
+	viper.SetDefault(AuthKey, "stevegame.cn")
 }

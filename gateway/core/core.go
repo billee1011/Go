@@ -12,6 +12,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	_ "steve/gateway/cpm" // 初始化 connectPlayerMap
 )
 
 type gatewayCore struct {
@@ -61,8 +63,7 @@ func (c *gatewayCore) startWatchDog() error {
 	}
 	co := &connectObserver{}
 
-	// TODO  id 分配器
-	c.dog = c.e.WatchDogFactory.NewWatchDog(nil, mo, co)
+	c.dog = c.e.WatchDogFactory.NewWatchDog(&idAllocator{}, mo, co)
 	if c.dog == nil {
 		logEntry.Error("创建 watchdog 失败")
 		return fmt.Errorf("创建 watchdog 失败")

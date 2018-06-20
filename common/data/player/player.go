@@ -3,6 +3,7 @@ package player
 import (
 	"errors"
 	"fmt"
+	"steve/common/data/helper"
 	"steve/common/data/redis"
 
 	"github.com/Sirupsen/logrus"
@@ -41,19 +42,5 @@ func NewPlayer(accountID uint64, playerID uint64) error {
 
 // AllocPlayerID 分配玩家 ID
 func AllocPlayerID() (uint64, error) {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "AllocPlayerID",
-	})
-	redis := redis.GetRedisClient()
-	cmd := redis.Incr("max_player_id")
-	if cmd.Err() != nil {
-		entry.WithError(cmd.Err()).Errorln(errRedisOperation)
-		return 0, errRedisOperation
-	}
-	playerID, err := cmd.Result()
-	if err != nil {
-		entry.WithError(err).Errorln(errRedisOperation)
-		return 0, errRedisOperation
-	}
-	return uint64(playerID), nil
+	return helper.AllocID("max_player_id")
 }

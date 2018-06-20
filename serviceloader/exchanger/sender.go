@@ -3,8 +3,8 @@ package exchanger
 import (
 	"context"
 	"errors"
+	"steve/common/data/connect"
 	"steve/structs"
-	"steve/structs/common"
 	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
@@ -118,14 +118,21 @@ func (s *sender) classify(clientIDs []uint64) map[*grpc.ClientConn][]uint64 {
 
 // aquireClientGate 查询客户端连接所在的网关服
 func (s *sender) aquireClientGate(clientID uint64) *grpc.ClientConn {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "sender.aquireClientGate",
+		"client_id": clientID,
+	})
+
 	g := structs.GetGlobalExposer()
-	// TODO : 暂时先用任意网关代替
-	if cc, err := g.RPCClient.GetConnectByServerName(common.GateServiceName); err == nil {
-		return cc
+	gateAddr, err := connect.GetConnectGatewayAddr(clientID)
+	if err != nil {
+		entry.WithError(err).Infoln("连接 ID 没有对应的网关服")
+		return nil
 	}
-	// logrus.WithFields(logrus.Fields{
-	// 	"func_name": "sender.aquireClientGate",
-	// 	"client_id": clientID,
-	// }).Debugln("客户端不在线")
-	return nil
+	cc, err := g.RPCClient.GetConnectByAddr(gateAddr)
+	if err != nil {
+		entry.WithError(err).Infoln("获取网关连接失败")
+		return nil
+	}
+	return cc
 }

@@ -5,6 +5,7 @@ package steve.proto.gaterpc;
 
 message Header {
     uint32 msg_id = 1;
+    uint64 player_id = 2;
 }
 
 // 客户端消息
@@ -12,9 +13,9 @@ message ClientMessage {
     // 客户端 ID
     uint64 client_id = 1;
     // 消息头
-    Header header = 2;
+    Header header = 3;
     // 消息内容
-    bytes request_data = 3;
+    bytes request_data = 4;
 }
 
 // ResponseMessage 回复消息

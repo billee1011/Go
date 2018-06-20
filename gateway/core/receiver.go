@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	msgid "steve/client_pb/msgId"
+	"steve/gateway/global"
 	"steve/gateway/msgrange"
 	"steve/structs"
 	"steve/structs/net"
@@ -48,18 +49,26 @@ func (o *receiver) getConnection(msgID uint32, clientID uint64) (*grpc.ClientCon
 	return cc, nil
 }
 
+func (o *receiver) getPlayerID(clientID uint64) uint64 {
+	cpm := global.GetConnectPlayerMap()
+	return cpm.GetConnectPlayer(clientID)
+}
+
 // handle 通过 RPC 服务处理消息
 func (o *receiver) handle(cc *grpc.ClientConn, clientID uint64, msgID uint32, body []byte) ([]*steve_proto_gaterpc.ResponseMessage, error) {
+	playerID := o.getPlayerID(clientID)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"name":      "receiver.handle",
 		"client_id": clientID,
+		"player_id": playerID,
 		"msg_id":    msgID,
 	})
 	client := steve_proto_gaterpc.NewMessageHandlerClient(cc)
 	handleResult, err := client.HandleClientMessage(context.Background(), &steve_proto_gaterpc.ClientMessage{
 		ClientId: clientID,
 		Header: &steve_proto_gaterpc.Header{
-			MsgId: msgID,
+			MsgId:    msgID,
+			PlayerId: playerID,
 		},
 		RequestData: body,
 	})
