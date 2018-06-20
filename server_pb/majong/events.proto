@@ -34,8 +34,10 @@ enum EventID {
     event_peng_finish = 25;             // 碰完成事件
     event_timer = 26;                   // 定时事件
 
-    event_huansanzhang_finish = 27;    // 换三张完成事件
+    event_huansanzhang_finish = 27;     // 换三张完成事件
     event_cartoon_finish_request = 28;  // 动画完成请求事件
+
+    event_settle_finish = 29;           // 结算完成事件
 }
 
 // RequestEventHead 请求事件通用头
@@ -103,4 +105,9 @@ message QiRequestEvent {
 // CartoonFinishRequestEvent 动画完成时间
 message CartoonFinishRequestEvent {
     int32 cartoon_type = 1; // 动画类型 ，参考 client_pb.CartoonType
+}
+
+// SettleFinishEvent 结算完成事件
+message SettleFinishEvent {
+    repeated uint64 player_id = 1; // 认输玩家ID
 }

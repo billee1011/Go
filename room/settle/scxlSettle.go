@@ -51,16 +51,16 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 				// 记录玩家输赢分数
 				pidScore := make(map[uint64]int64, 0)
 				// 记录金币为0的玩家id
-				lessCoinPids := make([]uint64, 0)
+				giveupPlayers := make([]uint64, 0)
 				// 若存在相关联的一组SettleInfo(一炮多响情况)
 				if len(SInfo.GroupId) > 1 {
 					// 合并该组settleInfo,计算实际输赢分
 					groupSInfos, sumSInfo := s.sumSettleInfo(mjContext.SettleInfos, SInfo)
-					pidScore, lessCoinPids = s.calcScore(deskPlayers, sumSInfo)
+					pidScore, giveupPlayers = s.calcScore(deskPlayers, sumSInfo)
 					s.resolveScore(groupSInfos, pidScore)
 				} else {
 					// 单条settleInfo直接计算输赢分
-					pidScore, lessCoinPids = s.calcScore(deskPlayers, SInfo)
+					pidScore, giveupPlayers = s.calcScore(deskPlayers, SInfo)
 					s.settleMap[SInfo.Id] = pidScore
 					s.handleSettle[SInfo.Id] = true
 				}
@@ -70,16 +70,14 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 				NotifyMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 					BillPlayersInfo: billplayerInfos,
 				})
-				//TODO
-				logrus.WithFields(logrus.Fields{
-					"lessCoinPids": lessCoinPids,
-				}).Debugln("金币数不足")
-				// 通知玩家金币不足
-				// for _, lessCoinPid := range lessCoinPids {
-				// 	NotifyPlayersMessage(desk, []uint64{lessCoinPid}, msgid.MsgID_ROOM_PLAYERINFO_NTF, &room.RoomPlayerInfoNtf{
-				// 		LessCoin: proto.Bool(true),
-				// 	})
-				// }
+				if len(giveupPlayers) != 0 {
+					// 广播认输信息
+					NotifyMessage(desk, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
+						PlayerId: giveupPlayers,
+					})
+				}
+				// 结算完生成事件
+				s.generateSettleEvent(desk, giveupPlayers)
 			}
 		}
 	}
@@ -144,6 +142,31 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 		// 通知该玩家单局结算信息
 		NotifyPlayersMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
+}
+
+// generateSettleEvent 生成结算finish事件
+func (s *scxlSettle) generateSettleEvent(desk interfaces.Desk, giveupPlayers []uint64) {
+	// 序列化
+	settlefinish := &majongpb.SettleFinishEvent{
+		PlayerId: giveupPlayers,
+	}
+	eventContext, err := proto.Marshal(settlefinish)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"msg": settlefinish,
+		}).WithError(err).Errorln("消息序列化失败")
+		return
+	}
+	event := majongpb.AutoEvent{
+		EventId:      majongpb.EventID_event_settle_finish,
+		EventContext: eventContext,
+	}
+	desk.PushEvent(interfaces.Event{
+		ID:        event.GetEventId(),
+		Context:   event.GetEventContext(),
+		EventType: interfaces.NormalEvent,
+		PlayerID:  0,
+	})
 }
 
 // sumSettleInfo 合并相关联的一组SettleInfo的Score分数为一条settleInfo

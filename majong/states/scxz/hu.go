@@ -1,4 +1,4 @@
-package common
+package scxz
 
 import (
 	"steve/client_pb/msgId"
@@ -6,6 +6,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/states/common"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -25,7 +26,7 @@ var _ interfaces.MajongState = new(HuState)
 func (s *HuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_hu_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID_state_mopai, nil
+		return majongpb.StateID_state_hu_settle, nil
 	}
 	return majongpb.StateID_state_hu, global.ErrInvalidEvent
 }
@@ -46,7 +47,7 @@ func (s *HuState) OnExit(flow interfaces.MajongFlow) {
 
 // addHuCard 添加胡的牌
 func (s *HuState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64, isReal bool) {
-	AddHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao, isReal)
+	common.AddHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao, isReal)
 }
 
 // doHu 执行胡操作
@@ -67,7 +68,6 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 		isReal = false
 	}
 	s.notifyHu(flow)
-	s.doHuSettle(flow)
 	return
 }
 
@@ -106,7 +106,7 @@ func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	srcPlayer := mjContext.GetLastChupaiPlayer()
 	players := mjContext.GetPlayers()
 
-	mjContext.MopaiPlayer = CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
+	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 

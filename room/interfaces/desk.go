@@ -50,6 +50,9 @@ type Desk interface {
 	// PushRequest 压入玩家请求
 	PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
 
+	// PushEvent 压入事件
+	PushEvent(event Event)
+
 	// PlayerQuit 玩家退出
 	PlayerQuit(playerID uint64)
 

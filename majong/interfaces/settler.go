@@ -18,7 +18,7 @@ type HuSettleParams struct {
 	GangCard   majongpb.GangCard              // 放炮者杠的牌(呼叫转移时需要)
 	AllPlayers []uint64                       // 所有玩家
 	SettleType majongpb.SettleType            // 结算类型
-	HuType     majongpb.SettleHuType          // 胡牌类型
+	HuType     majongpb.HuType                // 胡牌类型
 	CardTypes  map[uint64][]majongpb.CardType // 玩家对应的牌型
 	CardValues map[uint64]uint32              // 玩家对应的牌型倍数
 	GenCount   map[uint64]uint32              // 玩家对应的根的数目

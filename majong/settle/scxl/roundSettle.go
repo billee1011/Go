@@ -142,7 +142,7 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 
 // newRoundSettleInfo 初始化生成一条新的结算信息
 func newRoundSettleInfo(params interfaces.RoundSettleParams, scoreMap map[uint64]int64,
-	huType majongpb.SettleHuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.RoundSettleParams) {
+	huType majongpb.HuType, settleType majongpb.SettleType) (*majongpb.SettleInfo, interfaces.RoundSettleParams) {
 	settleInfo := &majongpb.SettleInfo{
 		Id:         params.SettleID,
 		Scores:     scoreMap,
