@@ -7,8 +7,9 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-//GetCanCheckPlayerByGameID 获取能检测胡玩家，根据游戏ID
-func GetCanCheckPlayerByGameID(gameID int32, players []*majongpb.Player) []*majongpb.Player {
+//GetNormalPlayersByGameID 获取正常玩家数组
+func GetNormalPlayersByGameID(gameID int32, players []*majongpb.Player) []*majongpb.Player {
+	// 不是血战直接返回所有玩家
 	if gameID != gutils.SCXZGameID {
 		return players
 	}
@@ -24,7 +25,7 @@ func GetCanCheckPlayerByGameID(gameID int32, players []*majongpb.Player) []*majo
 	}
 	defer func() {
 		logrus.WithFields(logrus.Fields{
-			"func_name":            GetCanCheckPlayerByGameID,
+			"func_name":            "GetNormalPlayersByGameID",
 			"gameID":               gameID,
 			"off_normal_playersID": playersID,
 		}).Info("判断玩家是否是正常玩家")
@@ -35,16 +36,16 @@ func GetCanCheckPlayerByGameID(gameID int32, players []*majongpb.Player) []*majo
 //IsNormalPlayerByGameID 判断玩家是否是正常玩家，根据游戏ID(非SCXZ返回fale，在SCXZ下是正常状态下返回fale)
 func IsNormalPlayerByGameID(gameID int32, player *majongpb.Player) bool {
 	if gameID != gutils.SCXZGameID || player.GetPlayerState() == majongpb.PlayerState_normal {
-		return false
+		return true
 	}
 	defer func() {
 		logrus.WithFields(logrus.Fields{
-			"func_name":    IsNormalPlayerByGameID,
+			"func_name":    "IsNormalPlayerByGameID",
 			"gameID":       gameID,
 			"playerStatus": player.GetPlayerState(),
 		}).Info("判断玩家是否是正常玩家")
 	}()
-	return true
+	return false
 }
 
 //GetNextNormalPlayerByID 获取下个正常状态的玩家
@@ -58,7 +59,7 @@ func GetNextNormalPlayerByID(gameID int32, srcPlayerID uint64, players []*majong
 	}
 	defer func() {
 		logrus.WithFields(logrus.Fields{
-			"func_name":   GetNextNormalPlayerByID,
+			"func_name":   "GetNextNormalPlayerByID",
 			"gameID":      gameID,
 			"srcPlayerID": srcPlayerID,
 			"nextPlayer":  palyer.GetPalyerId(),

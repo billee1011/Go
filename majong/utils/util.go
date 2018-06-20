@@ -485,10 +485,10 @@ func TransGangCard(gangCards []*majongpb.GangCard) []*majongpb.Card {
 func GetGameName(flow interfaces.MajongFlow) string {
 	gameID := flow.GetMajongContext().GetGameId()
 	var gameName string
-	if gameID == 1 {
+	if gameID == gutils.SCXLGameID {
 		gameName = "scxl"
 	}
-	if gameID == 2 {
+	if gameID == gutils.SCXZGameID {
 		gameName = "scxz"
 	}
 	return gameName

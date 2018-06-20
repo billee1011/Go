@@ -53,7 +53,7 @@ func (f *FapaiState) OnExit(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (f *FapaiState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	newState := getNextState(mjcontext)
+	newState := f.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "nextState",
 		"nextState": newState,
@@ -135,7 +135,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 }
 
 // 下一状态获取
-func getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	// 判断是否换三张
 	isHsz := mjContext.GetOption().GetHasHuansanzhang()
 	if isHsz {
