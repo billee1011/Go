@@ -1,6 +1,7 @@
 package desks
 
 import (
+	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
@@ -268,5 +269,28 @@ func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	err := ms.SendPackage(clientID, head, body)
 	if err != nil {
 		logEntry.WithError(err).Errorln("发送消息失败")
+	}
+}
+
+// HandleRoomNeedResumeReq 是否需要恢复对局请求
+func HandleRoomNeedResumeReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+	playerID := player.GetID()
+	desk, exist := ExistInDesk(playerID)
+	body := &room.RoomDeskNeedReusmeRsp{
+		IsNeed: proto.Bool(exist),
+	}
+	fmt.Println("HandleRoomNeedResumeReq@@@@@@@@@@@@@@@@@@@")
+	fmt.Println(exist)
+	if exist {
+		gameID := room.GameId(desk.GetGameID())
+		body.GameId = &gameID
+	}
+	return []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP),
+			Body:  body,
+		},
 	}
 }
