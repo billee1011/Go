@@ -37,7 +37,7 @@ func Test_QuitRecover(t *testing.T) {
 	expector, _ = mopaiPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf2 := &room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf2))
-	rsp, err := utils.ApplyJoinDesk(quitPlayer.Player)
+	rsp, err := utils.ApplyJoinDesk(quitPlayer.Player, room.GameId_GAMEID_XUELIU)
 	assert.Nil(t, err)
 	assert.Equal(t, room.RoomError_DESK_GAME_PLAYING, rsp.GetErrCode())
 	assert.Nil(t, utils.SendRecoverGameReq(quitSeat, deskData))

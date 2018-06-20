@@ -10,13 +10,13 @@ import (
 )
 
 // ApplyJoinDesk 申请加入牌桌
-func ApplyJoinDesk(player interfaces.ClientPlayer, gameID *room.GameId) (*room.RoomJoinDeskRsp, error) {
+func ApplyJoinDesk(player interfaces.ClientPlayer, gameID room.GameId) (*room.RoomJoinDeskRsp, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "ApplyJoinDesk",
 		"user_id":   player.GetID(),
 	})
 	req := room.RoomJoinDeskReq{
-		GameId: gameID,
+		GameId: &gameID,
 	}
 	rsp := room.RoomJoinDeskRsp{}
 	client := player.GetClient()

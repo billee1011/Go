@@ -36,7 +36,7 @@ func TestApplyJoinDesk(t *testing.T) {
 		assert.Nil(t, err)
 		gameStartNtfExpectors[i] = gameStartNtfExpector
 
-		_, err = utils.ApplyJoinDesk(player)
+		_, err = utils.ApplyJoinDesk(player, room.GameId_GAMEID_XUELIU)
 		assert.Nil(t, err)
 	}
 
