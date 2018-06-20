@@ -1,0 +1,1 @@
+protoc -I hszswitch hszswitch/hsz.proto --go_out=plugins=grpc:hszswitch 

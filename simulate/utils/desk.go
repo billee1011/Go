@@ -41,6 +41,9 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
+	if err := hszSwitch(params.IsHsz); err != nil {
+		return nil, err
+	}
 	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
 	// hszNotifyExpectors := createHSZNotifyExpector(players)
@@ -65,12 +68,12 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 		return nil, err
 	}
 	// 是否执行换三张
-	if gameID == 1 || params.IsHsz {
-		// 执行换三张
-		if err := executeHSZ(&dd, params.HszCards); err != nil {
-			return nil, err
-		}
+	// if gameID == 1 || (gameID == 2 && params.IsHsz) {
+	// 执行换三张
+	if err := executeHSZ(&dd, params.HszCards); err != nil {
+		return nil, err
 	}
+	// }
 	if err := executeDingque(&dd, params.DingqueColor); err != nil {
 		return nil, err
 	}
