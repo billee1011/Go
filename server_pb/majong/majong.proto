@@ -57,7 +57,7 @@ enum CardType{
 }
 
 // 玩家行牌状态
-enum PlayerState{
+enum XingPaiState{
     normal  = 0;   // 正常行牌
     give_up = 1;   // 认输
     hu      = 2;   // 胡了
@@ -119,7 +119,7 @@ message Player {
     repeated Card huansanzhang_cards = 14;  // 换三张的牌
     int32 mopai_count = 15;                 // 已经摸牌的次数
     ZixunRecord zixun_record = 16;          // 自询记录
-    XingPaiState xp_state = 17;                 // 玩家牌局状态
+    XingPaiState xp_state = 17;             // 玩家牌局状态
 
     map<string, bytes> properties = 256;    // 其他的一些属性
 } 
