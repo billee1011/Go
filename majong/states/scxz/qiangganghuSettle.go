@@ -4,9 +4,11 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/states/common"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -21,14 +23,21 @@ var _ interfaces.MajongState = new(GangSettleState)
 // 1.处理结算完成事件，返回摸牌状态
 // 2.处理玩家认输事件，返回游戏结束状态
 func (s *QiangGangHuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
-	s.setMopaiPlayer(flow)
 	if eventID == majongpb.EventID_event_settle_finish {
 		message := &majongpb.SettleFinishEvent{}
 		err := proto.Unmarshal(eventContext, message)
 		if err != nil {
 			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 		}
-		return s.settleOver(flow, message)
+		nextState, err := s.settleOver(flow, message)
+		if nextState == majongpb.StateID_state_mopai {
+			s.setMopaiPlayer(flow)
+		}
+		logrus.WithFields(logrus.Fields{
+			"func_name": "ProcessEvent",
+			"nextState": nextState,
+		}).Infoln("枪杠胡结算下个状态")
+		return nextState, err
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
 }
@@ -45,8 +54,22 @@ func (s *QiangGangHuSettleState) OnExit(flow interfaces.MajongFlow) {
 // setMopaiPlayer 设置摸牌玩家
 func (s *QiangGangHuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
-	mjContext.MopaiType = majongpb.MopaiType_MT_GANG
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "QiangGangHuSettleState.setMopaiPlayer",
+	})
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+	huPlayers := mjContext.GetLastHuPlayers()
+	srcPlayer := mjContext.GetLastMopaiPlayer()
+	players := mjContext.GetPlayers()
+
+	mopaiPlayerID := common.CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
+	// 摸牌玩家不能是非正常状态玩家
+	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
+	if !utils.IsNormalPlayer(mopaiPlayer) {
+		mopaiPlayer = utils.GetNextNormalPlayerByID(players, mopaiPlayerID)
+	}
+	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
+	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
 // doQiangGangHuSettle 抢杠胡结算
@@ -114,9 +137,22 @@ func (s *QiangGangHuSettleState) settleOver(flow interfaces.MajongFlow, message 
 			if player == nil {
 				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 			}
-			player.State = majongpb.PlayerState_give_up
+			player.XpState = majongpb.XingPaiState_give_up
 		}
-		return majongpb.StateID_state_gameover, nil
 	}
-	return majongpb.StateID(majongpb.StateID_state_mopai), nil
+	return s.nextState(mjContext), nil
+}
+
+// nextState 下个状态
+func (s *QiangGangHuSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
+	return s.getNextState(mjcontext)
+}
+
+// 下一状态获取
+func (s *QiangGangHuSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+	// 正常玩家<=1,游戏结束
+	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
+		return majongpb.StateID_state_gameover
+	}
+	return majongpb.StateID_state_mopai
 }

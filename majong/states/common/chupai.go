@@ -27,7 +27,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		context := flow.GetMajongContext()
 		// 通知听牌提示
 		utils.NotifyTingCards(flow, context.GetLastChupaiPlayer())
-
+		gameID := context.GetGameId()
 		players := context.GetPlayers()
 		card := context.GetLastOutCard()
 		var hasChupaiwenxun bool
@@ -36,7 +36,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		for _, player := range players {
 			//每个玩家的possibleActions都需要清空
 			player.PossibleActions = player.PossibleActions[:0]
-			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
+			if context.GetLastChupaiPlayer() == player.GetPalyerId() || !utils.IsPlayerContinueByGameID(gameID, player) {
 				continue
 			}
 			need := s.checkActions(flow, player, card)
@@ -51,7 +51,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			}).Info("出牌信息")
 			return majongpb.StateID_state_chupaiwenxun, nil
 		}
-		player := utils.GetNextPlayerByID(context.GetPlayers(), context.GetLastChupaiPlayer())
+		player := utils.GetNextPlayerByGameID(gameID, context.GetLastChupaiPlayer(), context.GetPlayers())
 		context.MopaiPlayer = player.GetPalyerId()
 		context.MopaiType = majongpb.MopaiType_MT_NORMAL
 		return majongpb.StateID_state_mopai, nil

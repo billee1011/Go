@@ -209,6 +209,10 @@ func (s *ChupaiwenxunState) onActionRequestEvent(eventID majongpb.EventID, event
 		logEntry.WithError(err).Infoln("玩家不能执行该行为")
 		return
 	}
+	if !utils.IsPlayerContinueByGameID(mjContext.GetGameId(), player) {
+		logEntry.Infoln("该玩家状态下不能执行该行为")
+		return
+	}
 	player.HasSelected, player.SelectedAction = true, action
 	return s.makeDecision(flow)
 }
