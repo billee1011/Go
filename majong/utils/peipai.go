@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"steve/peipai"
+	"steve/room/peipai"
 	majongpb "steve/server_pb/majong"
 	"strconv"
 )
