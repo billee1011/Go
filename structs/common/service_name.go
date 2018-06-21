@@ -10,4 +10,7 @@ const (
 
 	// GateServiceName Gate 服务名称
 	GateServiceName = "gate"
+
+	// MateServiceName  Match 服务名称
+	MatchServiceName = "match"
 )
