@@ -1,1 +1,3 @@
 hsz_switch_addr: 192.168.8.148:8081
+hsz_switch_ser_ip: 192.168.8.148
+hsz_switch_ser_port: 8082

@@ -25,11 +25,11 @@ func Test_SCXZ_StartGame_NoHsz(t *testing.T) {
 // Test_SCXZ_StartGame_NoHsz 测试游戏开始
 // 游戏开始流程包括： 登录，加入房间，配牌，洗牌，发牌,定缺
 // 期望出现换三张
-func Test_SCXZ_StartGame_NoHsz2(t *testing.T) {
+func Test_SCXZ_StartGame_Hsz(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.GameID = room.GameId(2)
 	params.PeiPaiGame = "scxz"
-	params.IsHsz = true // 不换三张
+	params.IsHsz = true // 换三张
 	deskData, err := utils.StartGame(params)
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)

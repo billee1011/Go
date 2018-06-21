@@ -8,6 +8,8 @@ import (
 	hs "steve/room/hszswitch/hszswitch"
 	"strconv"
 
+	"github.com/hashicorp/consul/api"
+
 	"google.golang.org/grpc"
 
 	"github.com/Sirupsen/logrus"
@@ -29,8 +31,10 @@ const (
 	HszSwitchAddr = "hsz_switch_addr"
 	// HszSwitch 换三张开关关键字
 	HszSwitch = "hszswitch"
-	// HszSwitchSerAddr 换三张grpc服务地址
-	HszSwitchSerAddr = "hsz_switch_ser_addr"
+	// HszSwitchSerIP 换三张grpc服务地ip
+	HszSwitchSerIP = "hsz_switch_ser_ip"
+	// HszSwitchSerPort 换三张grpc服务地端口
+	HszSwitchSerPort = "hsz_switch_ser_port"
 )
 
 //Open 开关
@@ -68,17 +72,21 @@ func init() {
 
 func initDefaultConfig() {
 	viper.SetDefault(HszSwitchAddr, "127.0.0.1:8081")
-	viper.SetDefault(HszSwitchSerAddr, "127.0.0.1:8082")
+	viper.SetDefault(HszSwitchSerIP, "127.0.0.1")
+	viper.SetDefault(HszSwitchSerPort, 8082)
 }
 
 func hszGrpc() {
 	s := grpc.NewServer()
 	hs.RegisterSwitchHandlerServer(s, &server{})
-	listenAddr := viper.GetString(HszSwitchSerAddr)
+	listenIP := viper.GetString(HszSwitchSerIP)
+	listenPort := viper.GetInt(HszSwitchSerPort)
+	listenAddr := fmt.Sprintf("%v:%v", listenIP, listenPort)
 	logrus.WithFields(
 		logrus.Fields{
 			"listenAddr": listenAddr,
 		}).Infoln("启动换三张开关grpc服务")
+	registerToConsul(listenIP, listenPort)
 	lis, err := net.Listen("tcp", listenAddr)
 	if err != nil {
 		logrus.Fatalf("failed to listen hszGrpcServer:%v", err)
@@ -86,6 +94,23 @@ func hszGrpc() {
 	if err := s.Serve(lis); err != nil {
 		logrus.Fatalf("failed to start hszGrpcServer:%v", err)
 	}
+}
+
+func registerToConsul(ip string, port int) error {
+	consul, err := api.NewClient(api.DefaultConfig())
+	if err != nil {
+		return err
+	}
+	agent := consul.Agent()
+	if err = agent.ServiceRegister(&api.AgentServiceRegistration{
+		ID:      "xuezhanOption",
+		Name:    "xuezhanOption",
+		Port:    port,
+		Address: ip,
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func main() {
