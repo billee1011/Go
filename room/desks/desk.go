@@ -564,7 +564,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 func (d *desk) handlePlayerState(deskPlayer *deskPlayer) {
 	mjContext := d.dContext.mjContext
 	player := gutils.GetMajongPlayer(deskPlayer.GetPlayerID(), &mjContext)
-	if player.GetPlayerState() != server_pb.PlayerState_normal {
+	if player.GetXpState() != server_pb.XingPaiState_normal {
 		// delete(d.players, uint32(deskPlayer.GetSeat()))
 		deskMgr := global.GetDeskMgr()
 		deskMgr.RemoveDeskPlayerByPlayerID(deskPlayer.GetPlayerID())
