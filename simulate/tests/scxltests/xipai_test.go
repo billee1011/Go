@@ -28,7 +28,7 @@ func Test_Xipai(t *testing.T) {
 		assert.Nil(t, err)
 		xipaiExpectors[i] = expector
 		gameID := room.GameId(1)
-		_, err = utils.ApplyJoinDesk(player, &gameID)
+		_, err = utils.ApplyJoinDesk(player, gameID)
 		assert.Nil(t, err)
 	}
 
