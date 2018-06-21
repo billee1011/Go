@@ -65,7 +65,9 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		if player.State == majongpb.PlayerState_normal {
+			allPlayers = append(allPlayers, player.GetPalyerId())
+		}
 	}
 
 	cardValues := make(map[uint64]uint32, 0)

@@ -3,6 +3,7 @@ package factory
 import (
 	"steve/majong/interfaces"
 	"steve/majong/states/common"
+	"steve/majong/states/scxz"
 	majongpb "steve/server_pb/majong"
 )
 
@@ -21,17 +22,25 @@ func createSCXZState(stateID majongpb.StateID) interfaces.MajongState {
 	case majongpb.StateID_state_chupai:
 		return new(common.ChupaiState)
 	case majongpb.StateID_state_zimo:
-		return new(common.ZimoState)
+		return new(scxz.ZimoState)
+	case majongpb.StateID_state_zimo_settle:
+		return new(scxz.ZiMoSettleState)
 	case majongpb.StateID_state_hu:
-		return new(common.HuState)
+		return new(scxz.HuState)
+	case majongpb.StateID_state_hu_settle:
+		return new(scxz.HuSettleState)
 	case majongpb.StateID_state_qiangganghu:
-		return new(common.QiangganghuState)
+		return new(scxz.QiangganghuState)
+	case majongpb.StateID_state_qiangganghu_settle:
+		return new(scxz.QiangGangHuSettleState)
 	case majongpb.StateID_state_angang:
-		return new(common.AnGangState)
+		return new(scxz.AnGangState)
+	case majongpb.StateID_state_gang_settle:
+		return new(scxz.GangSettleState)
 	case majongpb.StateID_state_bugang:
-		return new(common.BuGangState)
+		return new(scxz.BuGangState)
 	case majongpb.StateID_state_gang:
-		return new(common.MingGangState)
+		return new(scxz.MingGangState)
 	case majongpb.StateID_state_peng:
 		return new(common.PengState)
 	case majongpb.StateID_state_dingque:

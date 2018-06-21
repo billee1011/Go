@@ -13,7 +13,7 @@ func (f *factory) CreateDeskSettler(gameID int) interfaces.DeskSettler {
 	case gutils.SCXLGameID:
 		return newScxlSettle()
 	case gutils.SCXZGameID:
-		return newScxlSettle()
+		return newScxzSettle()
 	default:
 		return new(nullSettler)
 	}

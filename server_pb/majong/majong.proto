@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package majong;
 
-
 import "common.proto";
 import "states.proto";
 import "events.proto";
@@ -12,7 +11,7 @@ import "events.proto";
 enum GangType {
     gang_angang     = 0;    // 暗杠
     gang_minggang   = 1;    // 明杠
-    gang_bugang     = 2;    // 补杠
+    gang_bugang     = 2;    // 补杠 
 }
 
 // 杠牌数据
@@ -58,10 +57,11 @@ enum CardType{
 }
 
 // 玩家行牌状态
-enum XingPaiState{
-    normal  = 0; // 正常行牌
-    give_up = 1; // 认输
-    hu      = 2;   // 已胡牌
+enum PlayerState{
+    normal  = 0;   // 正常行牌
+    give_up = 1;   // 认输
+    hu      = 2;   // 胡了
+    leave   = 3;   // 离开牌局
 }
 // 胡牌数据
 message HuCard {
@@ -77,7 +77,7 @@ message ChiCard {
     Card opr_card = 2;  // 吃的牌
     uint64 src_player = 3; // 吃牌来源玩家
 }
-
+ 
 // TingCardInfo 听牌信息
 message TingCardInfo{
     uint32 ting_card = 1; // 听的牌

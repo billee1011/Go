@@ -257,4 +257,4 @@
           events: 
             - event_qiangganghu_finish
           next_state: state_mopai  
-          
+#最后一行加注释，以便脚本转换         

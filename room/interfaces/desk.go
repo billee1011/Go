@@ -22,6 +22,8 @@ type DeskPlayer interface {
 	GetPlayerID() uint64
 	// GetSeat 获取座号
 	GetSeat() int
+	// GetEcoin 获取进入时金币数
+	GetEcoin() int
 	// IsQuit 是否已经退出
 	IsQuit() bool
 }
