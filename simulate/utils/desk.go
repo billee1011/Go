@@ -48,7 +48,7 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
 	// hszNotifyExpectors := createHSZNotifyExpector(players)
 	gameID := params.GameID // 设置游戏ID
-	seatMap, err := joinDesk(players, &gameID)
+	seatMap, err := joinDesk(players, gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +68,12 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 		return nil, err
 	}
 	// 是否执行换三张
-	// if gameID == 1 || (gameID == 2 && params.IsHsz) {
-	// 执行换三张
-	if err := executeHSZ(&dd, params.HszCards); err != nil {
-		return nil, err
+	if params.IsHsz {
+		// 执行换三张
+		if err := executeHSZ(&dd, params.HszCards); err != nil {
+			return nil, err
+		}
 	}
-	// }
 	if err := executeDingque(&dd, params.DingqueColor); err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.Clie
 	return players, nil
 }
 
-func joinDesk(players []interfaces.ClientPlayer, gameID *room.GameId) (map[int]uint64, error) {
+func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
 	expectors := []interfaces.MessageExpector{}
 	for _, player := range players {
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)

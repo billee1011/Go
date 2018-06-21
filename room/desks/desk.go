@@ -290,8 +290,8 @@ func (d *desk) initMajongContext() error {
 	for seat, player := range d.players {
 		players[seat] = player.playerID
 	}
-	// TODO 暂时这样，不能影响血流
-	flag := d.getHszSwitch(d.gameID)
+
+	flag := d.getHszSwitch(d.GetGameID())
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,

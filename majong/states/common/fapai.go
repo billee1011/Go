@@ -4,6 +4,7 @@ import (
 	"errors"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 
@@ -157,8 +158,17 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 
 // 下一状态获取
 func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+	// 血流开启换三张
+	if mjContext.GetGameId() == gutils.SCXLGameID {
+		return majongpb.StateID_state_huansanzhang
+	}
 	// 判断是否换三张
 	isHsz := mjContext.GetOption().GetHasHuansanzhang()
+	logrus.WithFields(logrus.Fields{
+		"func_name": "getNextState",
+		"isHsz":     isHsz,
+		"GameId":    mjContext.GetGameId(),
+	}).Infoln("下一状态获取")
 	if isHsz {
 		return majongpb.StateID_state_huansanzhang
 	}
