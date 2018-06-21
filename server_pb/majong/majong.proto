@@ -57,6 +57,12 @@ enum CardType{
     QingShiBaLuoHan  = 11;  //清十八罗汉
 }
 
+// 玩家行牌状态
+enum XingPaiState{
+    normal  = 0; // 正常行牌
+    give_up = 1; // 认输
+    hu      = 2;   // 已胡牌
+}
 // 胡牌数据
 message HuCard {
     Card card = 1; // 胡的牌
@@ -113,10 +119,10 @@ message Player {
     repeated Card huansanzhang_cards = 14;  // 换三张的牌
     int32 mopai_count = 15;                 // 已经摸牌的次数
     ZixunRecord zixun_record = 16;          // 自询记录
-    PlayerState player_state = 17;          // 玩家行牌状态
+    XingPaiState xp_state = 17;                 // 玩家牌局状态
 
     map<string, bytes> properties = 256;    // 其他的一些属性
-}
+} 
 
 // AutoEvent 自动事件
 message AutoEvent {
@@ -138,25 +144,12 @@ enum SettleType {
     settle_calldiver = 8;           // 呼叫转移
 }
 
-// SettleHuType 结算类型
-enum SettleHuType {
-    settle_hu_ganghoupao = 0;          // 杠后炮
-    settle_hu_qiangganghu = 1;         // 抢杠胡
-    settle_hu_noramaldianpao = 2;      // 点炮
-    settle_hu_gangkai = 3;             // 杠开
-    settle_hu_haidilao = 4;            // 海底捞
-    settle_hu_gangshanghaidilao = 5;   // 杠上海底捞
-    settle_hu_zimo = 6;                // 自摸
-    settle_hu_tianhu = 7;              // 天胡
-    settle_hu_dihu = 8;                // 地胡
-}
-
 // SettleInfo 结算信息
 message SettleInfo {
     uint64 id = 1;                     // 结算 id 
     map<uint64, int64> scores = 2;     // 玩家结算分数
     SettleType settle_type = 3;        // 结算类型
-    SettleHuType hu_type =4;           // 胡牌类型
+    HuType hu_type =4;                 // 胡牌类型
     repeated CardType card_type = 5;   // 牌组类型(胡牌时)
     uint32 card_value = 6;             // 牌组倍数
     uint32 gen_count=7;                // 根的数目
@@ -259,11 +252,4 @@ message ReplyClientMessage {
 message TimeCheckInfo {
     uint64 duration = 1;            // 多久之后作检测
     int32 type = 2;                 // 检测类型
-}
-
-// 玩家行牌状态
-enum PlayerState{
-    normal  = 0; // 正常行牌
-    give_up = 1; // 认输
-    hu      = 2;   // 胡了
 }

@@ -1,6 +1,7 @@
 package matchtests
 
 import (
+	"steve/client_pb/room"
 	"steve/simulate/config"
 	"steve/simulate/connect"
 	"steve/simulate/global"
@@ -21,7 +22,8 @@ func Test_OfflineMatch(t *testing.T) {
 	client1 := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
 	assert.NotNil(t, client1)
 	player1, err := utils.LoginUser(client1, global.AllocUserName())
-	utils.ApplyJoinDesk(player1)
+	utils.ApplyJoinDesk(player1, room.GameId_GAMEID_XUELIU)
+
 	assert.Nil(t, err)
 	client1.Stop()
 	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
