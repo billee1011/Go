@@ -291,13 +291,14 @@ func (d *desk) initMajongContext() error {
 		players[seat] = player.playerID
 	}
 
+	flag := d.getHszSwitch(d.GetGameID())
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
-			HasHuansanzhang:            true,
+			HasHuansanzhang:            flag,
 		},
 		// MajongOption: mjOption,
 		MajongOption: []byte{},
