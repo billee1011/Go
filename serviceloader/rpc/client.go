@@ -13,9 +13,9 @@ type ClientConnMgr struct {
 }
 
 // NewClient 创建对象
-func NewClient(caFile string, tlsServerName string) rpc.Client {
+func NewClient(caFile string, tlsServerName string, consulAddr string) rpc.Client {
 	return &ClientConnMgr{
-		loadBalancer: newLoadBalancer(),
+		loadBalancer: newLoadBalancer(consulAddr),
 		connectPool:  newConnectPool(caFile, tlsServerName),
 	}
 }

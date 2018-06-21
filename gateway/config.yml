@@ -7,16 +7,21 @@ rpc_addr: 127.0.0.1
 rpc_port: 36002
 rpc_server_name: gate
 
+# consul agent 地址
+consul_addr: 127.0.0.1:8500
+
+# nsqd TCP 监听地址
+nsqd_addr: 127.0.0.1:4150
+# nsqlookupd 的 HTTP 监听地址 
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161
+
+# 客户端监听地址
 lis_client_addr: 127.0.0.1
 lis_client_port: 36001
 
 # 客户端监听地址，需要返回给客户端用以发起连接
 lis_client_addr_inquire: 127.0.0.1
-
-
-nsqd_addr: 127.0.0.1:4150
-nsqlookupd_addrs: 
-  - 127.0.0.1:4161
 
 # 认证秘钥
 auth_key: stevegame.cn

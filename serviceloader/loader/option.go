@@ -17,15 +17,24 @@ type option struct {
 	rpcCAServerName string // 证书中的服务器名称
 	redisAddr       string // redis 服务地址
 	redisPasswd     string // redis 密码
+	consulAddr      string // consul api 地址
 }
 
 var defaultOption = option{
 	redisAddr:   "127.0.0.1:6379",
 	redisPasswd: "",
+	consulAddr:  "127.0.0.1:8500",
 }
 
 // ServiceOption ...
 type ServiceOption func(opt *option)
+
+// WithConsulAddr  with cosnul address
+func WithConsulAddr(consulAddr string) ServiceOption {
+	return func(opt *option) {
+		opt.consulAddr = consulAddr
+	}
+}
 
 // WithParams 参数选项， 参数将透传给 plugin
 func WithParams(params []string) ServiceOption {

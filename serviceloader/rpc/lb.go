@@ -10,12 +10,15 @@ import (
 )
 
 type loadBalancer struct {
-	lbs     *balancer.Server
-	lbsInit sync.Once
+	lbs        *balancer.Server
+	lbsInit    sync.Once
+	consulAddr string
 }
 
-func newLoadBalancer() *loadBalancer {
-	return &loadBalancer{}
+func newLoadBalancer(consulAddr string) *loadBalancer {
+	return &loadBalancer{
+		consulAddr: consulAddr,
+	}
 }
 
 func (lb *loadBalancer) getServerAddr(serverName string) (string, error) {
@@ -33,6 +36,7 @@ func (lb *loadBalancer) getServerAddr(serverName string) (string, error) {
 
 func (lb *loadBalancer) initLbs() {
 	config := api.DefaultConfig()
+	config.Address = lb.consulAddr
 	discovery, err := consul.New(config)
 	if err != nil {
 		panic(err)
