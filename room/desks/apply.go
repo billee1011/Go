@@ -91,7 +91,8 @@ func (jam *joinApplyManager) checkMatch() {
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]
 			applyPlayers = applyPlayers[4:]
-			result, err := deskFactory.CreateDesk(players, 1, interfaces.CreateDeskOptions{})
+			infos := handleLocationInfos(players)
+			result, err := deskFactory.CreateDesk(players, 1, interfaces.CreateDeskOptions{}, infos)
 			if err != nil {
 				logEntry.WithFields(
 					logrus.Fields{
@@ -106,6 +107,22 @@ func (jam *joinApplyManager) checkMatch() {
 		}
 	}
 }
+
+func handleLocationInfos(players []uint64) map[uint64][]*room.GeographicalLocation {
+	info := make(map[uint64][]*room.GeographicalLocation, 4)
+
+	for _, pID := range players {
+		infos, ok := locationInfos.Load(pID)
+		if ok {
+			info[pID] = infos.([]*room.GeographicalLocation)
+			locationInfos.Delete(pID)
+		}
+	}
+	return info
+}
+
+// 暂时用来存放地理信息
+var locationInfos sync.Map
 
 func (jam *joinApplyManager) replicateApplyProc(applyPlayers []uint64, newPlayerID uint64) bool {
 	for _, playerID := range applyPlayers {
@@ -174,6 +191,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
+	locationInfos.Store(player.GetID(), req.Location)
 	return
 }
 

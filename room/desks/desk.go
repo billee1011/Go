@@ -73,13 +73,14 @@ func makeDeskPlayers(logEntry *logrus.Entry, players []uint64, infos map[uint64]
 			logEntry.WithField("player_id", playerID).Errorln(errPlayerNotExist)
 			return nil, errPlayerNotExist
 		}
-		deskPlayers[seat] = newDeskPlayer(playerID, seat)
+		info := infos[player.GetID()]
+		deskPlayers[seat] = newDeskPlayer(playerID, seat, info)
 		seat++
 	}
 	return deskPlayers, nil
 }
 
-func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (result interfaces.CreateDeskResult, err error) {
+func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions, infos map[uint64][]*room.GeographicalLocation) (result interfaces.CreateDeskResult, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "newDesk",
 		"game_id":   gameID,
@@ -93,7 +94,7 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 		return
 	}
 	logEntry = logEntry.WithField("desk_uid", id)
-	deskPlayers, err := makeDeskPlayers(logEntry, players)
+	deskPlayers, err := makeDeskPlayers(logEntry, players, infos)
 	if err != nil {
 		return
 	}
@@ -142,6 +143,7 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
 			Coin:     proto.Uint64(player.GetCoin()),
 			Seat:     proto.Uint32(uint32(seat)),
+			Location: deskPlayer.location,
 		})
 	}
 	return result
