@@ -20,7 +20,7 @@ import (
 // 连接网关服成功，认证成功
 
 func Test_Login(t *testing.T) {
-	loginClient := connect.NewTestClient(config.LoginServerAddr, config.ClientVersion)
+	loginClient := connect.NewTestClient(config.GetLoginServerAddr(), config.GetClientVersion())
 	accountID := global.AllocAccountID()
 	accountName := utils.GenerateAccountName(accountID)
 	loginResponse, err := utils.RequestAuth(loginClient, accountID, accountName, time.Second*5)
@@ -32,7 +32,7 @@ func Test_Login(t *testing.T) {
 	gateIP := loginResponse.GetGateIp()
 	gatePort := loginResponse.GetGatePort()
 
-	gateClient := connect.NewTestClient(fmt.Sprintf("%s:%d", gateIP, gatePort), config.ClientVersion)
+	gateClient := connect.NewTestClient(fmt.Sprintf("%s:%d", gateIP, gatePort), config.GetClientVersion())
 	assert.NotNil(t, gateClient)
 	assert.Nil(t, utils.RequestGateAuth(gateClient, playerID, expire, token))
 }

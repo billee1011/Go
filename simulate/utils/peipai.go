@@ -14,7 +14,7 @@ import (
 // step 2. 将换三张方向转换成接口可识别的字符串 ， hszfx=dui, shun, ni
 // step 3. 庄家位置   zhuang= number
 func peipai(game string, seatCards [][]uint32, wallCards []uint32, hszDir room.Direction, bankerSeat int) error {
-	url := fmt.Sprintf("%s?game=%s&%s", config.PeipaiURL, game, translatePeipaiCards(seatCards, wallCards))
+	url := fmt.Sprintf("%s?game=%s&%s", config.GetPeipaiURL(), game, translatePeipaiCards(seatCards, wallCards))
 	hszfx := translateHszDir(hszDir)
 	if hszfx != "" {
 		url = fmt.Sprintf("%s&%s", url, hszfx)
