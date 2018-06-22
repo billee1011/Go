@@ -37,6 +37,7 @@ func NewService() service.Service {
 	return new(roomCore)
 }
 
+// RoomService room房间RPC服务
 type RoomService struct {
 }
 
