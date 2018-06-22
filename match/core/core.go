@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	msgid "steve/client_pb/msgId"
-	"steve/server_pb/match"
 	"steve/server_pb/room"
 	"steve/structs"
 	"steve/structs/exchanger"
@@ -51,19 +50,21 @@ func (c *matchCore) registerHandles(e exchanger.Exchanger) error {
 	return nil
 }
 
-func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req match.MatchRequest) (ret []exchanger.ResponseMsg) {
-	response := &match.MatchResponse{
-		Echo: "match match...",
+func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req matchroom.MatchRoomRequest) (ret []exchanger.ResponseMsg) {
+	response := &matchroom.MatchRoomResponse{
+		ErrCode: matchroom.RoomError_SUCCESS,
 	}
 	ret = []exchanger.ResponseMsg{{
-		MsgID: uint32(msgid.MsgID_GATE_AUTH_RSP),
+		MsgID: uint32(msgid.MsgID_MATCH_RSP),
 		Body:  response,
 	}}
+
+	playerId := header.GetPlayerId()
 
 	//TODO 匹配玩家
 
 	//TODO 匹配成功，发起创建房间调用
-	err := c.work()
+	err := c.work(playerId)
 	if err != nil {
 		fmt.Println("call work failed")
 		return
@@ -72,7 +73,7 @@ func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Hea
 	return
 }
 
-func (c *matchCore) work() error {
+func (c *matchCore) work(playerId uint64) error {
 	cc, err := c.e.RPCClient.GetConnectByServerName("room")
 	if err != nil {
 		return fmt.Errorf("Get client connection failed:%v", err)
@@ -81,14 +82,15 @@ func (c *matchCore) work() error {
 		return errors.New("no service named room. ensure your consul agent is running and configed room")
 	}
 
-	client := room.NewRoomClient(cc)
-	resp, err := client.HelloRoom(context.Background(), &room.RoomRequest{
-		Name: "room",
+	client := matchroom.NewMatchRoomClient(cc)
+	resp, err := client.CreateDesk(context.Background(), &matchroom.MatchRoomRequest{
+		PlayerId: playerId,
 	})
+
 	if err != nil {
 		return fmt.Errorf("call HelloRoom failed: %v", err)
 	}
 
-	fmt.Println("receive response from server:", resp.GetEcho())
+	fmt.Println("receive response from server:", resp.GetErrCode())
 	return nil
 }
