@@ -16,12 +16,11 @@ type deskPlayer struct {
 	mu sync.RWMutex
 }
 
-func newDeskPlayer(playerID uint64, seat uint32, info []*room.GeographicalLocation) *deskPlayer {
+func newDeskPlayer(playerID uint64, seat uint32) *deskPlayer {
 	return &deskPlayer{
-		playerID:     playerID,
-		seat:         seat,
-		locationInfo: info,
-		ecoin:        global.GetPlayerMgr().GetPlayer(playerID).GetCoin(),
+		playerID: playerID,
+		seat:     seat,
+		ecoin:    global.GetPlayerMgr().GetPlayer(playerID).GetCoin(),
 	}
 }
 

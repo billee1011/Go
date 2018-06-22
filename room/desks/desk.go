@@ -78,7 +78,7 @@ type desk struct {
 	tuoGuanMgr   interfaces.TuoGuanMgr        // 托管管理器
 }
 
-func makeDeskPlayers(logEntry *logrus.Entry, players []uint64, infos map[uint64][]*room.GeographicalLocation) (map[uint32]*deskPlayer, error) {
+func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]*deskPlayer, error) {
 	playerMgr := global.GetPlayerMgr()
 	deskPlayers := make(map[uint32]*deskPlayer, 4)
 	seat := uint32(0)
@@ -88,14 +88,13 @@ func makeDeskPlayers(logEntry *logrus.Entry, players []uint64, infos map[uint64]
 			logEntry.WithField("player_id", playerID).Errorln(errPlayerNotExist)
 			return nil, errPlayerNotExist
 		}
-		info := infos[player.GetID()]
-		deskPlayers[seat] = newDeskPlayer(playerID, seat, info)
+		deskPlayers[seat] = newDeskPlayer(playerID, seat)
 		seat++
 	}
 	return deskPlayers, nil
 }
 
-func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions, infos map[uint64][]*room.GeographicalLocation) (result interfaces.CreateDeskResult, err error) {
+func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (result interfaces.CreateDeskResult, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "newDesk",
 		"game_id":   gameID,
@@ -109,7 +108,7 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions, inf
 		return
 	}
 	logEntry = logEntry.WithField("desk_uid", id)
-	deskPlayers, err := makeDeskPlayers(logEntry, players, infos)
+	deskPlayers, err := makeDeskPlayers(logEntry, players)
 	if err != nil {
 		return
 	}
@@ -158,7 +157,6 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
 			Coin:     proto.Uint64(player.GetCoin()),
 			Seat:     proto.Uint32(uint32(seat)),
-			Location: deskPlayer.locationInfo,
 		})
 	}
 	return result
