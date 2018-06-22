@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package matchroom;
+package roommgr;
 
 enum RoomError {
     SUCCESS = 0x0;
@@ -8,14 +8,14 @@ enum RoomError {
 }
 
 
-message MatchRoomRequest {
+message RoomMgrRequest {
     uint64 playerId = 1;
 }
 
-message MatchRoomResponse {
+message RoomMgrResponse {
     RoomError err_code = 1; // 错误码
 }
 
-service MatchRoom {
-    rpc CreateDesk(MatchRoomRequest) returns (MatchRoomResponse) {}
+service RoomMgr {
+    rpc CreateDesk(RoomMgrRequest) returns (RoomMgrResponse) {}
 }
