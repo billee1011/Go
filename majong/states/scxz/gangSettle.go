@@ -102,9 +102,8 @@ func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 			}
 			player.XpState = majongpb.XingPaiState_give_up
 		}
-		return s.nextState(mjContext), nil
 	}
-	return majongpb.StateID(majongpb.StateID_state_mopai), nil
+	return s.nextState(mjContext), nil
 }
 
 // nextState 下个状态

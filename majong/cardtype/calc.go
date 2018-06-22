@@ -1,6 +1,7 @@
 package cardtype
 
 import (
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
@@ -40,7 +41,8 @@ func (ctc *cardTypeCalculator) CardTypeValue(gameID int, cardTypes []majongpb.Ca
 func init() {
 	ctc := &cardTypeCalculator{
 		calcs: map[int]interfaces.CardTypeCalculator{
-			1: &scxlCardTypeCalculator{}, // TODO game id
+			gutils.SCXLGameID: &scxlCardTypeCalculator{}, // TODO game id
+			gutils.SCXZGameID: &scxlCardTypeCalculator{}, // TODO game id
 		},
 	}
 	global.SetCardTypeCalculator(ctc)
