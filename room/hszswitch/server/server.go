@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"steve/gutils"
 	hs "steve/room/hszswitch/hszswitch"
 	"strconv"
 
@@ -35,6 +36,8 @@ const (
 	HszSwitchSerIP = "hsz_switch_ser_ip"
 	// HszSwitchSerPort 换三张grpc服务地端口
 	HszSwitchSerPort = "hsz_switch_ser_port"
+	// ConfigName 配置文件名字
+	ConfigName = "config"
 )
 
 //Open 开关
@@ -74,11 +77,14 @@ func initDefaultConfig() {
 	viper.SetDefault(HszSwitchAddr, "127.0.0.1:8081")
 	viper.SetDefault(HszSwitchSerIP, "127.0.0.1")
 	viper.SetDefault(HszSwitchSerPort, 8082)
+	viper.SetConfigName(ConfigName)
+	viper.AddConfigPath("./")
 }
 
 func hszGrpc() {
 	s := grpc.NewServer()
 	hs.RegisterSwitchHandlerServer(s, &server{})
+	viper.ReadInConfig()
 	listenIP := viper.GetString(HszSwitchSerIP)
 	listenPort := viper.GetInt(HszSwitchSerPort)
 	listenAddr := fmt.Sprintf("%v:%v", listenIP, listenPort)
@@ -103,8 +109,8 @@ func registerToConsul(ip string, port int) error {
 	}
 	agent := consul.Agent()
 	if err = agent.ServiceRegister(&api.AgentServiceRegistration{
-		ID:      "xuezhanOption",
-		Name:    "xuezhanOption",
+		ID:      generateServiceID(gutils.XuezhanOptionService, ip, port),
+		Name:    gutils.XuezhanOptionService,
 		Port:    port,
 		Address: ip,
 	}); err != nil {
@@ -113,9 +119,14 @@ func registerToConsul(ip string, port int) error {
 	return nil
 }
 
+func generateServiceID(serviceName string, ip string, port int) string {
+	return fmt.Sprintf("%v_%v:%v", serviceName, ip, port)
+}
+
 func main() {
 	go hszGrpc()
 	http.HandleFunc("/", handle)
+	viper.ReadInConfig()
 	listenAddr := viper.GetString(HszSwitchAddr)
 	logrus.WithFields(
 		logrus.Fields{

@@ -32,8 +32,6 @@ var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
 
-const optionService = "xuezhanOption"
-
 // deskEvent 房间事件
 type deskEvent struct {
 	event       interfaces.Event
@@ -72,7 +70,7 @@ type desk struct {
 	tuoGuanMgr   interfaces.TuoGuanMgr        // 托管管理器
 }
 
-func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]*deskPlayer, error) {
+func makeDeskPlayers(logEntry *logrus.Entry, players []uint64, infos map[uint64][]*room.GeographicalLocation) (map[uint32]*deskPlayer, error) {
 	playerMgr := global.GetPlayerMgr()
 	deskPlayers := make(map[uint32]*deskPlayer, 4)
 	seat := uint32(0)
@@ -82,13 +80,14 @@ func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]*desk
 			logEntry.WithField("player_id", playerID).Errorln(errPlayerNotExist)
 			return nil, errPlayerNotExist
 		}
-		deskPlayers[seat] = newDeskPlayer(playerID, seat)
+		info := infos[player.GetID()]
+		deskPlayers[seat] = newDeskPlayer(playerID, seat, info)
 		seat++
 	}
 	return deskPlayers, nil
 }
 
-func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (result interfaces.CreateDeskResult, err error) {
+func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions, infos map[uint64][]*room.GeographicalLocation) (result interfaces.CreateDeskResult, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "newDesk",
 		"game_id":   gameID,
@@ -102,7 +101,7 @@ func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (re
 		return
 	}
 	logEntry = logEntry.WithField("desk_uid", id)
-	deskPlayers, err := makeDeskPlayers(logEntry, players)
+	deskPlayers, err := makeDeskPlayers(logEntry, players, infos)
 	if err != nil {
 		return
 	}
@@ -151,6 +150,7 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
 			Coin:     proto.Uint64(player.GetCoin()),
 			Seat:     proto.Uint32(uint32(seat)),
+			Location: deskPlayer.locationInfo,
 		})
 	}
 	return result
@@ -337,20 +337,23 @@ func (d *desk) getAddrByConsul() string {
 	if err != nil {
 		return ""
 	}
-	agent := consul.Agent()
-	services, err := agent.Services()
+	// agent := consul.Agent()
+	// services, err := agent.Services()
+	catalog := consul.Catalog()
+	services, _, err := catalog.Service(gutils.XuezhanOptionService, "", &api.QueryOptions{})
 	if err != nil {
 		return ""
 	}
 	if len(services) == 0 {
 		return ""
 	}
-	ser, ok := services[optionService]
-	if !ok {
-		return ""
-	}
-	addr := fmt.Sprintf("%v:%v", ser.Address, ser.Port)
+	ser := getService(services)
+	addr := fmt.Sprintf("%v:%v", ser.Address, ser.ServicePort)
 	return addr
+}
+
+func getService(services []*api.CatalogService) *api.CatalogService {
+	return services[0]
 }
 
 func (d *desk) getXuezhanOpen() bool {
@@ -549,7 +552,8 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		d.reply(msgs)
 		deskPlayer.quitDesk()
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
-		d.handlePlayerState(deskPlayer)
+		oh := GetOptionByFactory(d.GetGameID())
+		oh.handleQuitByPlayerState(d, eqi.playerID)
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
@@ -557,17 +561,6 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
-	}
-}
-
-// handlePlayerState 玩家状态为非正常状态退出游戏,从桌子移除
-func (d *desk) handlePlayerState(deskPlayer *deskPlayer) {
-	mjContext := d.dContext.mjContext
-	player := gutils.GetMajongPlayer(deskPlayer.GetPlayerID(), &mjContext)
-	if player.GetXpState() != server_pb.XingPaiState_normal {
-		// delete(d.players, uint32(deskPlayer.GetSeat()))
-		deskMgr := global.GetDeskMgr()
-		deskMgr.RemoveDeskPlayerByPlayerID(deskPlayer.GetPlayerID())
 	}
 }
 

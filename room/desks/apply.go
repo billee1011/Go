@@ -107,8 +107,9 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]
 			applyPlayers = applyPlayers[4:]
+			infos := handleLocationInfos(players)
 			//TODO:gameID这里是写死的,需要从协议里面拿
-			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})
+			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{}, infos)
 			if err != nil {
 				logEntry.WithFields(
 					logrus.Fields{
@@ -122,6 +123,19 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 			deskMgr.RunDesk(result.Desk)
 		}
 	}
+}
+
+func handleLocationInfos(players []uint64) map[uint64][]*room.GeographicalLocation {
+	info := make(map[uint64][]*room.GeographicalLocation, 4)
+
+	for _, pID := range players {
+		infos, ok := locationInfos.Load(pID)
+		if ok {
+			info[pID] = infos.([]*room.GeographicalLocation)
+			locationInfos.Delete(pID)
+		}
+	}
+	return info
 }
 
 func (jam *joinApplyManager) replicateApplyProc(applyPlayers []uint64, newPlayerID uint64) bool {
@@ -166,6 +180,9 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
+// 暂时用来存放地理信息
+var locationInfos sync.Map
+
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求
 // 	将玩家加入到申请列表中， 并且回复；
 //TODO:RoomJoinDeskReq消息中需要加入gameID字段
@@ -192,6 +209,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID(), req.GetGameId()).Enum()
+	locationInfos.Store(player.GetID(), req.GetLocation())
 	return
 }
 

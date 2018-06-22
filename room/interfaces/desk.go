@@ -24,6 +24,8 @@ type DeskPlayer interface {
 	GetSeat() int
 	// IsQuit 是否已经退出
 	IsQuit() bool
+	// GetLocationInfos 获取地理信息
+	GetLocationInfos() []*room.GeographicalLocation
 }
 
 // Desk 牌桌
@@ -94,7 +96,7 @@ type CreateDeskResult struct {
 // DeskFactory 牌桌工厂
 type DeskFactory interface {
 	// CreateDesk 创建牌桌
-	CreateDesk(players []uint64, gameID int, opt CreateDeskOptions) (CreateDeskResult, error)
+	CreateDesk(players []uint64, gameID int, opt CreateDeskOptions, info map[uint64][]*room.GeographicalLocation) (CreateDeskResult, error)
 }
 
 // DeskIDAllocator 牌桌 ID 分配器
