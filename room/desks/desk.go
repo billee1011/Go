@@ -34,7 +34,7 @@ var errPlayerNotExist = errors.New("玩家不存在")
 
 const optionService = "xuezhanOption"
 
-// 血战配置默认值
+// 麻将默认配置值
 var defaultConfig = &mjconfig.Mjconfig{
 	Hsz:  true,
 	Gold: 10000,

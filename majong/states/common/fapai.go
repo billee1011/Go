@@ -54,12 +54,12 @@ func (f *FapaiState) OnExit(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (f *FapaiState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	newState := f.getNextState(mjcontext)
+	nextState := f.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "nextState",
-		"nextState": newState,
+		"nextState": nextState,
 	}).Infoln("发牌下一状态")
-	return newState
+	return nextState
 }
 
 // func (f *FapaiState) getNextStateByOption(mjContext *majongpb.MajongContext) majongpb.StateID {
