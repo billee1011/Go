@@ -1,4 +1,4 @@
-export PROTO_PATH=~/steve.protos/client_pb 
+PROTO_PATH=~/steve.protos/client_pb 
 
 mkdir msgId -p 
 protoc -I $PROTO_PATH/msgId --go_out=./msgId $PROTO_PATH/msgId/*.proto 

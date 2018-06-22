@@ -1,3 +1,5 @@
+#!/bin/bash
+
 go build -o bin/serviceloader steve/serviceloader 
 
 go build -o bin/room/room.so -buildmode=plugin steve/room
@@ -13,4 +15,10 @@ cp match/config.yml configs/match/config.yml
 go build -o bin/login/login.so -buildmode=plugin steve/login 
 cp login/config.yml configs/login/config.yml 
 
-./simulate/packtests.sh
+./simulate/packtests.sh 
+
+
+if [ "$1"="pack" ];then  
+    tar -czf server.tar.gz bin configs
+fi
+
