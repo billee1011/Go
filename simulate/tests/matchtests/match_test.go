@@ -2,7 +2,7 @@ package matchtests
 
 import (
 	"steve/client_pb/msgId"
-	"steve/server_pb/room"
+	"steve/server_pb/room_mgr"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -17,12 +17,12 @@ func TestMatch(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, player)
 
-	req := matchroom.MatchRoomRequest{
+	req := roommgr.RoomMgrRequest{
 		PlayerId: 123,
 	}
 
-	rsp := matchroom.MatchRoomResponse{
-		ErrCode: matchroom.RoomError_SUCCESS,
+	rsp := roommgr.RoomMgrResponse{
+		ErrCode: roommgr.RoomError_SUCCESS,
 	}
 	client := player.GetClient()
 	err = client.Request(utils.CreateMsgHead(msgid.MsgID_MATCH_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_MATCH_RSP), &rsp)
