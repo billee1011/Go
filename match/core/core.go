@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/exchanger"
@@ -50,21 +51,21 @@ func (c *matchCore) registerHandles(e exchanger.Exchanger) error {
 	return nil
 }
 
-func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req roommgr.RoomMgrRequest) (ret []exchanger.ResponseMsg) {
-	response := &roommgr.RoomMgrResponse{
-		ErrCode: roommgr.RoomError_SUCCESS,
+func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (ret []exchanger.ResponseMsg) {
+	response := &room.RoomJoinDeskRsp{
+		ErrCode: room.RoomError_SUCCESS.Enum(),
 	}
 	ret = []exchanger.ResponseMsg{{
 		MsgID: uint32(msgid.MsgID_MATCH_RSP),
 		Body:  response,
 	}}
 
-	playerId := header.GetPlayerId()
+	playerID := header.GetPlayerId()
 
 	//TODO 匹配玩家
 
 	//TODO 匹配成功，发起创建房间调用
-	err := c.work(playerId)
+	err := c.work(playerID)
 	if err != nil {
 		fmt.Println("call work failed")
 		return
@@ -73,7 +74,7 @@ func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Hea
 	return
 }
 
-func (c *matchCore) work(playerId uint64) error {
+func (c *matchCore) work(playerID uint64) error {
 	cc, err := c.e.RPCClient.GetConnectByServerName("room")
 	if err != nil {
 		return fmt.Errorf("Get client connection failed:%v", err)
@@ -84,7 +85,7 @@ func (c *matchCore) work(playerId uint64) error {
 
 	client := roommgr.NewRoomMgrClient(cc)
 	resp, err := client.CreateDesk(context.Background(), &roommgr.RoomMgrRequest{
-		PlayerId: playerId,
+		PlayerId: playerID,
 	})
 
 	if err != nil {

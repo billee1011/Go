@@ -26,3 +26,22 @@ func ApplyJoinDesk(player interfaces.ClientPlayer) (*room.RoomJoinDeskRsp, error
 	}
 	return &rsp, nil
 }
+
+// NewApplyJoinDesk 申请加入牌桌，从match
+func NewApplyJoinDesk(player interfaces.ClientPlayer) (*room.RoomJoinDeskRsp, error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "NewApplyJoinDesk",
+		"user_id":   player.GetID(),
+	})
+
+	req := room.RoomJoinDeskReq{}
+	rsp := room.RoomJoinDeskRsp{}
+
+	client := player.GetClient()
+	err := client.Request(createMsgHead(msgid.MsgID_MATCH_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_MATCH_RSP), &rsp)
+	if err != nil {
+		logEntry.WithError(err).Errorln(errRequestFailed)
+		return nil, errRequestFailed
+	}
+	return &rsp, nil
+}
