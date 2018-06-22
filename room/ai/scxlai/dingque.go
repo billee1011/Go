@@ -18,11 +18,18 @@ type dingqueStateAI struct {
 // 注册 AI
 func init() {
 	g := global.GetDeskAutoEventGenerator()
+	// 血流
 	g.RegisterAI(gGameID, majong.StateID_state_dingque, &dingqueStateAI{})
 	g.RegisterAI(gGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
 	g.RegisterAI(gGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
 	g.RegisterAI(gGameID, majong.StateID_state_zixun, &zixunStateAI{})
 	g.RegisterAI(gGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
+	// 血战
+	g.RegisterAI(xzGameID, majong.StateID_state_dingque, &dingqueStateAI{})
+	g.RegisterAI(xzGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
+	g.RegisterAI(xzGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
+	g.RegisterAI(xzGameID, majong.StateID_state_zixun, &zixunStateAI{})
+	g.RegisterAI(xzGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
 
 }
 
