@@ -77,14 +77,18 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	// 玩家状态
 	xpState := make(map[uint64]majongpb.XingPaiState)
 	for _, player := range mjContext.Players {
-		xpState[player.GetPalyerId()] = player.XpState
-		if len(player.HuCards) != 0 && player.GetXpState() != majongpb.XingPaiState_give_up {
+		playerID := player.GetPalyerId()
+		xpState[playerID] = player.XpState
+		giveupState := map[majongpb.XingPaiState]bool{
+			majongpb.XingPaiState_give_up: true,
+		}
+		if len(player.HuCards) != 0 && giveupState[player.XpState] {
 			huPlayers = append(huPlayers, player.GetPalyerId())
 		}
-		if isFlowerPig(player) && player.GetXpState() != majongpb.XingPaiState_give_up {
+		if isFlowerPig(player) && giveupState[player.XpState] {
 			flowerPigPlayers = append(flowerPigPlayers, player.GetPalyerId())
 		}
-		if isNoTingPlayers(player) && player.GetXpState() != majongpb.XingPaiState_give_up {
+		if isNoTingPlayers(player) && giveupState[player.XpState] {
 			noTingPlayers = append(noTingPlayers, player.GetPalyerId())
 		}
 	}

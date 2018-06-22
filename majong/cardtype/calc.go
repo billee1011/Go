@@ -42,7 +42,7 @@ func init() {
 	ctc := &cardTypeCalculator{
 		calcs: map[int]interfaces.CardTypeCalculator{
 			gutils.SCXLGameID: &scxlCardTypeCalculator{}, // TODO game id
-			gutils.SCXZGameID: &scxlCardTypeCalculator{}, // TODO game id
+			gutils.SCXZGameID: &scxlCardTypeCalculator{},
 		},
 	}
 	global.SetCardTypeCalculator(ctc)

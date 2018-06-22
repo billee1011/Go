@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 	"steve/gutils"
-	hs "steve/room/hszswitch/hszswitch"
+	mj "steve/room/majongconfig/mjconfig"
 	"strconv"
 
 	"github.com/hashicorp/consul/api"
@@ -21,9 +21,10 @@ import (
 type server struct {
 }
 
-func (s *server) GetHSZSwitch(context context.Context, dn *hs.DoNothing) (*hs.HszSwitch, error) {
-	return &hs.HszSwitch{
-		Hsz: Open,
+func (s *server) GetMjConfig(context context.Context, dn *mj.DoNothing) (*mj.Mjconfig, error) {
+	return &mj.Mjconfig{
+		Hsz:  Open,
+		Gold: PlayerGold,
 	}, nil
 }
 
@@ -32,6 +33,8 @@ const (
 	HszSwitchAddr = "hsz_switch_addr"
 	// HszSwitch 换三张开关关键字
 	HszSwitch = "hszswitch"
+	// gold 玩家金币
+	gold = "gold"
 	// HszSwitchSerIP 换三张grpc服务地ip
 	HszSwitchSerIP = "hsz_switch_ser_ip"
 	// HszSwitchSerPort 换三张grpc服务地端口
@@ -40,8 +43,11 @@ const (
 	ConfigName = "config"
 )
 
-//Open 开关
+//Open 换三张开关
 var Open = true
+
+//PlayerGold 所有玩家金币数
+var PlayerGold uint64 = 10000
 
 func handle(resp http.ResponseWriter, req *http.Request) {
 	value := req.FormValue(HszSwitch)
@@ -54,8 +60,20 @@ func handle(resp http.ResponseWriter, req *http.Request) {
 		respMSG(resp, fmt.Sprintf("switch对应的值有误:%v", err), 404)
 		return
 	}
+	goldValue := req.FormValue(gold)
+	if len(value) == 0 {
+		respMSG(resp, fmt.Sprintf("开关关键字gold有误"), 404)
+		return
+	}
+	goldSum, err := strconv.ParseUint(goldValue, 10, 0)
+	if err != nil {
+		respMSG(resp, fmt.Sprintf("gold对应的值有误:%v", err), 404)
+		return
+	}
 	Open = open
+	PlayerGold = goldSum
 	respMSG(resp, fmt.Sprintf("配置换三张开关成功,当前为:%v", Open), 200)
+	respMSG(resp, fmt.Sprintf("配置金币成功,当前为:%v", PlayerGold), 200)
 }
 
 func respMSG(resp http.ResponseWriter, message string, code int) {
@@ -83,15 +101,15 @@ func initDefaultConfig() {
 
 func hszGrpc() {
 	s := grpc.NewServer()
-	hs.RegisterSwitchHandlerServer(s, &server{})
 	viper.ReadInConfig()
+	mj.RegisterConfigHandlerServer(s, &server{})
 	listenIP := viper.GetString(HszSwitchSerIP)
 	listenPort := viper.GetInt(HszSwitchSerPort)
 	listenAddr := fmt.Sprintf("%v:%v", listenIP, listenPort)
 	logrus.WithFields(
 		logrus.Fields{
 			"listenAddr": listenAddr,
-		}).Infoln("启动换三张开关grpc服务")
+		}).Infoln("启动麻将配置grpc服务")
 	registerToConsul(listenIP, listenPort)
 	lis, err := net.Listen("tcp", listenAddr)
 	if err != nil {
@@ -131,7 +149,7 @@ func main() {
 	logrus.WithFields(
 		logrus.Fields{
 			"listenAddr": listenAddr,
-		}).Infoln("启动换三张开关服务器")
+		}).Infoln("启动麻将配置服务器")
 	if err := http.ListenAndServe(listenAddr, nil); err != nil {
 		logrus.Debugln(fmt.Sprintf("启动服务器失败:%v", err))
 	}

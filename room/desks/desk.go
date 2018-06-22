@@ -10,10 +10,10 @@ import (
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
-	"steve/room/hszswitch/hszswitch"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
+	"steve/room/majongconfig/mjconfig"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
 	"time"
@@ -31,6 +31,14 @@ import (
 var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
+
+const optionService = "xuezhanOption"
+
+// 麻将默认配置值
+var defaultConfig = &mjconfig.Mjconfig{
+	Hsz:  true,
+	Gold: 10000,
+}
 
 // deskEvent 房间事件
 type deskEvent struct {
@@ -290,20 +298,22 @@ func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
 }
 
 func (d *desk) initMajongContext() error {
+	playerMgr := global.GetPlayerMgr()
+	flag := d.getMajongConfig(d.GetGameID())
 	players := make([]uint64, len(d.players))
-
 	for seat, player := range d.players {
 		players[seat] = player.playerID
+		mplayer := playerMgr.GetPlayer(player.playerID)
+		mplayer.SetCoin(flag.Gold) //设置玩家金币数
 	}
 
-	flag := d.getHszSwitch(d.GetGameID())
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
-			HasHuansanzhang:            flag,
+			HasHuansanzhang:            flag.GetHsz(), //设置玩家是否开启换三张
 		},
 		// MajongOption: mjOption,
 		MajongOption: []byte{},
@@ -321,14 +331,14 @@ func (d *desk) initMajongContext() error {
 	return nil
 }
 
-func (d *desk) getHszSwitch(gameID int) bool {
+func (d *desk) getMajongConfig(gameID int) *mjconfig.Mjconfig {
 	switch gameID {
 	case gutils.SCXLGameID:
-		return true
+		return defaultConfig
 	case gutils.SCXZGameID:
 		return d.getXuezhanOpen()
 	default:
-		return true
+		return defaultConfig
 	}
 }
 
@@ -356,19 +366,19 @@ func getService(services []*api.CatalogService) *api.CatalogService {
 	return services[0]
 }
 
-func (d *desk) getXuezhanOpen() bool {
+func (d *desk) getXuezhanOpen() *mjconfig.Mjconfig {
 	addr := d.getAddrByConsul()
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		return true
+		return defaultConfig
 	}
 	defer conn.Close()
-	client := hszswitch.NewSwitchHandlerClient(conn)
-	hs, err := client.GetHSZSwitch(context.Background(), &hszswitch.DoNothing{})
+	client := mjconfig.NewConfigHandlerClient(conn)
+	hs, err := client.GetMjConfig(context.Background(), &mjconfig.DoNothing{})
 	if err != nil {
-		return true
+		return defaultConfig
 	}
-	return hs.Hsz
+	return hs
 }
 
 func (d *desk) getOptionByGameID(gameID int) []byte {
@@ -389,8 +399,8 @@ func (d *desk) getXuezhanOption() []byte {
 		return b
 	}
 	defer conn.Close()
-	client := hszswitch.NewSwitchHandlerClient(conn)
-	hs, err := client.GetHSZSwitch(context.Background(), &hszswitch.DoNothing{})
+	client := mjconfig.NewConfigHandlerClient(conn)
+	hs, err := client.GetMjConfig(context.Background(), &mjconfig.DoNothing{})
 	if err != nil {
 		return b
 	}
@@ -569,6 +579,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
+		contextPlayer.XpState = server_pb.XingPaiState_normal
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)

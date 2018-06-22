@@ -69,9 +69,7 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		if player.XpState == majongpb.XingPaiState_normal {
-			allPlayers = append(allPlayers, player.GetPalyerId())
-		}
+		allPlayers = append(allPlayers, player.GetPalyerId())
 	}
 	param := interfaces.GangSettleParams{
 		GangPlayer: player.GetPalyerId(),
@@ -108,11 +106,12 @@ func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 
 // nextState 下个状态
 func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	newState := s.getNextState(mjcontext)
+	nextState := s.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "nextState",
+		"newState":  nextState,
 	}).Infoln("杠结算下个状态")
-	return newState
+	return nextState
 }
 
 // 下一状态获取

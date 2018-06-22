@@ -28,6 +28,7 @@ func NewCommonStartGameParams() structs.StartGameParams {
 		ClientVer:  config.ClientVersion,
 
 		IsHsz: true,
+		Gold:  10000,
 		HszCards: [][]uint32{
 			{11, 11, 11},
 			{15, 15, 15},
