@@ -1,10 +1,12 @@
 package core
 
 import (
+	"context"
 	"steve/peipai"
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
 	"steve/room/registers"
+	"steve/server_pb/room"
 	"steve/structs"
 	"steve/structs/net"
 	"steve/structs/service"
@@ -29,12 +31,29 @@ func NewService() service.Service {
 	return new(roomCore)
 }
 
+type RoomService struct {
+}
+
+func (hws *RoomService) HelloRoom(ctx context.Context, req *room.RoomRequest) (rsp *room.RoomResponse, err error) {
+	rsp = &room.RoomResponse{}
+	rsp.Echo = "Hello," + req.GetName()
+	err = nil
+	return
+}
+
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	logrus.Info("room init")
 	c.e = e
 	global.SetMessageSender(e.Exchanger)
 	registers.RegisterHandlers(e.Exchanger)
 	registerLbReporter(e)
+
+	rpcServer := e.RPCServer
+	err := rpcServer.RegisterService(room.RegisterRoomServer, &RoomService{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

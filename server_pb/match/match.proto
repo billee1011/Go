@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package match;
+
+message MatchRequest {
+    string name = 1;
+}
+
+message MatchResponse {
+    string echo = 2;
+}
+
+service Match {
+    rpc HelloMatch(MatchRequest) returns (MatchResponse) {}
+}

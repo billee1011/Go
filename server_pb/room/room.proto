@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package room;
+
+
+message RoomRequest {
+    string name = 1;
+}
+
+message RoomResponse {
+    string echo = 2;
+}
+
+service Room {
+    rpc HelloRoom(RoomRequest) returns (RoomResponse) {}
+}

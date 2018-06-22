@@ -17,7 +17,11 @@ var gServerMessageRange = map[string]messageRange{
 	},
 	common.GateServiceName: messageRange{
 		minMsgID: 0x1001,
-		maxMsgID: 0xffff,
+		maxMsgID: 0x1fff,
+	},
+	common.MatchServiceName: messageRange{
+		minMsgID: 0x2001,
+		maxMsgID: 0x2fff,
 	},
 }
 
