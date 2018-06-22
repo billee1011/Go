@@ -569,7 +569,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = getDeskQuitRspMsg(eqi.playerID)
 		d.reply(msgs)
 		deskPlayer.quitDesk()
-		contextPlayer.XpState = server_pb.XingPaiState_leave
+		contextPlayer.IsQuit = true
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		if d.gameID == 2 {
 			d.handlePlayerState(deskPlayer)
