@@ -48,6 +48,6 @@ func Test_SCXZ_Dianpao(t *testing.T) {
 	// 检测所有玩家收到点炮通知
 	utils.CheckHuNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 
-	// 检测所有玩家收到点炮结算通知 TODO 结算有问题
-	// utils.CheckDianPaoSettleNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
+	// 检测所有玩家收到点炮结算通知
+	utils.CheckDianPaoSettleNotify(t, deskData, []int{huSeat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 }

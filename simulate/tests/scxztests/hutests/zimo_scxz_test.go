@@ -51,7 +51,7 @@ func Test_SCXZ_Zimo(t *testing.T) {
 	// 检测所有玩家收到自摸通知
 	utils.CheckHuNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_DIHU)
 
-	// 检测所有玩家收到自摸结算通知 TODO 结算有问题
-	// utils.CheckZiMoSettleNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_DIHU)
+	// 检测所有玩家收到自摸结算通知
+	utils.CheckZiMoSettleNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_DIHU)
 
 }
