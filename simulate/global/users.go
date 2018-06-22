@@ -3,9 +3,7 @@ package global
 import (
 	"fmt"
 	"log"
-	"steve/simulate/flag"
-
-	_ "steve/simulate/flag" // 依赖 DBPath
+	"steve/simulate/config"
 
 	bolt "github.com/coreos/bbolt"
 )
@@ -46,7 +44,7 @@ func AllocAccountID() uint64 {
 
 func init() {
 	var err error
-	file := fmt.Sprintf("%s/userid.db", flag.Flags.DBPath)
+	file := fmt.Sprintf("%s/userid.db", config.GetDBPath())
 	useridDB, err = bolt.Open(file, 0600, nil)
 	if err != nil {
 		log.Fatal(err)

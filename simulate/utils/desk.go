@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/structs"
@@ -32,7 +31,7 @@ type DeskData struct {
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params structs.StartGameParams) (*DeskData, error) {
-	players, err := createAndLoginUsers(config.ServerAddr, params.ClientVer)
+	players, err := createAndLoginUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +114,7 @@ func calcPlayerSeat(seatMap map[int]uint64, playerID uint64) int {
 
 var errCreateClientFailed = errors.New("创建客户端连接失败")
 
-func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
+func createAndLoginUsers() ([]interfaces.ClientPlayer, error) {
 	players := []interfaces.ClientPlayer{}
 	for i := 0; i < 4; i++ {
 		accountID := global.AllocAccountID()

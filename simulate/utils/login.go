@@ -46,7 +46,7 @@ func (p *clientPlayer) GetAccountID() uint64 {
 
 // LoginPlayer 登录玩家
 func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer, error) {
-	loginClient := connect.NewTestClient(config.LoginServerAddr, config.ClientVersion)
+	loginClient := connect.NewTestClient(config.GetLoginServerAddr(), config.GetClientVersion())
 	if loginClient == nil {
 		return nil, errors.New("连接登录服失败")
 	}
@@ -66,7 +66,7 @@ func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer,
 	gatePort := loginResponse.GetGatePort()
 	gateAddr := fmt.Sprintf("%s:%d", gateIP, gatePort)
 
-	gateClient := connect.NewTestClient(gateAddr, config.ClientVersion)
+	gateClient := connect.NewTestClient(gateAddr, config.GetClientVersion())
 	if gateClient == nil {
 		return nil, fmt.Errorf("连接网关服失败，网关地址：%v", gateAddr)
 	}

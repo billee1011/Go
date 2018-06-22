@@ -3,7 +3,6 @@ package global
 import (
 	"steve/client_pb/room"
 	"steve/gutils"
-	"steve/simulate/config"
 	"steve/simulate/structs"
 )
 
@@ -23,8 +22,6 @@ func NewCommonStartGameParams() structs.StartGameParams {
 		WallCards:  []uint32{31},
 		HszDir:     room.Direction_AntiClockWise,
 		BankerSeat: 0,
-		ServerAddr: config.ServerAddr,
-		ClientVer:  config.ClientVersion,
 
 		HszCards: [][]uint32{
 			{11, 11, 11},

@@ -8,8 +8,6 @@ type StartGameParams struct {
 	WallCards  []uint32       // 发完牌之后剩下的墙牌
 	HszDir     room.Direction // 换三张的方向
 	BankerSeat int            // 庄家座号
-	ServerAddr string         // 服务器地址
-	ClientVer  string         // 客户端版本号
 
 	HszCards     [][]uint32       // 从庄家的位置算起，用来换三张的牌
 	DingqueColor []room.CardColor // 定缺花色。 从庄家位置算起

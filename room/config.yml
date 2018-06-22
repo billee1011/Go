@@ -7,13 +7,19 @@ rpc_addr: 127.0.0.1
 rpc_port: 36100
 rpc_server_name: room
 
+<<<<<<< HEAD
 peipai_addr: 127.0.0.1:36102
 
 redis_addr: 192.168.7.108:6379
+=======
+redis_addr: 127.0.0.1:6379 
+>>>>>>> 332796919c605e1cbe83b99a7a49c5cb3c0f9e44
 redis_passwd: 
 
-independent: false 
+consul_addr: 127.0.0.1:8500
 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
   - 127.0.0.1:4161
+
+peipai_addr: 127.0.0.1:36102

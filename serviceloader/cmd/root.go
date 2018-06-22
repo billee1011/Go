@@ -44,10 +44,11 @@ to quickly create a Cobra application.`,
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		loader.LoadService(args[0],
-			loader.WithRPCParams(viper.GetString("rpc_certi_file"), viper.GetString("rpc_key_file"),
-				viper.GetString("rpc_addr"), viper.GetInt("rpc_port"), viper.GetString("rpc_server_name")),
+			loader.WithRPCParams(viper.GetString("rpc_certi_file"), viper.GetString("rpc_key_file"), viper.GetString("rpc_addr"), viper.GetInt("rpc_port"),
+				viper.GetString("rpc_server_name")),
 			loader.WithClientRPCCA(viper.GetString("rpc_ca_file"), viper.GetString("certi_server_name")),
 			loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
+			loader.WithConsulAddr(viper.GetString("consul_addr")),
 			loader.WithParams(args[1:]))
 	},
 }
@@ -125,6 +126,7 @@ func initDefaultConfig() {
 	viper.SetDefault("certi_server_name", "")
 	viper.SetDefault("redis_addr", "127.0.0.1:6379")
 	viper.SetDefault("redis_passwd", "")
+	viper.SetDefault("consul_addr", "127.0.0.1:8500")
 }
 
 func initLogger() {

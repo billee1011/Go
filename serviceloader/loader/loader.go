@@ -34,7 +34,7 @@ func createExposer(opt option) *structs.Exposer {
 	exposer := &structs.Exposer{}
 	exposer.Configuration = createConfiguration()
 	exposer.RPCServer = createRPCServer(opt.rpcKeyFile, opt.rpcCertiFile)
-	exposer.RPCClient = createRPCClient(opt.rpcCAFile, opt.rpcCAServerName)
+	exposer.RPCClient = createRPCClient(opt.rpcCAFile, opt.rpcCAServerName, opt.consulAddr)
 	exposer.WatchDogFactory = watchdog.NewFactory()
 	exposer.Exchanger = createExchanger(exposer.RPCServer)
 	exposer.RedisFactory = redisfactory.NewFactory(opt.redisAddr, opt.redisPasswd)
@@ -68,10 +68,10 @@ func LoadService(name string, options ...ServiceOption) {
 	exposer := createExposer(opt)
 
 	registerServer(&registerParams{
-		serverName:   opt.rpcServerName,
-		addr:         opt.rpcAddr,
-		port:         opt.rpcPort,
-		redisFactory: exposer.RedisFactory,
+		serverName: opt.rpcServerName,
+		addr:       opt.rpcAddr,
+		port:       opt.rpcPort,
+		consulAddr: opt.consulAddr,
 	})
 	registerHealthServer(exposer.RPCServer)
 	service := initService(name, exposer)
