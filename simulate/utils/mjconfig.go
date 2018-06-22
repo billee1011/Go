@@ -8,8 +8,8 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-func hszSwitch(open bool) error {
-	url := fmt.Sprintf("%s?hszswitch=%v", config.SwitchURL, open)
+func mjconfig(open bool, gold uint64) error {
+	url := fmt.Sprintf("%s?hszswitch=%v&gold=%v", config.MjconfigURL, open, gold)
 	return requestOpen(url)
 }
 

@@ -62,11 +62,17 @@ func GetNextNormalPlayerByID(players []*majongpb.Player, srcPlayerID uint64) *ma
 
 //IsNormalPlayerInsufficient 正常状态的玩家是否人数不够
 func IsNormalPlayerInsufficient(players []*majongpb.Player) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func_name": "IsNormalPlayerInsufficient",
+	})
 	conut := 0
 	for _, player := range players {
 		if player.GetXpState() == majongpb.XingPaiState_normal {
 			conut++
 		}
 	}
+	log.WithFields(logrus.Fields{
+		"正常状态玩家数量": conut,
+	}).Infoln("-----正常状态的玩家是否人数不够")
 	return conut <= 1
 }
