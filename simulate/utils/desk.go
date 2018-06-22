@@ -41,10 +41,8 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
-	if params.GameID != room.GameId_GAMEID_XUELIU {
-		if err := mjconfig(params.IsHsz, params.Gold); err != nil {
-			return nil, err
-		}
+	if err := mjconfig(params.IsHsz, params.Gold); err != nil {
+		return nil, err
 	}
 	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)

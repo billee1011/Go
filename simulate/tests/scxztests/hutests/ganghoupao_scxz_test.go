@@ -22,8 +22,8 @@ func Test_SCXZ_Ganghoupao(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
-	// huSeat := 1
-	// gangSeat := params.BankerSeat
+	huSeat := 1
+	gangSeat := params.BankerSeat
 	// 0 号玩家手牌改成 Card1W, Card1W, Card1W, Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card9W
 	// 换三张后手牌为 Card5T, Card5T, Card5T， Card1W, Card2W, Card2W, Card2W, Card2W, Card3W, Card3W, Card3W, Card3W, Card4W, Card9W
 	params.Cards[0][13] = 19
@@ -58,8 +58,8 @@ func Test_SCXZ_Ganghoupao(t *testing.T) {
 	// 检测所有玩家收到杆后炮通知
 	utils.CheckHuNotify(t, deskData, []int{1}, 0, 19, room.HuType_HT_GANGHOUPAO)
 
-	// 检测所有玩家是否收到呼叫转移的通知 TODO 结算有问题
-	// checkGangHouPaoSettleScoreNotify(t, deskData, gangSeat, huSeat)
+	// 检测所有玩家是否收到呼叫转移的通知
+	checkGangHouPaoSettleScoreNotify(t, deskData, gangSeat, huSeat)
 
 }
 

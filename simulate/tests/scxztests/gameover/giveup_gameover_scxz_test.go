@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//Test_SCXZ_AnGang_GameOver 测试暗杠后，其他玩家钱不够都认输，认输后，正常状态玩家不足，游戏结束
-//步骤：所有玩家金币数只有1,庄家起手暗杠，其他玩家钱不足，认输
+//Test_SCXZ_AnGang_GiveUp_GameOver 测试暗杠后，其他玩家钱不够都认输，认输后，正常状态玩家不足，游戏结束
+//步骤：所有玩家金币数只有1,庄家起手暗杠，其他玩家钱不足都认输
 //期望：暗杠后，正常状态玩家不足，游戏结束
-func Test_SCXZ_AnGang_GameOver(t *testing.T) {
+func Test_SCXZ_AnGang_GiveUp_GameOver(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.HszCards = [][]uint32{}
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
@@ -36,7 +36,7 @@ func Test_SCXZ_AnGang_GameOver(t *testing.T) {
 	utils.WaitGameOverNtf(t, deskData)
 }
 
-//Test_SCXZ_BuGang_GameOver 测试补杠后，其他玩家钱不够都认输，认输后，正常状态玩家不足，游戏结束
+//Test_SCXZ_BuGang_GiveUp_GameOver 测试补杠后，其他玩家钱不够都认输，认输后，正常状态玩家不足，游戏结束
 //步骤： 所有玩家金币数只有1
 // 1.庄家出12
 // 2.下家碰12,下家打出17
@@ -44,9 +44,9 @@ func Test_SCXZ_AnGang_GameOver(t *testing.T) {
 // 4.尾家摸到18,尾家打出27
 // 5.庄家摸到18,庄家打出16
 // 6.下家摸到19,此时下家可以补杠12
-// 7.下家选择补杠12,
+// 7.下家选择补杠12,其他玩家钱不足都认输
 //期待:所有人收到下家补杠的广播后，正常状态玩家不足，游戏结束
-func Test_SCXZ_BuGang_GameOver(t *testing.T) {
+func Test_SCXZ_BuGang_GiveUp_GameOver(t *testing.T) {
 	param := global.NewCommonStartGameParams()
 	param.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	param.PeiPaiGame = "scxz"
@@ -110,13 +110,13 @@ func Test_SCXZ_BuGang_GameOver(t *testing.T) {
 	utils.WaitGameOverNtf(t, deskData)
 }
 
-//Test_SCXZ_MingGang_GameOver 测试明杠后，其他玩家钱不够都认输，认输后，正常状态玩家不足，游戏结束
+//Test_SCXZ_MingGang_GiveUp_GameOver 测试明杠后，其他玩家钱不够都认输，认输后，正常状态玩家不足，游戏结束
 //步骤：所有玩家金币数只有1
-//1.庄家出牌
-//2.下家明杠庄家的牌，摸牌，出牌
-//3.对家明杠下家的牌，摸牌，出牌
-//4.上家明杠对家的牌，正常状态玩家不足，游戏结束
-func Test_SCXZ_MingGang_GameOver(t *testing.T) {
+//1.庄家出牌15,下家明杠15，庄家钱不足认输
+//2.对家出牌16,下家明杠16，对家钱不足认输
+//3.上家出牌17,下家明杠17，上家钱不足认输
+//期望：正常状态玩家不足，游戏结束
+func Test_SCXZ_MingGang_GiveUp_GameOver(t *testing.T) {
 	param := global.NewCommonStartGameParams()
 	param.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	param.PeiPaiGame = "scxz"
@@ -198,3 +198,4 @@ func Test_SCXZ_MingGang_GameOver(t *testing.T) {
 	// 游戏结束
 	utils.WaitGameOverNtf(t, deskData)
 }
+
