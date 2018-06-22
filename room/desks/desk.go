@@ -575,6 +575,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
+		contextPlayer.XpState = server_pb.XingPaiState_normal
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)
@@ -588,8 +589,10 @@ func (d *desk) handlePlayerState(deskPlayer *deskPlayer) {
 	player := gutils.GetMajongPlayer(deskPlayer.GetPlayerID(), &mjContext)
 	if player.GetXpState() != server_pb.XingPaiState_normal {
 		// delete(d.players, uint32(deskPlayer.GetSeat()))
-		deskMgr := global.GetDeskMgr()
-		deskMgr.RemoveDeskPlayerByPlayerID(deskPlayer.GetPlayerID())
+		if mjContext.GetGameId() == 2 {
+			deskMgr := global.GetDeskMgr()
+			deskMgr.RemoveDeskPlayerByPlayerID(deskPlayer.GetPlayerID())
+		}
 	}
 }
 
