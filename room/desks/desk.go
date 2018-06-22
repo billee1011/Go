@@ -462,11 +462,11 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		logEntry.Debugln("玩家退出")
 	} else {
-		deskPlayer.enterDesk()
 		if !deskPlayer.IsQuit() {
 			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 非主动退出，再进入后取消托管；主动退出再进入不取消托管
 		}
 		msgs = d.recoverGameForPlayer(eqi.playerID)
+		deskPlayer.enterDesk()
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
 	}
