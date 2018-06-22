@@ -9,7 +9,7 @@ import (
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
 	"steve/room/registers"
-	matchroom "steve/server_pb/room"
+	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/net"
 	"steve/structs/proto/gate_rpc"
@@ -196,18 +196,18 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
-func (hws *RoomService) CreateDesk(ctx context.Context, req *matchroom.MatchRoomRequest) (rsp *matchroom.MatchRoomResponse, err error) {
+func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.RoomMgrRequest) (rsp *roommgr.RoomMgrResponse, err error) {
 	//TODO 接到创建房间请求，创建房间
 	playerID := req.GetPlayerId()
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayer(playerID)
 
-	rsp = &matchroom.MatchRoomResponse{
-		ErrCode: matchroom.RoomError_SUCCESS,
+	rsp = &roommgr.RoomMgrResponse{
+		ErrCode: roommgr.RoomError_SUCCESS,
 	}
 
 	if player == nil {
-		rsp.ErrCode = matchroom.RoomError_FAILED
+		rsp.ErrCode = roommgr.RoomError_FAILED
 		return
 	}
 
@@ -225,7 +225,7 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	registerLbReporter(e)
 
 	rpcServer := e.RPCServer
-	err := rpcServer.RegisterService(matchroom.RegisterMatchRoomServer, &RoomService{})
+	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, &RoomService{})
 	if err != nil {
 		return err
 	}

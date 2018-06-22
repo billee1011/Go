@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	msgid "steve/client_pb/msgId"
-	"steve/server_pb/room"
+	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
@@ -50,9 +50,9 @@ func (c *matchCore) registerHandles(e exchanger.Exchanger) error {
 	return nil
 }
 
-func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req matchroom.MatchRoomRequest) (ret []exchanger.ResponseMsg) {
-	response := &matchroom.MatchRoomResponse{
-		ErrCode: matchroom.RoomError_SUCCESS,
+func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req roommgr.RoomMgrRequest) (ret []exchanger.ResponseMsg) {
+	response := &roommgr.RoomMgrResponse{
+		ErrCode: roommgr.RoomError_SUCCESS,
 	}
 	ret = []exchanger.ResponseMsg{{
 		MsgID: uint32(msgid.MsgID_MATCH_RSP),
@@ -82,8 +82,8 @@ func (c *matchCore) work(playerId uint64) error {
 		return errors.New("no service named room. ensure your consul agent is running and configed room")
 	}
 
-	client := matchroom.NewMatchRoomClient(cc)
-	resp, err := client.CreateDesk(context.Background(), &matchroom.MatchRoomRequest{
+	client := roommgr.NewRoomMgrClient(cc)
+	resp, err := client.CreateDesk(context.Background(), &roommgr.RoomMgrRequest{
 		PlayerId: playerId,
 	})
 
