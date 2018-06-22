@@ -62,7 +62,7 @@ func loginPlayerByUserName(clientID uint64, userName string) interfaces.Player {
 	if pm == nil {
 		p := &player{
 			playerID: allocPlayerID(),
-			coin:     10000,
+			coin:     10000000, //血战天胡地胡赢分数太高，容易认输进入游戏结束
 			clientID: clientID,
 			userName: userName,
 		}
