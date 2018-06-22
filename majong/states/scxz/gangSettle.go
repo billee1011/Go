@@ -102,18 +102,18 @@ func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 			}
 			player.XpState = majongpb.XingPaiState_give_up
 		}
-		return s.nextState(mjContext), nil
 	}
-	return majongpb.StateID(majongpb.StateID_state_mopai), nil
+	return s.nextState(mjContext), nil
 }
 
 // nextState 下个状态
 func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	newState := s.getNextState(mjcontext)
+	nextState := s.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "nextState",
+		"newState":  nextState,
 	}).Infoln("杠结算下个状态")
-	return newState
+	return nextState
 }
 
 // 下一状态获取

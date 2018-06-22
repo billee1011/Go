@@ -63,11 +63,10 @@ func Test_SCXZ_Duo_Dianpao_GameOver(t *testing.T) {
 	utils.CheckHuNotify(t, deskData, []int{hu1Seat, hu2Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 	// utils.CheckHuNotify(t, deskData, []int{hu1Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 
-	// 检测0, 2, 3玩家收到点炮结算通知 TODO 结算有问题
-	// utils.CheckDianPaoSettleNotify(t, deskData, []int{hu1Seat, hu2Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
+	// 检测0, 2, 3玩家收到点炮结算通知
+	utils.CheckDianPaoSettleNotify(t, deskData, []int{hu1Seat, hu2Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 
-	WaitGameOverNtf(t, deskData)
-
+	utils.WaitGameOverNtf(t, deskData)
 }
 
 // Test_SCXZ_ZiMo_GameOver 测试自摸，正常玩家不足，游戏结束
@@ -85,6 +84,7 @@ func Test_SCXZ_ZiMo_GameOver(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
+	params.Gold = 1000000
 	params.WallCards = []uint32{18, 24, 31, 31}
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TONG, room.CardColor_CC_TIAO}
 	deskData, err := utils.StartGame(params)
@@ -101,16 +101,16 @@ func Test_SCXZ_ZiMo_GameOver(t *testing.T) {
 	// 庄家下家自摸18
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 1))
 	assert.Nil(t, utils.SendHuReq(deskData, 1))
-	// 检测所有玩家收到天胡通知
+	// 检测所有玩家收到地胡胡通知
 	utils.CheckHuNotify(t, deskData, []int{1}, 1, 18, room.HuType_HT_DIHU)
 
 	// 庄家对家自摸24
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 2))
 	assert.Nil(t, utils.SendHuReq(deskData, 2))
-	// 检测所有玩家收到天胡通知
+	// 检测所有玩家收到地胡通知
 	utils.CheckHuNotify(t, deskData, []int{2}, 2, 24, room.HuType_HT_DIHU)
 
-	WaitGameOverNtf(t, deskData)
+	utils.WaitGameOverNtf(t, deskData)
 
 }
 
@@ -196,15 +196,5 @@ func Test_SCXZ_Duo_Qiangganghu_GameOver(t *testing.T) {
 	utils.CheckHuNotify(t, deskData, []int{0, 2, 3}, 1, 19, room.HuType_HT_QIANGGANGHU)
 
 	//等待游戏结束通知等待游戏结束通知
-	WaitGameOverNtf(t, deskData)
-}
-
-//WaitGameOverNtf 所有玩家等待游戏结束通知
-func WaitGameOverNtf(t *testing.T, d *utils.DeskData) {
-	for i := 0; i < len(d.Players); i++ {
-		player := utils.GetDeskPlayerBySeat(i, d)
-		expector, _ := player.Expectors[msgid.MsgID_ROOM_GAMEOVER_NTF]
-		ntf := &room.RoomGameOverNtf{}
-		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf))
-	}
+	utils.WaitGameOverNtf(t, deskData)
 }

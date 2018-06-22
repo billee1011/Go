@@ -1,0 +1,1 @@
+protoc -I mjconfig mjconfig/mjc.proto --go_out=plugins=grpc:mjconfig 
