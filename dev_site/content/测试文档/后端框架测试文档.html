@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+        <style>
+/*--------------------------------------------------------------------------------------------- * Copyright (c) Microsoft Corporation. All rights reserved. * Licensed under the MIT License. See License.txt in the project root for license information. *--------------------------------------------------------------------------------------------*/ body { font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback"; font-size: 14px; padding: 0 12px; line-height: 22px; word-wrap: break-word; } body.scrollBeyondLastLine { margin-bottom: calc(100vh - 22px); } body.showEditorSelection .code-line { position: relative; } body.showEditorSelection .code-active-line:before, body.showEditorSelection .code-line:hover:before { content: ""; display: block; position: absolute; top: 0; left: -12px; height: 100%; } body.showEditorSelection li.code-active-line:before, body.showEditorSelection li.code-line:hover:before { left: -30px; } .vscode-light.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(0, 0, 0, 0.15); } .vscode-light.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(0, 0, 0, 0.40); } .vscode-dark.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(255, 255, 255, 0.4); } .vscode-dark.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(255, 255, 255, 0.60); } .vscode-high-contrast.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(255, 160, 0, 0.7); } .vscode-high-contrast.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(255, 160, 0, 1); } img { max-width: 100%; max-height: 100%; } a { color: #4080D0; text-decoration: none; } a:focus, input:focus, select:focus, textarea:focus { outline: 1px solid -webkit-focus-ring-color; outline-offset: -1px; } hr { border: 0; height: 2px; border-bottom: 2px solid; } h1 { padding-bottom: 0.3em; line-height: 1.2; border-bottom-width: 1px; border-bottom-style: solid; } h1, h2, h3 { font-weight: normal; } h1 code, h2 code, h3 code, h4 code, h5 code, h6 code { font-size: inherit; line-height: auto; } a:hover { color: #4080D0; text-decoration: underline; } table { border-collapse: collapse; } table > thead > tr > th { text-align: left; border-bottom: 1px solid; } table > thead > tr > th, table > thead > tr > td, table > tbody > tr > th, table > tbody > tr > td { padding: 5px 10px; } table > tbody > tr + tr > td { border-top: 1px solid; } blockquote { margin: 0 7px 0 5px; padding: 0 16px 0 10px; border-left: 5px solid; } code { font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback"; font-size: 14px; line-height: 19px; } body.wordWrap pre { white-space: pre-wrap; } .mac code { font-size: 12px; line-height: 18px; } code > div { padding: 16px; border-radius: 3px; overflow: auto; } /** Theming */ .vscode-light { color: rgb(30, 30, 30); } .vscode-dark { color: #DDD; } .vscode-high-contrast { color: white; } .vscode-light code { color: #A31515; } .vscode-dark code { color: #D7BA7D; } .vscode-light code > div { background-color: rgba(220, 220, 220, 0.4); } .vscode-dark code > div { background-color: rgba(10, 10, 10, 0.4); } .vscode-high-contrast code > div { background-color: rgb(0, 0, 0); } .vscode-high-contrast h1 { border-color: rgb(0, 0, 0); } .vscode-light table > thead > tr > th { border-color: rgba(0, 0, 0, 0.69); } .vscode-dark table > thead > tr > th { border-color: rgba(255, 255, 255, 0.69); } .vscode-light h1, .vscode-light hr, .vscode-light table > tbody > tr + tr > td { border-color: rgba(0, 0, 0, 0.18); } .vscode-dark h1, .vscode-dark hr, .vscode-dark table > tbody > tr + tr > td { border-color: rgba(255, 255, 255, 0.18); } .vscode-light blockquote, .vscode-dark blockquote { background: rgba(127, 127, 127, 0.1); border-color: rgba(0, 122, 204, 0.5); } .vscode-high-contrast blockquote { background: transparent; border-color: #fff; }
+</style>
+<style>
+/* Tomorrow Theme */ /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */ /* Original theme - https://github.com/chriskempson/tomorrow-theme */ /* Tomorrow Comment */ .hljs-comment, .hljs-quote { color: #8e908c; } /* Tomorrow Red */ .hljs-variable, .hljs-template-variable, .hljs-tag, .hljs-name, .hljs-selector-id, .hljs-selector-class, .hljs-regexp, .hljs-deletion { color: #c82829; } /* Tomorrow Orange */ .hljs-number, .hljs-built_in, .hljs-builtin-name, .hljs-literal, .hljs-type, .hljs-params, .hljs-meta, .hljs-link { color: #f5871f; } /* Tomorrow Yellow */ .hljs-attribute { color: #eab700; } /* Tomorrow Green */ .hljs-string, .hljs-symbol, .hljs-bullet, .hljs-addition { color: #718c00; } /* Tomorrow Blue */ .hljs-title, .hljs-section { color: #4271ae; } /* Tomorrow Purple */ .hljs-keyword, .hljs-selector-tag { color: #8959a8; } .hljs { display: block; overflow-x: auto; color: #4d4d4c; padding: 0.5em; } .hljs-emphasis { font-style: italic; } .hljs-strong { font-weight: bold; }
+</style>
+<style>
+ul.contains-task-list { padding-left: 0; } ul ul.contains-task-list { padding-left: 40px; } .task-list-item { list-style-type: none; } .task-list-item-checkbox { vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'HelveticaNeue-Light', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+    </head>
+    <body>
+        <hr>
+<h2 id="title--date--2018-06-21t14-10-3808-00draft--false">title: &quot;后端框架测试文档&quot;
+date: 2018-06-21T14:10:38+08:00
+draft: false</h2>
+<ul>
+<li><a href="#test-content"> 测试内容</a>
+<ul>
+<li><a href="#deployment"> 服务部署 （可选）</a></li>
+<li><a href="#test-by-utils"> 使用提供的测试工具进行测试</a>
+<ul>
+<li><a href="#test-params">测试程序参数说明</a></li>
+<li><a href="#login-test"> 登录测试</a></li>
+<li><a href="#start-game"> 游戏测试</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="test-content"><!--test-content--> 测试内容</h1>
+<h2 id="deployment"><!--deployment--> 服务部署 （可选）</h2>
+<h3 id="omit-in-toc"><!-- omit in toc --> 测试方法</h3>
+<ul>
+<li>参考 <a href="/%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97/">部署文档</a> 进行服务部署</li>
+</ul>
+<h3 id="omit-in-toc"><!-- omit in toc --> 测试要点</h3>
+<ul>
+<li>所有服务能够正常启动</li>
+</ul>
+<h2 id="test-by-utils"><!--test-by-utils--> 使用提供的测试工具进行测试</h2>
+<h3 id="test-params"><!--test-params-->测试程序参数说明</h3>
+<ul>
+<li>login_server_addr 登录服监听地址，默认值为 127.0.0.1:36201</li>
+<li>peipai_url 配牌 url， 默认值为  <a href="http://127.0.0.1:36102">http://127.0.0.1:36102</a></li>
+<li>client_version 客户端版本号， 默认值为 1.0</li>
+<li>dbpath 存储测试账号分配数据。如果环境变量设置了 GOPATH ,默认值为 $GOPATH。否则默认值为当前目录</li>
+</ul>
+<h3 id="login-test"><!-- login-test --> 登录测试</h3>
+<h4 id="omit-in-toc"><!-- omit in toc --> 测试方法</h4>
+<ul>
+<li>使用提供的 login.test 二进制文件测试<pre><code>./login.test -login_server_addr 127.0.0.1:36201 -peipai_url http://127.0.0.1:36102 -dbpath ./
+</code></pre>
+</li>
+</ul>
+<h4 id="omit-in-toc"><!-- omit in toc --> 测试要点</h4>
+<ul>
+<li>登录测试程序执行流程：
+<ul>
+<li>测试程序会分配账号 ID， 向登录服发起认证请求</li>
+<li>登录服认证通过后，获取 1 个网关服的地址，并且回复客户端</li>
+<li>测试程序收到登录服认证响应后，向对应的网关服发起认证请求</li>
+<li>网关服认证通过后，响应请求</li>
+</ul>
+</li>
+<li>在测试过程中，可以尝试关闭登录服、网关服，检测测试结果</li>
+<li>测试程序最后一行输出为 PASS 时代表上述流程执行通过</li>
+</ul>
+<h3 id="start-game"><!-- start-game --> 游戏测试</h3>
+<h4 id="omit-in-toc"><!-- omit in toc --> 测试方法</h4>
+<ul>
+<li>使用提供的 startgame.test 进行测试<pre><code>./startgame.test -login_server_addr 127.0.0.1:36201 -peipai_url http://127.0.0.1:36102 -dbpath ./
+</code></pre>
+</li>
+</ul>
+<h4 id="omit-in-toc"><!-- omit in toc --> 测试要点</h4>
+<ul>
+<li>开始游戏测试程序执行流程：
+<ul>
+<li>登录 4 个玩家， 并且向服务器发起匹配请求。</li>
+<li>匹配服会处理匹配请求，当有 4 个玩家进行匹配时， 会通知 room 服创建房间</li>
+<li>room 服创建房间后，会通知客户端创建房间成功和开始游戏</li>
+<li>测试程序会校验是否正确收到服务器的消息</li>
+</ul>
+</li>
+<li>在测试过程中，可以尝试关闭匹配服、登录服、网关服、room 服来检测测试结果</li>
+<li>测试程序最后一行输出为 PASS 时代表上述流程执行通过</li>
+</ul>
+
+    </body>
+    </html>
