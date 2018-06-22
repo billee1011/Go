@@ -18,12 +18,10 @@ func GetNormalPlayersAll(players []*majongpb.Player) []*majongpb.Player {
 		}
 		newPlalyers = append(newPlalyers, player)
 	}
-	defer func() {
-		logrus.WithFields(logrus.Fields{
-			"func_name":            "GetNormalPlayersAll",
-			"off_normal_playersID": playersID,
-		}).Info("判断玩家是否是正常玩家")
-	}()
+	logrus.WithFields(logrus.Fields{
+		"func_name":            "GetNormalPlayersAll",
+		"off_normal_playersID": playersID,
+	}).Info("获取正常玩家数组")
 	return newPlalyers
 }
 
@@ -60,4 +58,15 @@ func GetNextNormalPlayerByID(players []*majongpb.Player, srcPlayerID uint64) *ma
 	}
 	log.Errorln("获取下个正常状态的玩家失败！")
 	return nil
+}
+
+//IsNormalPlayerInsufficient 正常状态的玩家是否人数不够
+func IsNormalPlayerInsufficient(players []*majongpb.Player) bool {
+	conut := 0
+	for _, player := range players {
+		if player.GetXpState() == majongpb.XingPaiState_normal {
+			conut++
+		}
+	}
+	return conut <= 1
 }

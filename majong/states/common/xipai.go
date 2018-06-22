@@ -8,7 +8,7 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	"steve/peipai"
+	"steve/room/peipai"
 	majongpb "steve/server_pb/majong"
 	"strconv"
 	"time"

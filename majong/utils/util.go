@@ -5,7 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/majong/interfaces"
-	"steve/peipai"
+	"steve/room/peipai"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"

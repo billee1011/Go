@@ -140,3 +140,10 @@ func (dm *deskMgr) GetRunDeskByPlayerID(playerID uint64) (desk interfaces.Desk, 
 	desk = iDesk.(interfaces.Desk)
 	return desk, nil
 }
+
+// RemoveDeskPlayerByPlayerID
+func (dm *deskMgr) RemoveDeskPlayerByPlayerID(playerID uint64) {
+	dm.mu.Lock()
+	defer dm.mu.Unlock()
+	dm.playerDeskMap.Delete(playerID)
+}

@@ -21,14 +21,21 @@ var _ interfaces.MajongState = new(ZiMoSettleState)
 // ProcessEvent 处理事件
 // 自摸逻辑执行完后，进入自摸结算状态
 func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
-	s.setMopaiPlayer(flow)
 	if eventID == majongpb.EventID_event_settle_finish {
 		message := &majongpb.SettleFinishEvent{}
 		err := proto.Unmarshal(eventContext, message)
 		if err != nil {
 			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 		}
-		return s.settleOver(flow, message)
+		nextState, err := s.settleOver(flow, message)
+		if nextState == majongpb.StateID_state_mopai {
+			s.setMopaiPlayer(flow)
+		}
+		logrus.WithFields(logrus.Fields{
+			"func_name": "ProcessEvent",
+			"nextState": nextState,
+		}).Infoln("自摸结算下个状态")
+		return nextState, err
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
 }
@@ -56,7 +63,13 @@ func (s *ZiMoSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 		return
 	}
 	players := mjContext.GetPlayers()
-	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
+	mopaiPlayerID := common.CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
+	// 摸牌玩家不能是非正常状态玩家
+	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
+	if !utils.IsNormalPlayer(mopaiPlayer) {
+		mopaiPlayer = utils.GetNextNormalPlayerByID(players, mopaiPlayerID)
+	}
+	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
@@ -124,7 +137,20 @@ func (s *ZiMoSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 			}
 			player.XpState = majongpb.XingPaiState_give_up
 		}
-		return majongpb.StateID_state_gameover, nil
 	}
-	return majongpb.StateID(majongpb.StateID_state_mopai), nil
+	return s.nextState(mjContext), nil
+}
+
+// nextState 下个状态
+func (s *ZiMoSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
+	return s.getNextState(mjcontext)
+}
+
+// 下一状态获取
+func (s *ZiMoSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+	// 正常玩家<=1,游戏结束
+	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
+		return majongpb.StateID_state_gameover
+	}
+	return majongpb.StateID_state_mopai
 }
