@@ -534,6 +534,16 @@ func (d *desk) getDeskPlayer(playerID uint64) *deskPlayer {
 	return nil
 }
 
+// getContextPlayer 获取context玩家
+func (d *desk) getContextPlayer(playerID uint64) *server_pb.Player {
+	for _, contextPlayer := range d.dContext.mjContext.GetPlayers() {
+		if contextPlayer.GetPalyerId() == playerID {
+			return contextPlayer
+		}
+	}
+	return nil
+}
+
 // handleEnterQuit 处理退出进入信息
 func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -543,6 +553,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	})
 	var msgs []server_pb.ReplyClientMessage
 	deskPlayer := d.getDeskPlayer(eqi.playerID)
+	contextPlayer := d.getContextPlayer(eqi.playerID)
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
 		return
@@ -551,6 +562,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = getDeskQuitRspMsg(eqi.playerID)
 		d.reply(msgs)
 		deskPlayer.quitDesk()
+		contextPlayer.XpState = server_pb.XingPaiState_leave
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		oh := GetOptionByFactory(d.GetGameID())
 		oh.handleQuitByPlayerState(d, eqi.playerID)

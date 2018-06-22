@@ -99,7 +99,7 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "QiangganghuState.setMopaiPlayer",
+		"func_name": "huState.setMopaiPlayer",
 	})
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 	huPlayers := mjContext.GetLastHuPlayers()

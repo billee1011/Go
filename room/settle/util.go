@@ -2,7 +2,6 @@ package settle
 
 import (
 	msgid "steve/client_pb/msgId"
-	"steve/client_pb/room"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
@@ -58,9 +57,9 @@ func NotifyPlayersMessage(desk interfaces.Desk, playerIds []uint64, msgid msgid.
 }
 
 // GetDeskPlayer 获取指定id的room Player
-func GetDeskPlayer(deskPlayers []*room.RoomPlayerInfo, pid uint64) *room.RoomPlayerInfo {
+func GetDeskPlayer(deskPlayers []interfaces.DeskPlayer, pid uint64) interfaces.DeskPlayer {
 	for _, p := range deskPlayers {
-		if p.GetPlayerId() == pid {
+		if p.GetPlayerID() == pid {
 			return p
 		}
 	}

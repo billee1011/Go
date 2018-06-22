@@ -24,6 +24,6 @@ enum StateID {
     state_gameover = 17;            // 游戏结束状态
     state_gang_settle = 18;          // 杠结算状态
     state_zimo_settle = 19;          // 自摸结算状态
-    state_hu_settle = 20;       // 点炮结算状态
+    state_hu_settle = 20;            // 点炮结算状态
     state_qiangganghu_settle = 21;  // 枪杠胡结算状态
 }

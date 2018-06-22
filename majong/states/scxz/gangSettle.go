@@ -16,6 +16,7 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -68,7 +69,9 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		if player.XpState == majongpb.XingPaiState_normal {
+			allPlayers = append(allPlayers, player.GetPalyerId())
+		}
 	}
 	param := interfaces.GangSettleParams{
 		GangPlayer: player.GetPalyerId(),
@@ -97,9 +100,26 @@ func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 			if player == nil {
 				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 			}
-			player.State = majongpb.PlayerState_give_up
+			player.XpState = majongpb.XingPaiState_give_up
 		}
-		return majongpb.StateID_state_gameover, nil
 	}
-	return majongpb.StateID(majongpb.StateID_state_mopai), nil
+	return s.nextState(mjContext), nil
+}
+
+// nextState 下个状态
+func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
+	newState := s.getNextState(mjcontext)
+	logrus.WithFields(logrus.Fields{
+		"func_name": "nextState",
+	}).Infoln("杠结算下个状态")
+	return newState
+}
+
+// 下一状态获取
+func (s *GangSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+	// 正常玩家<=1,游戏结束
+	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
+		return majongpb.StateID_state_gameover
+	}
+	return majongpb.StateID_state_mopai
 }

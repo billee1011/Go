@@ -8,7 +8,7 @@ import (
 	"steve/majong/interfaces/facade"
 	"steve/majong/states/common"
 	"steve/majong/utils"
-	"steve/peipai"
+	"steve/room/peipai"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -26,7 +26,6 @@ var _ interfaces.MajongState = new(ZimoState)
 // ProcessEvent 处理事件
 func (s *ZimoState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_zimo_finish {
-		s.setMopaiPlayer(flow)
 		return majongpb.StateID_state_zimo_settle, nil
 	}
 	return majongpb.StateID_state_zimo, global.ErrInvalidEvent
@@ -64,6 +63,9 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	s.notifyHu(card, huType, player.GetPalyerId(), flow)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
 	common.AddHuCard(card, player, player.GetPalyerId(), huType, false)
+
+	// 玩家胡状态
+	player.XpState = majongpb.XingPaiState_hu
 }
 
 // isAfterGang 判断是否为杠开
@@ -122,24 +124,6 @@ func (s *ZimoState) notifyHu(card *majongpb.Card, huType majongpb.HuType, player
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }
 
-// setMopaiPlayer 设置摸牌玩家
-func (s *ZimoState) setMopaiPlayer(flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "ZimoState.doZimo",
-	})
-	logEntry = utils.WithMajongContext(logEntry, mjContext)
-
-	huPlayers := mjContext.GetLastHuPlayers()
-	if len(huPlayers) == 0 {
-		logEntry.Errorln("胡牌玩家列表为空")
-		return
-	}
-	players := mjContext.GetPlayers()
-	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
-	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
-}
-
 // getZimoInfo 获取自摸信息
 func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majongpb.Player, card *majongpb.Card, err error) {
 	playerID := mjContext.GetLastMopaiPlayer()
@@ -165,52 +149,4 @@ func (s *ZimoState) huType2RoomHuType(huType majongpb.HuType) room.HuType {
 		majongpb.HuType_hu_tianhu:            room.HuType_HT_TIANHU,
 		majongpb.HuType_hu_dihu:              room.HuType_HT_DIHU,
 	}[huType]
-}
-
-// doZiMoSettle 自摸的结算
-func (s *ZimoState) doZiMoSettle(card *majongpb.Card, huPlayerID uint64, flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-
-	allPlayers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-	}
-
-	cardValues := make(map[uint64]uint32, 0)
-	cardTypes := make(map[uint64][]majongpb.CardType, 0)
-	genCount := make(map[uint64]uint32, 0)
-	gameID := int(mjContext.GetGameId())
-	huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
-	cardParams := interfaces.CardCalcParams{
-		HandCard: huPlayer.HandCards,
-		PengCard: utils.TransPengCard(huPlayer.PengCards),
-		GangCard: utils.TransGangCard(huPlayer.GangCards),
-		HuCard:   nil,
-		GameID:   gameID,
-	}
-	calculator := global.GetCardTypeCalculator()
-	cardType, gen := calculator.Calculate(cardParams)
-	cardValue, _ := calculator.CardTypeValue(gameID, cardType, gen)
-
-	cardTypes[huPlayerID] = cardType
-	cardValues[huPlayerID] = cardValue
-	genCount[huPlayerID] = gen
-
-	huType := s.calcHuType(huPlayerID, flow)
-	params := interfaces.HuSettleParams{
-		HuPlayers:  []uint64{huPlayerID},
-		SrcPlayer:  huPlayerID,
-		AllPlayers: allPlayers,
-		SettleType: majongpb.SettleType_settle_zimo,
-		HuType:     huType,
-		CardTypes:  cardTypes,
-		CardValues: cardValues,
-		GenCount:   genCount,
-		SettleID:   mjContext.CurrentSettleId,
-	}
-	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
-	for _, settleInfo := range settleInfos {
-		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
-	}
 }
