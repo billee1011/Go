@@ -7,7 +7,9 @@ rpc_addr: 127.0.0.1
 rpc_port: 36100
 rpc_server_name: room
 
-redis_addr: 127.0.0.1:6379 
+peipai_addr: 127.0.0.1:36102
+
+redis_addr: 192.168.7.108:6379
 redis_passwd: 
 
 consul_addr: 127.0.0.1:8500
@@ -15,5 +17,3 @@ consul_addr: 127.0.0.1:8500
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
   - 127.0.0.1:4161
-
-peipai_addr: 127.0.0.1:36102
