@@ -118,15 +118,15 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, gangCardGroups...)
 		// 胡牌组
-		var huCardGroups []*room.CardsGroup
-		for _, huCard := range player.GetHuCards() {
-			srcPlayerID := huCard.GetSrcPlayer()
-			huCardGroup := &room.CardsGroup{
-				Cards: []uint32{gutils.ServerCard2Number(huCard.GetCard())},
+		var huCards []*server_pb.Card
+		for _, card := range player.GetHuCards() {
+			huCards = append(huCards, card.GetCard())
+		}
+		huCardGroups := []*room.CardsGroup{
+			&room.CardsGroup{
+				Cards: gutils.ServerCards2Numbers(huCards),
 				Type:  room.CardsGroupType_CGT_HU.Enum(),
-				Pid:   &srcPlayerID,
-			}
-			huCardGroups = append(huCardGroups, huCardGroup)
+			},
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huCardGroups...)
 		// 花牌组

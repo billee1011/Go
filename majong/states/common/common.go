@@ -96,3 +96,14 @@ func calcMopaiPlayer(logEntry *logrus.Entry, huPlayers []uint64, srcPlayer uint6
 	mopaiIndex := (calcLastHuIndex(srcIndex, huIndexs, len(players)) + 1) % len(players)
 	return players[mopaiIndex].GetPalyerId()
 }
+
+func removeLastCard(logEntry *logrus.Entry, srcCards []*majongpb.Card, rmCard *majongpb.Card) []*majongpb.Card {
+	pos := len(srcCards) - 1
+	if pos >= 0 && (srcCards[pos].GetColor() == rmCard.GetColor()) &&
+		(srcCards[pos].GetPoint() == rmCard.GetPoint()) {
+		srcCards = srcCards[0:pos]
+	} else {
+		logEntry.Errorln("最后一张牌与目标牌不同，无法移除")
+	}
+	return srcCards
+}

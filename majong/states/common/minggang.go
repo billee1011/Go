@@ -54,21 +54,23 @@ func (s *MingGangState) OnExit(flow interfaces.MajongFlow) {
 
 // doMinggang 执行明杠操作
 func (s *MingGangState) doMinggang(flow interfaces.MajongFlow) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "MingGangState.doMinggang",
-	})
-
 	mjContext := flow.GetMajongContext()
-	logEntry = utils.WithMajongContext(logEntry, mjContext)
-
 	playerID := mjContext.GetLastGangPlayer()
 	player := utils.GetMajongPlayer(playerID, mjContext)
 	card := mjContext.GetGangCard()
+	srcPlayerID := mjContext.GetLastChupaiPlayer()
+	srcPlayer := utils.GetMajongPlayer(srcPlayerID, mjContext)
 
-	logEntry = logEntry.WithFields(logrus.Fields{
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":      "MingGangState.doMinggang",
 		"gang_player_id": playerID,
 	})
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
 
+	// 从被杠玩家的outCards移除被杠牌
+	srcOutCards := srcPlayer.GetOutCards()
+	srcPlayer.OutCards = removeLastCard(logEntry, srcOutCards, card)
+	// 从杠牌玩家的handCards移除杠牌
 	newCards, ok := utils.RemoveCards(player.GetHandCards(), card, 3)
 	if !ok {
 		logEntry.Errorln("移除玩家手牌失败")

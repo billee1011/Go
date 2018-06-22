@@ -52,17 +52,23 @@ func (s *HuState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPla
 // doHu 执行胡操作
 func (s *HuState) doHu(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
+	card := mjContext.GetLastOutCard()
+	players := mjContext.GetLastHuPlayers()
+	srcPlayerID := mjContext.GetLastChupaiPlayer()
+	srcPlayer := utils.GetMajongPlayer(srcPlayerID, mjContext)
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "HuState.doHu",
 	})
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
-	players := mjContext.GetLastHuPlayers()
+
+	// 从被碰玩家的outCards移除被碰牌
+	srcOutCards := srcPlayer.GetOutCards()
+	srcPlayer.OutCards = removeLastCard(logEntry, srcOutCards, card)
 
 	isReal := true
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
-		card := mjContext.GetLastOutCard()
 		s.addHuCard(card, player, playerID, isReal)
 		isReal = false
 	}

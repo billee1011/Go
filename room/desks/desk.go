@@ -630,7 +630,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 
 	mjContext := &d.dContext.mjContext
 	bankerSeat := mjContext.GetZhuangjiaIndex()
-	totalCardsNum := mjContext.GetCardTotalNum() //global.GetOriginCards(mjContext.GetGameId()),该函数在麻将里面，room调用不到
+	totalCardsNum := mjContext.GetCardTotalNum()
 	gameStage := getGameStage(mjContext.GetCurState())
 
 	gameDeskInfo := room.GameDeskInfo{
