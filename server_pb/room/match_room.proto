@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package matchroom;
+
+enum RoomError {
+    SUCCESS = 0x0;
+    FAILED = 0x1; // 失败
+}
+
+
+message MatchRoomRequest {
+    uint64 playerId = 1;
+}
+
+message MatchRoomResponse {
+    RoomError err_code = 1; // 错误码
+}
+
+service MatchRoom {
+    rpc CreateDesk(MatchRoomRequest) returns (MatchRoomResponse) {}
+}
