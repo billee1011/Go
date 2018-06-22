@@ -25,7 +25,6 @@ var _ interfaces.MajongState = new(HuState)
 // ProcessEvent 处理事件
 func (s *HuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_hu_finish {
-		s.setMopaiPlayer(flow)
 		return majongpb.StateID_state_hu_settle, nil
 	}
 	return majongpb.StateID_state_hu, global.ErrInvalidEvent
@@ -66,6 +65,8 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 		card := mjContext.GetLastOutCard()
 		s.addHuCard(card, player, playerID, isReal)
 		isReal = false
+		// 玩家胡状态
+		player.XpState = majongpb.XingPaiState_hu
 	}
 	s.notifyHu(flow)
 	return
@@ -93,88 +94,4 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 		HuType:       huType,
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
-}
-
-// setMopaiPlayer 设置摸牌玩家
-func (s *HuState) setMopaiPlayer(flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "QiangganghuState.setMopaiPlayer",
-	})
-	logEntry = utils.WithMajongContext(logEntry, mjContext)
-	huPlayers := mjContext.GetLastHuPlayers()
-	srcPlayer := mjContext.GetLastChupaiPlayer()
-	players := mjContext.GetPlayers()
-
-	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
-	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
-}
-
-// doHuSettle 胡的结算
-func (s *HuState) doHuSettle(flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-
-	allPlayers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-	}
-
-	cardValues := make(map[uint64]uint32, 0)
-	cardTypes := make(map[uint64][]majongpb.CardType, 0)
-	genCount := make(map[uint64]uint32, 0)
-
-	huPlayers := mjContext.GetLastHuPlayers()
-	gameID := int(mjContext.GetGameId())
-	for _, huPlayerID := range huPlayers {
-		huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
-		cardParams := interfaces.CardCalcParams{
-			HandCard: huPlayer.HandCards,
-			PengCard: utils.TransPengCard(huPlayer.PengCards),
-			GangCard: utils.TransGangCard(huPlayer.GangCards),
-			HuCard:   mjContext.GetLastOutCard(),
-			GameID:   gameID,
-		}
-		calculator := global.GetCardTypeCalculator()
-		cardType, gen := calculator.Calculate(cardParams)
-		cardValue, _ := calculator.CardTypeValue(gameID, cardType, gen)
-
-		cardTypes[huPlayerID] = cardType
-		cardValues[huPlayerID] = cardValue
-		genCount[huPlayerID] = gen
-	}
-
-	huType := majongpb.HuType_hu_dianpao
-
-	params := interfaces.HuSettleParams{
-		HuPlayers:  huPlayers,
-		SrcPlayer:  mjContext.GetLastChupaiPlayer(),
-		AllPlayers: allPlayers,
-		SettleType: majongpb.SettleType_settle_dianpao,
-		HuType:     huType,
-		CardTypes:  cardTypes,
-		CardValues: cardValues,
-		GenCount:   genCount,
-		SettleID:   mjContext.CurrentSettleId,
-	}
-	if s.isAfterGang(mjContext) {
-		huType = majongpb.HuType_hu_ganghoupao
-		GangCards := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext).GangCards
-		params.HuType = huType
-		params.GangCard = *GangCards[len(GangCards)-1]
-	}
-	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
-	if s.isAfterGang(mjContext) {
-		lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
-		if lastSettleInfo.SettleType == majongpb.SettleType_settle_angang || lastSettleInfo.SettleType == majongpb.SettleType_settle_minggang || lastSettleInfo.SettleType == majongpb.SettleType_settle_bugang {
-			lastSettleInfo.CallTransfer = true
-		}
-	}
-	maxSID := uint64(0)
-	for _, settleInfo := range settleInfos {
-		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		if settleInfo.Id > maxSID {
-			maxSID = settleInfo.Id
-		}
-	}
-	mjContext.CurrentSettleId = maxSID
 }
