@@ -16,13 +16,11 @@ import (
 // 预期：
 //  后4个玩家都收到了创建房间通知和游戏开始通知
 func Test_OfflineMatch(t *testing.T) {
-	accountID := global.AllocAccountID()
-	accountName := utils.GenerateAccountName(accountID)
-	player1, err := utils.LoginPlayer(accountID, accountName)
+	player1, err := utils.LoginNewPlayer()
 	assert.Nil(t, err)
 	assert.NotNil(t, player1)
 
-	utils.ApplyJoinDesk(player1)
+	utils.NewApplyJoinDesk(player1)
 	assert.Nil(t, err)
 	player1.GetClient().Stop()
 	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开

@@ -117,9 +117,7 @@ var errCreateClientFailed = errors.New("创建客户端连接失败")
 func createAndLoginUsers() ([]interfaces.ClientPlayer, error) {
 	players := []interfaces.ClientPlayer{}
 	for i := 0; i < 4; i++ {
-		accountID := global.AllocAccountID()
-		accountName := GenerateAccountName(accountID)
-		player, err := LoginPlayer(accountID, accountName)
+		player, err := LoginNewPlayer()
 		if err != nil {
 			return nil, fmt.Errorf("登录用户失败： %v", err)
 		}

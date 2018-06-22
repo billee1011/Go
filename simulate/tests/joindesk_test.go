@@ -16,9 +16,7 @@ func TestApplyJoinDesk(t *testing.T) {
 	gameStartNtfExpectors := map[int]interfaces.MessageExpector{}
 	for i := 0; i < 4; i++ {
 		// 登录用户
-		accountID := global.AllocAccountID()
-		accountName := utils.GenerateAccountName(accountID)
-		player, err := utils.LoginPlayer(accountID, accountName)
+		player, err := utils.LoginNewPlayer()
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 		client := player.GetClient()

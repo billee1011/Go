@@ -44,6 +44,13 @@ func (p *clientPlayer) GetAccountID() uint64 {
 	return p.accountID
 }
 
+// LoginNewPlayer 自动分配账号 ID， 生成账号名称，然后登录
+func LoginNewPlayer() (interfaces.ClientPlayer, error) {
+	accountID := global.AllocAccountID()
+	accountName := GenerateAccountName(accountID)
+	return LoginPlayer(accountID, accountName)
+}
+
 // LoginPlayer 登录玩家
 func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer, error) {
 	loginClient := connect.NewTestClient(config.GetLoginServerAddr(), config.GetClientVersion())

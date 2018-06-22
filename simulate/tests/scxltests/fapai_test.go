@@ -17,9 +17,8 @@ func Test_Fapai(t *testing.T) {
 
 	for i := 0; i < 4; i++ {
 		// 登录玩家
-		accountID := global.AllocAccountID()
-		accountName := utils.GenerateAccountName(accountID)
-		player, err := utils.LoginPlayer(accountID, accountName)
+		player, err := utils.LoginNewPlayer()
+
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 		client := player.GetClient()
