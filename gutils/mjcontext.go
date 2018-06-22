@@ -13,3 +13,13 @@ func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majong
 	}
 	return nil
 }
+
+// GetPlayerIndex 获取玩家索引
+func GetPlayerIndex(playerID uint64, players []*majongpb.Player) int {
+	for index, player := range players {
+		if player.GetPalyerId() == playerID {
+			return index
+		}
+	}
+	return -1
+}

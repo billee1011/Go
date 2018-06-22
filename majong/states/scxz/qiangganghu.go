@@ -25,7 +25,6 @@ var _ interfaces.MajongState = new(QiangganghuState)
 // ProcessEvent 处理事件
 func (s *QiangganghuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_qiangganghu_finish {
-		s.setMopaiPlayer(flow)
 		return majongpb.StateID_state_qiangganghu_settle, nil
 	}
 	return majongpb.StateID_state_qiangganghu, global.ErrInvalidEvent
@@ -43,21 +42,6 @@ func (s *QiangganghuState) OnEntry(flow interfaces.MajongFlow) {
 // OnExit 退出状态
 func (s *QiangganghuState) OnExit(flow interfaces.MajongFlow) {
 
-}
-
-// setMopaiPlayer 设置摸牌玩家
-func (s *QiangganghuState) setMopaiPlayer(flow interfaces.MajongFlow) {
-	mjContext := flow.GetMajongContext()
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "QiangganghuState.setMopaiPlayer",
-	})
-	logEntry = utils.WithMajongContext(logEntry, mjContext)
-	huPlayers := mjContext.GetLastHuPlayers()
-	srcPlayer := mjContext.GetLastMopaiPlayer()
-	players := mjContext.GetPlayers()
-
-	mjContext.MopaiPlayer = common.CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
-	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 
 // addHuCard 添加胡的牌
@@ -95,6 +79,9 @@ func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 		player := utils.GetMajongPlayer(playerID, mjContext)
 		s.addHuCard(card, player, srcPlayerID, isReal)
 		isReal = false
+
+		// 玩家胡状态
+		player.XpState = majongpb.XingPaiState_hu
 	}
 	s.removeSrcCard(card, srcPlayer)
 	s.notifyHu(flow)

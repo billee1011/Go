@@ -58,7 +58,7 @@ func Test_SCXZ_StartGame_NoHsz(t *testing.T) {
 // 游戏开始流程包括： 登录，加入房间，配牌，洗牌，发牌,定缺
 // 步骤:换三张成功,庄家拿到五条，出五条，其他玩家收到出牌消息五条通知
 // 期望出现换三张
-func Test_SCXZ_StartGame_Hsz2(t *testing.T) {
+func Test_SCXZ_StartGame_Hsz(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.GameID = room.GameId_GAMEID_XUEZHAN
 	params.PeiPaiGame = "scxz"

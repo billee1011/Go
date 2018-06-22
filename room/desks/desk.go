@@ -3,6 +3,7 @@ package desks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
@@ -17,6 +18,8 @@ import (
 	"steve/structs/proto/gate_rpc"
 	"time"
 
+	"github.com/hashicorp/consul/api"
+
 	"google.golang.org/grpc"
 
 	"github.com/Sirupsen/logrus"
@@ -28,6 +31,8 @@ import (
 var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
+
+const optionService = "xuezhanOption"
 
 // deskEvent 房间事件
 type deskEvent struct {
@@ -327,8 +332,30 @@ func (d *desk) getHszSwitch(gameID int) bool {
 	}
 }
 
+func (d *desk) getAddrByConsul() string {
+	consul, err := api.NewClient(api.DefaultConfig())
+	if err != nil {
+		return ""
+	}
+	agent := consul.Agent()
+	services, err := agent.Services()
+	if err != nil {
+		return ""
+	}
+	if len(services) == 0 {
+		return ""
+	}
+	ser, ok := services[optionService]
+	if !ok {
+		return ""
+	}
+	addr := fmt.Sprintf("%v:%v", ser.Address, ser.Port)
+	return addr
+}
+
 func (d *desk) getXuezhanOpen() bool {
-	conn, err := grpc.Dial("127.0.0.1:8082", grpc.WithInsecure())
+	addr := d.getAddrByConsul()
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		return true
 	}
@@ -504,6 +531,16 @@ func (d *desk) getDeskPlayer(playerID uint64) *deskPlayer {
 	return nil
 }
 
+// getContextPlayer 获取context玩家
+func (d *desk) getContextPlayer(playerID uint64) *server_pb.Player {
+	for _, contextPlayer := range d.dContext.mjContext.GetPlayers() {
+		if contextPlayer.GetPalyerId() == playerID {
+			return contextPlayer
+		}
+	}
+	return nil
+}
+
 // handleEnterQuit 处理退出进入信息
 func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -513,6 +550,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	})
 	var msgs []server_pb.ReplyClientMessage
 	deskPlayer := d.getDeskPlayer(eqi.playerID)
+	contextPlayer := d.getContextPlayer(eqi.playerID)
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
 		return
@@ -521,7 +559,11 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = getDeskQuitRspMsg(eqi.playerID)
 		d.reply(msgs)
 		deskPlayer.quitDesk()
+		contextPlayer.XpState = server_pb.XingPaiState_leave
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
+		if d.gameID == 2 {
+			d.handlePlayerState(deskPlayer)
+		}
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
@@ -529,6 +571,17 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
+	}
+}
+
+// handlePlayerState 玩家状态为非正常状态退出游戏,从桌子移除
+func (d *desk) handlePlayerState(deskPlayer *deskPlayer) {
+	mjContext := d.dContext.mjContext
+	player := gutils.GetMajongPlayer(deskPlayer.GetPlayerID(), &mjContext)
+	if player.GetXpState() != server_pb.XingPaiState_normal {
+		// delete(d.players, uint32(deskPlayer.GetSeat()))
+		deskMgr := global.GetDeskMgr()
+		deskMgr.RemoveDeskPlayerByPlayerID(deskPlayer.GetPlayerID())
 	}
 }
 

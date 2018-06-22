@@ -22,6 +22,8 @@ type DeskPlayer interface {
 	GetPlayerID() uint64
 	// GetSeat 获取座号
 	GetSeat() int
+	// GetEcoin 获取进入时金币数
+	GetEcoin() int
 	// IsQuit 是否已经退出
 	IsQuit() bool
 }
@@ -78,6 +80,9 @@ type DeskMgr interface {
 
 	// GetRunDeskByPlayerID 获取该玩家所在牌桌
 	GetRunDeskByPlayerID(playerID uint64) (Desk, error)
+
+	// RemoveDeskPlayerByPlayerID 移除某个在桌子上的玩家
+	RemoveDeskPlayerByPlayerID(playerID uint64)
 }
 
 // CreateDeskOptions 创建牌桌选项
