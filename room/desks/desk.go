@@ -463,7 +463,9 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
-		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
+		if !deskPlayer.IsQuit() {
+			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 非主动退出，再进入后取消托管；主动退出再进入不取消托管
+		}
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
@@ -630,7 +632,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 
 	mjContext := &d.dContext.mjContext
 	bankerSeat := mjContext.GetZhuangjiaIndex()
-	totalCardsNum := mjContext.GetCardTotalNum() //global.GetOriginCards(mjContext.GetGameId()),该函数在麻将里面，room调用不到
+	totalCardsNum := mjContext.GetCardTotalNum()
 	gameStage := getGameStage(mjContext.GetCurState())
 
 	gameDeskInfo := room.GameDeskInfo{
@@ -648,7 +650,6 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
 	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = getQghInfo(playerID, mjContext)
-
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
