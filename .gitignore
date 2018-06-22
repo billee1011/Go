@@ -1,9 +1,7 @@
-*.pb.go
 .vscode/
 log/
 *.so
 debug.test
-client_pb
 simulate/config/config.go
 room/config.yml
 room/toclient.yml
