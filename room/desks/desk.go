@@ -63,7 +63,7 @@ type desk struct {
 	tuoGuanMgr   interfaces.TuoGuanMgr        // 托管管理器
 }
 
-func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]*deskPlayer, error) {
+func makeDeskPlayers(logEntry *logrus.Entry, players []uint64, infos map[uint64][]*room.GeographicalLocation) (map[uint32]*deskPlayer, error) {
 	playerMgr := global.GetPlayerMgr()
 	deskPlayers := make(map[uint32]*deskPlayer, 4)
 	seat := uint32(0)
