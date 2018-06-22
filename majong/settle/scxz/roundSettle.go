@@ -22,7 +22,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 		"huPlayers":       params.HuPlayers,
 		"notTinPlayers":   params.NotTingPlayers,
 		"tingPlayersInfo": params.TingPlayersInfo,
-		"xingPaiState":    params.XingPaiState,
+		"quitPlayers":     params.QuitPlayers,
 	})
 	setletInfos := make([]*majongpb.SettleInfo, 0)
 
@@ -93,9 +93,10 @@ func flowerPigSettle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInf
 		settleInfoMap := make(map[uint64]int64)
 		// 胡玩家结算处理
 		for j := 0; j < len(params.HuPlayers); j++ {
-			state := params.XingPaiState[params.HuPlayers[j]]
-			if state == majongpb.XingPaiState_leave {
-				break
+			for _, quitPid := range params.QuitPlayers {
+				if quitPid == params.HuPlayers[j] {
+					break
+				}
 			}
 			settleInfoMap[params.HuPlayers[j]] = ante * 16
 			lose = lose - (ante * 16)

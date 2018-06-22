@@ -75,20 +75,20 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	// 听牌未胡玩家信息
 	tingPlayersInfo := make(map[uint64]int64)
 	// 玩家状态
-	xpState := make(map[uint64]majongpb.XingPaiState)
+	quitPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		playerID := player.GetPalyerId()
-		xpState[playerID] = player.XpState
-		giveupState := map[majongpb.XingPaiState]bool{
-			majongpb.XingPaiState_give_up: true,
+		isQuit := player.IsQuit
+		if isQuit {
+			quitPlayers = append(quitPlayers, playerID)
 		}
-		if len(player.HuCards) != 0 && giveupState[player.XpState] {
+		if len(player.HuCards) != 0 && !isQuit {
 			huPlayers = append(huPlayers, player.GetPalyerId())
 		}
-		if isFlowerPig(player) && giveupState[player.XpState] {
+		if isFlowerPig(player) && !isQuit {
 			flowerPigPlayers = append(flowerPigPlayers, player.GetPalyerId())
 		}
-		if isNoTingPlayers(player) && giveupState[player.XpState] {
+		if isNoTingPlayers(player) && !isQuit {
 			noTingPlayers = append(noTingPlayers, player.GetPalyerId())
 		}
 	}
@@ -98,7 +98,7 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		FlowerPigPlayers: flowerPigPlayers,
 		HuPlayers:        huPlayers,
 		TingPlayersInfo:  tingPlayersInfo,
-		XingPaiState:     xpState,
+		QuitPlayers:      quitPlayers,
 		NotTingPlayers:   noTingPlayers,
 		SettleInfos:      mjContext.SettleInfos,
 		SettleID:         mjContext.CurrentSettleId,
