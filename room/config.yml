@@ -9,7 +9,7 @@ rpc_server_name: room
 
 peipai_addr: 127.0.0.1:36102
 
-redis_addr: 192.168.7.108:6379
+redis_addr: 127.0.0.1:6379
 redis_passwd: 
 
 consul_addr: 127.0.0.1:8500

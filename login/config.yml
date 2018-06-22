@@ -7,7 +7,7 @@ log_prefix: login
 log_stderr: true 
 
 # redis 
-redis_addr: 192.168.7.108:6379
+redis_addr: 127.0.0.1:6379
 redis_passwd: 
 
 # nsq 

@@ -9,7 +9,7 @@ import (
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
 	"steve/room/registers"
-	"steve/server_pb/room"
+	matchroom "steve/server_pb/room"
 	"steve/structs"
 	"steve/structs/net"
 	"steve/structs/proto/gate_rpc"
@@ -17,7 +17,7 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
 
 	_ "steve/room/autoevent" // 引入 autoevent 包，设置工厂
