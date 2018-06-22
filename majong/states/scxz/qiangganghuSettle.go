@@ -34,7 +34,7 @@ func (s *QiangGangHuSettleState) ProcessEvent(eventID majongpb.EventID, eventCon
 			s.setMopaiPlayer(flow)
 		}
 		logrus.WithFields(logrus.Fields{
-			"func_name": "ProcessEvent",
+			"func_name": "QiangGangHuSettleState.ProcessEvent",
 			"nextState": nextState,
 		}).Infoln("枪杠胡结算下个状态")
 		return nextState, err

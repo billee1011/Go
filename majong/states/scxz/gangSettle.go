@@ -110,7 +110,7 @@ func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
 	nextState := s.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
-		"func_name": "nextState",
+		"func_name": "GangSettleState.nextState",
 		"newState":  nextState,
 	}).Infoln("杠结算下个状态")
 	return nextState
