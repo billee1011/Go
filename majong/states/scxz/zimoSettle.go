@@ -68,7 +68,9 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		if player.XpState == majongpb.XingPaiState_normal {
+			allPlayers = append(allPlayers, player.GetPalyerId())
+		}
 	}
 
 	cardValues := make(map[uint64]uint32, 0)
@@ -120,7 +122,7 @@ func (s *ZiMoSettleState) settleOver(flow interfaces.MajongFlow, message *majong
 			if player == nil {
 				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 			}
-			player.State = majongpb.PlayerState_give_up
+			player.XpState = majongpb.XingPaiState_give_up
 		}
 		return majongpb.StateID_state_gameover, nil
 	}

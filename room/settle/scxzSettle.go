@@ -12,32 +12,32 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// scxlSettle 血流麻将结算
-type scxlSettle struct {
+// scxzSettle 血流麻将结算
+type scxzSettle struct {
 	currentIds []uint64
 	// 每条setttleInfo中每个玩家实际输赢分 key:settleId value:playerCoin
-	settleMap map[uint64]scxlplayerCoin
+	settleMap map[uint64]scxzplayerCoin
 	// 汇总setttleInfo中每个玩家输赢总分 key:playerID value:score
 	roundScore map[uint64]int64
 	// setttleInfo处理情况 		key:settleId value:true为已处理，false为未处理
 	handleSettle map[uint64]bool
 }
 
-// newScxlSettle 创建四川血流结算
-func newScxlSettle() *scxlSettle {
-	return &scxlSettle{
-		settleMap:    make(map[uint64]scxlplayerCoin),
+// newScxzSettle 创建四川血流结算
+func newScxzSettle() *scxzSettle {
+	return &scxzSettle{
+		settleMap:    make(map[uint64]scxzplayerCoin),
 		handleSettle: make(map[uint64]bool),
 		roundScore:   make(map[uint64]int64),
 	}
 }
 
-// scxlplayerCoin 玩家实际输赢分   key:playerID value:score
-type scxlplayerCoin map[uint64]int64
+// scxzplayerCoin 玩家实际输赢分   key:playerID value:score
+type scxzplayerCoin map[uint64]int64
 
 // Settle 单次结算
 // 将玩家输赢分数及实际金币数进行计算，生成实际输赢的分数并记录，广播结算信息给牌局
-func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
+func (s *scxzSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
@@ -94,7 +94,7 @@ func (s *scxlSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 }
 
 // RoundSettle 单局结算
-func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
+func (s *scxzSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
@@ -145,7 +145,7 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 }
 
 // generateSettleEvent 生成结算finish事件
-func (s *scxlSettle) generateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, brokerPlayers []uint64) {
+func (s *scxzSettle) generateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, brokerPlayers []uint64) {
 	needEvent := map[majongpb.SettleType]bool{
 		majongpb.SettleType_settle_angang:   true,
 		majongpb.SettleType_settle_bugang:   true,
@@ -180,7 +180,7 @@ func (s *scxlSettle) generateSettleEvent(desk interfaces.Desk, settleType majong
 
 // sumSettleInfo 合并相关联的一组SettleInfo的Score分数为一条settleInfo
 // 返回参数:	[]*majongpb.SettleInfo(该组settleInfo) / *majongpb.SettleInfo(合并后的settleInfo)
-func (s *scxlSettle) sumSettleInfo(contextSInfo []*majongpb.SettleInfo, settleInfo *majongpb.SettleInfo) ([]*majongpb.SettleInfo, *majongpb.SettleInfo) {
+func (s *scxzSettle) sumSettleInfo(contextSInfo []*majongpb.SettleInfo, settleInfo *majongpb.SettleInfo) ([]*majongpb.SettleInfo, *majongpb.SettleInfo) {
 	sumSInfo := &majongpb.SettleInfo{
 		Scores: make(map[uint64]int64, 0),
 	}
@@ -201,7 +201,7 @@ func (s *scxlSettle) sumSettleInfo(contextSInfo []*majongpb.SettleInfo, settleIn
 
 // calcMaxScore 计算玩家输赢上限
 // 赢豆上限 = max(进房豆子数,当前豆子数)
-func (s *scxlSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, score map[uint64]int64) (maxScore map[uint64]int64) {
+func (s *scxzSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, score map[uint64]int64) (maxScore map[uint64]int64) {
 	maxScore = make(map[uint64]int64, 0)
 	losePids := make([]uint64, 0)
 	loseScore := int64(0)
@@ -218,17 +218,17 @@ func (s *scxlSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, score map[
 		}
 		maxScore[losePids[0]] = loseScore
 	} else {
-		for _, mscore := range maxScore {
-			loseScore = loseScore - mscore
-		}
 		for _, losePid := range losePids {
+			for _, mscore := range maxScore {
+				loseScore = loseScore - mscore
+			}
 			maxScore[losePid] = loseScore / int64(len(losePids))
 		}
 	}
 	return
 }
 
-func (s *scxlSettle) getWinMax(winPlayer interfaces.DeskPlayer, winScore int64) (winMax int64) {
+func (s *scxzSettle) getWinMax(winPlayer interfaces.DeskPlayer, winScore int64) (winMax int64) {
 	winMax = int64(0)
 	winPid := winPlayer.GetPlayerID()
 	currentCoin := int64(global.GetPlayerMgr().GetPlayer(winPid).GetCoin()) // 当前豆子数
@@ -249,7 +249,7 @@ func (s *scxlSettle) getWinMax(winPlayer interfaces.DeskPlayer, winScore int64) 
 // 1.玩家身上的钱够赔付胡牌玩家的话,直接赔付
 // 2.玩家身上的钱不够赔付胡牌玩家的话,那么该玩家身上的钱平分给胡牌玩家，,按逆时针方向,从点炮者数起,余 1 情况赔付于第一胡牌玩家,
 //	 余 2 情况赔付于第一、第二胡牌玩家;
-func (s *scxlSettle) calcCoin(deskPlayer []interfaces.DeskPlayer, contextPlayer []*majongpb.Player, score map[uint64]int64) (map[uint64]int64, []uint64) {
+func (s *scxzSettle) calcCoin(deskPlayer []interfaces.DeskPlayer, contextPlayer []*majongpb.Player, score map[uint64]int64) (map[uint64]int64, []uint64) {
 	maxScore := s.calcMaxScore(deskPlayer, score)
 
 	winPlayers := make([]uint64, 0)  // 所有赢家
@@ -265,6 +265,7 @@ func (s *scxlSettle) calcCoin(deskPlayer []interfaces.DeskPlayer, contextPlayer 
 			losePlayers = append(losePlayers, playerID)
 		}
 	}
+
 	coinCost := make(map[uint64]int64, 0) // 每个玩家实际扣除的金币数
 	brokePlayers := make([]uint64, 0)     // 已破产玩家id
 
@@ -334,7 +335,7 @@ func (s *scxlSettle) calcCoin(deskPlayer []interfaces.DeskPlayer, contextPlayer 
 }
 
 // resolveScore 将合并settleInfo计算出的totalScore分配到单独settleIn中
-func (s *scxlSettle) resolveScore(groupsInfos []*majongpb.SettleInfo, totalScore map[uint64]int64) {
+func (s *scxzSettle) resolveScore(groupsInfos []*majongpb.SettleInfo, totalScore map[uint64]int64) {
 	for _, sinfo := range groupsInfos {
 		singleCost := make(map[uint64]int64, 0)
 		cost := int64(0)
@@ -359,7 +360,7 @@ func (s *scxlSettle) resolveScore(groupsInfos []*majongpb.SettleInfo, totalScore
 }
 
 // getBillPlayerInfos 获得玩家结算账单
-func (s *scxlSettle) getBillPlayerInfos(deskPlayers []interfaces.DeskPlayer, settleInfo *majongpb.SettleInfo, costScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
+func (s *scxzSettle) getBillPlayerInfos(deskPlayers []interfaces.DeskPlayer, settleInfo *majongpb.SettleInfo, costScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
 	billplayerInfos = make([]*room.BillPlayerInfo, 0)
 	for i := 0; i < len(deskPlayers); i++ {
 		pid := deskPlayers[i].GetPlayerID()
@@ -383,33 +384,43 @@ func (s *scxlSettle) getBillPlayerInfos(deskPlayers []interfaces.DeskPlayer, set
 }
 
 // getRevertBillPlayerInfos 获得玩家退税结算账单
-func (s *scxlSettle) getRevertBillPlayerInfos(deskPlayers []interfaces.DeskPlayer, revertIds []uint64) (billplayerInfos []*room.BillPlayerInfo) {
+func (s *scxzSettle) getRevertBillPlayerInfos(deskPlayers []interfaces.DeskPlayer, revertIds []uint64) (billplayerInfos []*room.BillPlayerInfo) {
 	billplayerInfos = make([]*room.BillPlayerInfo, 0)
+	revertScore := make(map[uint64]int64, 0)
+	for _, revertID := range revertIds {
+		revertPid := uint64(0)
+		total := int64(0)
+		for pid, score := range s.settleMap[revertID] {
+			quit := deskPlayers[pid].IsQuit()
+			if score < 0 && !quit {
+				revertScore[pid] = revertScore[pid] - score
+				total = total - score
+			}
+			if score > 0 {
+				revertPid = pid
+			}
+		}
+		revertScore[revertPid] = revertScore[revertPid] - total
+	}
 	for i := 0; i < len(deskPlayers); i++ {
 		pid := deskPlayers[i].GetPlayerID()
 		coin := int64(global.GetPlayerMgr().GetPlayer(pid).GetCoin())
+		current := coin + revertScore[pid]
 		billplayerInfo := &room.BillPlayerInfo{
-			Pid:      proto.Uint64(pid),
-			BillType: room.BillType_BILL_REFUND.Enum(),
-			Score:    proto.Int64(0),
+			Pid:          proto.Uint64(pid),
+			BillType:     room.BillType_BILL_REFUND.Enum(),
+			Score:        proto.Int64(revertScore[pid]),
+			CurrentScore: proto.Int64(current),
 		}
-		for _, revertID := range revertIds {
-			if score, ok := s.settleMap[revertID][pid]; ok && score != 0 {
-				billplayerInfo.Score = proto.Int64(billplayerInfo.GetScore() - score)
-				coin = coin - score
-			}
-		}
-		billplayerInfo.CurrentScore = proto.Int64(coin)
 		billplayerInfos = append(billplayerInfos, billplayerInfo)
 		// 设置玩家分数
-		global.GetPlayerMgr().GetPlayer(pid).SetCoin(uint64(coin))
+		global.GetPlayerMgr().GetPlayer(pid).SetCoin(uint64(current))
 	}
 	return
-
 }
 
 // getBillDetail 获得玩家单次结算详情，包括番型，分数，倍数，以及输赢玩家
-func (s *scxlSettle) getBillDetail(pid uint64, sInfo *majongpb.SettleInfo) *room.BillDetail {
+func (s *scxzSettle) getBillDetail(pid uint64, sInfo *majongpb.SettleInfo) *room.BillDetail {
 	billDetail := &room.BillDetail{
 		SetleType: room.SettleType(sInfo.SettleType).Enum(),
 		HuType:    room.HuType(sInfo.HuType).Enum(),
@@ -444,7 +455,7 @@ func (s *scxlSettle) getBillDetail(pid uint64, sInfo *majongpb.SettleInfo) *room
 }
 
 // getRevertbd 获得玩家退税结算详情，包括分数以及输赢玩家
-func (s *scxlSettle) getRevertbillDetail(pid uint64, revertScore int64, revertSInfos []*majongpb.SettleInfo) *room.BillDetail {
+func (s *scxzSettle) getRevertbillDetail(pid uint64, revertScore int64, revertSInfos []*majongpb.SettleInfo) *room.BillDetail {
 	billDetail := &room.BillDetail{
 		SetleType: room.SettleType_ST_TAXREBEAT.Enum(),
 		Score:     proto.Int64(-revertScore),
@@ -471,7 +482,7 @@ func (s *scxlSettle) getRevertbillDetail(pid uint64, revertScore int64, revertSI
 }
 
 // getRoundBillPlayerInfo 获得单局结算玩家详情,包括玩家自己牌型,输赢分数，以及其余每个玩家的输赢分数
-func (s *scxlSettle) getRoundBillPlayerInfo(currentPid uint64, cardValue int32, context majongpb.MajongContext) []*room.BillPlayerInfo {
+func (s *scxzSettle) getRoundBillPlayerInfo(currentPid uint64, cardValue int32, context majongpb.MajongContext) []*room.BillPlayerInfo {
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
 		playerID := player.GetPalyerId()
@@ -488,21 +499,21 @@ func (s *scxlSettle) getRoundBillPlayerInfo(currentPid uint64, cardValue int32, 
 	return billPlayerInfos
 }
 
-func (s *scxlSettle) newBillplayerInfo(playID uint64, billType room.BillType) *room.BillPlayerInfo {
+func (s *scxzSettle) newBillplayerInfo(playID uint64, billType room.BillType) *room.BillPlayerInfo {
 	return &room.BillPlayerInfo{
 		Pid:      proto.Uint64(playID),
 		BillType: billType.Enum(),
 	}
 }
 
-func (s *scxlSettle) abs(n int64) int64 {
+func (s *scxzSettle) abs(n int64) int64 {
 	if n < 0 {
 		return -n
 	}
 	return n
 }
 
-func (s *scxlSettle) settleType2BillType(settleType majongpb.SettleType) room.BillType {
+func (s *scxzSettle) settleType2BillType(settleType majongpb.SettleType) room.BillType {
 	return map[majongpb.SettleType]room.BillType{
 		majongpb.SettleType_settle_angang:    room.BillType_BILL_GANG,
 		majongpb.SettleType_settle_bugang:    room.BillType_BILL_GANG,
