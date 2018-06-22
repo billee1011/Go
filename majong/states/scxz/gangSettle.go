@@ -111,6 +111,7 @@ func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.
 	newState := s.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "nextState",
+		"newState":  newState,
 	}).Infoln("杠结算下个状态")
 	return newState
 }

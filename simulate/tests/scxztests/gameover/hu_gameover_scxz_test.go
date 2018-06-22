@@ -84,6 +84,7 @@ func Test_SCXZ_ZiMo_GameOver(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
+	params.Gold = 1000000
 	params.WallCards = []uint32{18, 24, 31, 31}
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TONG, room.CardColor_CC_TIAO}
 	deskData, err := utils.StartGame(params)
