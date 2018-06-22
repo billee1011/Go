@@ -78,9 +78,7 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		if player.XpState == majongpb.XingPaiState_normal {
-			allPlayers = append(allPlayers, player.GetPalyerId())
-		}
+		allPlayers = append(allPlayers, player.GetPalyerId())
 	}
 
 	cardValues := make(map[uint64]uint32, 0)
