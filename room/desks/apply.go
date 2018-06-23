@@ -107,7 +107,6 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]
 			applyPlayers = applyPlayers[4:]
-			//TODO:gameID这里是写死的,需要从协议里面拿
 			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})
 			if err != nil {
 				logEntry.WithFields(
