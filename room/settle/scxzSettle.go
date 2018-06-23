@@ -329,11 +329,13 @@ func (s *scxzSettle) calcCoin(deskPlayer []interfaces.DeskPlayer, contextPlayer 
 				coinCost[winPlayers[0]] = loseCoin
 				coinCost[losePlayer] = -loseCoin
 			} else {
-				// 多个赢家，按照赢钱的比例平分
+				// 多个赢家，按照赢家人数平分
 				for _, winPid := range winPlayers {
-					winScore := float64(maxScore[winPid])
-					rank := winScore / float64(totalWin)
-					coinCost[winPid] = int64(rank * float64(loseCoin))
+					winScore := int64(loseCoin / int64(winSum))
+					if winScore >= maxScore[winPid] {
+						winScore = maxScore[winPid]
+					}
+					coinCost[winPid] = winScore
 					coinCost[losePlayer] = coinCost[losePlayer] - coinCost[winPid]
 				}
 				// 剩余分数，余 1 情况赔付于赢钱最多的玩家, 余 2 情况赔付于第一、第二胡牌玩家
