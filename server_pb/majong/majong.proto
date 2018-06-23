@@ -61,8 +61,8 @@ enum XingPaiState{
     normal  = 0;   // 正常行牌
     give_up = 1;   // 认输
     hu      = 2;   // 胡了
-    leave   = 3;   // 离开牌局
 }
+
 // 胡牌数据
 message HuCard {
     Card card = 1; // 胡的牌
@@ -120,7 +120,7 @@ message Player {
     int32 mopai_count = 15;                 // 已经摸牌的次数
     ZixunRecord zixun_record = 16;          // 自询记录
     XingPaiState xp_state = 17;             // 玩家牌局状态
-
+    bool isQuit = 18;                       // 玩家是否退出牌局
     map<string, bytes> properties = 256;    // 其他的一些属性
 } 
 
