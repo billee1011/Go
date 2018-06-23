@@ -6,19 +6,19 @@ import (
 )
 
 type deskPlayer struct {
-	playerID uint64
-	seat     uint32                       // 座号
-	quit     bool                         // 是否已经退出牌桌
-	location []*room.GeographicalLocation //玩家地理位置
+	playerID     uint64
+	seat         uint32                       // 座号
+	quit         bool                         // 是否已经退出牌桌
+	locationInfo []*room.GeographicalLocation // 地理位置
 
 	mu sync.RWMutex
 }
 
 func newDeskPlayer(playerID uint64, seat uint32, info []*room.GeographicalLocation) *deskPlayer {
 	return &deskPlayer{
-		playerID: playerID,
-		seat:     seat,
-		location: info,
+		playerID:     playerID,
+		seat:         seat,
+		locationInfo: info,
 	}
 }
 
@@ -61,4 +61,12 @@ func (dp *deskPlayer) enterDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = false
+}
+
+func (dp *deskPlayer) GetLocationInfo() []*room.GeographicalLocation {
+	return dp.locationInfo
+}
+
+func (dp *deskPlayer) SetLocationInfo(info []*room.GeographicalLocation) {
+	dp.locationInfo = info
 }

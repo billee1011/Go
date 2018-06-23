@@ -190,8 +190,8 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		rsp.ErrCode = room.RoomError_DESK_GAME_PLAYING.Enum()
 		return
 	}
-	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
 	locationInfos.Store(player.GetID(), req.Location)
+	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
 	return
 }
 

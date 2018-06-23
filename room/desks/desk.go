@@ -143,7 +143,7 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
 			Coin:     proto.Uint64(player.GetCoin()),
 			Seat:     proto.Uint32(uint32(seat)),
-			Location: deskPlayer.location,
+			Location: deskPlayer.locationInfo,
 		})
 	}
 	return result
