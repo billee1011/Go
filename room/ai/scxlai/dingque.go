@@ -19,17 +19,17 @@ type dingqueStateAI struct {
 func init() {
 	g := global.GetDeskAutoEventGenerator()
 	// 血流
-	g.RegisterAI(gGameID, majong.StateID_state_dingque, &dingqueStateAI{})
-	g.RegisterAI(gGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
-	g.RegisterAI(gGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
-	g.RegisterAI(gGameID, majong.StateID_state_zixun, &zixunStateAI{})
-	g.RegisterAI(gGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
+	g.RegisterAI(scxlGameID, majong.StateID_state_dingque, &dingqueStateAI{})
+	g.RegisterAI(scxlGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
+	g.RegisterAI(scxlGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
+	g.RegisterAI(scxlGameID, majong.StateID_state_zixun, &zixunStateAI{})
+	g.RegisterAI(scxlGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
 	// 血战
-	g.RegisterAI(xzGameID, majong.StateID_state_dingque, &dingqueStateAI{})
-	g.RegisterAI(xzGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
-	g.RegisterAI(xzGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
-	g.RegisterAI(xzGameID, majong.StateID_state_zixun, &zixunStateAI{})
-	g.RegisterAI(xzGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
+	g.RegisterAI(scxzGameID, majong.StateID_state_dingque, &dingqueStateAI{})
+	g.RegisterAI(scxzGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
+	g.RegisterAI(scxzGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
+	g.RegisterAI(scxzGameID, majong.StateID_state_zixun, &zixunStateAI{})
+	g.RegisterAI(scxzGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
 
 }
 
