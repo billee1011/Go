@@ -52,12 +52,6 @@ func (dp *deskPlayer) IsQuit() bool {
 	return dp.quit
 }
 
-func (dp *deskPlayer) GetLocationInfos() []*room.GeographicalLocation {
-	dp.mu.RLock()
-	defer dp.mu.RUnlock()
-	return dp.locationInfo
-}
-
 // quitDesk 退出牌桌
 func (dp *deskPlayer) quitDesk() {
 	dp.mu.Lock()
