@@ -7,11 +7,10 @@ import (
 )
 
 type deskPlayer struct {
-	playerID     uint64
-	seat         uint32                       // 座号
-	ecoin        uint64                       // 进牌桌金币数
-	quit         bool                         // 是否已经退出牌桌
-	locationInfo []*room.GeographicalLocation // 地理位置
+	playerID uint64
+	seat     uint32 // 座号
+	ecoin    uint64 // 进牌桌金币数
+	quit     bool   // 是否已经退出牌桌
 
 	mu sync.RWMutex
 }
