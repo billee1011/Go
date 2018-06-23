@@ -56,7 +56,7 @@ func (f *FapaiState) OnExit(flow interfaces.MajongFlow) {
 func (f *FapaiState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
 	nextState := f.getNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
-		"func_name": "nextState",
+		"func_name": "FapaiState.nextState",
 		"nextState": nextState,
 	}).Infoln("发牌下一状态")
 	return nextState
@@ -165,7 +165,7 @@ func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.St
 	// 判断是否换三张
 	isHsz := mjContext.GetOption().GetHasHuansanzhang()
 	logrus.WithFields(logrus.Fields{
-		"func_name": "getNextState",
+		"func_name": "FapaiState.getNextState",
 		"isHsz":     isHsz,
 		"GameId":    mjContext.GetGameId(),
 	}).Infoln("下一状态获取")
