@@ -24,22 +24,9 @@ var _ interfaces.MajongState = new(GangSettleState)
 // 2.处理玩家认输事件，返回游戏结束状态
 func (s *QiangGangHuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_settle_finish {
-		message := &majongpb.SettleFinishEvent{}
-		err := proto.Unmarshal(eventContext, message)
-		if err != nil {
-			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
-		}
-		nextState, err := s.settleOver(flow, message)
-		if nextState == majongpb.StateID_state_mopai {
-			s.setMopaiPlayer(flow)
-		}
-		logrus.WithFields(logrus.Fields{
-			"func_name": "QiangGangHuSettleState.ProcessEvent",
-			"nextState": nextState,
-		}).Infoln("枪杠胡结算下个状态")
-		return nextState, err
+		return s.settleFinishEvent(eventContext, flow)
 	}
-	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
+	return majongpb.StateID(majongpb.StateID_state_qiangganghu_settle), global.ErrInvalidEvent
 }
 
 // OnEntry 进入状态
@@ -128,31 +115,45 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 }
 
 //settleOver 结算完成
-func (s *QiangGangHuSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) (majongpb.StateID, error) {
+func (s *QiangGangHuSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) {
+	logEntry := logrus.WithFields(
+		logrus.Fields{
+			"func_name": "QiangGangHuSettleState.settleOver",
+		},
+	)
 	mjContext := flow.GetMajongContext()
 	playerIds := message.GetPlayerId()
-	if len(playerIds) != 0 {
-		for _, pid := range playerIds {
-			player := utils.GetMajongPlayer(pid, mjContext)
-			if player == nil {
-				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
-			}
-			player.XpState = majongpb.XingPaiState_give_up
+	for _, pid := range playerIds {
+		player := utils.GetMajongPlayer(pid, mjContext)
+		if player != nil {
+			logEntry.WithField("playerID: ", pid).Errorln("找不到玩家")
+			continue
 		}
+		player.XpState = majongpb.XingPaiState_give_up
 	}
-	return s.nextState(mjContext), nil
 }
 
-// nextState 下个状态
-func (s *QiangGangHuSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return s.getNextState(mjcontext)
-}
-
-// 下一状态获取
+// getNextState 下一状态获取
 func (s *QiangGangHuSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	// 正常玩家<=1,游戏结束
 	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
 		return majongpb.StateID_state_gameover
 	}
 	return majongpb.StateID_state_mopai
+}
+
+func (s *QiangGangHuSettleState) settleFinishEvent(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := &majongpb.SettleFinishEvent{}
+	err := proto.Unmarshal(eventContext, message)
+	if err != nil {
+		return majongpb.StateID_state_qiangganghu_settle, global.ErrInvalidEvent
+	}
+	s.settleOver(flow, message)
+
+	nextState := s.getNextState(flow.GetMajongContext())
+	if nextState == majongpb.StateID_state_mopai {
+		s.setMopaiPlayer(flow)
+	}
+
+	return nextState, nil
 }
