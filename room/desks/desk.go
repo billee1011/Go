@@ -297,7 +297,7 @@ func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
 
 func (d *desk) initMajongContext() error {
 	playerMgr := global.GetPlayerMgr()
-	flag := d.getMajongConfig(d.GetGameID())
+	flag := d.getMajongConfig(d.GetGameID()) //开局配置
 	players := make([]uint64, len(d.players))
 	for seat, player := range d.players {
 		players[seat] = player.playerID
@@ -330,11 +330,13 @@ func (d *desk) initMajongContext() error {
 }
 
 func (d *desk) getMajongConfig(gameID int) *mjconfig.Mjconfig {
+	mjConfigDate := d.getMajongConfigDate()
 	switch gameID {
-	case gutils.SCXLGameID:
-		return defaultConfig
+	case gutils.SCXLGameID: // 血流可以配置金币，但不能配置换三张
+		mjConfigDate.Hsz = true
+		return mjConfigDate
 	case gutils.SCXZGameID:
-		return d.getXuezhanOpen()
+		return mjConfigDate
 	default:
 		return defaultConfig
 	}
@@ -361,7 +363,7 @@ func (d *desk) getAddrByConsul() string {
 	return addr
 }
 
-func (d *desk) getXuezhanOpen() *mjconfig.Mjconfig {
+func (d *desk) getMajongConfigDate() *mjconfig.Mjconfig {
 	addr := d.getAddrByConsul()
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {

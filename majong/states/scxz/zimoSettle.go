@@ -32,7 +32,7 @@ func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 			s.setMopaiPlayer(flow)
 		}
 		logrus.WithFields(logrus.Fields{
-			"func_name": "ProcessEvent",
+			"func_name": "ZiMoSettleState.ProcessEvent",
 			"nextState": nextState,
 		}).Infoln("自摸结算下个状态")
 		return nextState, err

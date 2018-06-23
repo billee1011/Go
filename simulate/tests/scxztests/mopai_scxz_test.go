@@ -93,3 +93,52 @@ func Test_SCXZ_Hued_NotMopai(t *testing.T) {
 	// 跳过庄家， 庄下家即1玩家摸牌
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 1))
 }
+
+// Test_GiveUp_MoPai 测试认输玩家是否还能在摸牌
+// 步骤：（所有玩家金币数设置为2）
+//1.庄家出牌
+//2.下家摸牌出牌，庄家明杠下家，下家钱不足认输，
+//3.庄家明杠后出牌，其他人没有出牌问询
+// 期望:直接跳过下家，由上家摸牌
+func Test_GiveUp_MoPai(t *testing.T) {
+	params := global.NewCommonStartGameParams()
+	params.Cards = [][]uint32{
+		{11, 11, 11, 12, 12, 12, 13, 13, 13, 14, 14, 14, 31, 31},
+		{15, 15, 15, 11, 26, 16, 16, 16, 17, 17, 17, 17, 18},
+		{21, 21, 21, 25, 26, 22, 22, 22, 23, 23, 23, 23, 24},
+		{35, 35, 35, 25, 26, 36, 36, 36, 37, 37, 37, 37, 38},
+	}
+	params.HszCards = [][]uint32{}
+	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.PeiPaiGame = "scxz"
+	params.IsHsz = false // 不换三张
+	params.Gold = 2      // 所有玩家金币数设置为2
+	params.WallCards = []uint32{31, 31, 32, 33}
+	params.DingqueColor = []room.CardColor{room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG}
+	deskData, err := utils.StartGame(params)
+	assert.NotNil(t, deskData)
+	assert.Nil(t, err)
+
+	banker := params.BankerSeat
+	// 庄家出牌31
+	assert.Nil(t, utils.WaitZixunNtf(deskData, banker))
+	assert.Nil(t, utils.SendChupaiReq(deskData, banker, 31))
+	// 下家出牌11
+	assert.Nil(t, utils.WaitZixunNtf(deskData, 1))
+	assert.Nil(t, utils.SendChupaiReq(deskData, 1, 11))
+	// 庄家收到出牌问询通知，能杠，能碰，并发送杠11请求
+	assert.Nil(t, utils.WaitChupaiWenxunNtf(deskData, banker, true, false, true))
+	utils.SendGangReq(deskData, banker, 11, room.GangType_MingGang)
+
+	// 检测所有玩家收到杠通知
+	bankerGPlayerID := utils.GetDeskPlayerBySeat(banker, deskData).Player.GetID()
+	bGPlayerID := utils.GetDeskPlayerBySeat(1, deskData).Player.GetID()
+	utils.CheckGangNotify(t, deskData, bankerGPlayerID, bGPlayerID, 11, room.GangType_MingGang)
+
+	// 庄家摸牌31,出牌31
+	assert.Nil(t, utils.WaitZixunNtf(deskData, banker))
+	assert.Nil(t, utils.SendChupaiReq(deskData, banker, 31))
+
+	// （跳过下家摸牌）对家摸牌32
+	assert.Nil(t, utils.WaitZixunNtf(deskData, 2))
+}
