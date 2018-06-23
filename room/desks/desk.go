@@ -297,12 +297,12 @@ func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
 
 func (d *desk) initMajongContext() error {
 	playerMgr := global.GetPlayerMgr()
-	flag := d.getMajongConfig(d.GetGameID()) //开局配置
+	config := d.getMajongConfig(d.GetGameID()) //开局配置
 	players := make([]uint64, len(d.players))
 	for seat, player := range d.players {
 		players[seat] = player.playerID
 		mplayer := playerMgr.GetPlayer(player.playerID)
-		mplayer.SetCoin(flag.Gold) //设置玩家金币数
+		mplayer.SetCoin(config.Gold) //设置玩家金币数
 	}
 
 	param := server_pb.InitMajongContextParams{
@@ -311,7 +311,7 @@ func (d *desk) initMajongContext() error {
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
-			HasHuansanzhang:            flag.GetHsz(), //设置玩家是否开启换三张
+			HasHuansanzhang:            config.GetHsz(), //设置玩家是否开启换三张
 		},
 		// MajongOption: mjOption,
 		MajongOption: []byte{},
