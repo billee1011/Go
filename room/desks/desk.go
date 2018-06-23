@@ -330,7 +330,7 @@ func (d *desk) initMajongContext() error {
 }
 
 func (d *desk) getMajongConfig(gameID int) *mjconfig.Mjconfig {
-	mjConfigDate := d.getMajongConfigDate()
+	mjConfigDate := d.getMajongConfigData()
 	switch gameID {
 	case gutils.SCXLGameID: // 血流可以配置金币，但不能配置换三张
 		mjConfigDate.Hsz = true
@@ -347,23 +347,26 @@ func (d *desk) getAddrByConsul() string {
 	if err != nil {
 		return ""
 	}
-	agent := consul.Agent()
-	services, err := agent.Services()
+	// agent := consul.Agent()
+	// services, err := agent.Services()
+	catalog := consul.Catalog()
+	services, _, err := catalog.Service(gutils.XuezhanOptionService, "", &api.QueryOptions{})
 	if err != nil {
 		return ""
 	}
 	if len(services) == 0 {
 		return ""
 	}
-	ser, ok := services[optionService]
-	if !ok {
-		return ""
-	}
-	addr := fmt.Sprintf("%v:%v", ser.Address, ser.Port)
+	ser := getService(services)
+	addr := fmt.Sprintf("%v:%v", ser.Address, ser.ServicePort)
 	return addr
 }
 
-func (d *desk) getMajongConfigDate() *mjconfig.Mjconfig {
+func getService(services []*api.CatalogService) *api.CatalogService {
+	return services[0]
+}
+
+func (d *desk) getMajongConfigData() *mjconfig.Mjconfig {
 	addr := d.getAddrByConsul()
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -571,9 +574,8 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		deskPlayer.quitDesk()
 		contextPlayer.IsQuit = true
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
-		if d.gameID == 2 {
-			d.handlePlayerState(deskPlayer)
-		}
+		oh := GetOptionByFactory(d.GetGameID())
+		oh.handleQuitByPlayerState(d, eqi.playerID)
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
@@ -582,19 +584,6 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
-	}
-}
-
-// handlePlayerState 玩家状态为非正常状态退出游戏,从桌子移除
-func (d *desk) handlePlayerState(deskPlayer *deskPlayer) {
-	mjContext := d.dContext.mjContext
-	player := gutils.GetMajongPlayer(deskPlayer.GetPlayerID(), &mjContext)
-	if player.GetXpState() != server_pb.XingPaiState_normal {
-		// delete(d.players, uint32(deskPlayer.GetSeat()))
-		if mjContext.GetGameId() == 2 {
-			deskMgr := global.GetDeskMgr()
-			deskMgr.RemoveDeskPlayerByPlayerID(deskPlayer.GetPlayerID())
-		}
 	}
 }
 

@@ -26,6 +26,8 @@ type DeskPlayer interface {
 	GetEcoin() int
 	// IsQuit 是否已经退出
 	IsQuit() bool
+	// GetLocationInfos 获取地理信息
+	GetLocationInfos() []*room.GeographicalLocation
 }
 
 // Desk 牌桌

@@ -1,3 +1,6 @@
 package scxlai
 
-const gGameID = 1
+const (
+	scxlGameID = 1
+	scxzGameID = 2
+)
