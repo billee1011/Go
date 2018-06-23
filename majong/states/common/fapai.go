@@ -4,7 +4,6 @@ import (
 	"errors"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 
@@ -61,27 +60,6 @@ func (f *FapaiState) nextState(mjcontext *majongpb.MajongContext) majongpb.State
 	}).Infoln("发牌下一状态")
 	return nextState
 }
-
-// func (f *FapaiState) getNextStateByOption(mjContext *majongpb.MajongContext) majongpb.StateID {
-// 	gameID := mjContext.GetGameId()
-// 	switch gameID {
-// 	case gutils.SCXLGameID:
-// 		return majongpb.StateID_state_huansanzhang
-// 	case gutils.SCXZGameID:
-// 		option := &majongpb.SichuanxuezhanOption{}
-// 		b := mjContext.GetMajongOption()
-// 		err := proto.Unmarshal(b, option)
-// 		if err == nil {
-// 			open := option.GetOpenHuansanzhang()
-// 			logrus.Infof("当前游戏的换三张开关为:%v", open)
-// 			if !open {
-// 				return majongpb.StateID_state_dingque
-// 			}
-// 			return majongpb.StateID_state_huansanzhang
-// 		}
-// 	}
-// 	return majongpb.StateID_state_huansanzhang
-// }
 
 // curState 当前状态
 func (f *FapaiState) curState() majongpb.StateID {
@@ -158,11 +136,6 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 
 // 下一状态获取
 func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
-	// 血流开启换三张
-	if mjContext.GetGameId() == gutils.SCXLGameID {
-		return majongpb.StateID_state_huansanzhang
-	}
-	// 判断是否换三张
 	isHsz := mjContext.GetOption().GetHasHuansanzhang()
 	logrus.WithFields(logrus.Fields{
 		"func_name": "FapaiState.getNextState",
