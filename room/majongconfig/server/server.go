@@ -29,16 +29,16 @@ func (s *server) GetMjConfig(context context.Context, dn *mj.DoNothing) (*mj.Mjc
 }
 
 const (
-	// HszSwitchAddr 代表监听客户端的IP地址，默认值为 127.0.0.1
-	HszSwitchAddr = "hsz_switch_addr"
+	// MajongconfigAddr 代表监听客户端的IP地址，默认值为 127.0.0.1
+	MajongconfigAddr = "majong_config_addr"
 	// HszSwitch 换三张开关关键字
 	HszSwitch = "hszswitch"
 	// gold 玩家金币
 	gold = "gold"
-	// HszSwitchSerIP 换三张grpc服务地ip
-	HszSwitchSerIP = "hsz_switch_ser_ip"
-	// HszSwitchSerPort 换三张grpc服务地端口
-	HszSwitchSerPort = "hsz_switch_ser_port"
+	// MajongConfigSerIP 麻将配置grpc服务地ip
+	MajongConfigSerIP = "majong_config_ser_ip"
+	// MajongConfigSerPort 麻将配置grpc服务地端口
+	MajongConfigSerPort = "majong_config_ser_port"
 	// ConfigName 配置文件名字
 	ConfigName = "config"
 )
@@ -92,9 +92,9 @@ func init() {
 }
 
 func initDefaultConfig() {
-	viper.SetDefault(HszSwitchAddr, "127.0.0.1:8081")
-	viper.SetDefault(HszSwitchSerIP, "127.0.0.1")
-	viper.SetDefault(HszSwitchSerPort, 8082)
+	viper.SetDefault(MajongconfigAddr, "127.0.0.1:8081")
+	viper.SetDefault(MajongConfigSerIP, "127.0.0.1")
+	viper.SetDefault(MajongConfigSerPort, 8082)
 	viper.SetConfigName(ConfigName)
 	viper.AddConfigPath("./")
 }
@@ -103,8 +103,8 @@ func hszGrpc() {
 	s := grpc.NewServer()
 	viper.ReadInConfig()
 	mj.RegisterConfigHandlerServer(s, &server{})
-	listenIP := viper.GetString(HszSwitchSerIP)
-	listenPort := viper.GetInt(HszSwitchSerPort)
+	listenIP := viper.GetString(MajongConfigSerIP)
+	listenPort := viper.GetInt(MajongConfigSerPort)
 	listenAddr := fmt.Sprintf("%v:%v", listenIP, listenPort)
 	logrus.WithFields(
 		logrus.Fields{
@@ -145,7 +145,7 @@ func main() {
 	go hszGrpc()
 	http.HandleFunc("/", handle)
 	viper.ReadInConfig()
-	listenAddr := viper.GetString(HszSwitchAddr)
+	listenAddr := viper.GetString(MajongconfigAddr)
 	logrus.WithFields(
 		logrus.Fields{
 			"listenAddr": listenAddr,
