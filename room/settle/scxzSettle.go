@@ -66,6 +66,8 @@ func (s *scxzSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 					s.settleMap[sInfo.Id] = score
 					s.handleSettle[sInfo.Id] = true
 				}
+				// 扣费并设置玩家金币数
+				s.chargeCoin(deskPlayers, score)
 				// 广播结算信息
 				NotifyMessage(desk, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 					BillPlayersInfo: s.getBillPlayerInfos(deskPlayers, sInfo, score),
