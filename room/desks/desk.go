@@ -563,7 +563,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	})
 	var msgs []server_pb.ReplyClientMessage
 	deskPlayer := d.getDeskPlayer(eqi.playerID)
-	contextPlayer := d.getContextPlayer(eqi.playerID)
+
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
 		return
@@ -572,14 +572,14 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		msgs = getDeskQuitRspMsg(eqi.playerID)
 		d.reply(msgs)
 		deskPlayer.quitDesk()
-		contextPlayer.IsQuit = true
+		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		oh := GetOptionByFactory(d.GetGameID())
 		oh.handleQuitByPlayerState(d, eqi.playerID)
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.enterDesk()
-		contextPlayer.XpState = server_pb.XingPaiState_normal
+		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 进入后取消托管
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		d.reply(msgs)
@@ -807,4 +807,9 @@ func getDeskQuitRspMsg(playerID uint64) []server_pb.ReplyClientMessage {
 			Msg:     body,
 		},
 	}
+}
+
+func (d *desk) setMjPlayerQuitDesk(playerID uint64, isQuit bool) {
+	mjPlayer := d.getContextPlayer(playerID)
+	mjPlayer.IsQuit = isQuit
 }
