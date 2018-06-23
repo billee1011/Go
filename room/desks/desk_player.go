@@ -1,7 +1,6 @@
 package desks
 
 import (
-	"steve/client_pb/room"
 	"steve/room/interfaces/global"
 	"sync"
 )
@@ -63,12 +62,4 @@ func (dp *deskPlayer) enterDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = false
-}
-
-func (dp *deskPlayer) GetLocationInfo() []*room.GeographicalLocation {
-	return dp.locationInfo
-}
-
-func (dp *deskPlayer) SetLocationInfo(info []*room.GeographicalLocation) {
-	dp.locationInfo = info
 }
