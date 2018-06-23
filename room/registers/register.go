@@ -4,6 +4,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/room/chat"
 	"steve/room/desks"
+	"steve/room/location"
 	"steve/room/login"
 	"steve/structs/exchanger"
 )
@@ -26,5 +27,6 @@ func RegisterHandlers(e exchanger.Exchanger) {
 	registe(msgid.MsgID_ROOM_RESUME_GAME_REQ, desks.HandleResumeGameReq)          // 恢复对局请求
 	registe(msgid.MsgID_ROOM_CHAT_REQ, chat.RoomChatMsgReq)                       // 房间玩家聊天请求
 	registe(msgid.MsgID_ROOM_DESK_NEED_RESUME_REQ, desks.HandleRoomNeedResumeReq) // 是否需要恢复对局请求
+	registe(msgid.MsgID_ROOM_PLAYER_LOCATION_REQ, location.RoomPlayerLocationReq) //玩家地理位置请求
 	RegisterRoomReqHandlers(e)
 }
