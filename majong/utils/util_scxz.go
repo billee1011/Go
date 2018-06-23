@@ -8,71 +8,54 @@ import (
 
 //GetNormalPlayersAll 获取正常玩家数组
 func GetNormalPlayersAll(players []*majongpb.Player) []*majongpb.Player {
-	playersID := make([]uint64, 0)
 	newPlalyers := make([]*majongpb.Player, 0)
 	for _, player := range players {
-		// 不等与正常行牌的，不能检查胡，碰，杠，摸牌。。。
+		// 不是正常行牌的玩家，不能检查胡，碰，杠，摸牌。。。
 		if player.GetXpState() != majongpb.XingPaiState_normal {
-			playersID = append(playersID, player.GetPalyerId())
 			continue
 		}
 		newPlalyers = append(newPlalyers, player)
 	}
-	logrus.WithFields(logrus.Fields{
-		"func_name":            "GetNormalPlayersAll",
-		"off_normal_playersID": playersID,
-	}).Info("获取正常玩家数组")
+	// 正常的玩家ID
+	playerID := make([]uint64, 0)
+	for _, player := range newPlalyers {
+		playerID = append(playerID, player.GetPalyerId())
+	}
+	logrus.WithFields(logrus.Fields{"PlayerIDs": playerID}).Info("获取正常玩家数组")
 	return newPlalyers
 }
 
 //IsNormalPlayer 判断玩家是否是正常玩家，根据游戏ID(非SCXZ返回true，在SCXZ下是正常状态下返回true)
 func IsNormalPlayer(player *majongpb.Player) bool {
-	if player.GetXpState() == majongpb.XingPaiState_normal {
-		return true
-	}
-	defer func() {
-		logrus.WithFields(logrus.Fields{
-			"func_name":    "IsNormalPlayer",
-			"playerStatus": player.GetXpState(),
-		}).Info("判断玩家是否是正常玩家")
-	}()
-	return false
+	flag := player.GetXpState() == majongpb.XingPaiState_normal
+	logrus.WithFields(logrus.Fields{"playerStatus": player.GetXpState(),
+		"isNormal": flag}).Info("玩家是否是正常")
+	return flag
 }
 
 //GetNextNormalPlayerByID 获取下个正常状态的玩家
-func GetNextNormalPlayerByID(players []*majongpb.Player, srcPlayerID uint64) *majongpb.Player {
-	log := logrus.WithFields(logrus.Fields{
-		"func_name":   "GetNextNormalPlayerByID",
-		"srcPlayerID": srcPlayerID,
-	})
+func GetNextNormalPlayerByID(players []*majongpb.Player, srcPlayerID uint64) (nextPalyer *majongpb.Player) {
 	curPlayerID, i := srcPlayerID, 0
 	for i < 4 {
-		palyer := GetNextPlayerByID(players, curPlayerID)
-		if palyer.GetXpState() == majongpb.XingPaiState_normal {
-			log.WithFields(logrus.Fields{
-				"nextPlayerID": palyer.GetPalyerId(),
-			}).Infoln("获取下个正常状态的玩家")
-			return palyer
+		nextPalyer = GetNextPlayerByID(players, curPlayerID)
+		if nextPalyer.GetXpState() == majongpb.XingPaiState_normal {
+			break
 		}
-		curPlayerID = palyer.GetPalyerId()
+		curPlayerID = nextPalyer.GetPalyerId()
 	}
-	log.Errorln("获取下个正常状态的玩家失败！")
-	return nil
+	logrus.WithFields(logrus.Fields{"playerID": nextPalyer.GetPalyerId(),
+		"playerStatus": nextPalyer.GetXpState()}).Info("获取下个正常状态的玩家")
+	return nextPalyer
 }
 
 //IsNormalPlayerInsufficient 正常状态的玩家是否人数不够
 func IsNormalPlayerInsufficient(players []*majongpb.Player) bool {
-	log := logrus.WithFields(logrus.Fields{
-		"func_name": "IsNormalPlayerInsufficient",
-	})
 	conut := 0
 	for _, player := range players {
 		if player.GetXpState() == majongpb.XingPaiState_normal {
 			conut++
 		}
 	}
-	log.WithFields(logrus.Fields{
-		"正常状态玩家数量": conut,
-	}).Infoln("-----正常状态的玩家是否人数不够")
+	logrus.WithFields(logrus.Fields{"NormalPlayerConut": conut}).Infoln("正常状态玩家数量")
 	return conut <= 1
 }

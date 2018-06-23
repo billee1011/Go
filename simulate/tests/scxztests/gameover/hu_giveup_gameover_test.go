@@ -97,7 +97,7 @@ func Test_SCXZ_DuoDianpao_GiveUp_GameOver(t *testing.T) {
 	utils.CheckHuNotify(t, deskData, []int{hu1Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 
 	// 检测0, 3玩家收到点炮结算通知 TODO 有点问题
-	// utils.CheckDianPaoSettleNotify(t, deskData, []int{hu1Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
+	utils.CheckDianPaoSettleNotify(t, deskData, []int{hu1Seat, hu3Seat}, bankerSeat, Int9W, room.HuType_HT_DIANPAO)
 
 	// 游戏结束
 	utils.WaitGameOverNtf(t, deskData)

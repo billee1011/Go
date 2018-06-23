@@ -87,6 +87,7 @@ func Test_SCXZ_ChuPaiwenxun_Actions(t *testing.T) {
 	utils.CheckMoPaiNotify(t, deskData, xjSeat, uint32(35))
 	utils.SendChupaiReq(deskData, xjSeat, uint32(12))
 	utils.CheckChuPaiNotify(t, deskData, uint32(12), xjSeat)
-	utils.WaitChupaiWenxunNtf0(deskData, 0, false, true, false, false)
-	utils.WaitChupaiWenxunNtf0(deskData, 2, false, true, false, true)
+	// 胡过玩家不能在胡
+	// assert.Nil(t, utils.WaitChupaiWenxunNtf0(deskData, 0, false, true, false, false))
+	assert.Nil(t, utils.WaitChupaiWenxunNtf0(deskData, 2, false, true, false, true))
 }
