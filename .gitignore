@@ -7,4 +7,5 @@ room/config.yml
 room/toclient.yml
 *.db
 bin/
+.idea/
 *.tar.gz
