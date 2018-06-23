@@ -92,14 +92,12 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) (majongpb.StateID, error) {
 	mjContext := flow.GetMajongContext()
 	playerIds := message.GetPlayerId()
-	if len(playerIds) != 0 {
-		for _, pid := range playerIds {
-			player := utils.GetMajongPlayer(pid, mjContext)
-			if player == nil {
-				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
-			}
-			player.XpState = majongpb.XingPaiState_give_up
+	for _, pid := range playerIds {
+		player := utils.GetMajongPlayer(pid, mjContext)
+		if player == nil {
+			continue
 		}
+		player.XpState = majongpb.XingPaiState_give_up
 	}
 	return s.nextState(mjContext), nil
 }

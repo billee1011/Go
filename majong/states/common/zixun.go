@@ -160,9 +160,7 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 	if message.GetHead().GetPlayerId() != playerID {
 		return false, fmt.Errorf("当前玩家不是可执行玩家，不予操作")
 	}
-	if !utils.IsPlayerContinueByGameID(mjContext.GetGameId(), activePlayer) {
-		return false, fmt.Errorf("当前玩家不能执行，不予操作")
-	}
+
 	//检查手牌中是否有足够的暗杠牌
 	gangCardsNum := 0
 	for _, card := range activePlayer.HandCards {

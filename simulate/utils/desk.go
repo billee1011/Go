@@ -127,8 +127,14 @@ func calcPlayerSeat(seatMap map[int]uint64, playerID uint64) int {
 var errCreateClientFailed = errors.New("创建客户端连接失败")
 
 func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
+	defaultNum := 4
+	return CreateAndLoginUsersNum(defaultNum, ServerAddr, ClientVer)
+}
+
+// CreateAndLoginUsersNum 指定创建的人数
+func CreateAndLoginUsersNum(num int, ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
 	players := []interfaces.ClientPlayer{}
-	for i := 0; i < 4; i++ {
+	for i := 0; i < num; i++ {
 		client := connect.NewTestClient(ServerAddr, ClientVer)
 		if client == nil {
 			return nil, errCreateClientFailed

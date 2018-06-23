@@ -4,6 +4,8 @@ import (
 	"steve/gutils"
 	"steve/room/interfaces/global"
 	"steve/server_pb/majong"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type optionxuezhan struct{}
@@ -26,6 +28,11 @@ func (xz *optionxuezhan) handleQuitByPlayerState(desk *desk, playerID uint64) {
 		deskMgr := global.GetDeskMgr()
 		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
 	}
+	logrus.WithFields(logrus.Fields{
+		"funcName":    "handleQuitByPlayerState",
+		"gameID":      mjContext.GetGameId(),
+		"playerState": player.GetXpState(),
+	}).Infof("玩家:%v退出后的相关处理", playerID)
 }
 
 func (xl *optiondefaul) handleQuitByPlayerState(desk *desk, playerID uint64) {
