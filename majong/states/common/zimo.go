@@ -64,7 +64,7 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	AddHuCard(card, player, player.GetPalyerId(), huType, false)
 
 	// 玩家胡状态
-	player.XpState = majongpb.XingPaiState_hu
+	player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
 }
 
 // isAfterGang 判断是否为杠开

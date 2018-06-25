@@ -65,7 +65,7 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 		s.addHuCard(card, player, playerID, isReal)
 		isReal = false
 		// 玩家胡状态
-		player.XpState = majongpb.XingPaiState_hu
+		player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
 	}
 	s.notifyHu(flow)
 	return
