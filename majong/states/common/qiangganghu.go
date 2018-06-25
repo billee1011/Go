@@ -80,7 +80,7 @@ func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 		isReal = false
 
 		// 玩家胡状态
-		player.XpState = majongpb.XingPaiState_hu
+		player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
 	}
 	s.removeSrcCard(card, srcPlayer)
 	s.notifyHu(flow)
