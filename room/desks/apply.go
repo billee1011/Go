@@ -163,7 +163,10 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	ms := global.GetMessageSender()
 
 	ms.BroadcastPackage(clientIDs, head, &ntf)
-	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
+	logEntry.WithFields(logrus.Fields{
+		"ntf_context": ntf,
+		"info":        ntf.Players,
+	}).Debugln("广播创建房间")
 }
 
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求

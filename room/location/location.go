@@ -8,11 +8,16 @@ import (
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
 // RoomPlayerLocationReq 处理地理位置请求
 func RoomPlayerLocationReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomPlayerLocationReq) (ret []exchanger.ResponseMsg) {
+	logrus.WithFields(logrus.Fields{
+		"name":      "RoomPlayerLocationReq",
+		"client_id": clientID,
+	}).Info("用户请求地理位置信息")
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayerByClientID(clientID)
 	deskMgr := global.GetDeskMgr()
