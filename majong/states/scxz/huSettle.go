@@ -29,7 +29,8 @@ func (s *HuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []by
 		if err != nil {
 			return majongpb.StateID_state_hu_settle, global.ErrInvalidEvent
 		}
-		nextState, err := s.settleOver(flow, message)
+		SettleOver(flow, message)
+		nextState := s.nextState(flow.GetMajongContext())
 		if nextState == majongpb.StateID_state_mopai {
 			s.setMopaiPlayer(flow)
 		}
@@ -37,7 +38,7 @@ func (s *HuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []by
 			"func_name": "HuSettleState.ProcessEvent",
 			"nextState": nextState,
 		}).Infoln("点炮结算下个状态")
-		return nextState, err
+		return nextState, nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_hu_settle), global.ErrInvalidEvent
 }
@@ -141,22 +142,6 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	mjContext.CurrentSettleId = maxSID
 }
 
-//settleOver 结算完成
-func (s *HuSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) (majongpb.StateID, error) {
-	mjContext := flow.GetMajongContext()
-	playerIds := message.GetPlayerId()
-	if len(playerIds) != 0 {
-		for _, pid := range playerIds {
-			player := utils.GetMajongPlayer(pid, mjContext)
-			if player == nil {
-				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
-			}
-			player.XpState = majongpb.XingPaiState_give_up
-		}
-	}
-	return s.nextState(mjContext), nil
-}
-
 // isAfterGang 是否为杠后炮
 // 杠后摸牌、自询出牌则为杠后炮
 func (s *HuSettleState) isAfterGang(mjContext *majongpb.MajongContext) bool {
@@ -167,14 +152,5 @@ func (s *HuSettleState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 
 // nextState 下个状态
 func (s *HuSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return s.getNextState(mjcontext)
-}
-
-// 下一状态获取
-func (s *HuSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
-	// 正常玩家<=1,游戏结束
-	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
-		return majongpb.StateID_state_gameover
-	}
-	return majongpb.StateID_state_mopai
+	return GetNextState(mjcontext)
 }
