@@ -1,21 +1,24 @@
 package desks
 
 import (
+	"steve/client_pb/room"
 	"sync"
 )
 
 type deskPlayer struct {
-	playerID uint64
-	seat     uint32 // 座号
-	quit     bool   // 是否已经退出牌桌
+	playerID     uint64
+	seat         uint32                       // 座号
+	quit         bool                         // 是否已经退出牌桌
+	locationInfo []*room.GeographicalLocation // 地理位置
 
 	mu sync.RWMutex
 }
 
-func newDeskPlayer(playerID uint64, seat uint32) *deskPlayer {
+func newDeskPlayer(playerID uint64, seat uint32, info []*room.GeographicalLocation) *deskPlayer {
 	return &deskPlayer{
-		playerID: playerID,
-		seat:     seat,
+		playerID:     playerID,
+		seat:         seat,
+		locationInfo: info,
 	}
 }
 
@@ -40,6 +43,12 @@ func (dp *deskPlayer) IsQuit() bool {
 	return dp.quit
 }
 
+func (dp *deskPlayer) GetLocationInfos() []*room.GeographicalLocation {
+	dp.mu.RLock()
+	defer dp.mu.RUnlock()
+	return dp.locationInfo
+}
+
 // quitDesk 退出牌桌
 func (dp *deskPlayer) quitDesk() {
 	dp.mu.Lock()
@@ -52,4 +61,12 @@ func (dp *deskPlayer) enterDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = false
+}
+
+func (dp *deskPlayer) GetLocationInfo() []*room.GeographicalLocation {
+	return dp.locationInfo
+}
+
+func (dp *deskPlayer) SetLocationInfo(info []*room.GeographicalLocation) {
+	dp.locationInfo = info
 }

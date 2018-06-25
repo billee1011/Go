@@ -6,6 +6,8 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -16,7 +18,14 @@ func ApplyJoinDesk(player interfaces.ClientPlayer) (*room.RoomJoinDeskRsp, error
 		"user_id":   player.GetID(),
 	})
 
-	req := room.RoomJoinDeskReq{}
+	req := room.RoomJoinDeskReq{
+		Location: []*room.GeographicalLocation{
+			&room.GeographicalLocation{
+				Longitude: proto.Float64(101.101),
+				Latitude:  proto.Float64(202.202),
+			},
+		},
+	}
 	rsp := room.RoomJoinDeskRsp{}
 	client := player.GetClient()
 	err := client.Request(createMsgHead(msgid.MsgID_ROOM_JOIN_DESK_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), &rsp)
