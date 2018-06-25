@@ -1,4 +1,4 @@
-package scxz
+package common
 
 //适用麻将：四川血流
 //前置条件：取麻将现场最后杠玩家和玩家杠牌
@@ -38,7 +38,7 @@ func (s *GangSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 		if err != nil {
 			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 		}
-		SettleOver(flow, message)
+		utils.SettleOver(flow, message)
 		return s.nextState(flow.GetMajongContext()), nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
@@ -91,7 +91,7 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	nextState := GetNextState(mjcontext)
+	nextState := utils.GetNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "GangSettleState.nextState",
 		"newState":  nextState,

@@ -61,7 +61,7 @@ func handle(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 	goldValue := req.FormValue(gold)
-	if len(value) == 0 {
+	if len(goldValue) == 0 {
 		respMSG(resp, fmt.Sprintf("开关关键字gold有误"), 404)
 		return
 	}

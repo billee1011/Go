@@ -18,8 +18,8 @@ var _ interfaces.MajongStateFactory = new(factory)
 // newFactory 创建状态工厂
 func newFactory() interfaces.MajongStateFactory {
 	creators := map[int]createGameStateFunc{
-		gutils.SCXLGameID: createSCXLState,
-		gutils.SCXZGameID: createSCXZState,
+		gutils.SCXLGameID: createState,
+		gutils.SCXZGameID: createState,
 	}
 	return &factory{
 		creators: creators,
