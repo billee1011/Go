@@ -1,7 +1,6 @@
 package transition
 var transitionCfg = `
-
-- 
+-
   game_id: 1
   # 状态表
   states:
@@ -37,7 +36,7 @@ var transitionCfg = `
             - event_fapai_finish
             - event_cartoon_finish_request
           next_state: state_huansanzhang
-    - 
+    -
       # 换三张状态
       state: state_huansanzhang
       # 转换表
@@ -128,20 +127,20 @@ var transitionCfg = `
       # 转换表
       transition:
         - 
-          # 暗杠完成事件 转移到 摸牌状态
+          # 暗杠完成事件 转移到 杠结算
           events: 
             - event_angang_finish
-          next_state: state_mopai
+          next_state: state_gang_settle
     - 
       # 自摸状态
       state: state_zimo
       # 转换表
       transition:
         - 
-          # 自摸完成事件 转移到 摸牌状态
+          # 自摸完成事件 转移到 自摸结算状态
           events: 
             - event_zimo_finish
-          next_state: state_mopai
+          next_state: state_zimo_settle
     - 
       # 碰状态
       state: state_peng
@@ -158,20 +157,20 @@ var transitionCfg = `
       # 转换表
       transition:
         - 
-          # 杠完成 转移到 摸牌状态
+          # 杠完成 转移到 杠结算状态
           events: 
             - event_gang_finish
-          next_state: state_mopai  
+          next_state: state_gang_settle  
     - 
       # 胡状态
       state: state_hu 
       # 转换表
       transition:
         - 
-          # 胡完成事件 转移到 摸牌状态
+          # 胡完成事件 转移到 胡结算状态
           events: 
             - event_hu_finish
-          next_state: state_mopai  
+          next_state: state_hu_settle  
     - 
       # 摸牌状态
       state: state_mopai 
@@ -223,10 +222,10 @@ var transitionCfg = `
       # 转换表
       transition:
         - 
-          # 补杠完成 转移到 摸牌
+          # 补杠完成 转移到 杠结算
           events: 
             - event_bugang_finish
-          next_state: state_mopai  
+          next_state: state_gang_settle  
     - 
       # 等待抢杠胡状态
       state: state_waitqiangganghu 
@@ -255,10 +254,52 @@ var transitionCfg = `
       # 转换表
       transition:
         - 
-          # 抢杠胡完成 转移到 摸牌
+          # 抢杠胡完成 转移到 抢杠胡结算
           events: 
             - event_qiangganghu_finish
-          next_state: state_mopai  
+          next_state: state_qiangganghu_settle  
+    - 
+      # 杠结算状态
+      state: state_gang_settle
+      # 转换表
+      transition:
+        - 
+          # 杠完成事件 转移到 摸牌
+          events: 
+            - event_settle_finish
+          next_state: state_mopai
+    - 
+      # 自摸结算状态
+      state: state_zimo_settle
+      # 转换表
+      transition:
+        - 
+          # 自摸结算完成事件 转移到 摸牌
+          events: 
+            - event_settle_finish
+          next_state: state_mopai
+    - 
+      # 胡结算状态
+      state: state_hu_settle
+      # 转换表
+      transition:
+        - 
+          # 胡结算完成事件 转移到 摸牌
+          events: 
+            - event_settle_finish
+          next_state: state_mopai
+    - 
+      # 抢杠胡结算状态
+      state: state_qiangganghu_settle
+      # 转换表
+      transition:
+        - 
+          # 抢杠胡结算完成事件 转移到 摸牌
+          events: 
+            - event_settle_finish
+          next_state: state_mopai
+          
+          
 -
   game_id: 2
   # 状态表
@@ -583,5 +624,6 @@ var transitionCfg = `
           events: 
             - event_settle_finish
           next_state: state_gameover
+          
           
 `
