@@ -85,7 +85,7 @@ func SettleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent)
 			logEntry.WithField("playerID: ", pid).Errorln("找不到玩家")
 			continue
 		}
-		player.XpState = majongpb.XingPaiState_give_up
+		player.XpState = player.GetXpState() | majongpb.XingPaiState_give_up
 	}
 }
 
