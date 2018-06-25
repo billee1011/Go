@@ -12,7 +12,6 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -31,11 +30,11 @@ type AnGangState struct {
 var _ interfaces.MajongState = new(AnGangState)
 
 // ProcessEvent 处理事件
-// 暗杠逻辑执行完后，进入暗杠状态，确认接收到暗杠完成请求，返回摸牌状态
+// 暗杠逻辑执行完后，进入暗杠结算状态，确认接收到暗杠结算完成请求，返回摸牌状态
 func (s *AnGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_angang_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID(majongpb.StateID_state_mopai), nil
+		return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_angang), nil
 }
@@ -78,7 +77,6 @@ func (s *AnGangState) doAngang(flow interfaces.MajongFlow) {
 	player.HandCards = newCards
 	s.addGangCard(card, player, player.GetPalyerId())
 	s.notifyPlayers(flow, card, player)
-	s.doAnGangSettle(mjContext, player)
 	return
 }
 
@@ -108,27 +106,4 @@ func (s *AnGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
 	mjContext.MopaiType = majongpb.MopaiType_MT_GANG
-}
-
-//	doAnGangSettle 暗杠结算
-func (s *AnGangState) doAnGangSettle(mjContext *majongpb.MajongContext, player *majongpb.Player) {
-	allPlayers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-	}
-	param := interfaces.GangSettleParams{
-		GangPlayer: player.GetPalyerId(),
-		SrcPlayer:  player.GetPalyerId(),
-		AllPlayers: allPlayers,
-		GangType:   majongpb.GangType_gang_angang,
-		SettleID:   mjContext.CurrentSettleId,
-	}
-
-	f := global.GetGameSettlerFactory()
-	gameID := int(mjContext.GetGameId())
-	settleInfo := facade.SettleGang(f, gameID, param)
-	if settleInfo != nil {
-		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
-	}
 }
