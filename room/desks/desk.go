@@ -322,6 +322,9 @@ func (d *desk) initMajongContext() error {
 	if mjContext, err = majong_initial.InitMajongContext(param); err != nil {
 		return err
 	}
+	if err := fillContextOptions(d.gameID, &mjContext); err != nil {
+		return err
+	}
 	d.dContext = &deskContext{
 		mjContext:   mjContext,
 		stateNumber: 0,
@@ -333,9 +336,9 @@ func (d *desk) initMajongContext() error {
 func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
 	switch gameID {
 	case gutils.SCXLGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_hu, server_pb.XingPaiState_normal}
+		return []server_pb.XingPaiState{server_pb.XingPaiState_hu_giveup, server_pb.XingPaiState_hu, server_pb.XingPaiState_give_up, server_pb.XingPaiState_normal}
 	case gutils.SCXZGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_normal, server_pb.XingPaiState_hu, server_pb.XingPaiState_give_up}
+		return []server_pb.XingPaiState{server_pb.XingPaiState_normal}
 	default:
 		return []server_pb.XingPaiState{}
 	}

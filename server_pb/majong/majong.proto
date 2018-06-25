@@ -211,6 +211,9 @@ message MajongContext {
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
 
+    uint32 xingpai_option_id = 251; // 行牌选项 ID 
+    uint32 cardtype_option_id = 252;    // 牌型选项 ID 
+    uint32 settle_option_id = 253;  // 结算选项 ID 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
 }
