@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+//0 - 0000000000 0000000000 0000000000 0000000000 0 - 0000000000 - 0000000000 00
+//第一位为未使用，接下来的41位为毫秒级时间(41位的长度可以使用69年)，
+//然后10位的节点id，支持0-1023
+//最后12位是毫秒内的计数（12位的计数顺序号支持每个节点每毫秒产生4096个ID序号）
+//snowflake生成的ID整体上按照时间自增排序，并且整个分布式系统内不会产生ID碰撞（由nodeId分区）。经测试每秒能够产生26万个ID。
+
 var (
 	Epoch     int64 = 1288834974657
 	NodeBits  uint8 = 10
@@ -86,9 +92,7 @@ func NewNode(node int64) (*Node, error) {
 }
 
 func (n *Node) Generate() ID {
-
 	n.mu.Lock()
-
 	now := time.Now().UnixNano() / 1000000
 
 	if n.time == now {
@@ -104,7 +108,6 @@ func (n *Node) Generate() ID {
 	}
 
 	n.time = now
-
 	r := ID((now-Epoch)<<timeShift |
 		(n.node << nodeShift) |
 		(n.step),
