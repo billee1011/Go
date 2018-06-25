@@ -27,7 +27,8 @@ func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 		if err != nil {
 			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 		}
-		nextState, err := s.settleOver(flow, message)
+		SettleOver(flow, message)
+		nextState := s.nextState(flow.GetMajongContext())
 		if nextState == majongpb.StateID_state_mopai {
 			s.setMopaiPlayer(flow)
 		}
@@ -35,7 +36,7 @@ func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 			"func_name": "ZiMoSettleState.ProcessEvent",
 			"nextState": nextState,
 		}).Infoln("自摸结算下个状态")
-		return nextState, err
+		return nextState, nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
 }
@@ -123,32 +124,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	}
 }
 
-//settleOver 结算完成
-func (s *ZiMoSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) (majongpb.StateID, error) {
-	mjContext := flow.GetMajongContext()
-	playerIds := message.GetPlayerId()
-	if len(playerIds) != 0 {
-		for _, pid := range playerIds {
-			player := utils.GetMajongPlayer(pid, mjContext)
-			if player == nil {
-				return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
-			}
-			player.XpState = majongpb.XingPaiState_give_up
-		}
-	}
-	return s.nextState(mjContext), nil
-}
-
 // nextState 下个状态
 func (s *ZiMoSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return s.getNextState(mjcontext)
-}
-
-// 下一状态获取
-func (s *ZiMoSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
-	// 正常玩家<=1,游戏结束
-	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
-		return majongpb.StateID_state_gameover
-	}
-	return majongpb.StateID_state_mopai
+	return GetNextState(mjcontext)
 }

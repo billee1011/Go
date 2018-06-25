@@ -38,7 +38,8 @@ func (s *GangSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 		if err != nil {
 			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 		}
-		return s.settleOver(flow, message)
+		SettleOver(flow, message)
+		return s.nextState(flow.GetMajongContext()), nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
 }
@@ -88,35 +89,12 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 	}
 }
 
-//settleOver 结算完成
-func (s *GangSettleState) settleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent) (majongpb.StateID, error) {
-	mjContext := flow.GetMajongContext()
-	playerIds := message.GetPlayerId()
-	for _, pid := range playerIds {
-		player := utils.GetMajongPlayer(pid, mjContext)
-		if player == nil {
-			continue
-		}
-		player.XpState = majongpb.XingPaiState_give_up
-	}
-	return s.nextState(mjContext), nil
-}
-
 // nextState 下个状态
 func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	nextState := s.getNextState(mjcontext)
+	nextState := GetNextState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "GangSettleState.nextState",
 		"newState":  nextState,
 	}).Infoln("杠结算下个状态")
 	return nextState
-}
-
-// 下一状态获取
-func (s *GangSettleState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
-	// 正常玩家<=1,游戏结束
-	if utils.IsNormalPlayerInsufficient(mjContext.GetPlayers()) {
-		return majongpb.StateID_state_gameover
-	}
-	return majongpb.StateID_state_mopai
 }
