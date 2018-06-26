@@ -224,46 +224,48 @@ func (s *scxlSettle) calcPlayerSettle(deskPlayers []*room.RoomPlayerInfo, settle
 
 // RoundSettle 单局结算信息
 func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
-	players := desk.GetPlayers()
+	players := desk.GetDeskPlayers()
 	// 牌局所有settleInfo信息
 	totalSInfos := mjContext.SettleInfos
 	for i := 0; i < len(players); i++ {
-		pid := players[i].GetPlayerId()
-		// 玩家单局结算信息
-		balanceRsp := &room.RoomBalanceInfoRsp{
-			Pid:             players[i].PlayerId,
-			BillDetail:      make([]*room.BillDetail, 0),
-			BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
-		}
-		// 玩家单局结算总倍数
-		cardValue := int32(0)
-		// 玩家退税SettleInfos
-		revertIds := mjContext.RevertSettles
-		revertSInfos := make([]*majongpb.SettleInfo, 0)
-		// 玩家退税分数
-		revertScore := int64(0)
-		for _, sInfo := range totalSInfos {
-			if sInfo.Scores[pid] != 0 {
-				bd := s.createBillDetail(pid, sInfo)
-				cardValue = cardValue + bd.GetFanValue()
-				balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+		if !players[i].IsQuit() {
+			pid := players[i].GetPlayerID()
+			// 玩家单局结算信息
+			balanceRsp := &room.RoomBalanceInfoRsp{
+				Pid:             proto.Uint64(pid),
+				BillDetail:      make([]*room.BillDetail, 0),
+				BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
 			}
-			if len(revertIds) != 0 {
-				for _, revertID := range revertIds {
-					if revertID == sInfo.Id && s.settleMap[revertID][pid] != 0 {
-						revertSInfos = append(revertSInfos, sInfo)
-						revertScore = revertScore + s.settleMap[revertID][pid]
+			// 玩家单局结算总倍数
+			cardValue := int32(0)
+			// 玩家退税SettleInfos
+			revertIds := mjContext.RevertSettles
+			revertSInfos := make([]*majongpb.SettleInfo, 0)
+			// 玩家退税分数
+			revertScore := int64(0)
+			for _, sInfo := range totalSInfos {
+				if sInfo.Scores[pid] != 0 {
+					bd := s.createBillDetail(pid, sInfo)
+					cardValue = cardValue + bd.GetFanValue()
+					balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+				}
+				if len(revertIds) != 0 {
+					for _, revertID := range revertIds {
+						if revertID == sInfo.Id && s.settleMap[revertID][pid] != 0 {
+							revertSInfos = append(revertSInfos, sInfo)
+							revertScore = revertScore + s.settleMap[revertID][pid]
+						}
 					}
 				}
 			}
+			if revertScore != 0 {
+				revertbd := s.createRevertbd(pid, revertScore, revertSInfos)
+				balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
+			}
+			balanceRsp.BillPlayersInfo = s.createBillPInfo(pid, cardValue, mjContext)
+			// 通知总结算
+			s.notifyPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 		}
-		if revertScore != 0 {
-			revertbd := s.createRevertbd(pid, revertScore, revertSInfos)
-			balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
-		}
-		balanceRsp.BillPlayersInfo = s.createBillPInfo(pid, cardValue, mjContext)
-		// 通知总结算
-		s.notifyPlayerMessage(desk, pid, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
 }
 
@@ -397,14 +399,14 @@ func (s *scxlSettle) abs(n int64) int64 {
 }
 
 func (s *scxlSettle) notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
-	players := desk.GetPlayers()
+	players := desk.GetDeskPlayers()
 	clientIDs := []uint64{}
 
 	playerMgr := global.GetPlayerMgr()
 	for _, player := range players {
-		playerID := player.GetPlayerId()
+		playerID := player.GetPlayerID()
 		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
+		if p != nil && !player.IsQuit() {
 			clientIDs = append(clientIDs, p.GetClientID())
 		}
 	}
