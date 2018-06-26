@@ -31,7 +31,7 @@ func TestMarshalsIntBytes(t *testing.T) {
 func TestUnmarshalJSON(t *testing.T) {
 	tt := []struct {
 		json        string
-		expectedId  ID
+		expectedID  ID
 		expectedErr error
 	}{
 		{`"13587"`, 13587, nil},
@@ -46,8 +46,8 @@ func TestUnmarshalJSON(t *testing.T) {
 			t.Errorf("Expected to get error '%s' decoding JSON, but got '%s'", tc.expectedErr, err)
 		}
 
-		if id != tc.expectedId {
-			t.Errorf("Expected to get ID '%s' decoding JSON, but got '%s'", tc.expectedId, id)
+		if id != tc.expectedID {
+			t.Errorf("Expected to get ID '%s' decoding JSON, but got '%s'", tc.expectedID, id)
 		}
 	}
 }
