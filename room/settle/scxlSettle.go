@@ -98,49 +98,51 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
-	deskPlayers := desk.GetPlayers()
+	deskPlayers := desk.GetDeskPlayers()
 	for i := 0; i < len(deskPlayers); i++ {
-		pid := deskPlayers[i].GetPlayerId()
-		//记录该玩家单局结算信息
-		balanceRsp := &room.RoomBalanceInfoRsp{
-			Pid:             deskPlayers[i].PlayerId,
-			BillDetail:      make([]*room.BillDetail, 0),
-			BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
-		}
-		// 记录该玩家单局结算总倍数
-		cardValue := int32(0)
-		// 记录该玩家退税信息
-		revertScore := int64(0)
-		revertSInfos := make([]*majongpb.SettleInfo, 0)
-
-		// 遍历牌局所有结算信息，获取所有与该玩家有关的结算，获取结算详情列表
-		for _, sInfo := range contextSInfos {
-			if sInfo.Scores[pid] != 0 {
-				bd := s.getBillDetail(pid, sInfo)
-				cardValue = cardValue + bd.GetFanValue()
-				balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+		if !deskPlayers[i].IsQuit() {
+			pid := deskPlayers[i].GetPlayerID()
+			//记录该玩家单局结算信息
+			balanceRsp := &room.RoomBalanceInfoRsp{
+				Pid:             proto.Uint64(pid),
+				BillDetail:      make([]*room.BillDetail, 0),
+				BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
 			}
-			// 退税结算详情
-			revertIds := mjContext.RevertSettles
-			if len(revertIds) != 0 {
-				for _, rID := range revertIds {
-					pScore := s.settleMap[rID][pid]
-					if rID == sInfo.Id && pScore != 0 {
-						revertSInfos = append(revertSInfos, sInfo)
-						revertScore = revertScore + pScore
+			// 记录该玩家单局结算总倍数
+			cardValue := int32(0)
+			// 记录该玩家退税信息
+			revertScore := int64(0)
+			revertSInfos := make([]*majongpb.SettleInfo, 0)
+
+			// 遍历牌局所有结算信息，获取所有与该玩家有关的结算，获取结算详情列表
+			for _, sInfo := range contextSInfos {
+				if sInfo.Scores[pid] != 0 {
+					bd := s.getBillDetail(pid, sInfo)
+					cardValue = cardValue + bd.GetFanValue()
+					balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+				}
+				// 退税结算详情
+				revertIds := mjContext.RevertSettles
+				if len(revertIds) != 0 {
+					for _, rID := range revertIds {
+						pScore := s.settleMap[rID][pid]
+						if rID == sInfo.Id && pScore != 0 {
+							revertSInfos = append(revertSInfos, sInfo)
+							revertScore = revertScore + pScore
+						}
 					}
 				}
 			}
+			// 获取退税结算详情
+			if revertScore != 0 {
+				revertbd := s.getRevertbillDetail(pid, revertScore, revertSInfos)
+				balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
+			}
+			// 获取玩家单局结算详情
+			balanceRsp.BillPlayersInfo = s.getRoundBillPlayerInfo(pid, cardValue, mjContext)
+			// 通知该玩家单局结算信息
+			NotifyPlayersMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 		}
-		// 获取退税结算详情
-		if revertScore != 0 {
-			revertbd := s.getRevertbillDetail(pid, revertScore, revertSInfos)
-			balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
-		}
-		// 获取玩家单局结算详情
-		balanceRsp.BillPlayersInfo = s.getRoundBillPlayerInfo(pid, cardValue, mjContext)
-		// 通知该玩家单局结算信息
-		NotifyPlayersMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
 }
 
