@@ -13,14 +13,14 @@ import (
 
 // NotifyMessage 将消息广播给牌桌所有玩家
 func NotifyMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
-	players := desk.GetPlayers()
+	players := desk.GetDeskPlayers()
 	clientIDs := []uint64{}
 
 	playerMgr := global.GetPlayerMgr()
 	for _, player := range players {
-		playerID := player.GetPlayerId()
+		playerID := player.GetPlayerID()
 		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
+		if p != nil && !player.IsQuit() {
 			clientIDs = append(clientIDs, p.GetClientID())
 		}
 	}

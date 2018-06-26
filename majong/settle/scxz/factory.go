@@ -20,5 +20,5 @@ func (f *SettlerFactory) CreateHuSettler() interfaces.HuSettle {
 
 // CreateRoundSettle 创建单局结算器
 func (f *SettlerFactory) CreateRoundSettle() interfaces.RoundSettle {
-	return &scxl.RoundSettle{}
+	return &RoundSettle{}
 }
