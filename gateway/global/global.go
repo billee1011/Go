@@ -2,14 +2,14 @@ package global
 
 import "steve/gateway/interfaces"
 
-var gConnectPlayerMap interfaces.ConnectPlayerMap
+var gConnectionManager interfaces.ConnectionManager
 
-// GetConnectPlayerMap 获取全局 ConnectPlayerMap
-func GetConnectPlayerMap() interfaces.ConnectPlayerMap {
-	return gConnectPlayerMap
+// GetConnectionManager 获取全局 ConnectionManager
+func GetConnectionManager() interfaces.ConnectionManager {
+	return gConnectionManager
 }
 
-// SetConnectPlayerMap 设置全局 ConnectPlayerMap
-func SetConnectPlayerMap(cpm interfaces.ConnectPlayerMap) {
-	gConnectPlayerMap = cpm
+// SetConnectionManager 设置全局 ConnectionManager
+func SetConnectionManager(cm interfaces.ConnectionManager) {
+	gConnectionManager = cm
 }

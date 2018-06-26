@@ -68,6 +68,9 @@ func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 	})
 	dog.clientMap.Store(clientID, client)
 
+	if dog.connObserver != nil {
+		dog.connObserver.OnClientConnect(clientID)
+	}
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	go func() {
@@ -81,9 +84,6 @@ func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 
 	logrus.WithField("client_id", clientID).Debug("client comming")
 
-	if dog.connObserver != nil {
-		dog.connObserver.OnClientConnect(clientID)
-	}
 	wg.Wait()
 	return nil
 }

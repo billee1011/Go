@@ -23,15 +23,14 @@ func fmtConnectKey(clientID uint64) string {
 
 // GetConnectGatewayAddr 获取客户端连接所在的网关服 RPC 地址
 func GetConnectGatewayAddr(clientID uint64) (string, error) {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "GetConnectGatewayAddr",
-	})
+	// entry := logrus.WithFields(logrus.Fields{
+	// 	"func_name": "GetConnectGatewayAddr",
+	// })
 	key := fmtConnectKey(clientID)
 	redis := redis.GetRedisClient()
 	cmd := redis.HGet(key, gateAddrField)
 	if cmd.Err() != nil {
-		entry.WithError(cmd.Err()).Errorln(errRedisOperation)
-		return "", errRedisOperation
+		return "", nil
 	}
 	return cmd.Val(), nil
 }

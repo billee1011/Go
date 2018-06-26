@@ -29,7 +29,8 @@ type clientV2 struct {
 	callback clientCallback
 
 	// 关闭通道，外部通过该通道关闭客户端
-	finish chan struct{}
+	finish   chan struct{}
+	finishMu sync.Mutex
 
 	// 接收数据状态读写锁
 	recvStateMutex sync.RWMutex
@@ -49,6 +50,8 @@ func newClientV2(e exchanger, callback clientCallback) *clientV2 {
 	return &clientV2{
 		exchanger: e,
 		callback:  callback,
+		csend:     make(chan *senddata, 5),
+		finish:    make(chan struct{}),
 	}
 }
 
@@ -81,7 +84,15 @@ func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err 
 
 // 关闭
 func (c *clientV2) close() {
-	close(c.finish)
+	c.finishMu.Lock()
+	select {
+	case <-c.finish: // already closed
+		c.finishMu.Unlock()
+		return
+	default:
+		close(c.finish)
+		c.finishMu.Unlock()
+	}
 }
 
 // run 返回后表示 client 的生命周期结束
@@ -99,11 +110,7 @@ func (c *clientV2) run(onFinish func()) error {
 	done := make(chan struct{})
 	defer close(done)
 
-	c.csend = make(chan *senddata, 5)
 	defer close(c.csend)
-
-	c.finish = make(chan struct{})
-	defer close(c.finish)
 	// 接收数据 goroutine
 	rfinish := c.recvLoop(done)
 

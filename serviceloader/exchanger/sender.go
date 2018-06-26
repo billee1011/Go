@@ -125,7 +125,7 @@ func (s *sender) aquireClientGate(clientID uint64) *grpc.ClientConn {
 
 	g := structs.GetGlobalExposer()
 	gateAddr, err := connect.GetConnectGatewayAddr(clientID)
-	if err != nil {
+	if err != nil || gateAddr == "" {
 		entry.WithError(err).Infoln("连接 ID 没有对应的网关服")
 		return nil
 	}

@@ -68,7 +68,18 @@ func checkRequest(clientID uint64, header *steve_proto_gaterpc.Header, req *gate
 }
 
 func saveConnectPlayerMap(clientID uint64, header *steve_proto_gaterpc.Header, req *gate.GateAuthReq, response *gate.GateAuthRsp) bool {
-	cpm := global.GetConnectPlayerMap()
-	cpm.SaveConnectPlayer(clientID, req.GetPlayerId())
-	return true
+	playerID := req.GetPlayerId()
+	cm := global.GetConnectionManager()
+	connection := cm.GetConnection(clientID)
+	if connection == nil {
+		// TODO : 妥善处理这种情况
+		response.ErrCode = gate.ErrCode_UNKNOW.Enum()
+		return false
+	}
+	ok := connection.AttachPlayer(playerID)
+	if ok {
+		return true
+	}
+	response.ErrCode = gate.ErrCode_ERR_ALREADY_AUTHED.Enum()
+	return false
 }
