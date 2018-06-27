@@ -91,6 +91,16 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		}
 		cardsGroupList = append(cardsGroupList, cardsGroup)
 	}
+	// 胡牌
+	for _, huCard := range player.GetHuCards() {
+		srcPlayerID := huCard.GetSrcPlayer()
+		huCardGroup := &room.CardsGroup{
+			Cards: []uint32{gutils.ServerCard2Number(huCard.GetCard())},
+			Type:  room.CardsGroupType_CGT_HU.Enum(),
+			Pid:   &srcPlayerID,
+		}
+		cardsGroupList = append(cardsGroupList, huCardGroup)
+	}
 	// 手牌
 	handCards := gutils.ServerCards2Numbers(player.HandCards)
 	cards := make([]uint32, 0)
