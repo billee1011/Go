@@ -162,7 +162,10 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	ms := global.GetMessageSender()
 
 	ms.BroadcastPackage(clientIDs, head, &ntf)
-	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
+	logEntry.WithFields(logrus.Fields{
+		"ntf_context": ntf,
+		"info":        ntf.Players,
+	}).Debugln("广播创建房间")
 }
 
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求
@@ -286,5 +289,26 @@ func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	err := ms.SendPackage(clientID, head, body)
 	if err != nil {
 		logEntry.WithError(err).Errorln("发送消息失败")
+	}
+}
+
+// HandleRoomNeedResumeReq 是否需要恢复对局请求
+func HandleRoomNeedResumeReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+	playerID := player.GetID()
+	desk, exist := ExistInDesk(playerID)
+	body := &room.RoomDeskNeedReusmeRsp{
+		IsNeed: proto.Bool(exist),
+	}
+	if exist {
+		gameID := room.GameId(desk.GetGameID())
+		body.GameId = &gameID
+	}
+	return []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP),
+			Body:  body,
+		},
 	}
 }

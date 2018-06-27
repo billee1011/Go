@@ -1,10 +1,13 @@
 package autoevent
 
 import (
+	"steve/room/config"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/server_pb/majong"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type autoEventGenerator struct {
@@ -32,9 +35,9 @@ func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces
 	return AI
 }
 
-// getStateDuration 获取状态超时时间， 暂时返回 10 秒
+// getStateDuration 获取状态超时时间，通过config配置，随进程持续
 func (aeg *autoEventGenerator) getStateDuration() time.Duration {
-	return time.Second * 10 // TODO
+	return time.Second * time.Duration(viper.GetInt(config.XingPaiTimeOut))
 }
 
 // addAIEvents 将 AI 产生的事件添加到结果中

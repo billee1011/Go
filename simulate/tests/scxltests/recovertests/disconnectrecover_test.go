@@ -53,8 +53,16 @@ func Test_DisconnectRecover(t *testing.T) {
 
 	// step 4
 	utils.UpdatePlayerClientInfo(client, player, deskData)
-	assert.Nil(t, utils.SendRecoverGameReq(disconnectSeat, deskData))
+	// // 发牌后睡眠，在关闭链接前保证发送成功
+	// time.Sleep(time.Second)
+	// assert.Nil(t, utils.SendNeedRecoverGameReq(disconnectSeat, deskData))
+	// expector, _ = disconnectPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
+	// ntf4 := room.RoomDeskNeedReusmeRsp{}
+	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf4))
+	// assert.True(t, ntf4.GetIsNeed())
+	// assert.Equal(t, 1, ntf4.GetGameId()) // gameid后续修改
 
+	assert.Nil(t, utils.SendRecoverGameReq(disconnectSeat, deskData))
 	// step 5
 	disconnectPlayer = utils.GetDeskPlayerBySeat(disconnectSeat, deskData)
 	expector, _ = disconnectPlayer.Expectors[msgid.MsgID_ROOM_RESUME_GAME_RSP]

@@ -98,50 +98,52 @@ func (s *scxlSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
-	deskPlayers := desk.GetPlayers()
+	deskPlayers := desk.GetDeskPlayers()
 	for i := 0; i < len(deskPlayers); i++ {
-		pid := deskPlayers[i].GetPlayerId()
-		//记录该玩家单局结算信息
-		balanceRsp := &room.RoomBalanceInfoRsp{
-			Pid:             deskPlayers[i].PlayerId,
-			BillDetail:      make([]*room.BillDetail, 0),
-			BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
-		}
-		// 记录该玩家单局结算总倍数
-		cardValue := int32(0)
-		// 记录该玩家退税信息
-		revertScore := int64(0)
-		revertSInfos := make([]*majongpb.SettleInfo, 0)
-
-		// 遍历牌局所有结算信息，获取所有与该玩家有关的结算，获取结算详情列表
-		for _, sInfo := range contextSInfos {
-			if sInfo.Scores[pid] != 0 {
-				bd := s.getBillDetail(pid, sInfo)
-				cardValue = cardValue + bd.GetFanValue()
-				balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+		if !deskPlayers[i].IsQuit() {
+			pid := deskPlayers[i].GetPlayerID()
+			//记录该玩家单局结算信息
+			balanceRsp := &room.RoomBalanceInfoRsp{
+				Pid:             proto.Uint64(pid),
+				BillDetail:      make([]*room.BillDetail, 0),
+				BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
 			}
-			// 退税结算详情
-			revertIds := mjContext.RevertSettles
-			if len(revertIds) != 0 {
-				for _, rID := range revertIds {
-					pScore := s.settleMap[rID][pid]
-					if rID == sInfo.Id && pScore != 0 {
-						revertSInfos = append(revertSInfos, sInfo)
-						revertScore = revertScore + pScore
+			// 记录该玩家单局结算总倍数
+			cardValue := int32(0)
+			// 遍历牌局所有结算信息，获取所有与该玩家有关的结算，获取结算详情列表
+			for _, sInfo := range contextSInfos {
+				if sInfo.Scores[pid] != 0 {
+					bd := s.getBillDetail(pid, sInfo)
+					cardValue = cardValue + bd.GetFanValue()*int32(len(bd.GetRelatedPid()))
+					balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+				}
+				// 退税结算详情
+				if s.isRevertID(mjContext.RevertSettles, sInfo.Id) {
+					pScore := s.settleMap[sInfo.Id][pid]
+					if pScore != 0 {
+						revertbd := s.getRevertbillDetail(pid, pScore, sInfo)
+						cardValue = cardValue + revertbd.GetFanValue()*int32(len(revertbd.GetRelatedPid()))
+						balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
 					}
 				}
+
 			}
+			// 获取玩家单局结算详情
+			balanceRsp.BillPlayersInfo = s.getRoundBillPlayerInfo(pid, cardValue, mjContext)
+			// 通知该玩家单局结算信息
+			NotifyPlayersMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 		}
-		// 获取退税结算详情
-		if revertScore != 0 {
-			revertbd := s.getRevertbillDetail(pid, revertScore, revertSInfos)
-			balanceRsp.BillDetail = append(balanceRsp.BillDetail, revertbd)
-		}
-		// 获取玩家单局结算详情
-		balanceRsp.BillPlayersInfo = s.getRoundBillPlayerInfo(pid, cardValue, mjContext)
-		// 通知该玩家单局结算信息
-		NotifyPlayersMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 	}
+}
+
+// isRevertID 是否是退税id
+func (s *scxlSettle) isRevertID(revertIds []uint64, settleID uint64) bool {
+	for _, rID := range revertIds {
+		if rID == settleID {
+			return true
+		}
+	}
+	return false
 }
 
 // generateSettleEvent 生成结算finish事件
@@ -444,26 +446,24 @@ func (s *scxlSettle) getBillDetail(pid uint64, sInfo *majongpb.SettleInfo) *room
 }
 
 // getRevertbd 获得玩家退税结算详情，包括分数以及输赢玩家
-func (s *scxlSettle) getRevertbillDetail(pid uint64, revertScore int64, revertSInfos []*majongpb.SettleInfo) *room.BillDetail {
+func (s *scxlSettle) getRevertbillDetail(pid uint64, revertScore int64, revertSettle *majongpb.SettleInfo) *room.BillDetail {
 	billDetail := &room.BillDetail{
 		SetleType: room.SettleType_ST_TAXREBEAT.Enum(),
 		Score:     proto.Int64(-revertScore),
+		FanValue:  proto.Int32(int32(revertSettle.CardValue)),
 	}
-	// 相关联玩家
-	for _, revertSInfo := range revertSInfos {
-		// 实际扣除分数
-		realScore := s.settleMap[revertSInfo.Id]
-		if realScore[pid] > 0 { // 赢家结算所关联玩家为所有输家
-			for pid, score := range realScore {
-				if score < 0 {
-					billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
-				}
+	// 实际扣除分数
+	realScore := s.settleMap[revertSettle.Id]
+	if realScore[pid] > 0 { // 赢家结算所关联玩家为所有输家
+		for pid, score := range realScore {
+			if score < 0 {
+				billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
 			}
-		} else if realScore[pid] < 0 { // 输家结算所关联玩家为赢家
-			for pid, score := range realScore {
-				if score > 0 {
-					billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
-				}
+		}
+	} else if realScore[pid] < 0 { // 输家结算所关联玩家为赢家
+		for pid, score := range realScore {
+			if score > 0 {
+				billDetail.RelatedPid = append(billDetail.RelatedPid, pid)
 			}
 		}
 	}
