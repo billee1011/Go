@@ -285,14 +285,10 @@ func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
 }
 
 func (d *desk) initMajongContext() error {
-	playerMgr := global.GetPlayerMgr()
 	players := make([]uint64, len(d.players))
 	for seat, player := range d.players {
 		players[seat] = player.playerID
-		mplayer := playerMgr.GetPlayer(player.playerID)
-		mplayer.SetCoin(handle.GetGold(d.GetGameID())) //设置玩家金币数
 	}
-
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,

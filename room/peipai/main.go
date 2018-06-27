@@ -31,5 +31,6 @@ func Run(addr string) error {
 	// PP_PORT = addr
 	http.HandleFunc("/", handle.Peipai)
 	http.HandleFunc("/option/", handle.Option)
+	http.HandleFunc("/setgold/", handle.SetGoldHandle)
 	return http.ListenAndServe(addr, nil)
 }
