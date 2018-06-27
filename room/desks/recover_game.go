@@ -6,6 +6,7 @@ import (
 	server_pb "steve/server_pb/majong"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -62,17 +63,18 @@ func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 }
 
 func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "getRecoverPlayerInfo",
+	})
 	mjContext := &d.dContext.mjContext
 	roomPlayerInfos := d.GetPlayers()
 	for _, roomPlayerInfo := range roomPlayerInfos {
-		var player *server_pb.Player
-		// 这里假设总能找到一个对应玩家
-		for _, player = range mjContext.GetPlayers() {
-			if player.GetPalyerId() == roomPlayerInfo.GetPlayerId() {
-				break
-			}
+		playerID := roomPlayerInfo.GetPlayerId()
+		player := gutils.GetMajongPlayer(playerID, mjContext)
+		if player == nil {
+			logEntry.WithField("palyerID: ", playerID).Errorln("mjContext找不到对应玩家")
+			continue
 		}
-		playerID := player.GetPalyerId()
 		svrHandCard := player.GetHandCards()
 		handCardCount := uint32(len(svrHandCard))
 		gamePlayerInfo := &room.GamePlayerInfo{
@@ -80,7 +82,9 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
 		}
-
+		xpState := room.XingPaiState(player.GetXpState())
+		gamePlayerInfo.XpState = &xpState
+		gamePlayerInfo.TingCardInfos = gutils.TingCardInfoSvr2Client(player.GetTingCardInfo())
 		// 手牌组
 		cltHandCard := gutils.ServerCards2Numbers(svrHandCard)
 		handCardGroup := &room.CardsGroup{

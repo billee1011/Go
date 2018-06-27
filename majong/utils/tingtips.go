@@ -60,6 +60,12 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 				Times:    proto.Uint32(times),
 			}
 			ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
+			// 记录听牌信息
+			mjTingInfo := &majongpb.TingCardInfo{
+				TingCard: uint32(*newCard),
+				Times:    times,
+			}
+			player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)
 		}
 	}
 	flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{

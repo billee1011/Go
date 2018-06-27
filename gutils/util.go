@@ -193,14 +193,14 @@ func CanTingCardInfoSvr2Client(minfos []*majongpb.CanTingCardInfo) []*room.CanTi
 	for _, minfo := range minfos {
 		rinfo := &room.CanTingCardInfo{}
 		rinfo.OutCard = proto.Uint32(minfo.GetOutCard())
-		rinfo.TingCardInfo = tingCardInfoSvr2Client(minfo.GetTingCardInfo())
+		rinfo.TingCardInfo = TingCardInfoSvr2Client(minfo.GetTingCardInfo())
 		rinfos = append(rinfos, rinfo)
 	}
 	return rinfos
 }
 
-// tingCardInfoSvr2Client 具体听牌信息转换，server_pb-->client_pb
-func tingCardInfoSvr2Client(minfos []*majongpb.TingCardInfo) []*room.TingCardInfo {
+// TingCardInfoSvr2Client 具体听牌信息转换，server_pb-->client_pb
+func TingCardInfoSvr2Client(minfos []*majongpb.TingCardInfo) []*room.TingCardInfo {
 	rinfos := []*room.TingCardInfo{}
 	for _, minfo := range minfos {
 		rinfo := &room.TingCardInfo{}
