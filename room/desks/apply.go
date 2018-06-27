@@ -213,7 +213,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 
-	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID(), 1).Enum()
+	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID(), req.GetGameId()).Enum()
 	return
 }
 
