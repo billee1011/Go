@@ -58,10 +58,11 @@ enum CardType{
 
 // 玩家行牌状态
 enum XingPaiState{
-    normal  = 0;   // 正常行牌
-    give_up = 1;   // 认输
-    hu      = 2;   // 胡了
-}
+    normal  = 0;   // 正常行牌,二进制: 0000
+    hu      = 1;   // 已胡牌,二进制: 0001
+    give_up = 2;   // 已认输, 二进制: 0010
+    hu_giveup = 3; // 已胡牌且认输, 二进制: 0011
+ }
 
 // 胡牌数据
 message HuCard {
@@ -210,6 +211,9 @@ message MajongContext {
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
 
+    uint32 xingpai_option_id = 251; // 行牌选项 ID 
+    uint32 cardtype_option_id = 252;    // 牌型选项 ID 
+    uint32 settle_option_id = 253;  // 结算选项 ID 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
 }
@@ -220,6 +224,7 @@ message MajongCommonOption {
     uint32 max_fapai_cartoon_time = 2;  // 发牌动画最大时间
     uint32 max_huansanzhang_cartoon_time = 3; // 换三张动画最大时间
     bool has_huansanzhang = 4; //是否有换三张
+    repeated XingPaiState valid_xp_state_set = 5; //有效的行牌状态集合
 }
 
 // SichuanxueliuOption 四川血流麻将玩法

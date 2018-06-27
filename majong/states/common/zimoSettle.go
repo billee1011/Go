@@ -1,10 +1,9 @@
-package scxz
+package common
 
 import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
-	"steve/majong/states/common"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -27,7 +26,7 @@ func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 		if err != nil {
 			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
 		}
-		SettleOver(flow, message)
+		utils.SettleOver(flow, message)
 		nextState := s.nextState(flow.GetMajongContext())
 		if nextState == majongpb.StateID_state_mopai {
 			s.setMopaiPlayer(flow)
@@ -64,11 +63,11 @@ func (s *ZiMoSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 		return
 	}
 	players := mjContext.GetPlayers()
-	mopaiPlayerID := common.CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
+	mopaiPlayerID := CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
 	// 摸牌玩家不能是非正常状态玩家
 	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
-	if !utils.IsNormalPlayer(mopaiPlayer) {
-		mopaiPlayer = utils.GetNextNormalPlayerByID(players, mopaiPlayerID)
+	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext.GetOption()) {
+		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext.GetOption())
 	}
 	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
@@ -126,5 +125,5 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (s *ZiMoSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return GetNextState(mjcontext)
+	return utils.GetNextState(mjcontext)
 }

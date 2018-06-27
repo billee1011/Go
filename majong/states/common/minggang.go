@@ -22,8 +22,6 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// TODO 结算
-
 //MingGangState 明杠状态
 type MingGangState struct {
 }
@@ -34,7 +32,7 @@ var _ interfaces.MajongState = new(MingGangState)
 func (s *MingGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_gang_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID(majongpb.StateID_state_mopai), nil
+		return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang), nil
 }
@@ -78,7 +76,6 @@ func (s *MingGangState) doMinggang(flow interfaces.MajongFlow) {
 
 	s.addGangCard(card, player, mjContext.GetLastChupaiPlayer())
 	s.notifyPlayers(flow, card, player, mjContext.GetLastChupaiPlayer())
-	s.doMingGangSettle(mjContext, player, mjContext.GetLastChupaiPlayer())
 	return
 }
 

@@ -312,6 +312,7 @@ func (d *desk) initMajongContext() error {
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
 			HasHuansanzhang:            config.GetHsz(), //设置玩家是否开启换三张
+			ValidXpStateSet:            d.getXpStates(d.GetGameID()),
 		},
 		// MajongOption: mjOption,
 		MajongOption: []byte{},
@@ -321,12 +322,26 @@ func (d *desk) initMajongContext() error {
 	if mjContext, err = majong_initial.InitMajongContext(param); err != nil {
 		return err
 	}
+	if err := fillContextOptions(d.gameID, &mjContext); err != nil {
+		return err
+	}
 	d.dContext = &deskContext{
 		mjContext:   mjContext,
 		stateNumber: 0,
 		stateTime:   time.Now(),
 	}
 	return nil
+}
+
+func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
+	switch gameID {
+	case gutils.SCXLGameID:
+		return []server_pb.XingPaiState{server_pb.XingPaiState_hu_giveup, server_pb.XingPaiState_hu, server_pb.XingPaiState_give_up, server_pb.XingPaiState_normal}
+	case gutils.SCXZGameID:
+		return []server_pb.XingPaiState{server_pb.XingPaiState_normal}
+	default:
+		return []server_pb.XingPaiState{}
+	}
 }
 
 func (d *desk) getMajongConfig(gameID int) *mjconfig.Mjconfig {

@@ -12,7 +12,6 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -34,7 +33,7 @@ var _ interfaces.MajongState = new(BuGangState)
 func (s *BuGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_bugang_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID_state_mopai, nil
+		return majongpb.StateID_state_gang_settle, nil
 	}
 	return majongpb.StateID_state_bugang, nil
 }
@@ -80,7 +79,6 @@ func (s *BuGangState) doBugang(flow interfaces.MajongFlow) {
 	s.removePengCard(card, player)
 	s.addGangCard(card, player, player.GetPalyerId())
 	s.notifyPlayers(flow, card, player)
-	s.doBuGangSettle(mjContext, player)
 	return
 }
 
@@ -124,27 +122,4 @@ func (s *BuGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
 	mjContext.MopaiType = majongpb.MopaiType_MT_GANG
-}
-
-//	doBuGangSettle 补杠结算
-func (s *BuGangState) doBuGangSettle(mjContext *majongpb.MajongContext, player *majongpb.Player) {
-	allPlayers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-	}
-	param := interfaces.GangSettleParams{
-		GangPlayer: player.GetPalyerId(),
-		SrcPlayer:  player.GetPalyerId(),
-		AllPlayers: allPlayers,
-		GangType:   majongpb.GangType_gang_bugang,
-		SettleID:   mjContext.CurrentSettleId,
-	}
-
-	f := global.GetGameSettlerFactory()
-	gameID := int(mjContext.GetGameId())
-	settleInfo := facade.SettleGang(f, gameID, param)
-	if settleInfo != nil {
-		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
-	}
 }
