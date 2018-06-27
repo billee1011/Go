@@ -121,7 +121,7 @@ message Player {
     int32 mopai_count = 15;                 // 已经摸牌的次数
     ZixunRecord zixun_record = 16;          // 自询记录
     XingPaiState xp_state = 17;             // 玩家牌局状态
-    bool isQuit = 18;                       // 玩家是否退出牌局
+    bool is_quit = 18;                       // 玩家是否退出牌局
     repeated TingCardInfo ting_card_info = 19;       // 听牌信息 
     map<string, bytes> properties = 256;    // 其他的一些属性
 } 

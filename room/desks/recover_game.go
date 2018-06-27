@@ -81,6 +81,7 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 			PlayerInfo:    roomPlayerInfo,
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
+			IsTuoguan:     proto.Bool(d.getDeskPlayer(playerID).IsQuit()),
 		}
 		xpState := room.XingPaiState(player.GetXpState())
 		gamePlayerInfo.XpState = &xpState
@@ -126,9 +127,10 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 		for _, huCard := range player.GetHuCards() {
 			srcPlayerID := huCard.GetSrcPlayer()
 			huCardGroup := &room.CardsGroup{
-				Cards: []uint32{gutils.ServerCard2Number(huCard.GetCard())},
-				Type:  room.CardsGroupType_CGT_HU.Enum(),
-				Pid:   &srcPlayerID,
+				Cards:  []uint32{gutils.ServerCard2Number(huCard.GetCard())},
+				Type:   room.CardsGroupType_CGT_HU.Enum(),
+				Pid:    &srcPlayerID,
+				IsReal: proto.Bool(huCard.GetIsReal()),
 			}
 			huCardGroups = append(huCardGroups, huCardGroup)
 		}

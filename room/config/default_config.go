@@ -1,4 +1,4 @@
-package core
+package config
 
 import "github.com/spf13/viper"
 
@@ -11,10 +11,14 @@ const (
 
 	// ListenPeipaiAddr 配牌監聽地址
 	ListenPeipaiAddr = "peipai_addr"
+
+	// XingPaiTimeOut 行牌超时时间，单位为second，默认值为 10
+	XingPaiTimeOut = "xp_timeout"
 )
 
-func initDefaultConfig() {
+func init() {
 	viper.SetDefault(ListenClientAddr, "127.0.0.1")
 	viper.SetDefault(ListenClientPort, 36001)
 	viper.SetDefault(ListenPeipaiAddr, "")
+	viper.SetDefault(XingPaiTimeOut, 10)
 }
