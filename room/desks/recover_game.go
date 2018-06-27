@@ -6,6 +6,7 @@ import (
 	server_pb "steve/server_pb/majong"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -62,25 +63,29 @@ func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 }
 
 func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "getRecoverPlayerInfo",
+	})
 	mjContext := &d.dContext.mjContext
 	roomPlayerInfos := d.GetPlayers()
 	for _, roomPlayerInfo := range roomPlayerInfos {
-		var player *server_pb.Player
-		// 这里假设总能找到一个对应玩家
-		for _, player = range mjContext.GetPlayers() {
-			if player.GetPalyerId() == roomPlayerInfo.GetPlayerId() {
-				break
-			}
+		playerID := roomPlayerInfo.GetPlayerId()
+		player := gutils.GetMajongPlayer(playerID, mjContext)
+		if player == nil {
+			logEntry.WithField("palyerID: ", playerID).Errorln("mjContext找不到对应玩家")
+			continue
 		}
-		playerID := player.GetPalyerId()
 		svrHandCard := player.GetHandCards()
 		handCardCount := uint32(len(svrHandCard))
 		gamePlayerInfo := &room.GamePlayerInfo{
 			PlayerInfo:    roomPlayerInfo,
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
+			IsTuoguan:     proto.Bool(d.getDeskPlayer(playerID).IsQuit()),
 		}
-
+		xpState := room.XingPaiState(player.GetXpState())
+		gamePlayerInfo.XpState = &xpState
+		gamePlayerInfo.TingCardInfos = gutils.TingCardInfoSvr2Client(player.GetTingCardInfo())
 		// 手牌组
 		cltHandCard := gutils.ServerCards2Numbers(svrHandCard)
 		handCardGroup := &room.CardsGroup{
@@ -122,9 +127,10 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 		for _, huCard := range player.GetHuCards() {
 			srcPlayerID := huCard.GetSrcPlayer()
 			huCardGroup := &room.CardsGroup{
-				Cards: []uint32{gutils.ServerCard2Number(huCard.GetCard())},
-				Type:  room.CardsGroupType_CGT_HU.Enum(),
-				Pid:   &srcPlayerID,
+				Cards:  []uint32{gutils.ServerCard2Number(huCard.GetCard())},
+				Type:   room.CardsGroupType_CGT_HU.Enum(),
+				Pid:    &srcPlayerID,
+				IsReal: proto.Bool(huCard.GetIsReal()),
 			}
 			huCardGroups = append(huCardGroups, huCardGroup)
 		}

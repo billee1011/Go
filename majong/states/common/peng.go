@@ -61,30 +61,32 @@ func (s *PengState) notifyPeng(flow interfaces.MajongFlow, card *majongpb.Card, 
 
 // doPeng 执行碰操作
 func (s *PengState) doPeng(flow interfaces.MajongFlow) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "PengState.doPeng",
-	})
-
 	mjContext := flow.GetMajongContext()
-	logEntry = utils.WithMajongContext(logEntry, mjContext)
-
-	pengPlayer := mjContext.GetLastPengPlayer()
-
-	player := utils.GetMajongPlayer(pengPlayer, mjContext)
-
 	card := mjContext.GetLastOutCard()
-	logEntry = logEntry.WithFields(logrus.Fields{
+	pengPlayerID := mjContext.GetLastPengPlayer()
+	pengPlayer := utils.GetMajongPlayer(pengPlayerID, mjContext)
+	srcPlayerID := mjContext.GetLastChupaiPlayer()
+	srcPlayer := utils.GetMajongPlayer(srcPlayerID, mjContext)
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":      "PengState.doPeng",
 		"peng_player_id": pengPlayer,
 	})
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
 
-	newCards, ok := utils.RemoveCards(player.GetHandCards(), card, 2)
+	// 从被碰玩家的outCards移除被碰牌
+	srcOutCards := srcPlayer.GetOutCards()
+	srcPlayer.OutCards = removeLastCard(logEntry, srcOutCards, card)
+	// 从碰牌玩家的handCards移除碰牌
+	logEntry = logEntry.WithFields(logrus.Fields{})
+	newCards, ok := utils.RemoveCards(pengPlayer.GetHandCards(), card, 2)
 	if !ok {
 		logEntry.Errorln("移除玩家手牌失败")
 		return
 	}
-	player.HandCards = newCards
-	s.notifyPeng(flow, card, mjContext.GetLastChupaiPlayer(), pengPlayer)
-	s.addPengCard(card, player, mjContext.GetLastChupaiPlayer())
+	pengPlayer.HandCards = newCards
+	s.notifyPeng(flow, card, srcPlayerID, pengPlayerID)
+	s.addPengCard(card, pengPlayer, srcPlayerID)
 	return
 }
 
