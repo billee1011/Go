@@ -8,7 +8,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	"steve/room/peipai"
+	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 	"time"
 
@@ -141,8 +141,8 @@ func (s *HuansanzhangState) randDirection(flow interfaces.MajongFlow) room.Direc
 	directios := []room.Direction{room.Direction_ClockWise, room.Direction_Opposite, room.Direction_AntiClockWise}
 	towards := rd.Intn(len(directios))
 
-	gameName := utils.GetGameName(flow)
-	fx := peipai.GetHSZFangXiang(gameName)
+	mjContext := flow.GetMajongContext()
+	fx := handle.GetHSZFangXiang(int(mjContext.GetGameId()))
 	if fx >= 0 && fx < len(directios) {
 		towards = fx
 	}
