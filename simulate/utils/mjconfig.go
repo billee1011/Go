@@ -8,8 +8,8 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-func mjconfig(open bool, gold uint64) error {
-	url := fmt.Sprintf("%s?hszswitch=%v&gold=%v", config.MjconfigURL, open, gold)
+func mjconfig(gameName string, open bool, gold uint64) error {
+	url := fmt.Sprintf("%s/option/?game=%v&hszswitch=%v&gold=%v", config.PeipaiURL, gameName, open, gold)
 	return requestOpen(url)
 }
 

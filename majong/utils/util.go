@@ -5,7 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/majong/interfaces"
-	"steve/room/peipai"
+	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
@@ -481,19 +481,6 @@ func TransGangCard(gangCards []*majongpb.GangCard) []*majongpb.Card {
 	return cards
 }
 
-// GetGameName 获取游戏名字
-func GetGameName(flow interfaces.MajongFlow) string {
-	gameID := flow.GetMajongContext().GetGameId()
-	var gameName string
-	if gameID == gutils.SCXLGameID {
-		gameName = "scxl"
-	}
-	if gameID == gutils.SCXZGameID {
-		gameName = "scxz"
-	}
-	return gameName
-}
-
 // GetAllMopaiCount 获取所有人的摸牌数总和
 func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
 	count := 0
@@ -510,7 +497,7 @@ func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
 		return false
 	}
 	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
-	length := peipai.GetLensOfWallCards(GetGameName(flow))
+	length := handle.GetLensOfWallCards(int(context.GetGameId()))
 	if GetAllMopaiCount(context) == length-53 {
 		return false
 	}

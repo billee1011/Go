@@ -11,8 +11,7 @@ import (
 
 // XingPaiOption 行牌选项
 type XingPaiOption struct {
-	ID         int  `yaml:"id"`          // 选项 ID
-	HuGameOver bool `yaml:"hu_gameover"` // 胡牌后是否触发游戏结束
+	ID int `yaml:"id"` // 选项 ID
 }
 
 // XingPaiOptionManager 选项管理器

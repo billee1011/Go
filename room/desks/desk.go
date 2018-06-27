@@ -3,7 +3,6 @@ package desks
 import (
 	"context"
 	"errors"
-	"fmt"
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
@@ -13,14 +12,10 @@ import (
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
-	"steve/room/majongconfig/mjconfig"
+	"steve/room/peipai/handle"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
 	"time"
-
-	"github.com/hashicorp/consul/api"
-
-	"google.golang.org/grpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -33,12 +28,6 @@ var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
 
 const optionService = "xuezhanOption"
-
-// 麻将默认配置值
-var defaultConfig = &mjconfig.Mjconfig{
-	Hsz:  true,
-	Gold: 10000,
-}
 
 // deskEvent 房间事件
 type deskEvent struct {
@@ -297,12 +286,11 @@ func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
 
 func (d *desk) initMajongContext() error {
 	playerMgr := global.GetPlayerMgr()
-	config := d.getMajongConfig(d.GetGameID()) //开局配置
 	players := make([]uint64, len(d.players))
 	for seat, player := range d.players {
 		players[seat] = player.playerID
 		mplayer := playerMgr.GetPlayer(player.playerID)
-		mplayer.SetCoin(config.Gold) //设置玩家金币数
+		mplayer.SetCoin(handle.GetGold(d.GetGameID())) //设置玩家金币数
 	}
 
 	param := server_pb.InitMajongContextParams{
@@ -311,7 +299,7 @@ func (d *desk) initMajongContext() error {
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
-			HasHuansanzhang:            config.GetHsz(), //设置玩家是否开启换三张
+			HasHuansanzhang:            handle.GetHsz(d.GetGameID()), //设置玩家是否开启换三张
 			ValidXpStateSet:            d.getXpStates(d.GetGameID()),
 		},
 		// MajongOption: mjOption,
@@ -333,6 +321,7 @@ func (d *desk) initMajongContext() error {
 	return nil
 }
 
+//TODO:delete
 func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
 	switch gameID {
 	case gutils.SCXLGameID:
@@ -342,91 +331,6 @@ func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
 	default:
 		return []server_pb.XingPaiState{}
 	}
-}
-
-func (d *desk) getMajongConfig(gameID int) *mjconfig.Mjconfig {
-	mjConfigDate := d.getMajongConfigData()
-	switch gameID {
-	case gutils.SCXLGameID: // 血流可以配置金币，但不能配置换三张
-		mjConfigDate.Hsz = true
-		return mjConfigDate
-	case gutils.SCXZGameID:
-		return mjConfigDate
-	default:
-		return defaultConfig
-	}
-}
-
-func (d *desk) getAddrByConsul() string {
-	consul, err := api.NewClient(api.DefaultConfig())
-	if err != nil {
-		return ""
-	}
-	// agent := consul.Agent()
-	// services, err := agent.Services()
-	catalog := consul.Catalog()
-	services, _, err := catalog.Service(gutils.XuezhanOptionService, "", &api.QueryOptions{})
-	if err != nil {
-		return ""
-	}
-	if len(services) == 0 {
-		return ""
-	}
-	ser := getService(services)
-	addr := fmt.Sprintf("%v:%v", ser.Address, ser.ServicePort)
-	return addr
-}
-
-func getService(services []*api.CatalogService) *api.CatalogService {
-	return services[0]
-}
-
-func (d *desk) getMajongConfigData() *mjconfig.Mjconfig {
-	addr := d.getAddrByConsul()
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
-	if err != nil {
-		return defaultConfig
-	}
-	defer conn.Close()
-	client := mjconfig.NewConfigHandlerClient(conn)
-	hs, err := client.GetMjConfig(context.Background(), &mjconfig.DoNothing{})
-	if err != nil {
-		return defaultConfig
-	}
-	return hs
-}
-
-func (d *desk) getOptionByGameID(gameID int) []byte {
-	switch gameID {
-	case gutils.SCXLGameID:
-		return []byte{}
-	case gutils.SCXZGameID:
-		return d.getXuezhanOption()
-	default:
-		return []byte{}
-	}
-}
-
-func (d *desk) getXuezhanOption() []byte {
-	b := make([]byte, 0)
-	conn, err := grpc.Dial("127.0.0.1:8082", grpc.WithInsecure())
-	if err != nil {
-		return b
-	}
-	defer conn.Close()
-	client := mjconfig.NewConfigHandlerClient(conn)
-	hs, err := client.GetMjConfig(context.Background(), &mjconfig.DoNothing{})
-	if err != nil {
-		return b
-	}
-	option := &server_pb.SichuanxuezhanOption{
-		OpenHuansanzhang: hs.Hsz,
-	}
-	b, err = proto.Marshal(option)
-	if err != nil {
-		return b
-	}
-	return b
 }
 
 func (d *desk) getTuoguanPlayers() []uint64 {

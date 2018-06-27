@@ -7,7 +7,7 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	"steve/room/peipai"
+	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -99,8 +99,8 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) ma
 }
 
 func (s *ZimoState) noCardsToTake(flow interfaces.MajongFlow) bool {
-	length := peipai.GetLensOfWallCards(utils.GetGameName(flow))
 	context := flow.GetMajongContext()
+	length := handle.GetLensOfWallCards(int(context.GetGameId()))
 	if utils.GetAllMopaiCount(context) == length-53 {
 		return true
 	}
