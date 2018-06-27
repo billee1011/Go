@@ -68,7 +68,7 @@ func CheckDianPaoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, f
 	for _, player := range deskData.Players {
 		expector, _ := player.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 		ntf := room.RoomSettleInstantRsp{}
-		expector.Recv(global.DefaultWaitMessageTime, &ntf)
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, len(huSeats)+1, len(ntf.BillPlayersInfo))
 	}
 }
