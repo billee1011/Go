@@ -216,7 +216,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
 		return
 	}
-
+	locationInfos.Store(player.GetID(), req.Location)
 	rsp.ErrCode = getJoinApplyMgr().joinPlayer(player.GetID()).Enum()
 	return
 }
