@@ -14,6 +14,8 @@ type deskMgr struct {
 	deskMap       sync.Map // deskID -> desk
 	playerDeskMap sync.Map // playerID -> deskID
 	mu            sync.RWMutex
+
+	deskCount int
 }
 
 var errPlayerAlreadyInDesk = errors.New("有玩家已经在牌桌上了")
@@ -50,6 +52,7 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	}
 	deskUID := desk.GetUID()
 	dm.deskMap.Store(deskUID, desk)
+	dm.deskCount++
 	for _, playerID := range playerIDs {
 		dm.playerDeskMap.Store(playerID, deskUID)
 	}
@@ -70,6 +73,7 @@ func (dm *deskMgr) finishDesk(deskUID uint64, players []uint64) {
 	}).Infoln("desk finished")
 
 	dm.deskMap.Delete(deskUID)
+	dm.deskCount--
 	for _, playerID := range players {
 		dm.playerDeskMap.Delete(playerID)
 	}
@@ -139,4 +143,8 @@ func (dm *deskMgr) GetRunDeskByPlayerID(playerID uint64) (desk interfaces.Desk, 
 
 	desk = iDesk.(interfaces.Desk)
 	return desk, nil
+}
+
+func (dm *deskMgr) GetDeskCount() int {
+	return dm.deskCount
 }
