@@ -147,6 +147,10 @@ func IntToCard(cardValue int32) (*majongpb.Card, error) {
 		color = majongpb.CardColor_ColorTiao
 	case 3:
 		color = majongpb.CardColor_ColorTong
+	case 4:
+		color = majongpb.CardColor_ColorFeng
+	case 5:
+		color = majongpb.CardColor_ColorHua
 	default:
 		return nil, fmt.Errorf("cant trans card %d", cardValue)
 	}

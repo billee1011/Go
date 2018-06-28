@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -35,7 +36,7 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 		}
 	case majongpb.EventID_event_huansanzhang_finish:
 		{
-			return s.nextState(), nil
+			return s.nextState(flow), nil
 		}
 	case majongpb.EventID_event_cartoon_finish_request:
 		{
@@ -51,8 +52,12 @@ func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
 }
 
 // nextState 下个状态
-func (s *HuansanzhangState) nextState() majongpb.StateID {
-	return majongpb.StateID_state_dingque
+func (s *HuansanzhangState) nextState(flow interfaces.MajongFlow) majongpb.StateID {
+	xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(int(flow.GetMajongContext().GetGameId())).XingPaiOptionID)
+	if xpOption.NeedDingque {
+		return majongpb.StateID_state_dingque
+	}
+	return majongpb.StateID_state_zixun
 }
 
 // curState 当前状态
@@ -66,7 +71,7 @@ func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventCon
 	if !finished {
 		return s.curState(), global.ErrInvalidEvent
 	}
-	return OnCartoonFinish(s.curState(), s.nextState(), room.CartoonType_CTNT_HUANSANZHANG, eventContext)
+	return OnCartoonFinish(s.curState(), s.nextState(flow), room.CartoonType_CTNT_HUANSANZHANG, eventContext)
 }
 
 // checkReq 检测玩家请求是否合法

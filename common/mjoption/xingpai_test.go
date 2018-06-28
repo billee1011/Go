@@ -16,7 +16,7 @@ func TestXingPaiOptionManager_loadOption(t *testing.T) {
 	assert.Equal(t, opt1.NeedChi, false)
 	assert.Equal(t, opt1.NeedDingque, true)
 	assert.Equal(t, opt1.PlayerStates, []XingpaiState{})
-	assert.Equal(t, len(opt1.WallCards), 136)
+	assert.Equal(t, len(opt1.WallCards), 108)
 	assert.Equal(t, opt1.HuGameOver, false)
 
 	opt2 := xom.GetXingPaiOption(2)
@@ -27,6 +27,6 @@ func TestXingPaiOptionManager_loadOption(t *testing.T) {
 	assert.Equal(t, opt2.NeedChi, false)
 	assert.Equal(t, opt2.NeedDingque, true)
 	assert.Equal(t, opt2.PlayerStates, []XingpaiState{Hu, Giveup})
-	assert.Equal(t, len(opt2.WallCards), 136)
+	assert.Equal(t, len(opt2.WallCards), 108)
 	assert.Equal(t, opt2.HuGameOver, false)
 }

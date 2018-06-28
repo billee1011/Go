@@ -4,6 +4,7 @@ import (
 	"errors"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 
@@ -136,14 +137,24 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 
 // 下一状态获取
 func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
-	isHsz := mjContext.GetOption().GetHasHuansanzhang()
-	logrus.WithFields(logrus.Fields{
-		"func_name": "FapaiState.getNextState",
-		"isHsz":     isHsz,
-		"GameId":    mjContext.GetGameId(),
-	}).Infoln("下一状态获取")
-	if isHsz {
-		return majongpb.StateID_state_huansanzhang
+	//先要判断游戏有没有换三张的玩法，有换三张的玩法，再判断需不需要配置换三张
+	xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(int(mjContext.GetGameId())).XingPaiOptionID)
+	if xpOption.Hnz.Need {
+		isHsz := mjContext.GetOption().GetHasHuansanzhang()
+		logrus.WithFields(logrus.Fields{
+			"func_name": "FapaiState.getNextState",
+			"isHsz":     isHsz,
+			"GameId":    mjContext.GetGameId(),
+		}).Infoln("下一状态获取")
+		if isHsz {
+			return majongpb.StateID_state_huansanzhang
+		}
 	}
-	return majongpb.StateID_state_dingque
+	if xpOption.NeedDingque {
+		return majongpb.StateID_state_dingque
+	}
+	if xpOption.NeedAddflower {
+		//TODO：有全局补花的话，跳转到全局补花（二人麻将暂时不考虑，先将血流血战代码选项化）
+	}
+	return majongpb.StateID_state_zixun
 }

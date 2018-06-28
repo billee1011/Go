@@ -54,6 +54,7 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 			return s.gang(flow, message)
 
 		}
+		//TODO:需要加一个对补花请求的处理
 	default:
 		{
 			return majongpb.StateID_state_zixun, nil
@@ -89,7 +90,6 @@ func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequ
 		mjContext.LastGangPlayer = message.GetHead().GetPlayerId()
 		hasQGH := s.hasQiangGangHu(flow)
 		if hasQGH {
-			//TODO: 可以在这里广播补杠的消息（也可以在waitqiangganghu的entry中进行广播）
 			return majongpb.StateID_state_waitqiangganghu, nil
 		}
 		//在这里判断是否可以抢杠胡，可以抢杠胡进入抢杠胡状态，否则进入补杠状态
@@ -606,10 +606,17 @@ func (s *ZiXunState) sortCards(flow interfaces.MajongFlow) {
 	utils.SortCards(player.GetHandCards())
 }
 
+func (s *ZiXunState) checkflowerCards() bool {
+	return false
+}
+
 // OnEntry 进入状态
 func (s *ZiXunState) OnEntry(flow interfaces.MajongFlow) {
 	s.sortCards(flow)
-	s.checkActions(flow)
+	//TODO：有补花选项，优先查补花，可以补花的话，注入补花的自动事件，进入补花的状态
+	if !s.checkflowerCards() {
+		s.checkActions(flow)
+	}
 }
 
 // OnExit 退出状态 清除本状态数据
