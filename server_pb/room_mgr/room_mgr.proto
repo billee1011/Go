@@ -3,19 +3,20 @@ syntax = "proto3";
 package roommgr;
 
 enum RoomError {
-    SUCCESS = 0x0;
-    FAILED = 0x1; // 失败
+    SUCCESS = 0x0;  // 成功
+    FAILED = 0x1;   // 失败
 }
 
-
-message RoomMgrRequest {
-    uint64 playerId = 1;
+// 创建桌子的请求
+message CreateDeskRequest {
+    repeated uint64 playerId = 1;
 }
 
-message RoomMgrResponse {
+// 创建桌子的回复
+message CreateDeskResponse {
     RoomError err_code = 1; // 错误码
 }
 
 service RoomMgr {
-    rpc CreateDesk(RoomMgrRequest) returns (RoomMgrResponse) {}
+    rpc CreateDesk(CreateDeskRequest) returns (CreateDeskResponse) {}
 }

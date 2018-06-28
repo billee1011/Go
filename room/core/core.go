@@ -197,25 +197,63 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
-func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.RoomMgrRequest) (rsp *roommgr.RoomMgrResponse, err error) {
-	//TODO 接到创建房间请求，创建房间
-	playerID := req.GetPlayerId()
-	playerMgr := global.GetPlayerMgr()
-	player := playerMgr.GetPlayer(playerID)
+func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
 
-	rsp = &roommgr.RoomMgrResponse{
-		ErrCode: roommgr.RoomError_SUCCESS,
+	// 日志
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "RoomService::CreateDesk",
+	})
+
+	logEntry.WithField("players", req.GetPlayerId()).Debugln("RoomService::CreateDesk()")
+
+	// 回复match服的消息
+	rsp = &roommgr.CreateDeskResponse{
+		ErrCode: roommgr.RoomError_FAILED, // 默认是失败的
 	}
 
-	if player == nil {
-		rsp.ErrCode = roommgr.RoomError_FAILED
+	// 请求的玩家ID数组
+	playersID := req.GetPlayerId()
+
+	// 个数须为4
+	if len(playersID) < 4 {
+		logEntry.WithField("len(playersID):", len(playersID)).Errorln("players数组长度不为4")
 		return
 	}
 
-	getJoinApplyMgr().joinPlayer(playerID)
-	return
+	deskFactory := global.GetDeskFactory()
 
-	//TODO 创建房间成功，广播房间消息到gateway
+	deskMgr := global.GetDeskMgr()
+
+	//playerMgr := global.GetPlayerMgr()
+
+	// 创建桌子
+	result, err := deskFactory.CreateDesk(playersID, 1, interfaces.CreateDeskOptions{})
+	if err != nil {
+		logEntry.WithFields(
+			logrus.Fields{
+				"players": playersID,
+				"result":  result,
+			},
+		).WithError(err).Errorln("创建桌子失败")
+
+		return
+	}
+
+	logEntry.WithField("players", req.GetPlayerId()).Debugln("创建桌子成功")
+
+	// 回复match：创建桌子成功
+	rsp.ErrCode = roommgr.RoomError_SUCCESS
+
+	// 通知该桌子的所有人
+	notifyDeskCreate(result.Desk)
+
+	// 桌子开始运行
+	deskMgr.RunDesk(result.Desk)
+
+	// 添加进playerManager
+	// todo
+
+	return
 }
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
