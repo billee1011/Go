@@ -187,9 +187,8 @@ func getMjCard(v int) majongpb.Card {
 }
 
 // GetOriginCards 获取gameID游戏的所有牌
-func GetOriginCards(gameID int) []*majongpb.Card {
-	gameOptions := mjoption.GetGameOptions(gameID)
-	xpOption := mjoption.GetXingpaiOption(gameOptions.XingPaiOptionID)
+func GetOriginCards(mjContext *majongpb.MajongContext) []*majongpb.Card {
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	result := make([]*majongpb.Card, 0, 200)
 	for _, v := range xpOption.WallCards {
 		card := getMjCard(v)

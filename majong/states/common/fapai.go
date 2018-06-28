@@ -138,7 +138,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 // 下一状态获取
 func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	//先要判断游戏有没有换三张的玩法，有换三张的玩法，再判断需不需要配置换三张
-	xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(int(mjContext.GetGameId())).XingPaiOptionID)
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	if xpOption.Hnz.Need {
 		isHsz := mjContext.GetOption().GetHasHuansanzhang()
 		logrus.WithFields(logrus.Fields{

@@ -31,8 +31,8 @@ func (s *XipaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 }
 
 func (s *XipaiState) genOriginCards(flow interfaces.MajongFlow) []*majongpb.Card {
-	gameID := flow.GetMajongContext().GetGameId()
-	return global.GetOriginCards(int(gameID))
+	mjContext := flow.GetMajongContext()
+	return global.GetOriginCards(mjContext)
 }
 
 func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {

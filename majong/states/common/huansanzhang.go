@@ -53,7 +53,7 @@ func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (s *HuansanzhangState) nextState(flow interfaces.MajongFlow) majongpb.StateID {
-	xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(int(flow.GetMajongContext().GetGameId())).XingPaiOptionID)
+	xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
 	if xpOption.NeedDingque {
 		return majongpb.StateID_state_dingque
 	}
