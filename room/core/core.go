@@ -16,7 +16,6 @@ import (
 	"steve/structs/service"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
 
 	_ "steve/room/autoevent" // 引入 autoevent 包，设置工厂
@@ -38,27 +37,6 @@ func NewService() service.Service {
 
 // RoomService room房间RPC服务
 type RoomService struct {
-}
-
-// SendMessageByPlayerID 获取到playerID发送消息
-func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":   "sendMessageFromRoom",
-		"newPlayerID": playerID,
-		"head":        msgid.MsgID_name[int32(head.MsgId)],
-	})
-	playerMgr := global.GetPlayerMgr()
-	p := playerMgr.GetPlayer(playerID)
-	if p != nil {
-		logEntry.Errorln("获取player失败")
-		return
-	}
-	clientID := p.GetClientID()
-	ms := global.GetMessageSender()
-	err := ms.SendPackage(clientID, head, body)
-	if err != nil {
-		logEntry.WithError(err).Errorln("发送消息失败")
-	}
 }
 
 func notifyDeskCreate(desk interfaces.Desk) {
