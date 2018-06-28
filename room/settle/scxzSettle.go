@@ -3,6 +3,7 @@ package settle
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
@@ -42,6 +43,8 @@ type scxzplayerCoin map[uint64]int64
 // 胡牌且退出房间后不参与牌局的所有结算
 // 将玩家输赢分数及实际金币数进行计算，生成实际输赢的分数并记录，广播结算信息给牌局
 func (s *scxzSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
+	// 游戏结算玩法
+	settleOption := GetSettleOption(int(params.GameID))
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
@@ -87,7 +90,7 @@ func (s *scxzSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 	revertIds := mjContext.RevertSettles
 	if len(revertIds) != 0 {
 		// 退稅结算信息
-		rSettleInfo := s.generateRevertSettle(deskPlayers, huQuitPlayers, revertIds)
+		rSettleInfo := s.generateRevertSettle(deskPlayers, huQuitPlayers, revertIds, settleOption)
 		// 扣费并设置玩家金币数
 		s.chargeCoin(deskPlayers, rSettleInfo.Scores)
 		// 广播退税信息
@@ -427,7 +430,7 @@ func (s *scxzSettle) getBillPlayerInfos(deskPlayers []interfaces.DeskPlayer, set
 }
 
 // generateRevertSettle 获取退税的结算信息
-func (s *scxzSettle) generateRevertSettle(deskPlayers []interfaces.DeskPlayer, huQuitPlayers map[uint64]bool, revertIds []uint64) *majongpb.SettleInfo {
+func (s *scxzSettle) generateRevertSettle(deskPlayers []interfaces.DeskPlayer, huQuitPlayers map[uint64]bool, revertIds []uint64, settleOption *mjoption.SettleOption) *majongpb.SettleInfo {
 	revertScore := make(map[uint64]int64, 0)
 	for _, revertID := range revertIds {
 		// 需要退钱的玩家
@@ -436,7 +439,8 @@ func (s *scxzSettle) generateRevertSettle(deskPlayers []interfaces.DeskPlayer, h
 		rloseScore := int64(0)
 		for pid, score := range s.settleMap[revertID] {
 			if score < 0 { // 胡牌玩家已退出，不用退钱给它
-				if huQuitPlayers[pid] {
+				if !s.canRoundSettle(pid, huQuitPlayers, settleOption) {
+					continue
 				} else {
 					revertScore[pid] = revertScore[pid] - score
 					rloseScore = rloseScore + score
@@ -566,4 +570,15 @@ func (s *scxzSettle) settleType2BillType(settleType majongpb.SettleType) room.Bi
 		majongpb.SettleType_settle_calldiver: room.BillType_BILL_TRANSFER,
 		majongpb.SettleType_settle_taxrebeat: room.BillType_BILL_REFUND,
 	}[settleType]
+}
+
+// canRoundSettle 玩家是否可以单局结算
+func (s *scxzSettle) canRoundSettle(playerID uint64, huQuitPlayers map[uint64]bool, settleOption *mjoption.SettleOption) bool {
+	if huQuitPlayers[playerID] {
+		if _, ok := settleOption.HuQuitPlayerCanSettle["huPlayer_can_round_settele"]; !ok {
+			return true
+		}
+		return settleOption.HuQuitPlayerCanSettle["huPlayer_can_round_settele"]
+	}
+	return true
 }

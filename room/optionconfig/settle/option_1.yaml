@@ -1,2 +1,2 @@
 id: 1 # 选项 ID
-enable_tuisui: true # 是否开启退税
+enable_tuisui: false # 是否开启退税
