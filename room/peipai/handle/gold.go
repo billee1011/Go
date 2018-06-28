@@ -8,7 +8,7 @@ import (
 
 // SetGoldHandle set player gold
 func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
-	playerID, err := strconv.ParseUint(req.FormValue("player_id"), 10, 64)
+	playerID, err := strconv.ParseUint(req.FormValue(PlayerIDKey), 10, 64)
 	response := "OK"
 	defer resp.Write([]byte(response))
 
@@ -16,7 +16,7 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 		response = "player_id 数据错误"
 		return
 	}
-	gold, err := strconv.ParseUint(req.FormValue("gold"), 10, 64)
+	gold, err := strconv.ParseUint(req.FormValue(GoldKey), 10, 64)
 	if err != nil {
 		response = "gold 数据错误"
 		return
@@ -24,5 +24,9 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayer(playerID)
+	if player == nil {
+		response = "player_id 不存在"
+		return
+	}
 	player.SetCoin(gold)
 }

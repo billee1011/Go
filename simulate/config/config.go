@@ -6,8 +6,6 @@ const (
 	// ClientVersion 客户端版本号
 	ClientVersion = "1.0"
 
-	// PeipaiURL 配牌服务地址
-	PeipaiURL = "http://127.0.0.1:36102"
-	// MjconfigURL 麻将配置服务地址
-	MjconfigURL = "http://127.0.0.1:8081"
+	// MaJongConfigURL 配牌服务(选项，配牌，玩家金币数)地址
+	MaJongConfigURL = "http://127.0.0.1:36102"
 )
