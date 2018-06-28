@@ -10,4 +10,4 @@ hnz:
 need_dingque: true # 是否需要定缺
 need_addflower: false # 是否需要补花
 need_chi: false # 是否需要吃
-#gameover_type: LastCardMo LastCardOut #游戏结束类型 摸到最后一张墙牌结束,打出最后一张墙牌结束
+player_states: []
