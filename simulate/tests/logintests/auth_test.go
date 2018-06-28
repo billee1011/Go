@@ -19,6 +19,7 @@ import (
 // 期望：
 //	1. 收到服务器响应
 //	2. 错误码为成功， 玩家 ID 不为0， 网关 IP 和网关端口合法，到期时间大于当前时间， token 不为空
+//  3. 连接已经断开
 func Test_Auth(t *testing.T) {
 	client := connect.NewTestClient(config.GetLoginServerAddr(), config.GetClientVersion())
 	assert.NotNil(t, client)

@@ -150,6 +150,15 @@ func (c *client) Stop() error {
 	return c.sock.Close()
 }
 
+func (c *client) Closed() bool {
+	select {
+	case <-c.finish:
+		return true
+	default:
+		return false
+	}
+}
+
 func (c *client) SendPackage(header interfaces.SendHead, body proto.Message) (result *interfaces.SendResult, err error) {
 	sendSeq := c.allocSeq()
 	sendTimestamp := time.Now().UnixNano()

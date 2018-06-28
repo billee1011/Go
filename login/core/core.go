@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"steve/login/config"
 	"steve/login/global"
@@ -38,14 +39,20 @@ func (s *loginService) startWatchDog() error {
 	exposer := structs.GetGlobalExposer()
 
 	mo := NewReceiver()
-	co := &connection{}
+	co := newConnectionMgr()
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
 
-	// TODO  id 分配器
 	dog := exposer.WatchDogFactory.NewWatchDog(nil, mo, co)
 	if dog == nil {
 		logEntry.Error("创建 watchdog 失败")
 		return fmt.Errorf("创建 watchdog 失败")
 	}
+	co.setKicker(func(clientID uint64) {
+		dog.Disconnect(clientID)
+	})
+	go co.run(ctx)
+
 	global.SetMessageSender(&sender{
 		watchDog: dog,
 	})

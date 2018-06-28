@@ -75,6 +75,9 @@ type DeskMgr interface {
 
 	// GetRunDeskByPlayerID 获取该玩家所在牌桌
 	GetRunDeskByPlayerID(playerID uint64) (Desk, error)
+
+	// GetDeskCount 获取牌桌数量
+	GetDeskCount() int
 }
 
 // CreateDeskOptions 创建牌桌选项

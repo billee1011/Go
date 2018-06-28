@@ -3,7 +3,9 @@ package core
 import (
 	"fmt"
 	"steve/gateway/config"
+	"steve/gateway/connection"
 	"steve/gateway/gateservice"
+	"steve/gateway/global"
 	"steve/gateway/register"
 	"steve/server_pb/gateway"
 	"steve/structs"
@@ -13,8 +15,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	_ "steve/gateway/cpm" // 初始化 connectPlayerMap
 )
 
 type gatewayCore struct {
@@ -34,6 +34,7 @@ func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 		return err
 	}
 	register.RegisteHandlers(e.Exchanger)
+	c.setupConnectionMgr()
 	return c.registerGateService()
 }
 
@@ -63,15 +64,21 @@ func (c *gatewayCore) startWatchDog() error {
 	mo := &receiver{
 		core: c,
 	}
-	co := &connectObserver{}
-
+	co := global.GetConnectionManager()
 	c.dog = c.e.WatchDogFactory.NewWatchDog(&idAllocator{}, mo, co)
 	if c.dog == nil {
 		logEntry.Error("创建 watchdog 失败")
 		return fmt.Errorf("创建 watchdog 失败")
 	}
+	co.SetKicker(func(clientID uint64) {
+		c.dog.Disconnect(clientID)
+	})
 	logEntry.Info("准备监听")
 
 	addr := fmt.Sprintf("%s:%d", listenIP, listenPort)
 	return c.dog.Start(addr, net.TCP)
+}
+
+func (c *gatewayCore) setupConnectionMgr() {
+	global.SetConnectionManager(connection.NewConnectionMgr())
 }

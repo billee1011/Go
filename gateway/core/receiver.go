@@ -48,8 +48,12 @@ func (o *receiver) getConnection(serverName string, clientID uint64) (*grpc.Clie
 }
 
 func (o *receiver) getPlayerID(clientID uint64) uint64 {
-	cpm := global.GetConnectPlayerMap()
-	return cpm.GetConnectPlayer(clientID)
+	cm := global.GetConnectionManager()
+	connection := cm.GetConnection(clientID)
+	if connection == nil {
+		return 0
+	}
+	return connection.GetPlayerID()
 }
 
 // handle 通过 RPC 服务处理消息
