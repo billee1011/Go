@@ -27,11 +27,11 @@ type XingpaiState uint32
 
 const (
 	//Run 正常行牌状态
-	Run XingpaiState = 1
+	Run XingpaiState = 0
 	//Hu 胡牌状态
-	Hu XingpaiState = 2
+	Hu XingpaiState = 1
 	//Giveup 认输状态
-	Giveup XingpaiState = 3
+	Giveup XingpaiState = 2
 )
 
 // Hnz 换n张

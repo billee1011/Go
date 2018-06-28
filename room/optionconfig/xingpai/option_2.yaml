@@ -9,4 +9,4 @@ hnz:
 need_dingque: true # 是否需要定缺
 need_addflower: false # 是否需要补花
 need_chi: false # 是否需要吃
-player_states: [2,3]
+player_states: [1,2]

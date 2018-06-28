@@ -51,8 +51,8 @@ func (s *QiangGangHuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mopaiPlayerID := CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
 	// 摸牌玩家不能是非正常状态玩家
 	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
-	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext.GetOption()) {
-		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext.GetOption())
+	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
+		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext)
 	}
 	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL

@@ -295,7 +295,6 @@ func (d *desk) initMajongContext() error {
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
 			HasHuansanzhang:            handle.GetHsz(d.GetGameID()), //设置玩家是否开启换三张
-			ValidXpStateSet:            d.getXpStates(d.GetGameID()),
 		},
 		// MajongOption: mjOption,
 		MajongOption: []byte{},
@@ -314,18 +313,6 @@ func (d *desk) initMajongContext() error {
 		stateTime:   time.Now(),
 	}
 	return nil
-}
-
-//TODO:delete
-func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
-	switch gameID {
-	case gutils.SCXLGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_hu_giveup, server_pb.XingPaiState_hu, server_pb.XingPaiState_give_up, server_pb.XingPaiState_normal}
-	case gutils.SCXZGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_normal}
-	default:
-		return []server_pb.XingPaiState{}
-	}
 }
 
 func (d *desk) getTuoguanPlayers() []uint64 {
