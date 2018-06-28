@@ -674,7 +674,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 
 	gameDeskInfo := room.GameDeskInfo{
 		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(d),
+		Players:     getRecoverPlayerInfo(playerID, d),
 		Dices:       mjContext.GetDices(),
 		BankerSeat:  &bankerSeat,
 		EastSeat:    &bankerSeat,
@@ -691,6 +691,8 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
 	})
+	logEntry.Errorln("恢复数据")
+	logEntry.Errorln(gameDeskInfo)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
 		return nil

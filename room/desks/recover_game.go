@@ -62,7 +62,7 @@ func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 	return nil
 }
 
-func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
+func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "getRecoverPlayerInfo",
 	})
@@ -75,6 +75,8 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 			logEntry.WithField("palyerID: ", playerID).Errorln("mjContext找不到对应玩家")
 			continue
 		}
+		logEntry.Errorln("原生数据")
+		logEntry.Errorln(player)
 		svrHandCard := player.GetHandCards()
 		handCardCount := uint32(len(svrHandCard))
 		gamePlayerInfo := &room.GamePlayerInfo{
@@ -85,14 +87,21 @@ func getRecoverPlayerInfo(d *desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 		}
 		xpState := room.XingPaiState(player.GetXpState())
 		gamePlayerInfo.XpState = &xpState
-		gamePlayerInfo.TingCardInfos = gutils.TingCardInfoSvr2Client(player.GetTingCardInfo())
-		// 手牌组
-		cltHandCard := gutils.ServerCards2Numbers(svrHandCard)
-		handCardGroup := &room.CardsGroup{
-			Cards: cltHandCard,
-			Type:  room.CardsGroupType_CGT_HAND.Enum(),
+		if (gamePlayerInfo.GetXpState() | room.XingPaiState_XP_STATE_HU) != 0 {
+			if len(player.HuCards) != 0 {
+				gamePlayerInfo.HuType = gutils.HuTypeSvr2Client(player.HuCards[0].GetType())
+			}
 		}
-		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, handCardGroup)
+		gamePlayerInfo.TingCardInfos = gutils.TingCardInfoSvr2Client(player.GetTingCardInfo())
+		// 手牌组，请求恢复对局玩家才发
+		if playerID == reqPlayerID {
+			cltHandCard := gutils.ServerCards2Numbers(svrHandCard)
+			handCardGroup := &room.CardsGroup{
+				Cards: cltHandCard,
+				Type:  room.CardsGroupType_CGT_HAND.Enum(),
+			}
+			gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, handCardGroup)
+		}
 		// 吃牌组
 
 		// 碰牌组,每一次碰牌填1张还是三张
