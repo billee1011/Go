@@ -8,7 +8,7 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	"steve/room/peipai"
+	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 	"strconv"
 	"time"
@@ -41,10 +41,9 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	rand.Shuffle(len(cards), func(i, j int) {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
-	gameName := utils.GetGameName(flow)
 	mjContext := flow.GetMajongContext()
 	mjContext.CardTotalNum = uint32(len(cards))
-	PeiPai(cards, mjContext, gameName)
+	PeiPai(cards, mjContext, int(mjContext.GetGameId()))
 	//TUDO 这里不改变墙牌长度,改由黄庄的方式控制流局
 	// length := peipai.GetLensOfWallCards(gameName)
 	// if length != 0 {
@@ -54,8 +53,8 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 }
 
 // PeiPai 配牌工具
-func PeiPai(wallCards []*majongpb.Card, context *majongpb.MajongContext, gameName string) (bool, []*majongpb.Card) {
-	value, err := peipai.GetPeiPai(gameName)
+func PeiPai(wallCards []*majongpb.Card, context *majongpb.MajongContext, gameID int) (bool, []*majongpb.Card) {
+	value, err := handle.GetPeiPai(gameID)
 	if err != nil {
 		return false, wallCards
 	}
@@ -91,11 +90,11 @@ func (s *XipaiState) randDices() []uint32 {
 }
 
 // selectZhuangjia 选择庄家
-func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices []uint32, gameName string) int {
+func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices []uint32, gameID int) int {
 	totalDice := int(dices[0] + dices[1])
 
 	mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
-	zhuangIndex := peipai.GetZhuangIndex(gameName)
+	zhuangIndex := handle.GetZhuangIndex(gameID)
 	if zhuangIndex != -1 {
 		mjContext.ZhuangjiaIndex = uint32(zhuangIndex % len(mjContext.Players))
 	}
@@ -118,8 +117,7 @@ func (s *XipaiState) OnEntry(flow interfaces.MajongFlow) {
 	mjContext.WallCards = s.xipai(flow)
 	dices := s.randDices()
 	mjContext.Dices = append(mjContext.Dices, dices...)
-	gameName := utils.GetGameName(flow)
-	zjIndex := s.selectZhuangjia(mjContext, dices, gameName)
+	zjIndex := s.selectZhuangjia(mjContext, dices, int(mjContext.GetGameId()))
 	s.pushMessages(len(mjContext.WallCards), dices, zjIndex, flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_xipai_finish,

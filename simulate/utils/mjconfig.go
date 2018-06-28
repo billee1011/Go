@@ -8,9 +8,21 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-func mjconfig(open bool, gold uint64) error {
-	url := fmt.Sprintf("%s?hszswitch=%v&gold=%v", config.MjconfigURL, open, gold)
+func majongOption(gameName string, open bool) error {
+	url := fmt.Sprintf("%s/option/?game=%v&hszswitch=%v", config.MaJongConfigURL, gameName, open)
 	return requestOpen(url)
+}
+
+func majongPlayerGold(seatGold, seatID map[int]uint64) error {
+	for seat, playerID := range seatID {
+		if gold, isExist := seatGold[seat]; isExist {
+			url := fmt.Sprintf("%s/setgold/?player_id=%v&gold=%v", config.MaJongConfigURL, playerID, gold)
+			if err := requestOpen(url); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func requestOpen(url string) error {

@@ -35,6 +35,8 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		for _, player := range players {
 			//每个玩家的possibleActions都需要清空
 			player.PossibleActions = player.PossibleActions[:0]
+			logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
+				"xpStates": player.GetXpState()}).Info("出牌：每个玩家的状态")
 			if context.GetLastChupaiPlayer() == player.GetPalyerId() || !utils.IsPlayerContinue(player.GetXpState(), context.GetOption()) {
 				continue
 			}
@@ -51,6 +53,8 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			return majongpb.StateID_state_chupaiwenxun, nil
 		}
 		player := utils.GetNextXpPlayerByID(context.GetLastChupaiPlayer(), context.GetPlayers(), context.GetOption())
+		logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
+			"xpStates": player.GetXpState()}).Info("出牌：下一个摸牌玩家的状态")
 		context.MopaiPlayer = player.GetPalyerId()
 		context.MopaiType = majongpb.MopaiType_MT_NORMAL
 		return majongpb.StateID_state_mopai, nil

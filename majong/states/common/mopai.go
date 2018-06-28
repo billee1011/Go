@@ -6,7 +6,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	"steve/room/peipai"
+	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -87,7 +87,7 @@ func (s *MoPaiState) checkGameOver(flow interfaces.MajongFlow) bool {
 		return true
 	}
 	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
-	length := peipai.GetLensOfWallCards(utils.GetGameName(flow))
+	length := handle.GetLensOfWallCards(int(context.GetGameId()))
 	if utils.GetAllMopaiCount(context) == length-53 {
 		return true
 	}
