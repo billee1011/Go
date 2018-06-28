@@ -41,7 +41,8 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
-	if err := mjconfig(params.PeiPaiGame, params.IsHsz, params.Gold); err != nil {
+	// 配置麻将选项
+	if err := majongOption(params.PeiPaiGame, params.IsHsz); err != nil {
 		return nil, err
 	}
 	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
@@ -52,6 +53,11 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 设置玩家Gold
+	if err := majongPlayerGold(params.PlayerSeatGold, seatMap); err != nil {
+		return nil, err
+	}
+
 	dd := DeskData{
 		BankerSeat: params.BankerSeat,
 	}

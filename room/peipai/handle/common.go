@@ -3,10 +3,10 @@ package handle
 const (
 	// HszSwitch 换三张开关关键字
 	HszSwitch = "hszswitch"
-	// gold 玩家金币
-	gold = "gold"
-	// gold 全局金币
-	golds = "golds"
+	// PlayerIDKey 玩家ID
+	PlayerIDKey = "player_id"
+	// GoldKey 金币
+	GoldKey = "gold"
 	// game 游戏关键字
 	game = "game"
 	// cards 墙牌
