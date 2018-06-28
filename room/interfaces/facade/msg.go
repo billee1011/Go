@@ -12,35 +12,17 @@ import (
 
 // SendMessageToPlayer 发送消息给玩家
 func SendMessageToPlayer(playerID uint64, msgID msgid.MsgID, body proto.Message) error {
-	playerMgr := global.GetPlayerMgr()
-	player := playerMgr.GetPlayer(playerID)
-	clientID := player.GetClientID()
-	if clientID == 0 {
-		return nil
-	}
 	sender := global.GetMessageSender()
-	return sender.SendPackage(clientID, &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgID),
+	return sender.SendPackageByPlayerID(playerID, &steve_proto_gaterpc.Header{
+		MsgId:    uint32(msgID),
+		PlayerId: playerID,
 	}, body)
 }
 
 // BroadCastMessageBare 向玩家广播消息
 func BroadCastMessageBare(playerIDs []uint64, msgID msgid.MsgID, body []byte) error {
-	playerMgr := global.GetPlayerMgr()
-
-	clientIDs := []uint64{}
-	for _, playerID := range playerIDs {
-		player := playerMgr.GetPlayer(playerID)
-		clientID := player.GetClientID()
-		if clientID != 0 {
-			clientIDs = append(clientIDs, clientID)
-		}
-	}
-	if len(clientIDs) == 0 {
-		return nil
-	}
 	sender := global.GetMessageSender()
-	return sender.BroadcastPackageBare(clientIDs, &steve_proto_gaterpc.Header{
+	return sender.BroadcastPackageBareByPlayerID(playerIDs, &steve_proto_gaterpc.Header{
 		MsgId: uint32(msgID),
 	}, body)
 }

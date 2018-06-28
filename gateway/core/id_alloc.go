@@ -1,10 +1,13 @@
 package core
 
-import "steve/common/data/connect"
+import (
+	"sync/atomic"
+)
 
-type idAllocator struct{}
+type idAllocator struct {
+	maxID uint64
+}
 
 func (ida *idAllocator) NewClientID() uint64 {
-	id, _ := connect.AllocConnectID()
-	return id
+	return atomic.AddUint64(&ida.maxID, 1)
 }

@@ -22,3 +22,13 @@ func init() {
 	viper.SetDefault(ListenClientAddrInquire, "127.0.0.1")
 	viper.SetDefault(AuthKey, "stevegame.cn")
 }
+
+// GetRPCAddr 获取 RPC 服务地址
+func GetRPCAddr() string {
+	return viper.GetString("rpc_addr")
+}
+
+// GetRPCPort 获取 RPC 服务端口
+func GetRPCPort() int {
+	return viper.GetInt("rpc_port")
+}

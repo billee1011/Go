@@ -80,17 +80,12 @@ func (c *connection) setKicker(kicker func(uint64)) {
 
 // kickClients kick clients on overdue
 func (c *connection) kickClients() {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name":     "connection.kickClients",
-		"connect_count": len(c.connectTimes),
-	})
 	now := time.Now()
 	kickCount := 0
 	for _, ct := range c.connectTimes {
 		if now.After(ct.kickTime) || now.Equal(ct.kickTime) {
 			c.KickClient(ct.clientID)
 			kickCount++
-			entry.WithField("client_id", ct.clientID).Infoln("超时断开连接")
 			continue
 		}
 		break

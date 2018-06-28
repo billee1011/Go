@@ -131,13 +131,13 @@ func joinDesk(players []interfaces.ClientPlayer) (map[int]uint64, error) {
 	for _, player := range players {
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
 		if _, err := NewApplyJoinDesk(player); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("请求加入房间失败: %v", err)
 		}
 		expectors = append(expectors, e)
 	}
 	ntf := room.RoomDeskCreatedNtf{}
 	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("没有收到创建房间通知: %v", err)
 	}
 	seatMap := map[int]uint64{}
 	for _, rplayer := range ntf.GetPlayers() {

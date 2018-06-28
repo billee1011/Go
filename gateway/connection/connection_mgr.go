@@ -3,7 +3,6 @@ package connection
 import (
 	"context"
 	"fmt"
-	"steve/common/data/connect"
 	"steve/gateway/interfaces"
 	"steve/gutils/topics"
 	"steve/structs"
@@ -38,7 +37,6 @@ func (cm *connectionMgr) SetKicker(kicker func(clientID uint64)) {
 
 func (cm *connectionMgr) OnClientConnect(clientID uint64) {
 	logrus.WithField("client_id", clientID).Info("client connected")
-	cm.saveClientGateAddr(clientID)
 	connection := newConnection(clientID)
 	ctx, cancel := context.WithCancel(context.Background())
 	cm.connections.Store(clientID, &connectionWithCancelFunc{
@@ -74,7 +72,6 @@ func (cm *connectionMgr) OnClientDisconnect(clientID uint64) {
 	connection.cancel()
 	cm.removeConnection(clientID)
 
-	cm.removeConnectGatewayAddr(clientID)
 	cm.pubDisconnect(clientID)
 }
 
@@ -103,29 +100,10 @@ func (cm *connectionMgr) getPublisher() pubsub.Publisher {
 	return exposer.Publisher
 }
 
-func (cm *connectionMgr) saveClientGateAddr(clientID uint64) {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "connectObserver.saveClientGateAddr",
-		"client_id": clientID,
-	})
-	if err := connect.SetConnectGatewayAddr(clientID, cm.getRPCAddr()); err != nil {
-		entry.WithError(err).Errorln("保存连接 ID 和网关 RPC 地址的映射关系失败")
-	}
-}
-
 func (cm *connectionMgr) getRPCAddr() string {
 	return fmt.Sprintf("%s:%d", viper.GetString("rpc_addr"), viper.GetInt("rpc_port"))
 }
 
 func (cm *connectionMgr) removeConnection(clientID uint64) {
 	cm.connections.Delete(clientID)
-}
-
-func (cm *connectionMgr) removeConnectGatewayAddr(clientID uint64) {
-	if err := connect.RemoveConnect(clientID); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "connectionMgr.removeConnectGatewayAddr",
-			"client_id": clientID,
-		}).WithError(err).Errorln("移除连接失败")
-	}
 }

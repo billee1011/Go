@@ -5,9 +5,9 @@ import (
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
-	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -397,39 +397,19 @@ func (s *scxlSettle) abs(n int64) int64 {
 }
 
 func (s *scxlSettle) notifyDeskMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
-	players := desk.GetPlayers()
-	clientIDs := []uint64{}
-
-	playerMgr := global.GetPlayerMgr()
-	for _, player := range players {
-		playerID := player.GetPlayerId()
-		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
-			clientIDs = append(clientIDs, p.GetClientID())
-		}
-	}
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid)}
-	ms := global.GetMessageSender()
-
+	facade.BroadCastDeskMessage(desk, nil, msgid, message, true)
 	logrus.WithFields(logrus.Fields{
 		"msg": message.String(),
-	}).Debugln("通知立即结算")
-
-	ms.BroadcastPackage(clientIDs, head, message)
+	}).Debugln("通知结算")
 }
 
 func (s *scxlSettle) notifyPlayerMessage(desk interfaces.Desk, playerID uint64, msgid msgid.MsgID, message proto.Message) {
-	clientID := global.GetPlayerMgr().GetPlayer(playerID).GetClientID()
-
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid)}
-	ms := global.GetMessageSender()
+	facade.BroadCastDeskMessage(desk, []uint64{playerID}, msgid, message, true)
 
 	logrus.WithFields(logrus.Fields{
-		"msg": message.String(),
+		"msg":       message.String(),
+		"player_id": playerID,
 	}).Debugln("通知总结算")
-	ms.SendPackage(clientID, head, message)
 }
 
 func (s *scxlSettle) settleType2BillType(settleType majongpb.SettleType) room.BillType {

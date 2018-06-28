@@ -16,10 +16,10 @@ func (p *player) GetCoin() uint64 {
 	return playerdata.GetPlayerCoin(p.playerID)
 }
 
-func (p *player) GetClientID() uint64 {
-	return playerdata.GetPlayerClientID(p.playerID)
-}
-
 func (p *player) SetCoin(coin uint64) {
 	playerdata.SetPlayerCoin(p.playerID, coin)
+}
+
+func (p *player) IsOnline() bool {
+	return playerdata.GetPlayerGateAddr(p.playerID) != ""
 }

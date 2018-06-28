@@ -216,34 +216,9 @@ func (d *desk) PlayerEnter(playerID uint64) {
 // step2，广播桌面解散通知
 func (d *desk) Stop() error {
 	d.cancel()
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "desk.Stop",
-		"desk_uid":  d.deskUID,
-		"game_id":   d.gameID,
-	})
-	players := d.GetDeskPlayers()
-	clientIDs := []uint64{}
-
-	playerMgr := global.GetPlayerMgr()
-	for _, player := range players {
-		playerID := player.GetPlayerID()
-		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
-			clientIDs = append(clientIDs, p.GetClientID())
-		}
-	}
-
 	ntf := room.RoomDeskDismissNtf{}
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid.MsgID_ROOM_DESK_DISMISS_NTF)}
-	ms := global.GetMessageSender()
-	err := ms.BroadcastPackage(clientIDs, head, &ntf)
-	if err != nil {
-		logEntry.WithError(err)
-	}
-
-	return err
+	facade.BroadCastDeskMessage(d, nil, msgid.MsgID_ROOM_DESK_DISMISS_NTF, &ntf, true)
+	return nil
 }
 
 // PushRequest 压入玩家请求
@@ -618,8 +593,8 @@ func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []by
 	if len(playerIDs) == 0 {
 		return
 	}
-	facade.BroadCastMessageBare(playerIDs, msgID, body)
-	logEntry.Debugln("广播消息")
+	err := facade.BroadCastMessageBare(playerIDs, msgID, body)
+	logEntry.WithError(err).Debugln("广播消息")
 }
 
 func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMessage {

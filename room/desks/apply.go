@@ -4,6 +4,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
@@ -55,7 +56,7 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 	playerMgr := global.GetPlayerMgr()
 	for _, playerID := range playerIDs {
 		player := playerMgr.GetPlayer(playerID)
-		if player != nil && player.GetClientID() != 0 {
+		if player != nil && player.IsOnline() {
 			result = append(result, playerID)
 		} else {
 			logrus.WithField("player_id", playerID).Debugln("玩家不在线，移除")
@@ -127,24 +128,16 @@ func notifyDeskCreate(desk interfaces.Desk) {
 		"func_name": "notifyDeskCreate",
 	})
 	players := desk.GetPlayers()
-	clientIDs := []uint64{}
+	playerIDs := []uint64{}
 
-	playerMgr := global.GetPlayerMgr()
 	for _, player := range players {
 		playerID := player.GetPlayerId()
-		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
-			clientIDs = append(clientIDs, p.GetClientID())
-		}
+		playerIDs = append(playerIDs, playerID)
 	}
 	ntf := room.RoomDeskCreatedNtf{
 		Players: desk.GetPlayers(),
 	}
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid.MsgID_ROOM_DESK_CREATED_NTF)}
-	ms := global.GetMessageSender()
-
-	ms.BroadcastPackage(clientIDs, head, &ntf)
+	facade.BroadCastDeskMessage(desk, playerIDs, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
 	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
@@ -255,15 +248,8 @@ func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, bo
 		"newPlayerID": playerID,
 		"head":        msgid.MsgID_name[int32(head.MsgId)],
 	})
-	playerMgr := global.GetPlayerMgr()
-	p := playerMgr.GetPlayer(playerID)
-	if p != nil {
-		logEntry.Errorln("获取player失败")
-		return
-	}
-	clientID := p.GetClientID()
 	ms := global.GetMessageSender()
-	err := ms.SendPackage(clientID, head, body)
+	err := ms.SendPackageByPlayerID(playerID, head, body)
 	if err != nil {
 		logEntry.WithError(err).Errorln("发送消息失败")
 	}

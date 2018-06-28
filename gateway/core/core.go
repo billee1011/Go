@@ -15,6 +15,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	_ "steve/gateway/player" // init player manager
 )
 
 type gatewayCore struct {

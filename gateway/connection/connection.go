@@ -2,7 +2,10 @@ package connection
 
 import (
 	"context"
+	"fmt"
 	"steve/common/data/player"
+	"steve/gateway/config"
+	"steve/gateway/global"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -55,7 +58,8 @@ func (c *connection) run(ctx context.Context, finish func()) {
 
 func (c *connection) detachPlayerConnect() {
 	if c.playerID != 0 {
-		player.SetPlayerClientID(c.playerID, 0)
+		player.SetPlayerGateAddr(c.playerID, "")
+		global.GetPlayerManager().SetPlayerConnectionID(c.playerID, 0)
 	}
 }
 
@@ -87,7 +91,8 @@ func (c *connection) AttachPlayer(playerID uint64) bool {
 	}
 	c.playerID = playerID
 	c.attachTimer.Stop()
-	player.SetPlayerClientID(playerID, c.clientID)
+	player.SetPlayerGateAddr(playerID, c.getGatewayAddr())
+	global.GetPlayerManager().SetPlayerConnectionID(c.playerID, c.clientID)
 	entry.Infoln("绑定成功")
 	return true
 }
@@ -98,4 +103,8 @@ func (c *connection) GetClientID() uint64 {
 
 func (c *connection) HeartBeat() {
 	c.heartBeatTimer.Reset(heartBeatInterval)
+}
+
+func (c *connection) getGatewayAddr() string {
+	return fmt.Sprintf("%s:%d", config.GetRPCAddr(), config.GetRPCPort())
 }

@@ -12,8 +12,8 @@ import (
 const (
 	// 玩家金币数字段名
 	playerCoinField string = "coin"
-	// 玩家的连接 ID 字段名
-	playerClientIDField string = "client_id"
+	// playerGatewayAddrField 玩家网关地址字段名
+	playerGatewayAddrField string = "gate_addr"
 )
 
 var errRedisOperation = errors.New("redis 操作失败")
@@ -96,6 +96,31 @@ func setPlayerUint64Field(playerID uint64, fieldName string, val uint64) error {
 	return nil
 }
 
+// getPlayerStringField 获取玩家 string 字段值
+func getPlayerStringField(playerID uint64, fieldName string) string {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name":  "getPlayerStringField",
+		"player_id":  playerID,
+		"field_name": fieldName,
+	})
+	redis := redis.GetRedisClient()
+	key := fmtPlayerKey(playerID)
+	cmd := redis.HGet(key, fieldName)
+	if cmd.Err() != nil {
+		entry.WithError(cmd.Err()).Errorln(errRedisOperation)
+		return ""
+	}
+	return cmd.Val()
+}
+
+// setPlayerStringField 设置玩家 string 字段值
+func setPlayerStringField(playerID uint64, fieldName string, value string) error {
+	redis := redis.GetRedisClient()
+	key := fmtPlayerKey(playerID)
+	cmd := redis.HSet(key, fieldName, value)
+	return cmd.Err()
+}
+
 // GetPlayerCoin 获取玩家的金币数
 func GetPlayerCoin(playerID uint64) uint64 {
 	return getPlayerUint64Field(playerID, playerCoinField)
@@ -106,12 +131,22 @@ func SetPlayerCoin(playerID uint64, coin uint64) error {
 	return setPlayerUint64Field(playerID, playerCoinField, coin)
 }
 
-// SetPlayerClientID 设置玩家的连接 ID
-func SetPlayerClientID(playerID uint64, clientID uint64) error {
-	return setPlayerUint64Field(playerID, playerClientIDField, clientID)
+// // SetPlayerClientID 设置玩家的连接 ID
+// func SetPlayerClientID(playerID uint64, clientID uint64) error {
+// 	return setPlayerUint64Field(playerID, playerClientIDField, clientID)
+// }
+
+// // GetPlayerClientID 获取玩家的客户端 ID
+// func GetPlayerClientID(playerID uint64) uint64 {
+// 	return getPlayerUint64Field(playerID, playerClientIDField)
+// }
+
+// GetPlayerGateAddr 获取玩家所在的网关地址
+func GetPlayerGateAddr(playerID uint64) string {
+	return getPlayerStringField(playerID, playerGatewayAddrField)
 }
 
-// GetPlayerClientID 获取玩家的客户端 ID
-func GetPlayerClientID(playerID uint64) uint64 {
-	return getPlayerUint64Field(playerID, playerClientIDField)
+// SetPlayerGateAddr 设置玩家所在网关地址
+func SetPlayerGateAddr(playerID uint64, addr string) error {
+	return setPlayerStringField(playerID, playerGatewayAddrField, addr)
 }

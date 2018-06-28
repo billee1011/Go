@@ -77,9 +77,9 @@ func saveConnectPlayerMap(clientID uint64, header *steve_proto_gaterpc.Header, r
 		return false
 	}
 	ok := connection.AttachPlayer(playerID)
-	if ok {
-		return true
+	if !ok {
+		response.ErrCode = gate.ErrCode_ERR_ALREADY_AUTHED.Enum()
+		return false
 	}
-	response.ErrCode = gate.ErrCode_ERR_ALREADY_AUTHED.Enum()
-	return false
+	return true
 }
