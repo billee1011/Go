@@ -26,7 +26,10 @@ func Test_SCXZ_ZiMo_GiveUp_GameOver(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
-	params.Gold = 2      // 设置所有玩家金币数只有2块钱
+	// 根据座位设置玩家金币数
+	params.PlayerSeatGold = map[int]uint64{
+		0: 1000000, 1: 2, 2: 2, 3: 2,
+	}
 	params.WallCards = []uint32{18, 24, 31, 31}
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TONG, room.CardColor_CC_TIAO}
 	deskData, err := utils.StartGame(params)
@@ -56,7 +59,10 @@ func Test_SCXZ_DuoDianpao_GiveUp_GameOver(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
-	params.Gold = 2 // 设置所有玩家金币数只有2块钱
+	// 根据座位设置玩家金币数
+	params.PlayerSeatGold = map[int]uint64{
+		0: 2, 1: 10, 2: 2, 3: 10,
+	}
 	params.WallCards = []uint32{31, 33, 37}
 	hu1Seat, hu2Seat, hu3Seat := 1, 2, 3
 	bankerSeat := params.BankerSeat
@@ -119,7 +125,10 @@ func Test_SCXZ_DuoQiangganghu_GiveUp_GameOver(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
-	params.Gold = 3 // 设置所有玩家金币数只有3块钱
+	// 根据座位设置玩家金币数
+	params.PlayerSeatGold = map[int]uint64{
+		0: 12, 1: 2, 2: 2, 3: 12,
+	}
 	// 庄家的初始手牌： 11,11,11,11,12,12,12,12,13,13,13,39,17,19 8w
 	params.Cards[0][13] = 39
 	params.Cards[0][12] = 17
