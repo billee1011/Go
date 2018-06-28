@@ -85,6 +85,7 @@ func (jam *joinApplyManager) checkMatch() {
 func (jam *joinApplyManager) doApply(gameid room.GameId) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "checkMatch",
+		"gameid":    gameid,
 	})
 	deskFactory := global.GetDeskFactory()
 	deskMgr := global.GetDeskMgr()
