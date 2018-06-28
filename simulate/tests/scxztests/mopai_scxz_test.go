@@ -112,7 +112,10 @@ func Test_GiveUp_MoPai(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
-	params.Gold = 2      // 所有玩家金币数设置为2
+	// 根据座位设置玩家金币数
+	params.PlayerSeatGold = map[int]uint64{
+		0: 12, 1: 1, 2: 1, 3: 1,
+	}
 	params.WallCards = []uint32{31, 31, 32, 33}
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG, room.CardColor_CC_TONG}
 	deskData, err := utils.StartGame(params)

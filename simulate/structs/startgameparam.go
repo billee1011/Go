@@ -13,9 +13,9 @@ type StartGameParams struct {
 	ClientVer  string         // 客户端版本号
 
 	IsHsz        bool             //是否换三张
-	Gold         uint64           // 所有玩家金币数量
 	HszCards     [][]uint32       // 从庄家的位置算起，用来换三张的牌
 	DingqueColor []room.CardColor // 定缺花色。 从庄家位置算起
 
-	PeiPaiGame string // 配牌游戏名
+	PlayerSeatGold map[int]uint64 //玩家座位对应的金币
+	PeiPaiGame     string         // 配牌游戏名
 }

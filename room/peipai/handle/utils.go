@@ -35,10 +35,8 @@ func LogPeiPaiInfos() {
 func LogOptionInfos() {
 	for k, info := range optionInfos {
 		logrus.WithFields(logrus.Fields{
-			"game":  info.Key,
-			"cards": info.Gold,
-			"len":   info.Golds,
-			"fx":    info.Hsz,
+			"game": info.Key,
+			"fx":   info.Hsz,
 		}).Info(k)
 	}
 }

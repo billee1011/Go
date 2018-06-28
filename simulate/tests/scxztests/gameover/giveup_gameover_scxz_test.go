@@ -18,7 +18,10 @@ func Test_SCXZ_AnGang_GiveUp_GameOver(t *testing.T) {
 	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
-	params.Gold = 1      // 设置1块钱
+	// 根据座位设置玩家金币数
+	params.PlayerSeatGold = map[int]uint64{
+		0: 8, 1: 2, 2: 2, 3: 2,
+	}
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO}
 	deskData, err := utils.StartGame(params)
 	assert.NotNil(t, deskData)
@@ -51,7 +54,10 @@ func Test_SCXZ_BuGang_GiveUp_GameOver(t *testing.T) {
 	param.GameID = room.GameId_GAMEID_XUEZHAN // 血战
 	param.PeiPaiGame = "scxz"
 	param.BankerSeat = 0
-	param.Gold = 1 // 设置1块钱
+	// 根据座位设置玩家金币数
+	param.PlayerSeatGold = map[int]uint64{
+		0: 1, 1: 8, 2: 1, 3: 1,
+	}
 	param.Cards[0][4] = 16
 	param.Cards[0][5] = 16
 	param.Cards[0][6] = 16
@@ -122,7 +128,10 @@ func Test_SCXZ_MingGang_GiveUp_GameOver(t *testing.T) {
 	param.PeiPaiGame = "scxz"
 	param.BankerSeat = 0
 	param.IsHsz = false // 不换三张
-	param.Gold = 2      // 设置2块钱
+	// 根据座位设置玩家金币数
+	param.PlayerSeatGold = map[int]uint64{
+		0: 1, 1: 9, 2: 1, 3: 1,
+	}
 	param.Cards = [][]uint32{
 		{11, 11, 11, 15, 12, 12, 12, 12, 39, 13, 13, 13, 14, 14},
 		{15, 15, 15, 11, 16, 16, 16, 21, 17, 17, 17, 25, 39},
@@ -198,4 +207,3 @@ func Test_SCXZ_MingGang_GiveUp_GameOver(t *testing.T) {
 	// 游戏结束
 	utils.WaitGameOverNtf(t, deskData)
 }
-
