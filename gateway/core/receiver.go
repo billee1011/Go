@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	msgid "steve/client_pb/msgId"
+	"steve/common/data/player"
 	"steve/gateway/global"
 	"steve/gateway/msgrange"
 	"steve/structs"
@@ -29,18 +30,25 @@ var errCallServiceFailed = errors.New("调用服务失败")
 var errGetConnectByServerName = errors.New("根据服务名称获取连接失败")
 
 // getConnection 根据服务名称和客户端 ID 获取处理服务器的 RPC 连接
-func (o *receiver) getConnection(serverName string, clientID uint64) (*grpc.ClientConn, error) {
+func (o *receiver) getConnection(serverName string, playerID uint64) (*grpc.ClientConn, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":   "receiver.getConnection",
-		"client_id":   clientID,
+		"player_id":   playerID,
 		"server_name": serverName,
 	})
 
 	logEntry = logEntry.WithField("server_name", serverName)
 	e := structs.GetGlobalExposer()
-	// TODO 处理服务绑定
-	cc, err := e.RPCClient.GetConnectByServerName(serverName)
-	if cc == nil {
+
+	var cc *grpc.ClientConn
+	var err error
+	if serverName == "room" {
+		roomAddr := player.GetPlayerRoomAddr(playerID)
+		cc, err = e.RPCClient.GetConnectByAddr(roomAddr)
+	} else {
+		cc, err = e.RPCClient.GetConnectByServerName(serverName)
+	}
+	if cc == nil || err != nil {
 		logEntry.WithError(err).Errorln(errGetConnectByServerName)
 		return nil, errGetConnectByServerName
 	}
@@ -161,7 +169,7 @@ func (o *receiver) callRemoteHandler(clientID uint64, playerID uint64, reqHeader
 		entry.Warningln("未绑定玩家，不能调用远程处理器")
 		return
 	}
-	cc, err := o.getConnection(serverName, clientID)
+	cc, err := o.getConnection(serverName, playerID)
 	if err != nil {
 		return
 	}

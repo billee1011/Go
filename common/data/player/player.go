@@ -14,6 +14,8 @@ const (
 	playerCoinField string = "coin"
 	// playerGatewayAddrField 玩家网关地址字段名
 	playerGatewayAddrField string = "gate_addr"
+	// playerRoomAddrField 玩家所在 room 地址字段名
+	playerRoomAddrField string = "room_addr"
 )
 
 var errRedisOperation = errors.New("redis 操作失败")
@@ -131,16 +133,6 @@ func SetPlayerCoin(playerID uint64, coin uint64) error {
 	return setPlayerUint64Field(playerID, playerCoinField, coin)
 }
 
-// // SetPlayerClientID 设置玩家的连接 ID
-// func SetPlayerClientID(playerID uint64, clientID uint64) error {
-// 	return setPlayerUint64Field(playerID, playerClientIDField, clientID)
-// }
-
-// // GetPlayerClientID 获取玩家的客户端 ID
-// func GetPlayerClientID(playerID uint64) uint64 {
-// 	return getPlayerUint64Field(playerID, playerClientIDField)
-// }
-
 // GetPlayerGateAddr 获取玩家所在的网关地址
 func GetPlayerGateAddr(playerID uint64) string {
 	return getPlayerStringField(playerID, playerGatewayAddrField)
@@ -149,4 +141,14 @@ func GetPlayerGateAddr(playerID uint64) string {
 // SetPlayerGateAddr 设置玩家所在网关地址
 func SetPlayerGateAddr(playerID uint64, addr string) error {
 	return setPlayerStringField(playerID, playerGatewayAddrField, addr)
+}
+
+// GetPlayerRoomAddr 获取玩家所在 room 地址
+func GetPlayerRoomAddr(playerID uint64) string {
+	return getPlayerStringField(playerID, playerRoomAddrField)
+}
+
+// SetPlayerRoomAddr 设置玩家所在 room 地址
+func SetPlayerRoomAddr(playerID uint64, addr string) error {
+	return setPlayerStringField(playerID, playerRoomAddrField, addr)
 }

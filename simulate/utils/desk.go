@@ -130,7 +130,7 @@ func joinDesk(players []interfaces.ClientPlayer) (map[int]uint64, error) {
 	expectors := []interfaces.MessageExpector{}
 	for _, player := range players {
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
-		if _, err := NewApplyJoinDesk(player); err != nil {
+		if _, err := ApplyJoinDesk(player); err != nil {
 			return nil, fmt.Errorf("请求加入房间失败: %v", err)
 		}
 		expectors = append(expectors, e)
