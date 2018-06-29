@@ -77,8 +77,16 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 
 	allPlayers := make([]uint64, 0)
+	hasHuPlayers := make([]uint64, 0)
+	quitPalyers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		allPlayers = append(allPlayers, player.GetPalyerId())
+		if len(player.HuCards) != 0 {
+			hasHuPlayers = append(hasHuPlayers, player.GetPalyerId())
+		}
+		if player.IsQuit {
+			quitPalyers = append(hasHuPlayers, player.GetPalyerId())
+		}
 	}
 
 	cardValues := make(map[uint64]uint32, 0)
@@ -108,15 +116,18 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	huType := majongpb.HuType_hu_dianpao
 
 	params := interfaces.HuSettleParams{
-		HuPlayers:  huPlayers,
-		SrcPlayer:  mjContext.GetLastChupaiPlayer(),
-		AllPlayers: allPlayers,
-		SettleType: majongpb.SettleType_settle_dianpao,
-		HuType:     huType,
-		CardTypes:  cardTypes,
-		CardValues: cardValues,
-		GenCount:   genCount,
-		SettleID:   mjContext.CurrentSettleId,
+		GameID:       mjContext.GetGameId(),
+		HuPlayers:    huPlayers,
+		SrcPlayer:    mjContext.GetLastChupaiPlayer(),
+		AllPlayers:   allPlayers,
+		HasHuPlayers: hasHuPlayers,
+		QuitPlayers:  quitPalyers,
+		SettleType:   majongpb.SettleType_settle_dianpao,
+		HuType:       huType,
+		CardTypes:    cardTypes,
+		CardValues:   cardValues,
+		GenCount:     genCount,
+		SettleID:     mjContext.CurrentSettleId,
 	}
 	if s.isAfterGang(mjContext) {
 		huType = majongpb.HuType_hu_ganghoupao
