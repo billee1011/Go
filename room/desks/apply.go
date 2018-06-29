@@ -143,8 +143,7 @@ func notifyDeskCreate(desk interfaces.Desk) {
 
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求
 // 	将玩家加入到申请列表中， 并且回复；
-func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (rspMsg []exchanger.ResponseMsg) {
-	playerID := header.GetPlayerId()
+func HandleRoomJoinDeskReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (rspMsg []exchanger.ResponseMsg) {
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayer(playerID)
 
@@ -170,9 +169,8 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 }
 
 // HandleRoomContinueReq 玩家申请续局
-func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {
+func HandleRoomContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {
 	playerMgr := global.GetPlayerMgr()
-	playerID := header.GetPlayerId()
 	player := playerMgr.GetPlayer(playerID)
 	rsp := &room.RoomDeskContinueRsp{
 		ErrCode: room.RoomError_SUCCESS.Enum(),
@@ -195,9 +193,8 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 
 // HandleRoomDeskQuitReq 处理玩家退出桌面请求
 // 失败先不回复
-func HandleRoomDeskQuitReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
+func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
 	playerMgr := global.GetPlayerMgr()
-	playerID := header.GetPlayerId()
 	player := playerMgr.GetPlayer(playerID)
 	if player == nil {
 		return
@@ -222,8 +219,7 @@ func ExistInDesk(playerID uint64) (interfaces.Desk, bool) {
 }
 
 // HandleResumeGameReq 恢复对局请求
-func HandleResumeGameReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
-	playerID := header.GetPlayerId()
+func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
 	desk, exist := ExistInDesk(playerID)
 	if !exist {
 		body := &room.RoomResumeGameRsp{

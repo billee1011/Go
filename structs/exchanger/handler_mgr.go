@@ -20,7 +20,8 @@ type Handler struct {
 type HandlerMgr interface {
 	// RegisterHandle 注册指定消息 ID 的回调函数， 当收到消息时， 会回调 handler 处理
 	// handler 的声明可以是 func(clientID uint64, head *steve_proto_gaterpc.Header, body YourProtoType) []ResponseMsg
-	// 		handler 的参数中 clientID 为客户端连接 ID， head 为消息头， YourProtoType 可以为任意 proto 类型,
+	// 		handler 的参数中 clientID 在网关服表示客户端连接 ID， 在其他应用服中为 玩家 ID
+	//		head 为消息头， YourProtoType 可以为任意 proto 类型,
 	// 		handler 的返回值 []proto.Message 表示需要回复的数据， 为 nil 或者空切片时则表示不需要回复， 此时服务仍可以通过 SendPackage 或者 BroadcastPackage 来回复消息
 	// handler 的声明也可以是 func(clientID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) []ResponseMsg
 	// 		和前一个类似，但是 bodyData 是字节数组，由应用层自己反序列化

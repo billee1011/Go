@@ -14,8 +14,7 @@ import (
 func SendMessageToPlayer(playerID uint64, msgID msgid.MsgID, body proto.Message) error {
 	sender := global.GetMessageSender()
 	return sender.SendPackageByPlayerID(playerID, &steve_proto_gaterpc.Header{
-		MsgId:    uint32(msgID),
-		PlayerId: playerID,
+		MsgId: uint32(msgID),
 	}, body)
 }
 

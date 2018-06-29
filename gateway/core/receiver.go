@@ -66,10 +66,9 @@ func (o *receiver) handle(cc *grpc.ClientConn, clientID uint64, playerID uint64,
 	})
 	client := steve_proto_gaterpc.NewMessageHandlerClient(cc)
 	handleResult, err := client.HandleClientMessage(context.Background(), &steve_proto_gaterpc.ClientMessage{
-		ClientId: clientID,
+		PlayerId: playerID,
 		Header: &steve_proto_gaterpc.Header{
-			MsgId:    msgID,
-			PlayerId: playerID,
+			MsgId: msgID,
 		},
 		RequestData: body,
 	})
@@ -158,6 +157,10 @@ func (o *receiver) callRemoteHandler(clientID uint64, playerID uint64, reqHeader
 		"player_id": playerID,
 		"msg_id":    msgid.MsgID(msgID),
 	})
+	if playerID == 0 {
+		entry.Warningln("未绑定玩家，不能调用远程处理器")
+		return
+	}
 	cc, err := o.getConnection(serverName, clientID)
 	if err != nil {
 		return
@@ -190,8 +193,7 @@ func (o *receiver) callLocalHandler(clientID uint64, playerID uint64, reqHeader 
 		return
 	}
 	responses, err := exchanger.CallHandler(handler, clientID, &steve_proto_gaterpc.Header{
-		MsgId:    msgID,
-		PlayerId: playerID,
+		MsgId: msgID,
 	}, body)
 	if err != nil {
 		entry.Errorln("调用消息处理器失败")
