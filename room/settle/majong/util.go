@@ -1,4 +1,4 @@
-package settle
+package majong
 
 import (
 	msgid "steve/client_pb/msgId"
@@ -74,4 +74,38 @@ func GetSettleInfoBySid(settleInfos []*majongpb.SettleInfo, ID uint64) int {
 		}
 	}
 	return -1
+}
+
+// GenerateSettleEvent 结算finish事件
+func GenerateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, brokerPlayers []uint64) {
+	needEvent := map[majongpb.SettleType]bool{
+		majongpb.SettleType_settle_angang:   true,
+		majongpb.SettleType_settle_bugang:   true,
+		majongpb.SettleType_settle_minggang: true,
+		majongpb.SettleType_settle_dianpao:  true,
+		majongpb.SettleType_settle_zimo:     true,
+	}
+	if needEvent[settleType] {
+		eventContext, err := proto.Marshal(&majongpb.SettleFinishEvent{
+			PlayerId: brokerPlayers,
+		})
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"func_name":     "GenerateSettleEvent",
+				"settleType":    settleType,
+				"brokerPlayers": brokerPlayers,
+			}).WithError(err).Errorln("消息序列化失败")
+			return
+		}
+		event := majongpb.AutoEvent{
+			EventId:      majongpb.EventID_event_settle_finish,
+			EventContext: eventContext,
+		}
+		desk.PushEvent(interfaces.Event{
+			ID:        event.GetEventId(),
+			Context:   event.GetEventContext(),
+			EventType: interfaces.NormalEvent,
+			PlayerID:  0,
+		})
+	}
 }

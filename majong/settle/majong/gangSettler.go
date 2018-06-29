@@ -1,4 +1,4 @@
-package scxl
+package majong
 
 import (
 	"steve/common/mjoption"

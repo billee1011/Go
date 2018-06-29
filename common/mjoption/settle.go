@@ -28,6 +28,9 @@ type SettleOption struct {
 	HuQuitPlayerCanSettle map[string]bool `yaml:"huQuitPlayer_can_settle"` // 已胡牌玩家(退出)可参与的结算
 	GiveUpPlayerCanSettle map[string]bool `yaml:"giveUpPlayer_can_settle"` // 认输玩家可参与的结算
 
+	GangInstantSettle bool `yaml:"gang_instant_settle"` // 杠是否可以立即结算
+	HuInstantSettle   bool `yaml:"hu_instant_settle"`   // 胡是否可以立即结算
+
 }
 
 // SettleOptionManager 结算选项管理器
