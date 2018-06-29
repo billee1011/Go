@@ -245,7 +245,7 @@ func (s *scxzSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, huQuitPlay
 			loseScore = loseScore - mscore
 		}
 		for _, lPid := range losePids {
-			maxScore[lPid] = loseScore / int64(len(losePids))
+			maxScore[lPid] = loseScore // / int64(len(losePids))
 		}
 	}
 	return
