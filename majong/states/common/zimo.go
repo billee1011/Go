@@ -61,7 +61,7 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	huType := s.calcHuType(player.GetPalyerId(), flow)
 	s.notifyHu(card, huType, player.GetPalyerId(), flow)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
-	AddHuCard(card, player, player.GetPalyerId(), huType, false)
+	AddHuCard(card, player, player.GetPalyerId(), huType, true)
 
 	// 玩家胡状态
 	player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
