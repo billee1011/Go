@@ -1,17 +1,12 @@
 package utils
 
 import (
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 	"strconv"
 )
 
 // PeiPai 配牌工具
-func PeiPai(wallCards []*majongpb.Card, gameID int) ([]*majongpb.Card, error) {
-	value, err := handle.GetPeiPai(gameID)
-	if err != nil {
-		return nil, err
-	}
+func PeiPai(wallCards []*majongpb.Card, value string) ([]*majongpb.Card, error) {
 	var cards []*majongpb.Card
 	for i := 0; i < len(value); i = i + 3 {
 		ca, err := strconv.Atoi(value[i : i+2])

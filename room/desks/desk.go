@@ -294,9 +294,18 @@ func (d *desk) initMajongContext() error {
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
-			HasHuansanzhang:            handle.GetHsz(d.GetGameID()), //设置玩家是否开启换三张
+			HasHuansanzhang:            handle.GetHsz(d.GetGameID()),                     //设置玩家是否开启换三张
+			Cards:                      handle.GetPeiPai(d.GetGameID()),                  //设置是否配置墙牌
+			WallcardsLength:            uint32(handle.GetLensOfWallCards(d.GetGameID())), //设置墙牌长度
+			HszFx: &server_pb.Huansanzhangfx{
+				NeedDeployFx:   handle.GetHSZFangXiang(d.GetGameID()) != -1,
+				HuansanzhangFx: int32(handle.GetHSZFangXiang(d.GetGameID())),
+			}, //设置换三张方向
+			Zhuang: &server_pb.Zhuang{
+				NeedDeployZhuang: handle.GetZhuangIndex(d.GetGameID()) != -1,
+				ZhuangIndex:      handle.GetZhuangIndex(),
+			},
 		},
-		// MajongOption: mjOption,
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
@@ -475,7 +484,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		deskPlayer.quitDesk()
 		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
-		xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(d.gameID).XingPaiOptionID)
+		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
 		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerStates)
 		logEntry.Debugln("玩家退出")
 	} else {

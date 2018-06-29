@@ -9,7 +9,6 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 	"time"
 
@@ -147,9 +146,9 @@ func (s *HuansanzhangState) randDirection(flow interfaces.MajongFlow) room.Direc
 	towards := rd.Intn(len(directios))
 
 	mjContext := flow.GetMajongContext()
-	fx := handle.GetHSZFangXiang(int(mjContext.GetGameId()))
-	if fx >= 0 && fx < len(directios) {
-		towards = fx
+	HszFx := mjContext.GetOption().GetHszFx()
+	if HszFx.GetNeedDeployFx() && HszFx.GetHuansanzhangFx() >= 0 && int(HszFx.GetHuansanzhangFx()) < len(directios) {
+		towards = int(HszFx.GetHuansanzhangFx())
 	}
 	return directios[towards]
 }

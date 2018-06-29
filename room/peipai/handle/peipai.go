@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"fmt"
 	"net/http"
 	"steve/room/peipai/utils"
 	"strconv"
@@ -45,14 +44,14 @@ func checkPeiPaiInfo(pp peipaiInfo) (int, bool) {
 }
 
 //GetPeiPai 通过配牌关键字拿到配牌
-func GetPeiPai(gameID int) (string, error) {
+func GetPeiPai(gameID int) string {
 	key := idIntToStr(gameID)
 	for _, pp := range peiPaiInfos {
 		if pp.Key == key {
-			return pp.Cards, nil
+			return pp.Cards
 		}
 	}
-	return "", fmt.Errorf("不存在这个配牌key")
+	return ""
 }
 
 //GetLensOfWallCards 牌墙长度
