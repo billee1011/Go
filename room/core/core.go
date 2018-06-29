@@ -13,12 +13,9 @@ import (
 	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/net"
-	"steve/structs/proto/gate_rpc"
 	"steve/structs/service"
-	"sync"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
 
 	_ "steve/room/autoevent" // 引入 autoevent 包，设置工厂
@@ -42,129 +39,6 @@ func NewService() service.Service {
 type RoomService struct {
 }
 
-type joinApplyManager struct {
-	applyChannel chan uint64
-}
-
-var gJoinApplyMgr *joinApplyManager
-var once sync.Once
-
-func getJoinApplyMgr() *joinApplyManager {
-	once.Do(initApplyMgr)
-	return gJoinApplyMgr
-}
-
-func initApplyMgr() {
-	gJoinApplyMgr = newApplyMgr(true)
-}
-
-func newApplyMgr(runChecker bool) *joinApplyManager {
-	mgr := &joinApplyManager{
-		applyChannel: make(chan uint64, 1024),
-	}
-	if runChecker {
-		go mgr.checkMatch()
-	}
-	return mgr
-}
-
-func (jam *joinApplyManager) getApplyChannel() chan uint64 {
-	return jam.applyChannel
-}
-
-func (jam *joinApplyManager) joinPlayer(playerID uint64) room.RoomError {
-	// TODO: 检测玩家状态
-	ch := jam.getApplyChannel()
-	ch <- playerID
-	return room.RoomError_SUCCESS
-}
-
-func (jam *joinApplyManager) replicateApplyProc(applyPlayers []uint64, newPlayerID uint64) bool {
-	for _, playerID := range applyPlayers {
-		if playerID == newPlayerID {
-			header := &steve_proto_gaterpc.Header{
-				MsgId: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
-			}
-			rsp := &room.RoomJoinDeskRsp{
-				ErrCode: room.RoomError_DESK_ALREADY_APPLIED.Enum(),
-			}
-			SendMessageByPlayerID(playerID, header, rsp)
-			return true
-		}
-	}
-	return false
-}
-
-// SendMessageByPlayerID 获取到playerID发送消息
-func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":   "sendMessageFromRoom",
-		"newPlayerID": playerID,
-		"head":        msgid.MsgID_name[int32(head.MsgId)],
-	})
-	ms := global.GetMessageSender()
-	err := ms.SendPackageByPlayerID(playerID, head, body)
-	if err != nil {
-		logEntry.WithError(err).Errorln("发送消息失败")
-	}
-}
-
-func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
-	result := make([]uint64, 0, len(playerIDs))
-	playerMgr := global.GetPlayerMgr()
-	for _, playerID := range playerIDs {
-		player := playerMgr.GetPlayer(playerID)
-		if player != nil && player.IsOnline() {
-			result = append(result, playerID)
-		} else {
-			logrus.WithField("player_id", playerID).Debugln("玩家不在线，移除")
-		}
-	}
-	return result
-}
-
-func (jam *joinApplyManager) checkMatch() {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "checkMatch",
-	})
-	deskFactory := global.GetDeskFactory()
-	deskMgr := global.GetDeskMgr()
-	applyPlayers := make([]uint64, 0, 4)
-
-	ch := jam.getApplyChannel()
-
-	for {
-		playerID, ok := <-ch
-		logEntry.WithField("player_id", playerID).Debugln("accept player")
-		if !ok {
-			break
-		}
-
-		if jam.replicateApplyProc(applyPlayers, playerID) {
-			continue
-		}
-		applyPlayers = append(applyPlayers, playerID)
-		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
-
-		for len(applyPlayers) >= 4 {
-			players := applyPlayers[:4]
-			applyPlayers = applyPlayers[4:]
-			result, err := deskFactory.CreateDesk(players, 1, interfaces.CreateDeskOptions{})
-			if err != nil {
-				logEntry.WithFields(
-					logrus.Fields{
-						"players": players,
-						"result":  result,
-					},
-				).WithError(err).Errorln("创建房间失败")
-				continue
-			}
-			notifyDeskCreate(result.Desk)
-			deskMgr.RunDesk(result.Desk)
-		}
-	}
-}
-
 func notifyDeskCreate(desk interfaces.Desk) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "notifyDeskCreate",
@@ -176,25 +50,64 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
-func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.RoomMgrRequest) (rsp *roommgr.RoomMgrResponse, err error) {
-	//TODO 接到创建房间请求，创建房间
-	playerID := req.GetPlayerId()
-	playerMgr := global.GetPlayerMgr()
-	player := playerMgr.GetPlayer(playerID)
+// CreateDesk 创建牌桌
+func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
 
-	rsp = &roommgr.RoomMgrResponse{
-		ErrCode: roommgr.RoomError_SUCCESS,
+	// 日志
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "RoomService::CreateDesk",
+	})
+
+	logEntry.WithField("players", req.GetPlayerId()).Debugln("RoomService::CreateDesk()")
+
+	// 回复match服的消息
+	rsp = &roommgr.CreateDeskResponse{
+		ErrCode: roommgr.RoomError_FAILED, // 默认是失败的
 	}
 
-	if player == nil {
-		rsp.ErrCode = roommgr.RoomError_FAILED
+	// 请求的玩家ID数组
+	playersID := req.GetPlayerId()
+
+	// 个数须为4
+	if len(playersID) < 4 {
+		logEntry.WithField("len(playersID):", len(playersID)).Errorln("players数组长度不为4")
 		return
 	}
 
-	getJoinApplyMgr().joinPlayer(playerID)
-	return
+	deskFactory := global.GetDeskFactory()
 
-	//TODO 创建房间成功，广播房间消息到gateway
+	deskMgr := global.GetDeskMgr()
+
+	//playerMgr := global.GetPlayerMgr()
+
+	// 创建桌子
+	result, err := deskFactory.CreateDesk(playersID, 1, interfaces.CreateDeskOptions{})
+	if err != nil {
+		logEntry.WithFields(
+			logrus.Fields{
+				"players": playersID,
+				"result":  result,
+			},
+		).WithError(err).Errorln("创建桌子失败")
+
+		return
+	}
+
+	logEntry.WithField("players", req.GetPlayerId()).Debugln("创建桌子成功")
+
+	// 回复match：创建桌子成功
+	rsp.ErrCode = roommgr.RoomError_SUCCESS
+
+	// 通知该桌子的所有人
+	notifyDeskCreate(result.Desk)
+
+	// 桌子开始运行
+	deskMgr.RunDesk(result.Desk)
+
+	// 添加进playerManager
+	// todo
+
+	return
 }
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
