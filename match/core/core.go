@@ -7,6 +7,7 @@ import (
 	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/data/player"
 	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/exchanger"
@@ -97,7 +98,7 @@ func (mm *matchManager) match() {
 		return
 	}
 
-	// todo 检测玩家段位
+	logEntry.Debugln("mm.waitPlayers.Len() =  ", mm.waitPlayers.Len())
 
 	// 目前办法：够四个就请求room服开启一个桌子
 
@@ -107,19 +108,23 @@ func (mm *matchManager) match() {
 	var nextNode *list.Element
 
 	for iter := mm.waitPlayers.Front(); iter != nil; iter = nextNode {
-
 		nextNode = iter.Next()
 
 		tempPlayer := (iter.Value).(*matchPlayer)
 
+		// 检测是否在线
+		gateAddr := player.GetPlayerGateAddr(tempPlayer.playerID)
+		if gateAddr == "" {
+			mm.waitPlayers.Remove(iter)
+			logEntry.Debugln("玩家不在线，移除，playerID = ", tempPlayer.playerID)
+			continue
+		}
+
 		// 加入到临时数组
 		deskPlayers = append(deskPlayers, tempPlayer.playerID)
 
-		// 删除iter(暂时，以后应更改为缓存在本地，等room服创建成功后再删除)
-		mm.waitPlayers.Remove(iter)
-
 		// 每满一个桌子，就通知room创建
-		if len(deskPlayers) >= playersOneDesk {
+		if len(deskPlayers) == playersOneDesk {
 			createErr := mm.matchCore.NofityRoomCreateDesk(deskPlayers)
 
 			// 创建失败
@@ -128,17 +133,24 @@ func (mm *matchManager) match() {
 				return
 			}
 
-			// 创建成功
-
-			// 把数组里面的playerID从匹配列表删除
-			//for _, value := range deskPlayers {
-			//	mm.waitPlayers.Remove(value)
-			//}
+			// 创建成功，则删除
+			for _, value := range deskPlayers {
+				var nextNode2 *list.Element
+				for iter2 := mm.waitPlayers.Front(); iter2 != nil; iter2 = nextNode2 {
+					nextNode2 = iter2.Next()
+					tempPlayer2 := (iter2.Value).(*matchPlayer)
+					if tempPlayer2.playerID == value {
+						mm.waitPlayers.Remove(iter2)
+					}
+				}
+			}
 
 			// 清空临时数组
 			deskPlayers = deskPlayers[playersOneDesk:]
 		}
 	}
+
+	logEntry.Debugln("matchManager::match() 结束 mm.waitPlayers.Len() = ", mm.waitPlayers.Len())
 }
 
 // NewService 创建服务
