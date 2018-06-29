@@ -223,35 +223,41 @@ func (s *scxzSettle) sumSettleInfo(contextSInfo []*majongpb.SettleInfo, settleIn
 func (s *scxzSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, huQuitPlayers map[uint64]bool, score map[uint64]int64) (maxScore map[uint64]int64) {
 	maxScore = make(map[uint64]int64, 0)
 	losePids := make([]uint64, 0)
-	loseScore := int64(0)
+	winnPids := make([]uint64, 0)
 	for pid, pscore := range score {
-		if pscore > 0 {
-			if huQuitPlayers[pid] {
-				maxScore[pid] = 0
-			} else {
-				maxScore[pid] = s.getWinMax(GetDeskPlayer(deskPlayer, pid), pscore)
-			}
-		} else if pscore < 0 {
+		if pscore < 0 {
 			losePids = append(losePids, pid)
+		}
+		if pscore > 0 {
+			winnPids = append(winnPids, pid)
+		}
+		if huQuitPlayers[pid] {
+			score[pid] = 0
 		}
 	}
 	if len(losePids) == 1 {
-		for _, mscore := range maxScore {
-			loseScore = loseScore - mscore
+		for _, winnPid := range winnPids {
+			winMax := s.getWinMax(GetDeskPlayer(deskPlayer, winnPid))
+			if score[winnPid] >= winMax {
+				maxScore[winnPid] = winMax
+			}
+			maxScore[winnPid] = score[winnPid]
+			maxScore[losePids[0]] = 0 - maxScore[winnPid]
 		}
-		maxScore[losePids[0]] = loseScore
-	} else {
-		for _, mscore := range maxScore {
-			loseScore = loseScore - mscore
-		}
-		for _, lPid := range losePids {
-			maxScore[lPid] = loseScore / int64(len(losePids))
+	} else if len(losePids) > 1 {
+		for _, losePid := range losePids {
+			winMax := s.getWinMax(GetDeskPlayer(deskPlayer, winnPids[0]))
+			if s.abs(score[losePid]) >= winMax {
+				maxScore[losePid] = 0 - winMax
+			}
+			maxScore[losePid] = score[losePid]
+			maxScore[winnPids[0]] = 0 - maxScore[losePid]
 		}
 	}
 	return
 }
 
-func (s *scxzSettle) getWinMax(winPlayer interfaces.DeskPlayer, winScore int64) (winMax int64) {
+func (s *scxzSettle) getWinMax(winPlayer interfaces.DeskPlayer) (winMax int64) {
 	winMax = int64(0)
 	winPid := winPlayer.GetPlayerID()
 	currentCoin := int64(global.GetPlayerMgr().GetPlayer(winPid).GetCoin()) // 当前豆子数
@@ -260,9 +266,6 @@ func (s *scxzSettle) getWinMax(winPlayer interfaces.DeskPlayer, winScore int64) 
 		winMax = currentCoin
 	} else {
 		winMax = enterCoin
-	}
-	if winScore <= winMax {
-		winMax = winScore
 	}
 	return
 }
