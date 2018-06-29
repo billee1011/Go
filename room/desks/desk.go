@@ -303,9 +303,9 @@ func (d *desk) initMajongContext() error {
 			}, //设置换三张方向
 			Zhuang: &server_pb.Zhuang{
 				NeedDeployZhuang: handle.GetZhuangIndex(d.GetGameID()) != -1,
-				ZhuangIndex:      handle.GetZhuangIndex(),
+				ZhuangIndex:      int32(handle.GetZhuangIndex(d.GetGameID())),
 			},
-		},
+		}, //设置庄家
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
