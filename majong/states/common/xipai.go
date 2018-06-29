@@ -31,8 +31,8 @@ func (s *XipaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 }
 
 func (s *XipaiState) genOriginCards(flow interfaces.MajongFlow) []*majongpb.Card {
-	gameID := flow.GetMajongContext().GetGameId()
-	return global.GetOriginCards(int(gameID))
+	mjContext := flow.GetMajongContext()
+	return global.GetOriginCards(mjContext)
 }
 
 func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
@@ -43,17 +43,12 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	})
 	mjContext := flow.GetMajongContext()
 	mjContext.CardTotalNum = uint32(len(cards))
-	PeiPai(cards, mjContext, int(mjContext.GetGameId()))
-	//TUDO 这里不改变墙牌长度,改由黄庄的方式控制流局
-	// length := peipai.GetLensOfWallCards(gameName)
-	// if length != 0 {
-	// 	cards = cards[:length]
-	// }
+	PeiPai(cards, int(mjContext.GetGameId()))
 	return cards
 }
 
 // PeiPai 配牌工具
-func PeiPai(wallCards []*majongpb.Card, context *majongpb.MajongContext, gameID int) (bool, []*majongpb.Card) {
+func PeiPai(wallCards []*majongpb.Card, gameID int) (bool, []*majongpb.Card) {
 	value, err := handle.GetPeiPai(gameID)
 	if err != nil {
 		return false, wallCards

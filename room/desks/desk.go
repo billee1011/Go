@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
@@ -26,8 +27,6 @@ import (
 var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
-
-const optionService = "xuezhanOption"
 
 // deskEvent 房间事件
 type deskEvent struct {
@@ -296,7 +295,6 @@ func (d *desk) initMajongContext() error {
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
 			HasHuansanzhang:            handle.GetHsz(d.GetGameID()), //设置玩家是否开启换三张
-			ValidXpStateSet:            d.getXpStates(d.GetGameID()),
 		},
 		// MajongOption: mjOption,
 		MajongOption: []byte{},
@@ -315,18 +313,6 @@ func (d *desk) initMajongContext() error {
 		stateTime:   time.Now(),
 	}
 	return nil
-}
-
-//TODO:delete
-func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
-	switch gameID {
-	case gutils.SCXLGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_hu_giveup, server_pb.XingPaiState_hu, server_pb.XingPaiState_give_up, server_pb.XingPaiState_normal}
-	case gutils.SCXZGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_normal}
-	default:
-		return []server_pb.XingPaiState{}
-	}
 }
 
 func (d *desk) getTuoguanPlayers() []uint64 {
@@ -489,8 +475,8 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		deskPlayer.quitDesk()
 		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
-		oh := GetOptionByFactory(d.GetGameID())
-		oh.handleQuitByPlayerState(d, eqi.playerID)
+		xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(d.gameID).XingPaiOptionID)
+		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerStates)
 		logEntry.Debugln("玩家退出")
 	} else {
 		d.setMjPlayerQuitDesk(eqi.playerID, false)
@@ -502,6 +488,27 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
 	}
+}
+
+func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates []mjoption.XingpaiState) {
+	mjContext := d.dContext.mjContext
+	player := gutils.GetMajongPlayer(playerID, &mjContext)
+	//判断当前状态是否与行牌option中的状态列表一致
+	needQuit := false
+	for _, xpState := range xpStates {
+		if uint32(xpState)&uint32(player.GetXpState()) != 0 {
+			needQuit = true
+		}
+	}
+	if needQuit {
+		deskMgr := global.GetDeskMgr()
+		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+	}
+	logrus.WithFields(logrus.Fields{
+		"funcName":    "handleQuitByPlayerState",
+		"gameID":      mjContext.GetGameId(),
+		"playerState": player.GetXpState(),
+	}).Infof("玩家:%v退出后的相关处理", playerID)
 }
 
 // callEventHandler 调用事件处理器
