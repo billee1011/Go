@@ -683,6 +683,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
 		OperatePid:  getOperatePlayerID(mjContext),
 		DoorCard:    getDoorCard(mjContext),
+		NeedHsz:     proto.Bool(mjContext.GetOption().GetHasHuansanzhang()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
