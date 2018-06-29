@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	msgid "steve/client_pb/msgId"
+	"steve/common/data/player"
 	"steve/gateway/global"
 	"steve/gateway/msgrange"
 	"steve/structs"
@@ -29,18 +30,25 @@ var errCallServiceFailed = errors.New("调用服务失败")
 var errGetConnectByServerName = errors.New("根据服务名称获取连接失败")
 
 // getConnection 根据服务名称和客户端 ID 获取处理服务器的 RPC 连接
-func (o *receiver) getConnection(serverName string, clientID uint64) (*grpc.ClientConn, error) {
+func (o *receiver) getConnection(serverName string, playerID uint64) (*grpc.ClientConn, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":   "receiver.getConnection",
-		"client_id":   clientID,
+		"player_id":   playerID,
 		"server_name": serverName,
 	})
 
 	logEntry = logEntry.WithField("server_name", serverName)
 	e := structs.GetGlobalExposer()
-	// TODO 处理服务绑定
-	cc, err := e.RPCClient.GetConnectByServerName(serverName)
-	if cc == nil {
+
+	var cc *grpc.ClientConn
+	var err error
+	if serverName == "room" {
+		roomAddr := player.GetPlayerRoomAddr(playerID)
+		cc, err = e.RPCClient.GetConnectByAddr(roomAddr)
+	} else {
+		cc, err = e.RPCClient.GetConnectByServerName(serverName)
+	}
+	if cc == nil || err != nil {
 		logEntry.WithError(err).Errorln(errGetConnectByServerName)
 		return nil, errGetConnectByServerName
 	}
@@ -66,10 +74,9 @@ func (o *receiver) handle(cc *grpc.ClientConn, clientID uint64, playerID uint64,
 	})
 	client := steve_proto_gaterpc.NewMessageHandlerClient(cc)
 	handleResult, err := client.HandleClientMessage(context.Background(), &steve_proto_gaterpc.ClientMessage{
-		ClientId: clientID,
+		PlayerId: playerID,
 		Header: &steve_proto_gaterpc.Header{
-			MsgId:    msgID,
-			PlayerId: playerID,
+			MsgId: msgID,
 		},
 		RequestData: body,
 	})
@@ -158,7 +165,11 @@ func (o *receiver) callRemoteHandler(clientID uint64, playerID uint64, reqHeader
 		"player_id": playerID,
 		"msg_id":    msgid.MsgID(msgID),
 	})
-	cc, err := o.getConnection(serverName, clientID)
+	if playerID == 0 {
+		entry.Warningln("未绑定玩家，不能调用远程处理器")
+		return
+	}
+	cc, err := o.getConnection(serverName, playerID)
 	if err != nil {
 		return
 	}
@@ -190,8 +201,7 @@ func (o *receiver) callLocalHandler(clientID uint64, playerID uint64, reqHeader 
 		return
 	}
 	responses, err := exchanger.CallHandler(handler, clientID, &steve_proto_gaterpc.Header{
-		MsgId:    msgID,
-		PlayerId: playerID,
+		MsgId: msgID,
 	}, body)
 	if err != nil {
 		entry.Errorln("调用消息处理器失败")

@@ -2,12 +2,15 @@ package desks
 
 import (
 	"errors"
+	"fmt"
+	"steve/common/data/player"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/structs/proto/gate_rpc"
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type deskMgr struct {
@@ -43,6 +46,7 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	for _, player := range players {
 		playerIDs = append(playerIDs, player.GetPlayerId())
 	}
+	dm.bindPlayerRoomAddr(playerIDs)
 
 	for _, playerID := range playerIDs {
 		if _, ok := dm.playerDeskMap.Load(playerID); ok {
@@ -65,6 +69,35 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	return nil
 }
 
+// 绑定玩家所在 room 服
+func (dm *deskMgr) bindPlayerRoomAddr(players []uint64) {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "deskFactory.bindPlayerRoomAddr",
+		"players":   players,
+	})
+	roomIP := viper.GetString("rpc_addr")
+	roomPort := viper.GetInt("rpc_port")
+	roomAddr := fmt.Sprintf("%s:%d", roomIP, roomPort)
+	for _, playerID := range players {
+		if err := player.SetPlayerRoomAddr(playerID, roomAddr); err != nil {
+			entry.WithError(err).Errorln("绑定玩家所在 room 失败")
+		}
+	}
+}
+
+// 解除玩家的 room 服绑定
+func (dm *deskMgr) unbindPlayerRoomAddr(players []uint64) {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "deskFactory.unbindPlayerRoomAddr",
+		"players":   players,
+	})
+	for _, playerID := range players {
+		if err := player.SetPlayerRoomAddr(playerID, ""); err != nil {
+			entry.WithError(err).Errorln("解除玩家的 room 服绑定失败")
+		}
+	}
+}
+
 func (dm *deskMgr) finishDesk(deskUID uint64, players []uint64) {
 	logrus.WithFields(logrus.Fields{
 		"func_name": "deskMgr.finishDesk",
@@ -77,6 +110,7 @@ func (dm *deskMgr) finishDesk(deskUID uint64, players []uint64) {
 	for _, playerID := range players {
 		dm.playerDeskMap.Delete(playerID)
 	}
+	dm.unbindPlayerRoomAddr(players)
 }
 
 func (dm *deskMgr) deskFinish(desk interfaces.Desk) func() {

@@ -1,7 +1,7 @@
-package tests
+package matchtests
 
 import (
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"

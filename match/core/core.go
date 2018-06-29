@@ -30,7 +30,6 @@ type matchCore struct {
 // 等待匹配的玩家
 type matchPlayer struct {
 	playerID  uint64 // 玩家唯一ID
-	clientID  uint64 // 玩家连接ID
 	startTime int64  // 匹配开始时间
 	//playerGrade   uint8        // 玩家段位
 }
@@ -195,7 +194,7 @@ func (c *matchCore) registerHandles(e exchanger.Exchanger) error {
 }
 
 // 匹配请求的处理(来自网关服)
-func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (ret []exchanger.ResponseMsg) {
+func (c *matchCore) handleMatch(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (ret []exchanger.ResponseMsg) {
 
 	// 日志
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -215,8 +214,7 @@ func (c *matchCore) handleMatch(clientID uint64, header *steve_proto_gaterpc.Hea
 
 	// 新建一个匹配玩家
 	newMatchPlayer := &matchPlayer{
-		playerID:  header.GetPlayerId(),
-		clientID:  clientID,
+		playerID:  playerID,
 		startTime: time.Now().Unix(),
 	}
 

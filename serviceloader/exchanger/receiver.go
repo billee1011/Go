@@ -21,52 +21,27 @@ type receiver struct {
 func (r *receiver) HandleClientMessage(ctx context.Context, msg *steve_proto_gaterpc.ClientMessage) (*steve_proto_gaterpc.HandleResult, error) {
 	header := msg.GetHeader()
 	msgID := header.GetMsgId()
-	playerID := header.GetPlayerId()
+	playerID := msg.GetPlayerId()
 	handler := r.handlerOf(msgID)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "receiver.HandleClientMessage",
 		"msg_id":    msgID,
-		"client_id": msg.GetClientId(),
 		"player_id": playerID,
 	})
 	if handler == nil {
 		logEntry.Warnln("没有对应的消息处理器")
 		return &steve_proto_gaterpc.HandleResult{}, nil
 	}
-
-	responses := r.callHandler(logEntry, handler, msg.GetClientId(), header, msg.GetRequestData())
+	responses := r.callHandler(logEntry, handler, playerID, header, msg.GetRequestData())
 	return r.packResults(responses)
 }
 
 // callHandler 根据消息类型反序列化消息体和回调处理器
-func (r *receiver) callHandler(logEntry *logrus.Entry, handler *iexchanger.Handler, clientID uint64,
+func (r *receiver) callHandler(logEntry *logrus.Entry, handler *iexchanger.Handler, playerID uint64,
 	header *steve_proto_gaterpc.Header, body []byte) []iexchanger.ResponseMsg {
 
-	var callResults []reflect.Value
-	f := reflect.ValueOf(handler.HandlerFunc)
-
-	if handler.MsgType == byteSliceType {
-		callResults = f.Call([]reflect.Value{
-			reflect.ValueOf(clientID),
-			reflect.ValueOf(header),
-			reflect.ValueOf(body),
-		})
-	} else {
-		bodyMsg := reflect.New(handler.MsgType).Interface()
-		if err := proto.Unmarshal(body, bodyMsg.(proto.Message)); err != nil {
-			logEntry.WithError(err).Errorln("反序列化消息体失败")
-			return []iexchanger.ResponseMsg{}
-		}
-		callResults = f.Call([]reflect.Value{
-			reflect.ValueOf(clientID),
-			reflect.ValueOf(header),
-			reflect.ValueOf(bodyMsg).Elem(),
-		})
-	}
-	if callResults == nil || len(callResults) == 0 || callResults[0].IsNil() {
-		return []iexchanger.ResponseMsg{}
-	}
-	return callResults[0].Interface().([]iexchanger.ResponseMsg)
+	result, _ := iexchanger.CallHandler(handler, playerID, header, body)
+	return result
 }
 
 // packResults 将应答消息打包返回
