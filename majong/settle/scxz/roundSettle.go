@@ -63,6 +63,11 @@ func yellSettle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, ui
 			lose := int64(0)
 			// 听玩家结算处理
 			for playerID, value := range params.TingPlayersInfo {
+				for _, quitPid := range params.QuitPlayers {
+					if quitPid == playerID {
+						break
+					}
+				}
 				win = int64(value) * ante
 				lose = lose - win
 				settleInfoMap[playerID] = win
@@ -103,11 +108,21 @@ func flowerPigSettle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInf
 		}
 		// 不是花猪的未听玩家结算处理
 		for n := 0; n < len(params.NotTingPlayers); n++ {
+			for _, quitPid := range params.QuitPlayers {
+				if quitPid == params.NotTingPlayers[n] {
+					break
+				}
+			}
 			settleInfoMap[params.NotTingPlayers[n]] = ante * 16
 			lose = lose - (ante * 16)
 		}
 		// 听玩家结算处理
 		for playerID, value := range params.TingPlayersInfo {
+			for _, quitPid := range params.QuitPlayers {
+				if quitPid == playerID {
+					break
+				}
+			}
 			win := int64(16+value) * ante
 			settleInfoMap[playerID] = win
 			lose = lose - win
@@ -133,6 +148,11 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 		majongpb.SettleType_settle_bugang:   true,
 	}
 	for _, notTingPlayer := range params.NotTingPlayers {
+		for _, quitPid := range params.QuitPlayers {
+			if quitPid == notTingPlayer {
+				break
+			}
+		}
 		for _, settleInfo := range params.SettleInfos {
 			if gangSettleType[settleInfo.SettleType] {
 				if (settleInfo.Scores[notTingPlayer] > 0) && !settleInfo.CallTransfer {
@@ -142,6 +162,11 @@ func taxRebeat(params interfaces.RoundSettleParams) []uint64 {
 		}
 	}
 	for _, flowerPigPlayer := range params.FlowerPigPlayers {
+		for _, quitPid := range params.QuitPlayers {
+			if quitPid == flowerPigPlayer {
+				break
+			}
+		}
 		for _, settleInfo := range params.SettleInfos {
 			if gangSettleType[settleInfo.SettleType] {
 				if (settleInfo.Scores[flowerPigPlayer] > 0) && !settleInfo.CallTransfer {
