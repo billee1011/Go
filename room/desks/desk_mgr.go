@@ -28,7 +28,7 @@ func init() {
 // RunDesk 运转牌桌
 func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	dm.mu.Lock()
-	dm.mu.Unlock()
+	defer dm.mu.Unlock()
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "deskMgr.RunDesk",

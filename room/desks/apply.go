@@ -16,6 +16,7 @@ import (
 type joinApplyManager struct {
 	applyChannel chan uint64
 	applyXueZhan chan uint64
+	applyDDZ chan uint64
 }
 
 var gJoinApplyMgr *joinApplyManager
@@ -34,6 +35,7 @@ func newApplyMgr(runChecker bool) *joinApplyManager {
 	mgr := &joinApplyManager{
 		applyChannel: make(chan uint64, 1024),
 		applyXueZhan: make(chan uint64, 1024),
+		applyDDZ: make(chan uint64, 1024),
 	}
 	if runChecker {
 		go mgr.checkMatch()
@@ -47,6 +49,8 @@ func (jam *joinApplyManager) getApplyChannel(gameID room.GameId) chan uint64 {
 		return jam.applyChannel
 	case room.GameId_GAMEID_XUEZHAN:
 		return jam.applyXueZhan
+	case room.GameId_GAMEID_DDZ:
+		return jam.applyDDZ
 	default:
 		return nil
 	}
@@ -79,7 +83,7 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 func (jam *joinApplyManager) checkMatch() {
 	go jam.doApply(room.GameId_GAMEID_XUELIU)
 	go jam.doApply(room.GameId_GAMEID_XUEZHAN)
-
+	go jam.doApply(room.GameId_GAMEID_DDZ)
 }
 
 func (jam *joinApplyManager) doApply(gameid room.GameId) {
@@ -104,6 +108,22 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 		applyPlayers = append(applyPlayers, playerID)
 		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
 
+		if(gameid == room.GameId_GAMEID_DDZ && len(applyPlayers) >= 3){
+			players := applyPlayers[:3]
+			applyPlayers = applyPlayers[3:]
+			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})
+			if err != nil {
+				logEntry.WithFields(
+					logrus.Fields{
+						"players": players,
+						"result":  result,
+					},
+				).WithError(err).Errorln("创建房间失败")
+				continue
+			}
+			notifyDeskCreate(result.Desk)
+			deskMgr.RunDesk(result.Desk)
+		}
 		for len(applyPlayers) >= 4 {
 			players := applyPlayers[:4]
 			applyPlayers = applyPlayers[4:]
