@@ -242,7 +242,7 @@ func (s *scxzSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, huQuitPlay
 				maxScore[winnPid] = winMax
 			}
 			maxScore[winnPid] = score[winnPid]
-			maxScore[losePids[0]] = 0 - maxScore[winnPid]
+			maxScore[losePids[0]] = maxScore[losePids[0]] - maxScore[winnPid]
 		}
 	} else if len(losePids) > 1 {
 		for _, losePid := range losePids {
@@ -251,7 +251,7 @@ func (s *scxzSettle) calcMaxScore(deskPlayer []interfaces.DeskPlayer, huQuitPlay
 				maxScore[losePid] = 0 - winMax
 			}
 			maxScore[losePid] = score[losePid]
-			maxScore[winnPids[0]] = 0 - maxScore[losePid]
+			maxScore[winnPids[0]] = maxScore[winnPids[0]] - maxScore[losePid]
 		}
 	}
 	return
