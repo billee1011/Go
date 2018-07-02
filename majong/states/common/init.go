@@ -3,6 +3,7 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -28,7 +29,12 @@ func (s *InitState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, 
 
 // notifyPlayers 通知玩家游戏开始
 func (s *InitState) notifyPlayers(flow interfaces.MajongFlow) {
-	isHsz := flow.GetMajongContext().GetOption().GetHasHuansanzhang()
+	//先要判断游戏有没有换三张的玩法，有换三张的玩法，再判断需不需要配置换三张
+	mjContext := flow.GetMajongContext()
+	isHsz := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).Hnz.Need
+	if isHsz {
+		isHsz = mjContext.GetOption().GetHasHuansanzhang()
+	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_START_GAME_NTF, &room.RoomStartGameNtf{
 		NeedHsz: proto.Bool(isHsz),
 	})

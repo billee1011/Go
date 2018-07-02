@@ -78,23 +78,23 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	quitPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		playerID := player.GetPalyerId()
-		isQuit := player.IsQuit
-		if isQuit {
+		if player.IsQuit {
 			quitPlayers = append(quitPlayers, playerID)
 		}
-		if len(player.HuCards) != 0 && !isQuit {
+		if len(player.HuCards) != 0 {
 			huPlayers = append(huPlayers, player.GetPalyerId())
 		}
-		if isFlowerPig(player) && !isQuit {
+		if isFlowerPig(player) {
 			flowerPigPlayers = append(flowerPigPlayers, player.GetPalyerId())
 		}
-		if isNoTingPlayers(player) && !isQuit {
+		if isNoTingPlayers(player) {
 			noTingPlayers = append(noTingPlayers, player.GetPalyerId())
 		}
 	}
 	tingPlayersInfo, _ = getTingPlayerInfo(mjContext)
 
 	params := interfaces.RoundSettleParams{
+		GameID:           mjContext.GetGameId(),
 		FlowerPigPlayers: flowerPigPlayers,
 		HuPlayers:        huPlayers,
 		TingPlayersInfo:  tingPlayersInfo,

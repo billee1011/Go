@@ -1,7 +1,6 @@
 package common
 
 import (
-	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -67,8 +66,8 @@ func (s *ZiMoSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mopaiPlayerID := CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
 	// 摸牌玩家不能是非正常状态玩家
 	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
-	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext.GetOption()) {
-		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext.GetOption())
+	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
+		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext)
 	}
 	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
@@ -81,13 +80,15 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	huPlayerID := mjContext.GetLastMopaiPlayer()
 
 	allPlayers := make([]uint64, 0)
+	hasHuPlayers := make([]uint64, 0)
+	quitPalyers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		if mjContext.GetGameId() == gutils.SCXZGameID {
-			if len(player.HuCards) == 0 || huPlayerID == player.GetPalyerId() {
-				allPlayers = append(allPlayers, player.GetPalyerId())
-			}
-		} else {
-			allPlayers = append(allPlayers, player.GetPalyerId())
+		allPlayers = append(allPlayers, player.GetPalyerId())
+		if len(player.HuCards) != 0 {
+			hasHuPlayers = append(hasHuPlayers, player.GetPalyerId())
+		}
+		if player.IsQuit {
+			quitPalyers = append(quitPalyers, player.GetPalyerId())
 		}
 	}
 
@@ -113,15 +114,18 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	genCount[huPlayerID] = gen
 
 	params := interfaces.HuSettleParams{
-		HuPlayers:  []uint64{huPlayerID},
-		SrcPlayer:  huPlayerID,
-		AllPlayers: allPlayers,
-		SettleType: majongpb.SettleType_settle_zimo,
-		HuType:     huCard.GetType(),
-		CardTypes:  cardTypes,
-		CardValues: cardValues,
-		GenCount:   genCount,
-		SettleID:   mjContext.CurrentSettleId,
+		GameID:       mjContext.GetGameId(),
+		HuPlayers:    []uint64{huPlayerID},
+		SrcPlayer:    huPlayerID,
+		AllPlayers:   allPlayers,
+		HasHuPlayers: hasHuPlayers,
+		QuitPlayers:  quitPalyers,
+		SettleType:   majongpb.SettleType_settle_zimo,
+		HuType:       huCard.GetType(),
+		CardTypes:    cardTypes,
+		CardValues:   cardValues,
+		GenCount:     genCount,
+		SettleID:     mjContext.CurrentSettleId,
 	}
 	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
 	for _, settleInfo := range settleInfos {

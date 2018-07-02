@@ -1,21 +1,18 @@
-package scxz
+package majong
 
-import (
-	"steve/majong/interfaces"
-	"steve/majong/settle/scxl"
-)
+import "steve/majong/interfaces"
 
-// SettlerFactory 四川血战结算器工厂
+// SettlerFactory 四川血流结算器工厂
 type SettlerFactory struct{}
 
 // CreateGangSettler 创建杠结算器
 func (f *SettlerFactory) CreateGangSettler() interfaces.GangSettle {
-	return &scxl.GangSettle{}
+	return &GangSettle{}
 }
 
 // CreateHuSettler 创建胡结算器
 func (f *SettlerFactory) CreateHuSettler() interfaces.HuSettle {
-	return &scxl.HuSettle{}
+	return &HuSettle{}
 }
 
 // CreateRoundSettle 创建单局结算器

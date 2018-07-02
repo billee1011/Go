@@ -4,6 +4,8 @@ import (
 	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
+	"steve/room/settle/majong"
+	"steve/room/settle/null"
 )
 
 type factory struct{}
@@ -11,11 +13,11 @@ type factory struct{}
 func (f *factory) CreateDeskSettler(gameID int) interfaces.DeskSettler {
 	switch gameID {
 	case gutils.SCXLGameID:
-		return newScxlSettle()
+		return majong.NewMajongSettle()
 	case gutils.SCXZGameID:
-		return newScxzSettle()
+		return majong.NewMajongSettle()
 	default:
-		return new(nullSettler)
+		return null.NewNullSettle()
 	}
 }
 

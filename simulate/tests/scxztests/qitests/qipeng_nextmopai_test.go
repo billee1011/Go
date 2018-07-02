@@ -13,7 +13,7 @@ import (
 // 庄家自摸
 // 下家对家摸牌打牌，尾家摸牌打出18
 // 此时下家可以胡
-// 下家弃胡，因为庄家胡过，所以期待摸牌玩家是对家
+// 下家弃胡，因为庄家胡过，所以期待摸牌玩家是下家
 func Test_qi_peng(t *testing.T) {
 	param := global.NewCommonStartGameParams()
 	param.GameID = room.GameId_GAMEID_XUEZHAN

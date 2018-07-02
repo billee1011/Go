@@ -8,7 +8,6 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 	"strconv"
 	"time"
@@ -31,8 +30,8 @@ func (s *XipaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 }
 
 func (s *XipaiState) genOriginCards(flow interfaces.MajongFlow) []*majongpb.Card {
-	gameID := flow.GetMajongContext().GetGameId()
-	return global.GetOriginCards(int(gameID))
+	mjContext := flow.GetMajongContext()
+	return global.GetOriginCards(mjContext)
 }
 
 func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
@@ -43,19 +42,13 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	})
 	mjContext := flow.GetMajongContext()
 	mjContext.CardTotalNum = uint32(len(cards))
-	PeiPai(cards, mjContext, int(mjContext.GetGameId()))
-	//TUDO 这里不改变墙牌长度,改由黄庄的方式控制流局
-	// length := peipai.GetLensOfWallCards(gameName)
-	// if length != 0 {
-	// 	cards = cards[:length]
-	// }
+	utils.PeiPai(cards, mjContext.GetOption().GetCards())
 	return cards
 }
 
 // PeiPai 配牌工具
-func PeiPai(wallCards []*majongpb.Card, context *majongpb.MajongContext, gameID int) (bool, []*majongpb.Card) {
-	value, err := handle.GetPeiPai(gameID)
-	if err != nil {
+func PeiPai(wallCards []*majongpb.Card, value string) (bool, []*majongpb.Card) {
+	if len(value) == 0 {
 		return false, wallCards
 	}
 	var cards []*majongpb.Card
@@ -94,9 +87,9 @@ func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices []
 	totalDice := int(dices[0] + dices[1])
 
 	mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
-	zhuangIndex := handle.GetZhuangIndex(gameID)
-	if zhuangIndex != -1 {
-		mjContext.ZhuangjiaIndex = uint32(zhuangIndex % len(mjContext.Players))
+	zhuang := mjContext.GetOption().GetZhuang()
+	if zhuang.GetNeedDeployZhuang() {
+		mjContext.ZhuangjiaIndex = uint32(zhuang.GetZhuangIndex() % int32(len(mjContext.Players)))
 	}
 	return int(mjContext.ZhuangjiaIndex)
 }
