@@ -8,6 +8,7 @@ enum CardColor {
     ColorTong = 1;      // 筒
     ColorTiao = 2;      // 条
     ColorFeng = 3;      // 风
+    ColorHua = 4;       // 花
 }
 
 // Card 卡牌结构

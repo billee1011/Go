@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
@@ -26,8 +27,6 @@ import (
 var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
-
-const optionService = "xuezhanOption"
 
 // deskEvent 房间事件
 type deskEvent struct {
@@ -295,10 +294,18 @@ func (d *desk) initMajongContext() error {
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
 			MaxHuansanzhangCartoonTime: 10 * 1000,
-			HasHuansanzhang:            handle.GetHsz(d.GetGameID()), //设置玩家是否开启换三张
-			ValidXpStateSet:            d.getXpStates(d.GetGameID()),
-		},
-		// MajongOption: mjOption,
+			HasHuansanzhang:            handle.GetHsz(d.GetGameID()),                     //设置玩家是否开启换三张
+			Cards:                      handle.GetPeiPai(d.GetGameID()),                  //设置是否配置墙牌
+			WallcardsLength:            uint32(handle.GetLensOfWallCards(d.GetGameID())), //设置墙牌长度
+			HszFx: &server_pb.Huansanzhangfx{
+				NeedDeployFx:   handle.GetHSZFangXiang(d.GetGameID()) != -1,
+				HuansanzhangFx: int32(handle.GetHSZFangXiang(d.GetGameID())),
+			}, //设置换三张方向
+			Zhuang: &server_pb.Zhuang{
+				NeedDeployZhuang: handle.GetZhuangIndex(d.GetGameID()) != -1,
+				ZhuangIndex:      int32(handle.GetZhuangIndex(d.GetGameID())),
+			},
+		}, //设置庄家
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
@@ -315,18 +322,6 @@ func (d *desk) initMajongContext() error {
 		stateTime:   time.Now(),
 	}
 	return nil
-}
-
-//TODO:delete
-func (d *desk) getXpStates(gameID int) []server_pb.XingPaiState {
-	switch gameID {
-	case gutils.SCXLGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_hu_giveup, server_pb.XingPaiState_hu, server_pb.XingPaiState_give_up, server_pb.XingPaiState_normal}
-	case gutils.SCXZGameID:
-		return []server_pb.XingPaiState{server_pb.XingPaiState_normal}
-	default:
-		return []server_pb.XingPaiState{}
-	}
 }
 
 func (d *desk) getTuoguanPlayers() []uint64 {
@@ -489,19 +484,44 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		deskPlayer.quitDesk()
 		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
-		oh := GetOptionByFactory(d.GetGameID())
-		oh.handleQuitByPlayerState(d, eqi.playerID)
+		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
+		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerStates)
 		logEntry.Debugln("玩家退出")
 	} else {
 		d.setMjPlayerQuitDesk(eqi.playerID, false)
-		if !deskPlayer.IsQuit() {
-			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 非主动退出，再进入后取消托管；主动退出再进入不取消托管
+		// 判断行牌状态, 选项化后需修改
+		mjPlayer := gutils.GetMajongPlayer(eqi.playerID, &d.dContext.mjContext)
+		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
+		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌
+		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
+			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false)
 		}
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		deskPlayer.enterDesk()
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
 	}
+}
+
+func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates []mjoption.XingpaiState) {
+	mjContext := d.dContext.mjContext
+	player := gutils.GetMajongPlayer(playerID, &mjContext)
+	//判断当前状态是否与行牌option中的状态列表一致
+	needQuit := false
+	for _, xpState := range xpStates {
+		if uint32(xpState)&uint32(player.GetXpState()) != 0 {
+			needQuit = true
+		}
+	}
+	if needQuit {
+		deskMgr := global.GetDeskMgr()
+		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+	}
+	logrus.WithFields(logrus.Fields{
+		"funcName":    "handleQuitByPlayerState",
+		"gameID":      mjContext.GetGameId(),
+		"playerState": player.GetXpState(),
+	}).Infof("玩家:%v退出后的相关处理", playerID)
 }
 
 // callEventHandler 调用事件处理器
@@ -674,7 +694,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 
 	gameDeskInfo := room.GameDeskInfo{
 		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(d),
+		Players:     getRecoverPlayerInfo(playerID, d),
 		Dices:       mjContext.GetDices(),
 		BankerSeat:  &bankerSeat,
 		EastSeat:    &bankerSeat,
@@ -683,6 +703,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
 		OperatePid:  getOperatePlayerID(mjContext),
 		DoorCard:    getDoorCard(mjContext),
+		NeedHsz:     proto.Bool(mjContext.GetOption().GetHasHuansanzhang()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
@@ -691,6 +712,8 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
 	})
+	logEntry.Errorln("恢复数据")
+	logEntry.Errorln(gameDeskInfo)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
 		return nil

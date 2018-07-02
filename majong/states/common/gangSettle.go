@@ -69,15 +69,26 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 	gangCard := player.GetGangCards()[len(player.GetGangCards())-1]
 
 	allPlayers := make([]uint64, 0)
+	hasHuPlayers := make([]uint64, 0)
+	quitPalyers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		allPlayers = append(allPlayers, player.GetPalyerId())
+		if len(player.HuCards) != 0 {
+			hasHuPlayers = append(hasHuPlayers, player.GetPalyerId())
+		}
+		if player.IsQuit {
+			quitPalyers = append(quitPalyers, player.GetPalyerId())
+		}
 	}
 	param := interfaces.GangSettleParams{
-		GangPlayer: player.GetPalyerId(),
-		SrcPlayer:  gangCard.GetSrcPlayer(),
-		AllPlayers: allPlayers,
-		GangType:   gangCard.GetType(),
-		SettleID:   mjContext.CurrentSettleId,
+		GameID:       mjContext.GetGameId(),
+		GangPlayer:   player.GetPalyerId(),
+		SrcPlayer:    gangCard.GetSrcPlayer(),
+		AllPlayers:   allPlayers,
+		HasHuPlayers: hasHuPlayers,
+		QuitPlayers:  quitPalyers,
+		GangType:     gangCard.GetType(),
+		SettleID:     mjContext.CurrentSettleId,
 	}
 
 	f := global.GetGameSettlerFactory()

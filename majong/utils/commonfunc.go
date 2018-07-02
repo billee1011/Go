@@ -1,35 +1,36 @@
 package utils
 
 import (
+	"steve/common/mjoption"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 )
 
-// IsPlayerContinue   玩家的状态在麻将可行牌数组中包含则返回true
-func IsPlayerContinue(playerStater majongpb.XingPaiState, option *majongpb.MajongCommonOption) bool {
-	// 麻将可行牌数组
-	xpStates := option.GetValidXpStateSet()
-	flag := false
-	for _, state := range xpStates {
-		if state == playerStater {
-			flag = true
+// IsPlayerContinue   玩家的状态在麻将不可行牌数组中包含则返回false
+func IsPlayerContinue(playerStater majongpb.XingPaiState, mjContext *majongpb.MajongContext) bool {
+	// 麻将不可行牌数组
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+	flag := true
+	for _, state := range xpOption.PlayerStates {
+		if int(state) == int(playerStater) {
+			flag = false
 			break
 		}
 	}
 	logrus.WithFields(logrus.Fields{"playerStater": playerStater,
-		"xpStates": xpStates, "isCanXp": flag}).Info("判断玩家是否可以继续")
+		"canNotXpStates": xpOption.PlayerStates, "isCanXp": flag}).Info("判断玩家是否可以继续")
 	return flag
 }
 
 //GetNextXpPlayerByID 获取下一个行牌玩家
-func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, option *majongpb.MajongCommonOption) (nextPalyer *majongpb.Player) {
+func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, mjContext *majongpb.MajongContext) (nextPalyer *majongpb.Player) {
 	curPlayerID, i := srcPlayerID, 0
-	for i < 4 {
+	for i < len(mjContext.Players) {
 		nextPalyer = GetNextPlayerByID(players, curPlayerID)
 		// 当前下个玩家可以继续，退出循环
-		if IsPlayerContinue(nextPalyer.GetXpState(), option) {
+		if IsPlayerContinue(nextPalyer.GetXpState(), mjContext) {
 			break
 		}
 		curPlayerID = nextPalyer.GetPalyerId()
@@ -40,11 +41,11 @@ func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, option 
 }
 
 //GetXpPlayers 获取行牌玩家数组
-func GetXpPlayers(players []*majongpb.Player, option *majongpb.MajongCommonOption) []*majongpb.Player {
+func GetXpPlayers(players []*majongpb.Player, mjContext *majongpb.MajongContext) []*majongpb.Player {
 	newPlalyers := make([]*majongpb.Player, 0)
 	for _, player := range players {
 		// 不是正常行牌的玩家，不能检查胡，碰，杠，摸牌。。。
-		if !IsPlayerContinue(player.GetXpState(), option) {
+		if !IsPlayerContinue(player.GetXpState(), mjContext) {
 			continue
 		}
 		newPlalyers = append(newPlalyers, player)
@@ -59,10 +60,10 @@ func GetXpPlayers(players []*majongpb.Player, option *majongpb.MajongCommonOptio
 }
 
 //IsXpPlayerInsufficient 判断能行牌人数是否足够
-func IsXpPlayerInsufficient(players []*majongpb.Player, option *majongpb.MajongCommonOption) bool {
+func IsXpPlayerInsufficient(players []*majongpb.Player, mjContext *majongpb.MajongContext) bool {
 	conut := 0
 	for _, player := range players {
-		if IsPlayerContinue(player.GetXpState(), option) {
+		if IsPlayerContinue(player.GetXpState(), mjContext) {
 			conut++
 		}
 	}
@@ -92,7 +93,7 @@ func SettleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent)
 // GetNextState 下一状态获取
 func GetNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	// 正常玩家<=1,游戏结束
-	if IsXpPlayerInsufficient(mjContext.GetPlayers(), mjContext.GetOption()) {
+	if IsXpPlayerInsufficient(mjContext.GetPlayers(), mjContext) {
 		return majongpb.StateID_state_gameover
 	}
 	return majongpb.StateID_state_mopai

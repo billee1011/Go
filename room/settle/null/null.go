@@ -1,4 +1,4 @@
-package settle
+package null
 
 import (
 	"steve/room/interfaces"
@@ -11,4 +11,9 @@ func (s *nullSettler) Settle(desk interfaces.Desk, mjContext server_pb.MajongCon
 }
 
 func (s *nullSettler) RoundSettle(desk interfaces.Desk, mjContext server_pb.MajongContext) {
+}
+
+// NewNullSettle 初始化麻将结算
+func NewNullSettle() *nullSettler {
+	return &nullSettler{}
 }

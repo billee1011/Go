@@ -5,7 +5,6 @@ import (
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/majong/interfaces"
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
@@ -147,6 +146,10 @@ func IntToCard(cardValue int32) (*majongpb.Card, error) {
 		color = majongpb.CardColor_ColorTiao
 	case 3:
 		color = majongpb.CardColor_ColorTong
+	case 4:
+		color = majongpb.CardColor_ColorFeng
+	case 5:
+		color = majongpb.CardColor_ColorHua
 	default:
 		return nil, fmt.Errorf("cant trans card %d", cardValue)
 	}
@@ -496,9 +499,9 @@ func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
 	if len(context.WallCards) == 0 {
 		return false
 	}
-	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
-	length := handle.GetLensOfWallCards(int(context.GetGameId()))
-	if GetAllMopaiCount(context) == length-53 {
+	// 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
+	length := context.GetOption().GetWallcardsLength()
+	if GetAllMopaiCount(context) == int(length)-53 {
 		return false
 	}
 	return true

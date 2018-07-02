@@ -1,6 +1,7 @@
 package global
 
 import (
+	"steve/common/mjoption"
 	majongpb "steve/server_pb/majong"
 )
 
@@ -61,51 +62,137 @@ var (
 	Card8B = majongpb.Card{Color: majongpb.CardColor_ColorTong, Point: 8}
 	// Card9B 9 筒
 	Card9B = majongpb.Card{Color: majongpb.CardColor_ColorTong, Point: 9}
+
+	// Card1Z 东
+	Card1Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 1}
+	// Card2Z 南
+	Card2Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 2}
+	// Card3Z 西
+	Card3Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 3}
+	// Card4Z 北
+	Card4Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 4}
+	// Card5Z 中
+	Card5Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 5}
+	// Card6Z 发
+	Card6Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 6}
+	// Card7Z 白
+	Card7Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 7}
+
+	// Card1H 春
+	Card1H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 1}
+	// Card2H 夏
+	Card2H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 2}
+	// Card3H 秋
+	Card3H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 3}
+	// Card4H 东
+	Card4H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 4}
+	// Card5H 梅
+	Card5H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 5}
+	// Card6H 兰
+	Card6H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 6}
+	// Card7H 竹
+	Card7H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 7}
+	// Card8H 菊
+	Card8H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 7}
 )
 
-// GetOriginCards 获取gameID游戏的所有牌
-func GetOriginCards(gameID int) []*majongpb.Card {
-	cards := []struct {
-		card  majongpb.Card
-		count int
-	}{
-		// 万
-		{card: Card1W, count: 4},
-		{card: Card2W, count: 4},
-		{card: Card3W, count: 4},
-		{card: Card4W, count: 4},
-		{card: Card5W, count: 4},
-		{card: Card6W, count: 4},
-		{card: Card7W, count: 4},
-		{card: Card8W, count: 4},
-		{card: Card9W, count: 4},
-		// 条
-		{card: Card1T, count: 4},
-		{card: Card2T, count: 4},
-		{card: Card3T, count: 4},
-		{card: Card4T, count: 4},
-		{card: Card5T, count: 4},
-		{card: Card6T, count: 4},
-		{card: Card7T, count: 4},
-		{card: Card8T, count: 4},
-		{card: Card9T, count: 4},
-		// 筒
-		{card: Card1B, count: 4},
-		{card: Card2B, count: 4},
-		{card: Card3B, count: 4},
-		{card: Card4B, count: 4},
-		{card: Card5B, count: 4},
-		{card: Card6B, count: 4},
-		{card: Card7B, count: 4},
-		{card: Card8B, count: 4},
-		{card: Card9B, count: 4},
+func getMjCard(v int) majongpb.Card {
+	switch v {
+	case 11:
+		return Card1W
+	case 12:
+		return Card2W
+	case 13:
+		return Card3W
+	case 14:
+		return Card4W
+	case 15:
+		return Card5W
+	case 16:
+		return Card6W
+	case 17:
+		return Card7W
+	case 18:
+		return Card8W
+	case 19:
+		return Card9W
+	case 21:
+		return Card1T
+	case 22:
+		return Card2T
+	case 23:
+		return Card3T
+	case 24:
+		return Card4T
+	case 25:
+		return Card5T
+	case 26:
+		return Card6T
+	case 27:
+		return Card7T
+	case 28:
+		return Card8T
+	case 29:
+		return Card9T
+	case 31:
+		return Card1B
+	case 32:
+		return Card2B
+	case 33:
+		return Card3B
+	case 34:
+		return Card4B
+	case 35:
+		return Card5B
+	case 36:
+		return Card6B
+	case 37:
+		return Card7B
+	case 38:
+		return Card8B
+	case 39:
+		return Card9B
+	case 41:
+		return Card1Z
+	case 42:
+		return Card2Z
+	case 43:
+		return Card3Z
+	case 44:
+		return Card4Z
+	case 45:
+		return Card5Z
+	case 46:
+		return Card6Z
+	case 47:
+		return Card7Z
+	case 51:
+		return Card1H
+	case 52:
+		return Card2H
+	case 53:
+		return Card3H
+	case 54:
+		return Card4H
+	case 55:
+		return Card5H
+	case 56:
+		return Card6H
+	case 57:
+		return Card7H
+	case 58:
+		return Card8H
 	}
+	return majongpb.Card{}
+}
 
+// GetOriginCards 获取gameID游戏的所有牌
+func GetOriginCards(mjContext *majongpb.MajongContext) []*majongpb.Card {
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	result := make([]*majongpb.Card, 0, 200)
-	for index, cardx := range cards {
-		for i := 0; i < cardx.count; i++ {
-			result = append(result, &cards[index].card)
-		}
+	for _, v := range xpOption.WallCards {
+		card := getMjCard(v)
+		result = append(result, &card)
 	}
 	return result
 }

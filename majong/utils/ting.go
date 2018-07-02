@@ -17,7 +17,7 @@ func GetTingCardNum(mjContext *majongpb.MajongContext, playerID uint64, leftCard
 
 // GetAnCardAndNum 获取未亮牌和数量card2num map
 func GetAnCardAndNum(mjContext *majongpb.MajongContext, playerID uint64, lenCard int) map[int]uint32 {
-	c2nMap := make(map[int]uint32, len(global.GetOriginCards(int(mjContext.GetGameId())))-lenCard)
+	c2nMap := make(map[int]uint32, len(global.GetOriginCards(mjContext))-lenCard)
 	for _, player := range mjContext.GetPlayers() {
 		if player.GetPalyerId() == playerID {
 			continue

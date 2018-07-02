@@ -7,7 +7,6 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -61,7 +60,7 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	huType := s.calcHuType(player.GetPalyerId(), flow)
 	s.notifyHu(card, huType, player.GetPalyerId(), flow)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
-	AddHuCard(card, player, player.GetPalyerId(), huType, false)
+	AddHuCard(card, player, player.GetPalyerId(), huType, true)
 
 	// 玩家胡状态
 	player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
@@ -100,8 +99,8 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) ma
 
 func (s *ZimoState) noCardsToTake(flow interfaces.MajongFlow) bool {
 	context := flow.GetMajongContext()
-	length := handle.GetLensOfWallCards(int(context.GetGameId()))
-	if utils.GetAllMopaiCount(context) == length-53 {
+	length := context.GetOption().GetWallcardsLength()
+	if utils.GetAllMopaiCount(context) == int(length)-53 {
 		return true
 	}
 	if len(context.WallCards) == 0 {
