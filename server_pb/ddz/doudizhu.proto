@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package ddz;
+
+import "states.proto";
+import "events.proto";
+
+
+// Player 玩家数据
+message Player {
+    uint64 palyer_id = 1;                   // 玩家 ID 
+    repeated uint32 cards = 2;              // 玩家手牌
+} 
+
+// 玩家操作
+enum Action {
+    action_grab         = 0;  // 叫/抢地主
+    action_double       = 1;  // 胡
+    action_chupai       = 2;  //
+    action_qi           = 3;  // 弃
+}
+
+// DDZContext 麻将现场
+message DDZContext {
+    int32 game_id = 1;              // 游戏 ID 
+    StateID cur_state = 2;          // 当前状态
+    repeated Player players = 3;    // 玩家列表
+    repeated uint32 wall_cards = 4; // 墙牌
+}
+
+// AutoEvent 自动事件
+message AutoEvent {
+    EventID event_id = 1;       // 事件 ID
+    bytes event_context = 2;    // 事件现场
+    uint32 wait_time = 3;       // 多长时间（ms）后产生该事件
+}
+
+// ReplyClientMessage 回复给客户端的消息
+message ReplyClientMessage {
+    repeated uint64 players = 1;    // 玩家列表
+    int32 msg_id = 2;               // 消息 ID
+    bytes msg = 3;    // 消息体
+}
+
+// TimeCheckInfo 时间检测信息
+message TimeCheckInfo {
+    uint64 duration = 1;            // 多久之后作检测
+    int32 type = 2;                 // 检测类型
+}

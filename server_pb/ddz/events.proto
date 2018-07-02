@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ddz;
+
+// EventID 事件 ID 
+enum EventID {
+    event_invalid = 0;                   // 无效事件
+    event_start_game = 1;               // 开始游戏事件
+    event_deal_finish = 2;              // 发牌完成事件
+    event_grab_request = 3;             // 叫/抢地主事件
+    event_double_request = 4;           // 加倍事件
+    event_chupai_request = 5;          // 出牌请求事件
+    event_timer = 6;                   // 定时事件
+}
+
+// RequestEventHead 请求事件通用头
+message RequestEventHead {
+    uint64 player_id = 1;   // 请求者 ID 
+}
+
+// StartGameEvent 开始游戏事件
+message StartGameEvent {}
+
+// DealFinishEvent 发牌完成事件
+message DealFinishEvent {}
+
+// GrabRequestEvent 叫/抢地主请求事件
+message GrabRequestEvent {
+    RequestEventHead head = 1;  // 请求头
+}
+
+// DoubleRequestEvent 加倍请求事件
+message DoubleRequestEvent {
+    RequestEventHead head = 1;  // 请求头、
+}
+
+// PlayCardRequestEvent 出牌请求事件
+message PlayCardRequestEvent{
+     RequestEventHead head = 1;  // 请求头
+     repeated uint32 cards = 2;  // 出的牌
+}

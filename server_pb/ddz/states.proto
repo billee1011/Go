@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ddz;
+
+// StateID 状态 ID 
+enum StateID {
+    state_init = 0;                // 初始状态
+    state_deal = 1;                // 发牌状态
+    state_grab = 2;                // 叫/抢地主状态
+    state_double = 3;              // 加倍状态
+    state_playing = 4;             // 出牌状态
+    state_over = 5;                // 牌局结束明牌状态
+    state_settle = 6;              // 结算状态
+}
