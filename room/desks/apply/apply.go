@@ -1,4 +1,4 @@
-package desks
+package apply
 
 import (
 	"steve/client_pb/msgId"
@@ -16,7 +16,7 @@ import (
 type joinApplyManager struct {
 	applyChannel chan uint64
 	applyXueZhan chan uint64
-	applyDDZ chan uint64
+	applyDDZ     chan uint64
 }
 
 var gJoinApplyMgr *joinApplyManager
@@ -35,7 +35,7 @@ func newApplyMgr(runChecker bool) *joinApplyManager {
 	mgr := &joinApplyManager{
 		applyChannel: make(chan uint64, 1024),
 		applyXueZhan: make(chan uint64, 1024),
-		applyDDZ: make(chan uint64, 1024),
+		applyDDZ:     make(chan uint64, 1024),
 	}
 	if runChecker {
 		go mgr.checkMatch()
@@ -109,7 +109,7 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 		applyPlayers = append(applyPlayers, playerID)
 		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
 
-		if(gameid == room.GameId_GAMEID_DDZ && len(applyPlayers) >= 3){
+		if gameid == room.GameId_GAMEID_DDZ && len(applyPlayers) >= 3 {
 			players := applyPlayers[:3]
 			applyPlayers = applyPlayers[3:]
 			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})

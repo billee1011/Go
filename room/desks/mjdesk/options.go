@@ -1,4 +1,4 @@
-package desks
+package mjdesk
 
 import (
 	"errors"

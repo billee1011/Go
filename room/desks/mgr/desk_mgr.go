@@ -1,4 +1,4 @@
-package desks
+package mgr
 
 import (
 	"errors"

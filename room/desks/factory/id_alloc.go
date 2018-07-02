@@ -1,4 +1,4 @@
-package desks
+package factory
 
 import (
 	"steve/room/interfaces/global"

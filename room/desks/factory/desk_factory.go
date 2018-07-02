@@ -1,6 +1,7 @@
-package desks
+package factory
 
 import (
+	"steve/room/desks/mjdesk"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	//"steve/room/desks/majong"
@@ -11,11 +12,7 @@ import (
 type deskFactory struct{}
 
 func (df *deskFactory) CreateDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (interfaces.CreateDeskResult, error) {
-	//if gameID == int(room.GameId_GAMEID_DDZ) {
-	//	return ddz.NewDesk(players, gameID, opt)
-	//}
-	//return majong.NewDesk(players, gameID, opt)
-	return newDesk(players, gameID, opt)
+	return mjdesk.CreateMajongDesk(players, gameID, opt, global.GetDeskIDAllocator())
 }
 
 func init() {

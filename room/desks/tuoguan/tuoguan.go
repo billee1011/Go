@@ -1,13 +1,9 @@
-package desks
+package tuoguan
 
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
-	"steve/room/interfaces/global"
-	"steve/structs/exchanger"
-	"steve/structs/proto/gate_rpc"
 	"sync"
 
 	"github.com/Sirupsen/logrus"
@@ -23,14 +19,6 @@ type tuoGuanMgr struct {
 	players      map[uint64]*tuoGuanPlayer
 	maxOverTimer int //	最大超时次数，超过此次数则进入托管状态
 	mu           sync.RWMutex
-}
-
-// newTuoGuanMgr 创建托管管理器
-func newTuoGuanMgr() interfaces.TuoGuanMgr {
-	return &tuoGuanMgr{
-		players:      make(map[uint64]*tuoGuanPlayer),
-		maxOverTimer: 2,
-	}
 }
 
 // GetTuoGuanPlayers 获取托管玩家
@@ -88,34 +76,4 @@ func (tg *tuoGuanMgr) notifyTuoguan(playerID uint64, tuoguan bool) {
 	facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
-}
-
-// HandleCancelTuoGuanReq 处理取消托管请求
-func HandleCancelTuoGuanReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
-	ret = []exchanger.ResponseMsg{}
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "HandleCancelTuoGuanReq",
-		"client_id": clientID,
-	})
-	playerMgr := global.GetPlayerMgr()
-	player := playerMgr.GetPlayerByClientID(clientID)
-	if player == nil {
-		logEntry.Debugln("未登录的客户端")
-		return
-	}
-	playerID := player.GetID()
-	logEntry = logEntry.WithField("player_id", playerID)
-
-	deskMgr := global.GetDeskMgr()
-	desk, _ := deskMgr.GetRunDeskByPlayerID(playerID)
-	if desk == nil {
-		logEntry.Debugln("玩家不在房间中")
-		return
-	}
-
-	tuoGuanMgr := desk.GetTuoGuanMgr()
-	tuoGuanMgr.SetTuoGuan(playerID, false, true)
-	logEntry.Debugln("玩家取消托管")
-	return
 }

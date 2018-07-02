@@ -1,4 +1,4 @@
-package desks
+package mjdesk
 
 import (
 	"context"
@@ -54,64 +54,16 @@ type autoEvent struct {
 }
 
 type desk struct {
-	deskUID      uint64                       // 牌桌唯一 ID
-	gameID       int                          // 游戏 ID
-	createOption interfaces.CreateDeskOptions // 创建选项
-	dContext     *deskContext                 // 牌桌现场
-	settler      interfaces.DeskSettler       // 结算器
-	players      map[uint32]*deskPlayer       // Seat -> player
-	event        chan deskEvent               // 牌桌事件通道
-	enterQuits   chan enterQuitInfo           // 退出以及进入信息
-	cancel       context.CancelFunc           // 取消事件处理
-	tuoGuanMgr   interfaces.TuoGuanMgr        // 托管管理器
-}
-
-func makeDeskPlayers(logEntry *logrus.Entry, players []uint64) (map[uint32]*deskPlayer, error) {
-	playerMgr := global.GetPlayerMgr()
-	deskPlayers := make(map[uint32]*deskPlayer, 4)
-	seat := uint32(0)
-	for _, playerID := range players {
-		player := playerMgr.GetPlayer(playerID)
-		if player == nil {
-			logEntry.WithField("player_id", playerID).Errorln(errPlayerNotExist)
-			return nil, errPlayerNotExist
-		}
-		deskPlayers[seat] = newDeskPlayer(playerID, seat)
-		seat++
-	}
-	return deskPlayers, nil
-}
-
-func newDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (result interfaces.CreateDeskResult, err error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "newDesk",
-		"game_id":   gameID,
-		"players":   players,
-	})
-	alloc := global.GetDeskIDAllocator()
-	id, err := alloc.AllocDeskID()
-	if err != nil {
-		logEntry.Errorln(errAllocDeskIDFailed)
-		err = errAllocDeskIDFailed
-		return
-	}
-	logEntry = logEntry.WithField("desk_uid", id)
-	deskPlayers, err := makeDeskPlayers(logEntry, players)
-	if err != nil {
-		return
-	}
-	return interfaces.CreateDeskResult{
-		Desk: &desk{
-			deskUID:      id,
-			gameID:       gameID,
-			createOption: opt,
-			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
-			players:      deskPlayers,
-			event:        make(chan deskEvent, 16),
-			tuoGuanMgr:   newTuoGuanMgr(),
-			enterQuits:   make(chan enterQuitInfo),
-		},
-	}, nil
+	deskUID      uint64                           // 牌桌唯一 ID
+	gameID       int                              // 游戏 ID
+	createOption interfaces.CreateDeskOptions     // 创建选项
+	dContext     *deskContext                     // 牌桌现场
+	settler      interfaces.DeskSettler           // 结算器
+	players      map[uint32]interfaces.DeskPlayer // Seat -> player
+	event        chan deskEvent                   // 牌桌事件通道
+	enterQuits   chan enterQuitInfo               // 退出以及进入信息
+	cancel       context.CancelFunc               // 取消事件处理
+	tuoGuanMgr   interfaces.TuoGuanMgr            // 托管管理器
 }
 
 // GetUID 获取牌桌 UID
@@ -136,9 +88,10 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 	playerMgr := global.GetPlayerMgr()
 
 	for seat, deskPlayer := range d.players {
-		player := playerMgr.GetPlayer(deskPlayer.playerID)
+		playerID := deskPlayer.GetPlayerID()
+		player := playerMgr.GetPlayer(playerID)
 		if player == nil {
-			logEntry.WithField("player_id", deskPlayer.playerID).Errorln("玩家不存在")
+			logEntry.WithField("player_id", playerID).Errorln("玩家不存在")
 			return nil
 		}
 		result = append(result, &room.RoomPlayerInfo{
@@ -286,7 +239,7 @@ func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
 func (d *desk) initMajongContext() error {
 	players := make([]uint64, len(d.players))
 	for seat, player := range d.players {
-		players[seat] = player.playerID
+		players[seat] = player.GetPlayerID()
 	}
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
@@ -445,7 +398,7 @@ func (d *desk) processEvents(ctx context.Context) {
 }
 
 // getDeskPlayer 获取牌桌玩家
-func (d *desk) getDeskPlayer(playerID uint64) *deskPlayer {
+func (d *desk) getDeskPlayer(playerID uint64) interfaces.DeskPlayer {
 	for _, deskPlayer := range d.players {
 		if deskPlayer.GetPlayerID() == playerID {
 			return deskPlayer
@@ -481,7 +434,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	if eqi.quit {
 		msgs = getDeskQuitRspMsg(eqi.playerID)
 		d.reply(msgs)
-		deskPlayer.quitDesk()
+		deskPlayer.QuitDesk()
 		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
@@ -497,7 +450,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false)
 		}
 		msgs = d.recoverGameForPlayer(eqi.playerID)
-		deskPlayer.enterDesk()
+		deskPlayer.EnterDesk()
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
 	}

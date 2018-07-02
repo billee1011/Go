@@ -1,7 +1,6 @@
-package desks
+package deskplayer
 
 import (
-	"steve/room/interfaces/global"
 	"sync"
 )
 
@@ -12,14 +11,6 @@ type deskPlayer struct {
 	quit     bool   // 是否已经退出牌桌
 
 	mu sync.RWMutex
-}
-
-func newDeskPlayer(playerID uint64, seat uint32) *deskPlayer {
-	return &deskPlayer{
-		playerID: playerID,
-		seat:     seat,
-		ecoin:    global.GetPlayerMgr().GetPlayer(playerID).GetCoin(),
-	}
 }
 
 // GetPlayerID 获取玩家 ID
@@ -50,15 +41,15 @@ func (dp *deskPlayer) IsQuit() bool {
 	return dp.quit
 }
 
-// quitDesk 退出牌桌
-func (dp *deskPlayer) quitDesk() {
+// QuitDesk 退出牌桌
+func (dp *deskPlayer) QuitDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = true
 }
 
-// enterDesk 进入牌桌
-func (dp *deskPlayer) enterDesk() {
+// EnterDesk 进入牌桌
+func (dp *deskPlayer) EnterDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = false

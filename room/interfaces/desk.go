@@ -26,6 +26,10 @@ type DeskPlayer interface {
 	GetEcoin() int
 	// IsQuit 是否已经退出
 	IsQuit() bool
+	// QuitDesk 退出房间
+	QuitDesk()
+	// EnterDesk 进入房间
+	EnterDesk()
 }
 
 // Desk 牌桌
@@ -86,7 +90,8 @@ type DeskMgr interface {
 }
 
 // CreateDeskOptions 创建牌桌选项
-type CreateDeskOptions struct{}
+type CreateDeskOptions struct {
+}
 
 // CreateDeskResult 创建房间结果
 type CreateDeskResult struct {

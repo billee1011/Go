@@ -16,7 +16,8 @@ import (
 	"github.com/spf13/viper"
 
 	_ "steve/room/autoevent" // 引入 autoevent 包，设置工厂
-	_ "steve/room/desks"
+	_ "steve/room/desks/factory"
+	_ "steve/room/desks/mgr"
 	_ "steve/room/playermgr"
 	_ "steve/room/req_event_translator"
 	_ "steve/room/settle"
