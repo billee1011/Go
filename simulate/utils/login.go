@@ -10,10 +10,11 @@ import (
 )
 
 type clientPlayer struct {
-	playerID uint64
-	coin     uint64
-	client   interfaces.Client
-	usrName  string
+	playerID  uint64
+	coin      uint64
+	client    interfaces.Client
+	usrName   string
+	expectors map[msgid.MsgID]interfaces.MessageExpector
 }
 
 func (p *clientPlayer) GetID() uint64 {
@@ -29,6 +30,26 @@ func (p *clientPlayer) GetClient() interfaces.Client {
 
 func (p *clientPlayer) GetUsrName() string {
 	return p.usrName
+}
+
+func (p *clientPlayer) AddExpectors(msgIDs ...msgid.MsgID) {
+	for _, msgID := range msgIDs {
+		p.expectors[msgID], _ = p.client.ExpectMessage(msgID)
+	}
+}
+
+func (p *clientPlayer) GetExpector(msgID msgid.MsgID) interfaces.MessageExpector {
+	return p.expectors[msgID]
+}
+
+func createPlayer(playerID uint64, coin uint64, client interfaces.Client, userName string) *clientPlayer {
+	return &clientPlayer{
+		playerID:  playerID,
+		coin:      coin,
+		client:    client,
+		usrName:   userName,
+		expectors: make(map[msgid.MsgID]interfaces.MessageExpector),
+	}
 }
 
 // LoginUser 登录用户
@@ -52,12 +73,7 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 		logEntry.WithError(err).Errorln(errRequestFailed)
 		return nil, err
 	}
-	return &clientPlayer{
-		playerID: rsp.GetPlayerId(),
-		coin:     rsp.GetCoin(),
-		client:   client,
-		usrName:  userName,
-	}, nil
+	return createPlayer(rsp.GetPlayerId(), rsp.GetCoin(), client, ""), nil
 }
 
 // LoginVisitor 登录游客
@@ -78,11 +94,7 @@ func LoginVisitor(client interfaces.Client, RoomVisitorLoginReq *room.RoomVisito
 		logEntry.WithError(err).Errorln(errRequestFailed)
 		return nil, err
 	}
-	return &clientPlayer{
-		playerID: rsp.GetPlayerId(),
-		coin:     rsp.GetCoin(),
-		client:   client,
-	}, nil
+	return createPlayer(rsp.GetPlayerId(), rsp.GetCoin(), client, ""), nil
 }
 
 func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPlayer, deskData *DeskData) {

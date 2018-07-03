@@ -15,9 +15,11 @@ type MessageSender func(players []uint64, msgID msgid.MsgID, body proto.Message)
 
 // DDZMachine 斗地主状态机
 type DDZMachine struct {
-	factory    machine.StateFactory
-	ddzContext *ddz.DDZContext
-	sender     MessageSender
+	factory           machine.StateFactory
+	ddzContext        *ddz.DDZContext
+	sender            MessageSender
+	autoEvent         *machine.Event
+	autoEventDuration time.Duration
 }
 
 // CreateDDZMachine 创建斗地主状态机
@@ -59,5 +61,11 @@ func (m *DDZMachine) SendMessage(players []uint64, msgID msgid.MsgID, body proto
 
 // SetAutoEvent 设置自动事件， duration ： 多久后触发
 func (m *DDZMachine) SetAutoEvent(event machine.Event, duration time.Duration) {
+	m.autoEvent = &event
+	m.autoEventDuration = duration
+}
 
+// GetAutoEvent 获取自动事件
+func (m *DDZMachine) GetAutoEvent() (*machine.Event, time.Duration) {
+	return m.autoEvent, m.autoEventDuration
 }

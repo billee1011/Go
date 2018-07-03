@@ -4,10 +4,11 @@ import (
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 
-	"github.com/Sirupsen/logrus"
+	"math/rand"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"math/rand"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type initState struct{}
@@ -32,11 +33,11 @@ func (s *initState) onStartGame(m machine.Machine) (int, error) {
 	logrus.WithField("context", getDDZContext(m)).Debugln("开始游戏")
 	players := getPlayers(m)
 	i := rand.Intn(len(players))
-	callPlayer := players[i+1]//叫地主玩家
-	var stageTime uint32 = 4;
+	callPlayer := players[i] //叫地主玩家
+	var stageTime uint32 = 4
 	broadcast(m, msgid.MsgID_ROOM_DDZ_START_GAME_NTF, &room.DDZStartGameNtf{
-		PlayerId:&callPlayer,
-		NextStage:&room.NextStage{Stage: room.DDZStage_DDZ_STAGE_DEAL.Enum(), Time: &stageTime},
+		PlayerId:  &callPlayer,
+		NextStage: &room.NextStage{Stage: room.DDZStage_DDZ_STAGE_DEAL.Enum(), Time: &stageTime},
 	})
 	return int(ddz.StateID_state_deal), nil
 }
