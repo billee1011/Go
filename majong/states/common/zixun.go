@@ -271,7 +271,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	card := ctx.GetGangCard()
 	cardI, _ := utils.CardToInt(*card)
 	var hasQGanghu bool
-	for _, player := range utils.GetXpPlayers(ctx.GetPlayers(), ctx) {
+	for _, player := range utils.GetCanXpPlayers(ctx.GetPlayers(), ctx) {
 		player.PossibleActions = []majongpb.Action{}
 		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
 			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {

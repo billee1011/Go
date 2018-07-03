@@ -485,7 +485,7 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
 		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
-		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerStates)
+		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerNoNormalStates)
 		logEntry.Debugln("玩家退出")
 	} else {
 		d.setMjPlayerQuitDesk(eqi.playerID, false)
@@ -503,15 +503,13 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	}
 }
 
-func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates []mjoption.XingpaiState) {
+func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates uint64) {
 	mjContext := d.dContext.mjContext
 	player := gutils.GetMajongPlayer(playerID, &mjContext)
 	//判断当前状态是否与行牌option中的状态列表一致
 	needQuit := false
-	for _, xpState := range xpStates {
-		if uint32(xpState)&uint32(player.GetXpState()) != 0 {
-			needQuit = true
-		}
+	if xpStates&uint64(player.GetXpState()) != 0 {
+		needQuit = true
 	}
 	if needQuit {
 		deskMgr := global.GetDeskMgr()

@@ -32,12 +32,12 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		var hasChupaiwenxun bool
 		//出完牌后，将上轮添加的胡牌玩家列表重置
 		context.LastHuPlayers = context.LastHuPlayers[:0]
-		for _, player := range players {
+		for _, player := range utils.GetCanXpPlayers(players, context) { // 能正常行牌的玩家才进行查动作
 			//每个玩家的possibleActions都需要清空
 			player.PossibleActions = player.PossibleActions[:0]
 			logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
 				"xpStates": player.GetXpState()}).Info("出牌：每个玩家的状态")
-			if context.GetLastChupaiPlayer() == player.GetPalyerId() || !utils.IsPlayerContinue(player.GetXpState(), context) {
+			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
 				continue
 			}
 			need := s.checkActions(flow, player, card)

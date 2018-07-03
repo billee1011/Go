@@ -102,7 +102,7 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (s *GangSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	nextState := utils.GetNextState(mjcontext)
+	nextState := utils.IsGameOverReturnState(mjcontext)
 	logrus.WithFields(logrus.Fields{
 		"func_name": "GangSettleState.nextState",
 		"newState":  nextState,

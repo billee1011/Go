@@ -11,33 +11,21 @@ import (
 
 // XingPaiOption 行牌选项
 type XingPaiOption struct {
-	ID            int            `yaml:"id"`             // 选项 ID
-	WallCards     []int          `yaml:"wall_cards"`     //墙牌
-	HuGameOver    bool           `yaml:"hu_gameover"`    // 胡牌后是否触发游戏结束
-	Hnz           Hnz            `yaml:"hnz"`            //是否需要换N张
-	NeedDingque   bool           `yaml:"need_dingque"`   //是否需要定缺
-	NeedAddflower bool           `yaml:"need_addflower"` //是否需要补花
-	NeedChi       bool           `yaml:"need_chi"`       //是否可以吃牌
-	PlayerStates  []XingpaiState `yaml:"player_states"`  //玩家不参与游戏的状态
-	// Zhuang        int            `yaml:"zhuang"`         //选庄的方式
+	ID                   int    `yaml:"id"`                      // 选项 ID
+	WallCards            []int  `yaml:"wall_cards"`              // 墙牌
+	HuGameOver           bool   `yaml:"hu_gameover"`             // 胡牌后是否触发游戏结束
+	Hnz                  Hnz    `yaml:"hnz"`                     // 是否开启换N张
+	EnableDingque        bool   `yaml:"enable_dingque"`          // 是否开启定缺
+	EnableAddflower      bool   `yaml:"enable_addflower"`        // 是否开启补花
+	EnableChi            bool   `yaml:"enable_chi"`              // 是否可以吃牌
+	PlayerNoNormalStates uint64 `yaml:"player_no_normal_states"` // 玩家不参与游戏的不正常状态
+	// Zhuang        int            `yaml:"zhuang"`              // 选庄的方式
 }
-
-// XingpaiState 行牌状态
-type XingpaiState uint32
-
-const (
-	//Run 正常行牌状态
-	Run XingpaiState = 0
-	//Hu 胡牌状态
-	Hu XingpaiState = 1
-	//Giveup 认输状态
-	Giveup XingpaiState = 2
-)
 
 // Hnz 换n张
 type Hnz struct {
-	Need bool `yaml:"need"` //是否需要换n张
-	Num  int  `yaml:"num"`  //换的张数
+	Enable bool `yaml:"enable"` //是否开启换n张
+	Num    int  `yaml:"num"`    //换的张数
 }
 
 // XingPaiOptionManager 选项管理器
