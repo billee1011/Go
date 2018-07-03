@@ -2,7 +2,6 @@ package interfaces
 
 import (
 	msgid "steve/client_pb/msgId"
-	room "steve/client_pb/room"
 	"steve/structs/proto/gate_rpc"
 )
 
@@ -30,6 +29,12 @@ type DeskPlayer interface {
 	QuitDesk()
 	// EnterDesk 进入房间
 	EnterDesk()
+	// OnPlayerOverTime 玩家超时
+	OnPlayerOverTime()
+	// IsTuoguan 玩家是否在托管中
+	IsTuoguan() bool
+	// SetTuoguan 设置托管
+	SetTuoguan(tuoguan bool, notify bool)
 }
 
 // Desk 牌桌
@@ -41,7 +46,7 @@ type Desk interface {
 	GetGameID() int
 
 	// GetPlayers 获取牌桌玩家数据 (将会被废弃，不要使用， 改为 GetDeskPlayers 代替)
-	GetPlayers() []*room.RoomPlayerInfo
+	// GetPlayers() []*room.RoomPlayerInfo
 
 	// GetDeskPlayers 获取牌桌玩家
 	GetDeskPlayers() []DeskPlayer
@@ -66,7 +71,7 @@ type Desk interface {
 	PlayerEnter(playerID uint64)
 
 	// GetTuoGuanMgr 获取托管管理器
-	GetTuoGuanMgr() TuoGuanMgr
+	// GetTuoGuanMgr() TuoGuanMgr
 
 	// BroadcastMessage 广播消息给牌桌玩家
 	// playerIDs ： 目标玩家，如果为 nil 或者长度为0，则针对牌桌所有玩家

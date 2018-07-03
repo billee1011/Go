@@ -1,14 +1,22 @@
 package deskplayer
 
 import (
+	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
+	"steve/room/interfaces/facade"
 	"sync"
+
+	"github.com/golang/protobuf/proto"
 )
 
 type deskPlayer struct {
-	playerID uint64
-	seat     uint32 // 座号
-	ecoin    uint64 // 进牌桌金币数
-	quit     bool   // 是否已经退出牌桌
+	playerID    uint64
+	seat        uint32 // 座号
+	ecoin       uint64 // 进牌桌金币数
+	quit        bool   // 是否已经退出牌桌
+	overTime    int    // 超时计数
+	maxOverTime int    // 最大超时次数
+	tuoguan     bool   // 是否在托管中
 
 	mu sync.RWMutex
 }
@@ -46,6 +54,7 @@ func (dp *deskPlayer) QuitDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = true
+	dp.tuoguan = true // 退出后自动托管
 }
 
 // EnterDesk 进入牌桌
@@ -53,4 +62,40 @@ func (dp *deskPlayer) EnterDesk() {
 	dp.mu.Lock()
 	dp.mu.Unlock()
 	dp.quit = false
+}
+
+// OnPlayerOverTime 玩家超时
+func (dp *deskPlayer) OnPlayerOverTime() {
+	dp.mu.Lock()
+	dp.mu.Unlock()
+	dp.overTime++
+
+	if dp.overTime >= dp.maxOverTime && !dp.tuoguan {
+		dp.tuoguan = true
+		dp.notifyTuoguan(dp.playerID, true)
+	}
+}
+
+// IsTuoguan 玩家是否在托管中
+func (dp *deskPlayer) IsTuoguan() bool {
+	dp.mu.RLock()
+	defer dp.mu.RUnlock()
+	return dp.tuoguan
+}
+
+// SetTuoguan 设置托管状态
+func (dp *deskPlayer) SetTuoguan(tuoguan bool, notify bool) {
+	dp.mu.Lock()
+	dp.mu.Unlock()
+	dp.tuoguan = tuoguan
+	if notify {
+		dp.notifyTuoguan(dp.playerID, tuoguan)
+	}
+}
+
+// notifyTuoguan 通知玩家托管状态
+func (dp *deskPlayer) notifyTuoguan(playerID uint64, tuoguan bool) {
+	facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
+		Tuoguan: proto.Bool(tuoguan),
+	})
 }

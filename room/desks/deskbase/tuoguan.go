@@ -1,7 +1,8 @@
-package tuoguan
+package deskbase
 
 import (
 	"steve/client_pb/room"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
@@ -32,9 +33,7 @@ func HandleCancelTuoGuanReq(clientID uint64, header *steve_proto_gaterpc.Header,
 		logEntry.Debugln("玩家不在房间中")
 		return
 	}
-
-	tuoGuanMgr := desk.GetTuoGuanMgr()
-	tuoGuanMgr.SetTuoGuan(playerID, false, true)
-	logEntry.Debugln("玩家取消托管")
+	deskPlayer := facade.GetDeskPlayerByID(desk, playerID)
+	deskPlayer.SetTuoguan(false, true)
 	return
 }

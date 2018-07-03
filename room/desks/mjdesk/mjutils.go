@@ -2,13 +2,20 @@ package mjdesk
 
 import (
 	"errors"
+	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/room/desks/deskbase"
+	"steve/room/interfaces"
 	"steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 )
 
 var errNoGameOption = errors.New("没有该游戏的游戏选项")
+
+func translateToRoomPlayer(deskPlayer interfaces.DeskPlayer) room.RoomPlayerInfo {
+	return deskbase.TranslateToRoomPlayer(deskPlayer)
+}
 
 // fillContextOptions 填充麻将现场的 options
 func fillContextOptions(gameID int, mjContext *majong.MajongContext) error {

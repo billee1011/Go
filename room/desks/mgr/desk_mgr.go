@@ -3,6 +3,7 @@ package mgr
 import (
 	"errors"
 	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/structs/proto/gate_rpc"
 	"sync"
@@ -33,15 +34,9 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "deskMgr.RunDesk",
 		"desk_uid":  desk.GetUID(),
-		"players":   desk.GetPlayers(),
 	})
 
-	players := desk.GetPlayers()
-	playerIDs := []uint64{}
-	for _, player := range players {
-		playerIDs = append(playerIDs, player.GetPlayerId())
-	}
-
+	playerIDs := facade.GetDeskPlayerIDs(desk)
 	for _, playerID := range playerIDs {
 		if _, ok := dm.playerDeskMap.Load(playerID); ok {
 			logEntry.WithField("player_id", playerID).Errorln(errPlayerAlreadyInDesk)
@@ -77,17 +72,10 @@ func (dm *deskMgr) finishDesk(deskUID uint64, players []uint64) {
 
 func (dm *deskMgr) deskFinish(desk interfaces.Desk) func() {
 	deskUID := desk.GetUID()
-	players := desk.GetPlayers()
-	playerIDs := []uint64{}
-
-	for _, player := range players {
-		playerIDs = append(playerIDs, player.GetPlayerId())
-	}
-
+	playerIDs := facade.GetDeskPlayerIDs(desk)
 	return func() {
 		dm.mu.Lock()
 		defer dm.mu.Unlock()
-
 		dm.finishDesk(deskUID, playerIDs)
 	}
 }

@@ -67,9 +67,10 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		"func_name": "getRecoverPlayerInfo",
 	})
 	mjContext := &d.dContext.mjContext
-	roomPlayerInfos := d.GetPlayers()
-	for _, roomPlayerInfo := range roomPlayerInfos {
-		playerID := roomPlayerInfo.GetPlayerId()
+	deskPlayers := d.GetDeskPlayers()
+	for _, deskPlayer := range deskPlayers {
+		playerID := deskPlayer.GetPlayerID()
+		roomPlayerInfo := translateToRoomPlayer(deskPlayer)
 		player := gutils.GetMajongPlayer(playerID, mjContext)
 		if player == nil {
 			logEntry.WithField("palyerID: ", playerID).Errorln("mjContext找不到对应玩家")
@@ -80,10 +81,10 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		svrHandCard := player.GetHandCards()
 		handCardCount := uint32(len(svrHandCard))
 		gamePlayerInfo := &room.GamePlayerInfo{
-			PlayerInfo:    roomPlayerInfo,
+			PlayerInfo:    &roomPlayerInfo,
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
-			IsTuoguan:     proto.Bool(d.getDeskPlayer(playerID).IsQuit()),
+			IsTuoguan:     proto.Bool(deskPlayer.IsTuoguan()),
 		}
 		xpState := room.XingPaiState(player.GetXpState())
 		gamePlayerInfo.XpState = &xpState

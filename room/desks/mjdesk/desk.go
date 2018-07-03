@@ -10,6 +10,7 @@ import (
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
+	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
@@ -34,12 +35,6 @@ type deskEvent struct {
 	stateNumber int
 }
 
-// enterQuitInfo 退出以及进入信息
-type enterQuitInfo struct {
-	playerID uint64
-	quit     bool // true 为退出， false 为进入
-}
-
 // deskContext 牌桌现场
 type deskContext struct {
 	mjContext   server_pb.MajongContext // 牌局现场
@@ -54,16 +49,14 @@ type autoEvent struct {
 }
 
 type desk struct {
-	deskUID      uint64                           // 牌桌唯一 ID
-	gameID       int                              // 游戏 ID
-	createOption interfaces.CreateDeskOptions     // 创建选项
-	dContext     *deskContext                     // 牌桌现场
-	settler      interfaces.DeskSettler           // 结算器
-	players      map[uint32]interfaces.DeskPlayer // Seat -> player
-	event        chan deskEvent                   // 牌桌事件通道
-	enterQuits   chan enterQuitInfo               // 退出以及进入信息
-	cancel       context.CancelFunc               // 取消事件处理
-	tuoGuanMgr   interfaces.TuoGuanMgr            // 托管管理器
+	*deskbase.DeskPlayerMgr
+
+	deskUID  uint64                 // 牌桌唯一 ID
+	gameID   int                    // 游戏 ID
+	dContext *deskContext           // 牌桌现场
+	settler  interfaces.DeskSettler // 结算器
+	event    chan deskEvent         // 牌桌事件通道
+	cancel   context.CancelFunc     // 取消事件处理
 }
 
 // GetUID 获取牌桌 UID
@@ -74,42 +67,6 @@ func (d *desk) GetUID() uint64 {
 // GetGameID 获取游戏 ID
 func (d *desk) GetGameID() int {
 	return d.gameID
-}
-
-// GetPlayers 获取牌桌玩家数据
-func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "desk.GetPlayers",
-		"desk_uid":  d.deskUID,
-		"game_id":   d.gameID,
-	})
-	result := []*room.RoomPlayerInfo{}
-
-	playerMgr := global.GetPlayerMgr()
-
-	for seat, deskPlayer := range d.players {
-		playerID := deskPlayer.GetPlayerID()
-		player := playerMgr.GetPlayer(playerID)
-		if player == nil {
-			logEntry.WithField("player_id", playerID).Errorln("玩家不存在")
-			return nil
-		}
-		result = append(result, &room.RoomPlayerInfo{
-			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
-			Coin:     proto.Uint64(player.GetCoin()),
-			Seat:     proto.Uint32(uint32(seat)),
-		})
-	}
-	return result
-}
-
-// GetDeskPlayers 获取牌桌玩家
-func (d *desk) GetDeskPlayers() []interfaces.DeskPlayer {
-	result := []interfaces.DeskPlayer{}
-	for _, deskPlayer := range d.players {
-		result = append(result, deskPlayer)
-	}
-	return result
 }
 
 // Start 启动牌桌逻辑
@@ -149,22 +106,6 @@ func (d *desk) Start(finish func()) error {
 		stateNumber: d.dContext.stateNumber,
 	}
 	return nil
-}
-
-// PlayerQuit 玩家退出
-func (d *desk) PlayerQuit(playerID uint64) {
-	d.enterQuits <- enterQuitInfo{
-		playerID: playerID,
-		quit:     true,
-	}
-}
-
-// PlayerEnter 玩家进入
-func (d *desk) PlayerEnter(playerID uint64) {
-	d.enterQuits <- enterQuitInfo{
-		playerID: playerID,
-		quit:     false,
-	}
 }
 
 // Stop 停止桌面
@@ -231,16 +172,8 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	})
 }
 
-// GetTuoGuanMgr 获取托管管理器
-func (d *desk) GetTuoGuanMgr() interfaces.TuoGuanMgr {
-	return d.tuoGuanMgr
-}
-
 func (d *desk) initMajongContext() error {
-	players := make([]uint64, len(d.players))
-	for seat, player := range d.players {
-		players[seat] = player.GetPlayerID()
-	}
+	players := facade.GetDeskPlayerIDs(d)
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(d.gameID),
 		Players: players,
@@ -277,16 +210,12 @@ func (d *desk) initMajongContext() error {
 	return nil
 }
 
-func (d *desk) getTuoguanPlayers() []uint64 {
-	return d.tuoGuanMgr.GetTuoGuanPlayers()
-}
-
 // genTimerEvent 生成计时事件
 func (d *desk) genTimerEvent() {
 	g := global.GetDeskAutoEventGenerator()
 	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
 	dContext := d.dContext
-	tuoGuanPlayers := d.getTuoguanPlayers()
+	tuoGuanPlayers := facade.GetTuoguanPlayers(d)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":       "desk.genTimerEvent",
 		"state_number":    dContext.stateNumber,
@@ -358,7 +287,10 @@ func (d *desk) recordTuoguanOverTimeCount(event interfaces.Event) {
 	if id == server_pb.EventID_event_huansanzhang_request || id == server_pb.EventID_event_dingque_request {
 		return
 	}
-	d.tuoGuanMgr.OnPlayerTimeOut(playerID)
+	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
+	if deskPlayer != nil {
+		deskPlayer.OnPlayerOverTime()
+	}
 }
 
 func (d *desk) processEvents(ctx context.Context) {
@@ -381,7 +313,7 @@ func (d *desk) processEvents(ctx context.Context) {
 				logEntry.Infoln("done")
 				return
 			}
-		case enterQuitInfo := <-d.enterQuits:
+		case enterQuitInfo := <-d.GetEnterQuitChan():
 			{
 				d.handleEnterQuit(enterQuitInfo)
 			}
@@ -397,16 +329,6 @@ func (d *desk) processEvents(ctx context.Context) {
 	}
 }
 
-// getDeskPlayer 获取牌桌玩家
-func (d *desk) getDeskPlayer(playerID uint64) interfaces.DeskPlayer {
-	for _, deskPlayer := range d.players {
-		if deskPlayer.GetPlayerID() == playerID {
-			return deskPlayer
-		}
-	}
-	return nil
-}
-
 // getContextPlayer 获取context玩家
 func (d *desk) getContextPlayer(playerID uint64) *server_pb.Player {
 	for _, contextPlayer := range d.dContext.mjContext.GetPlayers() {
@@ -418,38 +340,37 @@ func (d *desk) getContextPlayer(playerID uint64) *server_pb.Player {
 }
 
 // handleEnterQuit 处理退出进入信息
-func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
+func (d *desk) handleEnterQuit(eqi deskbase.EnterQuitInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "handleEnterQuit",
-		"player_id": eqi.playerID,
-		"quit":      eqi.quit,
+		"player_id": eqi.PlayerID,
+		"quit":      eqi.Quit,
 	})
 	var msgs []server_pb.ReplyClientMessage
-	deskPlayer := d.getDeskPlayer(eqi.playerID)
+	deskPlayer := facade.GetDeskPlayerByID(d, eqi.PlayerID)
 
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
 		return
 	}
-	if eqi.quit {
-		msgs = getDeskQuitRspMsg(eqi.playerID)
+	if eqi.Quit {
+		msgs = getDeskQuitRspMsg(eqi.PlayerID)
 		d.reply(msgs)
 		deskPlayer.QuitDesk()
-		d.setMjPlayerQuitDesk(eqi.playerID, true)
-		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
+		d.setMjPlayerQuitDesk(eqi.PlayerID, true)
 		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
-		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerStates)
+		d.handleQuitByPlayerState(eqi.PlayerID, xpOption.PlayerStates)
 		logEntry.Debugln("玩家退出")
 	} else {
-		d.setMjPlayerQuitDesk(eqi.playerID, false)
+		d.setMjPlayerQuitDesk(eqi.PlayerID, false)
 		// 判断行牌状态, 选项化后需修改
-		mjPlayer := gutils.GetMajongPlayer(eqi.playerID, &d.dContext.mjContext)
+		mjPlayer := gutils.GetMajongPlayer(eqi.PlayerID, &d.dContext.mjContext)
 		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
 		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌
 		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
-			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false)
+			deskPlayer.SetTuoguan(false, false)
 		}
-		msgs = d.recoverGameForPlayer(eqi.playerID)
+		msgs = d.recoverGameForPlayer(eqi.PlayerID)
 		deskPlayer.EnterDesk()
 		d.reply(msgs)
 		logEntry.Debugln("玩家进入")
@@ -601,17 +522,6 @@ func (d *desk) removeQuit(playerIDs []uint64) []uint64 {
 	return result
 }
 
-// allPlayerIDs 获取所有玩家的 ID
-func (d *desk) allPlayerIDs() []uint64 {
-	result := []uint64{}
-	deskPlayers := d.GetDeskPlayers()
-	for _, deskPlayer := range deskPlayers {
-		playerID := deskPlayer.GetPlayerID()
-		result = append(result, playerID)
-	}
-	return result
-}
-
 // BroadcastMessage 向玩家广播消息
 func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -621,7 +531,7 @@ func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []by
 	})
 	// 是否针对所有玩家
 	if playerIDs == nil || len(playerIDs) == 0 {
-		playerIDs = d.allPlayerIDs()
+		playerIDs = facade.GetDeskPlayerIDs(d)
 		logEntry = logEntry.WithField("all_player_ids", playerIDs)
 	}
 	playerIDs = d.removeQuit(playerIDs)

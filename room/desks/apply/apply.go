@@ -3,7 +3,9 @@ package apply
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
@@ -161,32 +163,16 @@ func (jam *joinApplyManager) replicateApplyProc(applyPlayers []uint64, newPlayer
 }
 
 func notifyDeskCreate(desk interfaces.Desk) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "notifyDeskCreate",
-	})
-	players := desk.GetPlayers()
-	clientIDs := []uint64{}
-
-	playerMgr := global.GetPlayerMgr()
-	for _, player := range players {
-		playerID := player.GetPlayerId()
-		p := playerMgr.GetPlayer(playerID)
-		if p != nil {
-			clientIDs = append(clientIDs, p.GetClientID())
-		}
+	players := []*room.RoomPlayerInfo{}
+	deskPlayers := desk.GetDeskPlayers()
+	for _, player := range deskPlayers {
+		roomPlayer := deskbase.TranslateToRoomPlayer(player)
+		players = append(players, &roomPlayer)
 	}
 	ntf := room.RoomDeskCreatedNtf{
-		Players: desk.GetPlayers(),
+		Players: players,
 	}
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid.MsgID_ROOM_DESK_CREATED_NTF)}
-	ms := global.GetMessageSender()
-
-	ms.BroadcastPackage(clientIDs, head, &ntf)
-	logEntry.WithFields(logrus.Fields{
-		"ntf_context": ntf,
-		"info":        ntf.Players,
-	}).Debugln("广播创建房间")
+	facade.BroadCastDeskMessage(desk, nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
 }
 
 // HandleRoomJoinDeskReq 处理器玩家申请加入请求
