@@ -124,7 +124,7 @@ func checkPengPengHu(cardCalcParams interfaces.CardCalcParams) bool {
 	for cardPoint, v := range cardCount {
 		if v == 4 {
 			return false
-		} else if v == 3 {
+		} else if v == 3 || v == 5 { //特殊情况下5相同的牌张牌
 			handCardSum++
 		} else if v == 1 {
 			cards = append(cards, cardPoint)
