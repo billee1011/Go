@@ -211,6 +211,62 @@ func TingCardInfoSvr2Client(minfos []*majongpb.TingCardInfo) []*room.TingCardInf
 	return rinfos
 }
 
+// CardsGroupSvr2Client server的牌组类型转换，server_pb-->client_pb
+func CardsGroupSvr2Client(cardsGroups []*majongpb.CardsGroup) (cardsGroupList []*room.CardsGroup) {
+	cardsGroupList = make([]*room.CardsGroup, 0)
+	for _, cardsGroup := range cardsGroups {
+		if cardsGroup.Type == majongpb.CardsGroupType_CGT_PENG {
+			rCardsGroup := &room.CardsGroup{
+				Pid:   proto.Uint64(cardsGroup.Pid),
+				Type:  room.CardsGroupType_CGT_PENG.Enum(),
+				Cards: []uint32{uint32(cardsGroup.Cards[0])},
+			}
+			cardsGroupList = append(cardsGroupList, rCardsGroup)
+		}
+		if cardsGroup.Type == majongpb.CardsGroupType_CGT_ANGANG {
+			rCardsGroup := &room.CardsGroup{
+				Pid:   proto.Uint64(cardsGroup.Pid),
+				Type:  room.CardsGroupType_CGT_ANGANG.Enum(),
+				Cards: []uint32{uint32(cardsGroup.Cards[0])},
+			}
+			cardsGroupList = append(cardsGroupList, rCardsGroup)
+		}
+		if cardsGroup.Type == majongpb.CardsGroupType_CGT_BUGANG {
+			rCardsGroup := &room.CardsGroup{
+				Pid:   proto.Uint64(cardsGroup.Pid),
+				Type:  room.CardsGroupType_CGT_BUGANG.Enum(),
+				Cards: []uint32{uint32(cardsGroup.Cards[0])},
+			}
+			cardsGroupList = append(cardsGroupList, rCardsGroup)
+		}
+		if cardsGroup.Type == majongpb.CardsGroupType_CGT_MINGGANG {
+			rCardsGroup := &room.CardsGroup{
+				Pid:   proto.Uint64(cardsGroup.Pid),
+				Type:  room.CardsGroupType_CGT_MINGGANG.Enum(),
+				Cards: []uint32{uint32(cardsGroup.Cards[0])},
+			}
+			cardsGroupList = append(cardsGroupList, rCardsGroup)
+		}
+		if cardsGroup.Type == majongpb.CardsGroupType_CGT_HU {
+			rCardsGroup := &room.CardsGroup{
+				Pid:   proto.Uint64(cardsGroup.Pid),
+				Type:  room.CardsGroupType_CGT_HU.Enum(),
+				Cards: []uint32{uint32(cardsGroup.Cards[0])},
+			}
+			cardsGroupList = append(cardsGroupList, rCardsGroup)
+		}
+		if cardsGroup.Type == majongpb.CardsGroupType_CGT_HAND {
+			rCardsGroup := &room.CardsGroup{
+				Pid:   proto.Uint64(cardsGroup.Pid),
+				Type:  room.CardsGroupType_CGT_HAND.Enum(),
+				Cards: cardsGroup.Cards,
+			}
+			cardsGroupList = append(cardsGroupList, rCardsGroup)
+		}
+	}
+	return
+}
+
 //FmtPlayerInfo 打印玩家信息
 func FmtPlayerInfo(player *majongpb.Player) logrus.Fields {
 	fields := logrus.Fields{
@@ -350,5 +406,15 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		Cards: cards,
 	}
 	cardsGroupList = append(cardsGroupList, cardsGroup)
+	// 胡牌
+	for _, huCard := range player.HuCards {
+		card := ServerCard2Number((*huCard).Card)
+		cardsGroup := &room.CardsGroup{
+			Pid:   proto.Uint64(player.PalyerId),
+			Type:  room.CardsGroupType_CGT_HU.Enum(),
+			Cards: []uint32{uint32(card)},
+		}
+		cardsGroupList = append(cardsGroupList, cardsGroup)
+	}
 	return cardsGroupList
 }
