@@ -147,13 +147,18 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 		logEntry.WithError(err).Errorln("消息转事件失败")
 		return
 	}
-	eventConetxtByte, err := proto.Marshal(eventContext)
+	eventMessage, ok := eventContext.(proto.Message)
+	if !ok {
+		logEntry.Errorln("转换事件函数返回值类型错误")
+		return
+	}
+	eventConetxtByte, err := proto.Marshal(eventMessage)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化事件现场失败")
 	}
 
 	d.PushEvent(interfaces.Event{
-		ID:        eventID,
+		ID:        server_pb.EventID(eventID),
 		Context:   eventConetxtByte,
 		EventType: interfaces.NormalEvent,
 		PlayerID:  playerID,

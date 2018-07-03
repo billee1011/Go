@@ -1,4 +1,4 @@
-package rtoet
+package majong
 
 import (
 	"steve/client_pb/room"
@@ -8,8 +8,9 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func translateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomHuansanzhangReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+// TranslateHuansanzhangReq 转换换三张请求
+func TranslateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.RoomHuansanzhangReq) (eventID int, eventContext proto.Message, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
@@ -18,6 +19,6 @@ func translateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Heade
 		Cards: translateCards(req.GetCards()),
 		Sure:  req.GetSure(),
 	}
-	eventID = server_pb.EventID_event_huansanzhang_request
+	eventID = int(server_pb.EventID_event_huansanzhang_request)
 	return
 }

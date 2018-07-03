@@ -1,4 +1,4 @@
-package rtoet
+package majong
 
 import (
 	"steve/client_pb/room"
@@ -8,8 +8,9 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func translateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomChupaiReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+// TranslateChupaiReq 转换出牌请求
+func TranslateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.RoomChupaiReq) (eventID int, eventContext proto.Message, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
@@ -18,6 +19,6 @@ func translateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		Head:  &eventHeader,
 		Cards: &card,
 	}
-	eventID = server_pb.EventID_event_chupai_request
+	eventID = int(server_pb.EventID_event_chupai_request)
 	return
 }

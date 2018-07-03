@@ -1,4 +1,4 @@
-package rtoet
+package majong
 
 import (
 	"steve/client_pb/room"

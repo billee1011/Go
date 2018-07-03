@@ -1,4 +1,4 @@
-package rtoet
+package majong
 
 import (
 	"steve/client_pb/room"
@@ -8,8 +8,9 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func translateDingqueReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomDingqueReq) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+// TranslateDingqueReq 转换定缺请求
+func TranslateDingqueReq(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.RoomDingqueReq) (eventID int, eventContext proto.Message, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
@@ -18,6 +19,6 @@ func translateDingqueReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		Head:  &eventHeader,
 		Color: cardColor,
 	}
-	eventID = server_pb.EventID_event_dingque_request
+	eventID = int(server_pb.EventID_event_dingque_request)
 	return
 }

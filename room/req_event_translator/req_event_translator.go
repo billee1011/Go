@@ -5,9 +5,8 @@ import (
 	"reflect"
 	"steve/client_pb/msgId"
 	"steve/room/interfaces/global"
-	server_pb "steve/server_pb/majong"
+	"steve/room/req_event_translator/majong"
 	"steve/structs/proto/gate_rpc"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -25,7 +24,7 @@ type translator struct {
 var errTranslatorNotExists = errors.New("转换器不存在")
 var errUnmarshalReqFailed = errors.New("反序列化请求消息体失败")
 
-func (t *translator) Translate(playerID uint64, header *steve_proto_gaterpc.Header, bodyData []byte) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+func (t *translator) Translate(playerID uint64, header *steve_proto_gaterpc.Header, bodyData []byte) (eventID int, eventContext interface{}, err error) {
 	f, ok := t.msgTranslators[msgid.MsgID(header.GetMsgId())]
 	if !ok {
 		err = errTranslatorNotExists
@@ -35,7 +34,7 @@ func (t *translator) Translate(playerID uint64, header *steve_proto_gaterpc.Head
 }
 
 func (t *translator) callTranslator(msgTranslator msgTranslator, playerID uint64,
-	header *steve_proto_gaterpc.Header, bodyData []byte) (eventID server_pb.EventID, eventContext proto.Message, err error) {
+	header *steve_proto_gaterpc.Header, bodyData []byte) (eventID int, eventContext interface{}, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "translator.callTranslator",
 		"player_id": playerID,
@@ -56,8 +55,8 @@ func (t *translator) callTranslator(msgTranslator msgTranslator, playerID uint64
 		reflect.ValueOf(bodyMsg).Elem(),
 	})
 
-	eventID = callResults[0].Interface().(server_pb.EventID)
-	eventContext = callResults[1].Interface().(proto.Message)
+	eventID = callResults[0].Interface().(int)
+	eventContext = callResults[1].Interface()
 	errInterface := callResults[2].Interface()
 	if errInterface == nil {
 		err = nil
@@ -87,26 +86,15 @@ func (t *translator) addTranslator(msgID msgid.MsgID, f interface{}) {
 		logEntry.Panic("处理函数的第 3 个参数必须是 proto.Message 类型")
 	}
 
-	typeOfEventID := reflect.TypeOf(server_pb.EventID(0))
 	typeOfErr := reflect.TypeOf(errors.New(""))
-
-	if fType.NumOut() != 3 || fType.Out(0) != typeOfEventID || fType.Out(2).Name() != "error" {
+	if fType.NumOut() != 3 || fType.Out(0).Kind() != reflect.Int || fType.Out(2).Name() != "error" {
 		logEntry.WithFields(logrus.Fields{
-			"num_out":          fType.NumOut(),
-			"out_0_type":       fType.Out(0),
-			"out_2_type":       fType.Out(2),
-			"type_of_event_id": typeOfEventID,
-			"type_of_err":      typeOfErr,
+			"num_out":     fType.NumOut(),
+			"out_0_type":  fType.Out(0),
+			"out_2_type":  fType.Out(2),
+			"type_of_err": typeOfErr,
 		}).Panic("处理函数的返回值类型错误")
 	}
-	eventContextType := fType.Out(1)
-	if eventContextType.Name() != "Message" || !strings.HasSuffix(eventContextType.PkgPath(), "proto") {
-		logEntry.WithFields(logrus.Fields{
-			"event_context_type_name": eventContextType.Name(),
-			"event_context_type_pkg":  eventContextType.PkgPath(),
-		}).Panic("处理函数的第 2 个返回值类型错误")
-	}
-
 	t.msgTranslators[msgID] = msgTranslator{
 		f:        f,
 		bodyType: bodyType,
@@ -114,12 +102,15 @@ func (t *translator) addTranslator(msgID msgid.MsgID, f interface{}) {
 }
 
 func (t *translator) addTranslators() {
-	// TODO 添加所有请求转事件表
-	t.addTranslator(msgid.MsgID_ROOM_HUANSANZHANG_REQ, translateHuansanzhangReq)
-	t.addTranslator(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ, translateXingpaiActionReq)
-	t.addTranslator(msgid.MsgID_ROOM_CHUPAI_REQ, translateChupaiReq)
-	t.addTranslator(msgid.MsgID_ROOM_DINGQUE_REQ, translateDingqueReq)
-	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, translateCartoonFinishReq)
+	// majong
+	t.addTranslator(msgid.MsgID_ROOM_HUANSANZHANG_REQ, majong.TranslateHuansanzhangReq)
+	t.addTranslator(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ, majong.TranslateXingpaiActionReq)
+	t.addTranslator(msgid.MsgID_ROOM_CHUPAI_REQ, majong.TranslateChupaiReq)
+	t.addTranslator(msgid.MsgID_ROOM_DINGQUE_REQ, majong.TranslateDingqueReq)
+	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, majong.TranslateCartoonFinishReq)
+
+	// 斗地主
+	// t.addTranslator(msgid.MsgID_grab)
 }
 
 func init() {
