@@ -17,7 +17,7 @@ var playerParams = interfaces.CardCalcParams{
 
 func init() {
 	handCards := make([]*majongpb.Card, 0)
-	gangCards := make([]*majongpb.Card, 0)
+	gangCards := make([]*majongpb.GangCard, 0)
 	pengCards := make([]*majongpb.Card, 0)
 	HuCard := new(majongpb.Card)
 	playerParams = interfaces.CardCalcParams{
@@ -34,8 +34,8 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 11, 12, 13, 24, 25, 26, 14, 15, 16, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -45,7 +45,7 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -63,8 +63,8 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 21, 22, 23, 24, 25, 26, 27, 28, 29, 24}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -74,7 +74,7 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -92,8 +92,8 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 24, 25, 26, 24, 25, 26, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -103,7 +103,7 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -122,8 +122,8 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 24, 25, 25, 24, 24, 24, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -133,7 +133,7 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -151,8 +151,8 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 21, 22, 23, 24, 25, 26, 24, 25, 26, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -162,7 +162,7 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -181,8 +181,8 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 	handUtilCards := []utils.Card{21, 22, 23, 21, 22, 23, 24, 25, 25, 24, 24, 24, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -192,7 +192,7 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -210,8 +210,8 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 	handUtilCards := []utils.Card{22, 22, 22, 23, 23, 23, 15, 15, 15, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -221,7 +221,7 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -239,8 +239,8 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 	handUtilCards := []utils.Card{23, 23, 23, 25, 25, 25, 27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 22}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -250,7 +250,7 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -269,8 +269,8 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 	handUtilCards := []utils.Card{27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 22, 23, 15}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -280,7 +280,7 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -298,8 +298,8 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 	handUtilCards := []utils.Card{27}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// gangUtilCards := []utils.Card{}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{21, 22, 23, 25}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
@@ -309,7 +309,7 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
+		GangCard: []*majongpb.GangCard{},
 		HuCard:   HuCard,
 		GameID:   gutils.SCXLGameID,
 	}
@@ -338,9 +338,26 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
-		HuCard:   HuCard,
-		GameID:   gutils.SCXLGameID,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[2],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[3],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.SCXLGameID,
 	}
 	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_ShiBaLuoHan}
@@ -367,9 +384,26 @@ func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
-		HuCard:   HuCard,
-		GameID:   gutils.SCXLGameID,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[2],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[3],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.SCXLGameID,
 	}
 	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingShiBaLuoHan}
@@ -396,10 +430,516 @@ func TestCardGenSum(t *testing.T) {
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
 		PengCard: pengCards,
-		GangCard: gangCards,
-		HuCard:   HuCard,
-		GameID:   gutils.SCXLGameID,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.SCXLGameID,
 	}
 	_, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
 	assert.Equal(t, genCount, uint32(4))
+}
+
+// TestDasixi 大四喜
+func TestDasixi(t *testing.T) {
+	handUtilCards := []utils.Card{11, 11, 41, 41, 42, 42, 42, 43, 43, 43}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{44}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(41)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_DaSiXi)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestDasanyuan 大三元
+func TestDasanyuan(t *testing.T) {
+	handUtilCards := []utils.Card{11, 45, 45, 45, 15, 16, 17}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{47}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{46}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(11)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_DaSanYuan)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestJiuLianBaoDeng 九莲宝灯
+func TestJiuLianBaoDeng(t *testing.T) {
+	handUtilCards := []utils.Card{11, 11, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{47}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{46}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(19)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_JiuLianBaoDeng)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestDayuwu 大于五
+func TestDayuwu(t *testing.T) {
+	handUtilCards := []utils.Card{16, 17, 18, 16, 17, 18, 16, 17, 18, 16, 17, 18, 19}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{47}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(19)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_DaYuWu)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestXiaoyuwu 小于五
+func TestXiaoyuwu(t *testing.T) {
+	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 11, 12, 13, 11, 12, 13, 14}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{47}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(14)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_XiaoYuWu)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestDaqixing 大七星
+func TestDaqixing(t *testing.T) {
+	handUtilCards := []utils.Card{41, 41, 46, 45, 45, 45, 45, 43, 43}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{47}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(46)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_DaQiXing)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestLianqidui 连七对
+func TestLianqidui(t *testing.T) {
+	handUtilCards := []utils.Card{11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{47}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(17)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_LianQiDui)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestSiGang 四杠
+func TestSiGang(t *testing.T) {
+	handUtilCards := []utils.Card{11}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{41, 42, 43, 44}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(11)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[2],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[3],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_SiGang)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(88))
+}
+
+// TestXiaosixi 小四喜
+func TestXiaosixi(t *testing.T) {
+	handUtilCards := []utils.Card{44, 12, 12, 12, 43, 43, 43}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{41, 42}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(44)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_XiaoSiXi)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(64))
+}
+
+// TestXiaosanyuan 小三元
+func TestXiaosanyuan(t *testing.T) {
+	handUtilCards := []utils.Card{45, 46, 46, 46, 47, 47, 47}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{11, 12}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(45)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_XiaoSanYuan)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(64))
+}
+
+// TestShuanglonghui 双龙会
+func TestShuanglonghui(t *testing.T) {
+	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 15, 17, 18, 19, 17, 18, 19}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{11, 12}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(15)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_ShuangLongHui)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(64))
+}
+
+// TestZiyise 字一色
+func TestZiyise(t *testing.T) {
+	handUtilCards := []utils.Card{41, 41, 42, 42, 42, 43, 43, 43, 44, 44, 44, 45, 45}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{11, 12}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(45)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_ZiYiSe)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(64))
+}
+
+// TestSianke 四暗刻
+func TestSianke(t *testing.T) {
+	handUtilCards := []utils.Card{45}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{11, 12, 41, 42}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(45)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[2],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[3],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_SiAnKe)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(64))
+}
+
+// TestSitongshun 四同顺
+func TestSitongshun(t *testing.T) {
+	handUtilCards := []utils.Card{45, 11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	// gangUtilCards := []utils.Card{11, 12, 41, 42}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(45)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   HuCard,
+		GameID:   gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_SiTongShun)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(48))
+}
+
+// TestSanyuanqidui 三元七对
+func TestSanyuanqidui(t *testing.T) {
+	handUtilCards := []utils.Card{45, 41, 41, 42, 42}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{46, 47}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(45)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_SanYuanQiDui)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(48))
+}
+
+// TestSixiqidui 四喜七对
+func TestSixiqidui(t *testing.T) {
+	handUtilCards := []utils.Card{45, 41, 41, 42, 42}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	gangUtilCards := []utils.Card{43, 44}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	pengUtilCards := []utils.Card{}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(45)
+	assert.Nil(t, err)
+	playerParams := interfaces.CardCalcParams{
+		HandCard: handCards,
+		PengCard: pengCards,
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{
+				Card: gangCards[0],
+				Type: majongpb.GangType_gang_angang,
+			},
+			&majongpb.GangCard{
+				Card: gangCards[1],
+				Type: majongpb.GangType_gang_angang,
+			},
+		},
+		HuCard: HuCard,
+		GameID: gutils.ERGameID,
+	}
+	cardTypes, genCount := global.GetCardTypeCalculator().Calculate(playerParams)
+	assert.Contains(t, cardTypes, majongpb.CardType_SiXiQiDui)
+	value, _ := global.GetCardTypeCalculator().CardTypeValue(gutils.ERGameID, cardTypes, genCount)
+	assert.Equal(t, value, uint32(48))
 }

@@ -48,7 +48,7 @@ func checkQingYiSe(cardCalcParams interfaces.CardCalcParams) bool {
 		checkCards = append(checkCards, pengCard)
 	}
 	for _, gangCard := range cardCalcParams.GangCard {
-		checkCards = append(checkCards, gangCard)
+		checkCards = append(checkCards, gangCard.GetCard())
 	}
 	color := majongpb.CardColor(-1)
 	for _, card := range checkCards {
