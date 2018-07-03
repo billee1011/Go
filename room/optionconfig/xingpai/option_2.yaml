@@ -9,4 +9,4 @@ hnz:
 enable_dingque: true # 是否需要定缺
 enable_addflower: false # 是否需要补花
 enable_chi: false # 是否需要吃
-player_no_normal_states: 3 #玩家不参与游戏的不正常状态 0-行牌，1-胡牌，2-认输 ，3-胡加认输
+player_no_normal_states: 3 #玩家不参与游戏的不正常状态 XingPaiState_hu | XingPaiState_give_up
