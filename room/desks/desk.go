@@ -503,12 +503,12 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 	}
 }
 
-func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates uint64) {
+func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates int32) {
 	mjContext := d.dContext.mjContext
 	player := gutils.GetMajongPlayer(playerID, &mjContext)
 	//判断当前状态是否与行牌option中的状态列表一致
 	needQuit := false
-	if xpStates&uint64(player.GetXpState()) != 0 {
+	if xpStates&int32(player.GetXpState()) != 0 {
 		needQuit = true
 	}
 	if needQuit {

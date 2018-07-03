@@ -12,7 +12,7 @@ import (
 func IsPlayerContinue(playerStater majongpb.XingPaiState, mjContext *majongpb.MajongContext) bool {
 	// 麻将不可行牌数组
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	flag := xpOption.PlayerNoNormalStates&uint64(playerStater) == 0
+	flag := xpOption.PlayerNoNormalStates&int32(playerStater) == 0
 	logrus.WithFields(logrus.Fields{"playerStater": playerStater,
 		"canNotXpStates": xpOption.PlayerNoNormalStates, "isCanXp": flag}).Info("判断玩家是否可以继续")
 	return flag
