@@ -84,6 +84,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	cardValues := make(map[uint64]uint32, 0)
 	cardTypes := make(map[uint64][]majongpb.CardType, 0)
 	genCount := make(map[uint64]uint32, 0)
+	cardsGroup := make(map[uint64][]*majongpb.CardsGroup, 0)
 
 	huPlayers := mjContext.GetLastHuPlayers()
 	gameID := int(mjContext.GetGameId())
@@ -103,6 +104,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		cardTypes[huPlayerID] = cardType
 		cardValues[huPlayerID] = cardValue
 		genCount[huPlayerID] = gen
+		cardsGroup[huPlayerID] = utils.GetCardsGroup(huPlayer, mjContext.GetLastOutCard())
 	}
 
 	huType := majongpb.HuType_hu_dianpao
@@ -132,10 +134,18 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		}
 	}
 	maxSID := uint64(0)
+	totalValue := uint32(0)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		if settleInfo.Id > maxSID {
 			maxSID = settleInfo.Id
+		}
+		totalValue = settleInfo.CardValue
+	}
+	for _, huPlayerID := range huPlayers {
+		huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
+		if totalValue >= huPlayer.MaxCardValue {
+			huPlayer.CardsGroup = cardsGroup[huPlayerID]
 		}
 	}
 	mjContext.CurrentSettleId = maxSID

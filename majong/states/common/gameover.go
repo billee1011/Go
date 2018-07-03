@@ -3,6 +3,7 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -43,7 +44,7 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 	for _, player := range mjContext.Players {
 		playerCardsGroup := &room.PlayerCardsGroup{
 			PlayerId:   proto.Uint64(player.GetPalyerId()),
-			CardsGroup: utils.GetCardsGroup(player),
+			CardsGroup: gutils.GetCardsGroup(player),
 		}
 		cardsGroups = append(cardsGroups, playerCardsGroup)
 		if len(player.HuCards) != 0 && gameflow {
