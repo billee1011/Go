@@ -494,8 +494,12 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		logEntry.Debugln("玩家退出")
 	} else {
 		d.setMjPlayerQuitDesk(eqi.playerID, false)
-		if !deskPlayer.IsQuit() {
-			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false) // 非主动退出，再进入后取消托管；主动退出再进入不取消托管
+		// 判断行牌状态, 选项化后需修改
+		mjPlayer := gutils.GetMajongPlayer(eqi.playerID, &d.dContext.mjContext)
+		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
+		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌
+		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
+			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false)
 		}
 		msgs = d.recoverGameForPlayer(eqi.playerID)
 		deskPlayer.enterDesk()
@@ -674,7 +678,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 
 	gameDeskInfo := room.GameDeskInfo{
 		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(d),
+		Players:     getRecoverPlayerInfo(playerID, d),
 		Dices:       mjContext.GetDices(),
 		BankerSeat:  &bankerSeat,
 		EastSeat:    &bankerSeat,
@@ -683,6 +687,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
 		OperatePid:  getOperatePlayerID(mjContext),
 		DoorCard:    getDoorCard(mjContext),
+		NeedHsz:     proto.Bool(mjContext.GetOption().GetHasHuansanzhang()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
@@ -691,6 +696,8 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
 	})
+	logEntry.Errorln("恢复数据")
+	logEntry.Errorln(gameDeskInfo)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
 		return nil

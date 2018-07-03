@@ -1,6 +1,7 @@
 package common
 
 import (
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -81,7 +82,13 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		if mjContext.GetGameId() == gutils.SCXZGameID {
+			if len(player.HuCards) == 0 || huPlayerID == player.GetPalyerId() {
+				allPlayers = append(allPlayers, player.GetPalyerId())
+			}
+		} else {
+			allPlayers = append(allPlayers, player.GetPalyerId())
+		}
 	}
 
 	cardValues := make(map[uint64]uint32, 0)

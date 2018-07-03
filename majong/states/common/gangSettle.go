@@ -10,6 +10,7 @@ package common
 //状态进入行为：触发生成杠结算信息
 //约束条件：无
 import (
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -70,7 +71,13 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 
 	allPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		if mjContext.GetGameId() == gutils.SCXZGameID {
+			if len(player.HuCards) == 0 {
+				allPlayers = append(allPlayers, player.GetPalyerId())
+			}
+		} else {
+			allPlayers = append(allPlayers, player.GetPalyerId())
+		}
 	}
 	param := interfaces.GangSettleParams{
 		GangPlayer: player.GetPalyerId(),

@@ -406,10 +406,10 @@ func (s *ChupaiwenxunState) doQi(flow interfaces.MajongFlow, playerIDs []uint64)
 	lastOutCardPlayer := mjContext.GetLastChupaiPlayer()
 
 	players := mjContext.GetPlayers()
-	for index, player := range players {
+	for _, player := range players {
 		if player.GetPalyerId() == lastOutCardPlayer {
-			mopaiIndex := (index + 1) % (len(players))
-			mjContext.MopaiPlayer = players[mopaiIndex].GetPalyerId()
+			nextPlayer := utils.GetNextXpPlayerByID(lastOutCardPlayer, players, flow.GetMajongContext().GetOption())
+			mjContext.MopaiPlayer = nextPlayer.GetPalyerId()
 			mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 			return
 		}
