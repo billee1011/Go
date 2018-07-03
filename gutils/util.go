@@ -18,7 +18,7 @@ func RoomCard2UInt32(card *room.Card) uint32 {
 		color = 2
 	} else if *card.Color == room.CardColor_CC_TONG {
 		color = 3
-	} else if *card.Color == room.CardColor_CC_FENG {
+	} else if *card.Color == room.CardColor_CC_ZI {
 		color = 4
 	}
 	value := color*10 + uint32(*card.Point)
@@ -131,7 +131,7 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 		}
 	case majongpb.CardColor_ColorFeng:
 		{
-			return room.CardColor_CC_FENG
+			return room.CardColor_CC_ZI
 		}
 	}
 	return room.CardColor(-1)
