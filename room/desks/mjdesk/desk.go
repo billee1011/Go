@@ -49,24 +49,12 @@ type autoEvent struct {
 }
 
 type desk struct {
-	*deskbase.DeskPlayerMgr
+	*deskbase.DeskBase
 
-	deskUID  uint64                 // 牌桌唯一 ID
-	gameID   int                    // 游戏 ID
 	dContext *deskContext           // 牌桌现场
 	settler  interfaces.DeskSettler // 结算器
 	event    chan deskEvent         // 牌桌事件通道
 	cancel   context.CancelFunc     // 取消事件处理
-}
-
-// GetUID 获取牌桌 UID
-func (d *desk) GetUID() uint64 {
-	return d.deskUID
-}
-
-// GetGameID 获取游戏 ID
-func (d *desk) GetGameID() int {
-	return d.gameID
 }
 
 // Start 启动牌桌逻辑
@@ -77,8 +65,8 @@ func (d *desk) GetGameID() int {
 func (d *desk) Start(finish func()) error {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.Start",
-		"desk_uid":  d.deskUID,
-		"game_id":   d.gameID,
+		"desk_uid":  d.GetUID(),
+		"game_id":   d.GetGameID(),
 	})
 
 	if err := d.initMajongContext(); err != nil {
@@ -116,8 +104,8 @@ func (d *desk) Stop() error {
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.Stop",
-		"desk_uid":  d.deskUID,
-		"game_id":   d.gameID,
+		"desk_uid":  d.GetUID(),
+		"game_id":   d.GetGameID(),
 	})
 	players := d.GetDeskPlayers()
 	clientIDs := []uint64{}
@@ -147,8 +135,8 @@ func (d *desk) Stop() error {
 func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":  "desk.PushRequest",
-		"desk_uid":   d.deskUID,
-		"game_id":    d.gameID,
+		"desk_uid":   d.GetUID(),
+		"game_id":    d.GetGameID(),
 		"player_id":  playerID,
 		"message_id": head.GetMsgId(),
 	})
@@ -175,7 +163,7 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 func (d *desk) initMajongContext() error {
 	players := facade.GetDeskPlayerIDs(d)
 	param := server_pb.InitMajongContextParams{
-		GameId:  int32(d.gameID),
+		GameId:  int32(d.GetGameID()),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
 			MaxFapaiCartoonTime:        10 * 1000,
@@ -199,7 +187,7 @@ func (d *desk) initMajongContext() error {
 	if mjContext, err = majong_initial.InitMajongContext(param); err != nil {
 		return err
 	}
-	if err := fillContextOptions(d.gameID, &mjContext); err != nil {
+	if err := fillContextOptions(d.GetGameID(), &mjContext); err != nil {
 		return err
 	}
 	d.dContext = &deskContext{
@@ -296,8 +284,8 @@ func (d *desk) recordTuoguanOverTimeCount(event interfaces.Event) {
 func (d *desk) processEvents(ctx context.Context) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.processEvent",
-		"desk_uid":  d.deskUID,
-		"game_id":   d.gameID,
+		"desk_uid":  d.GetUID(),
+		"game_id":   d.GetGameID(),
 	})
 	defer func() {
 		if x := recover(); x != nil {
@@ -313,7 +301,7 @@ func (d *desk) processEvents(ctx context.Context) {
 				logEntry.Infoln("done")
 				return
 			}
-		case enterQuitInfo := <-d.GetEnterQuitChan():
+		case enterQuitInfo := <-d.PlayerEnterQuitChannel():
 			{
 				d.handleEnterQuit(enterQuitInfo)
 			}
@@ -340,7 +328,7 @@ func (d *desk) getContextPlayer(playerID uint64) *server_pb.Player {
 }
 
 // handleEnterQuit 处理退出进入信息
-func (d *desk) handleEnterQuit(eqi deskbase.EnterQuitInfo) {
+func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "handleEnterQuit",
 		"player_id": eqi.PlayerID,
@@ -503,45 +491,6 @@ func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
 	for _, msg := range replyMsgs {
 		d.BroadcastMessage(msg.GetPlayers(), msgid.MsgID(msg.GetMsgId()), msg.GetMsg(), true)
 	}
-}
-
-// removeQuit 移除已经退出的玩家
-func (d *desk) removeQuit(playerIDs []uint64) []uint64 {
-	deskPlayerIDs := map[uint64]bool{}
-	deskPlayers := d.GetDeskPlayers()
-	for _, deskPlayer := range deskPlayers {
-		playerID := deskPlayer.GetPlayerID()
-		deskPlayerIDs[playerID] = deskPlayer.IsQuit()
-	}
-	result := []uint64{}
-	for _, playerID := range playerIDs {
-		if quited, _ := deskPlayerIDs[playerID]; !quited {
-			result = append(result, playerID)
-		}
-	}
-	return result
-}
-
-// BroadcastMessage 向玩家广播消息
-func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":       "BroadcastMessage",
-		"dest_player_ids": playerIDs,
-		"msg_id":          msgID,
-	})
-	// 是否针对所有玩家
-	if playerIDs == nil || len(playerIDs) == 0 {
-		playerIDs = facade.GetDeskPlayerIDs(d)
-		logEntry = logEntry.WithField("all_player_ids", playerIDs)
-	}
-	playerIDs = d.removeQuit(playerIDs)
-	logEntry = logEntry.WithField("real_dest_player_ids", playerIDs)
-
-	if len(playerIDs) == 0 {
-		return
-	}
-	facade.BroadCastMessageBare(playerIDs, msgID, body)
-	logEntry.Debugln("广播消息")
 }
 
 func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMessage {

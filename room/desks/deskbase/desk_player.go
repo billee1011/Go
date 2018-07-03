@@ -1,8 +1,9 @@
-package deskplayer
+package deskbase
 
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"sync"
 
@@ -19,6 +20,17 @@ type deskPlayer struct {
 	tuoguan     bool   // 是否在托管中
 
 	mu sync.RWMutex
+}
+
+// createDeskPlayer 创建牌桌玩家
+// maxOverTime : 最大超时次数，超过此次数将会被自动托管
+func createDeskPlayer(playerID uint64, seat uint32, coin uint64, maxOverTime int) interfaces.DeskPlayer {
+	return &deskPlayer{
+		playerID:    playerID,
+		seat:        seat,
+		ecoin:       coin,
+		maxOverTime: maxOverTime,
+	}
 }
 
 // GetPlayerID 获取玩家 ID
@@ -52,7 +64,7 @@ func (dp *deskPlayer) IsQuit() bool {
 // QuitDesk 退出牌桌
 func (dp *deskPlayer) QuitDesk() {
 	dp.mu.Lock()
-	dp.mu.Unlock()
+	defer dp.mu.Unlock()
 	dp.quit = true
 	dp.tuoguan = true // 退出后自动托管
 }
@@ -60,14 +72,14 @@ func (dp *deskPlayer) QuitDesk() {
 // EnterDesk 进入牌桌
 func (dp *deskPlayer) EnterDesk() {
 	dp.mu.Lock()
-	dp.mu.Unlock()
+	defer dp.mu.Unlock()
 	dp.quit = false
 }
 
 // OnPlayerOverTime 玩家超时
 func (dp *deskPlayer) OnPlayerOverTime() {
 	dp.mu.Lock()
-	dp.mu.Unlock()
+	defer dp.mu.Unlock()
 	dp.overTime++
 
 	if dp.overTime >= dp.maxOverTime && !dp.tuoguan {
@@ -86,7 +98,7 @@ func (dp *deskPlayer) IsTuoguan() bool {
 // SetTuoguan 设置托管状态
 func (dp *deskPlayer) SetTuoguan(tuoguan bool, notify bool) {
 	dp.mu.Lock()
-	dp.mu.Unlock()
+	defer dp.mu.Unlock()
 	dp.tuoguan = tuoguan
 	if notify {
 		dp.notifyTuoguan(dp.playerID, tuoguan)

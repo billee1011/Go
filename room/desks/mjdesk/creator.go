@@ -21,16 +21,11 @@ func CreateMajongDesk(players []uint64, gameID int, opt interfaces.CreateDeskOpt
 		err = errAllocDeskIDFailed
 		return
 	}
-	logEntry = logEntry.WithField("desk_uid", id)
-	deskPlayerMgr := deskbase.CreateDeskPlayerMgr()
-	deskPlayerMgr.SetPlayers(players)
 	return interfaces.CreateDeskResult{
 		Desk: &desk{
-			DeskPlayerMgr: deskPlayerMgr,
-			deskUID:       id,
-			gameID:        gameID,
-			settler:       global.GetDeskSettleFactory().CreateDeskSettler(gameID),
-			event:         make(chan deskEvent, 16),
+			DeskBase: deskbase.NewDeskBase(id, gameID, players),
+			settler:  global.GetDeskSettleFactory().CreateDeskSettler(gameID),
+			event:    make(chan deskEvent, 16),
 		},
 	}, nil
 }

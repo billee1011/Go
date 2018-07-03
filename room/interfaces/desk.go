@@ -5,16 +5,6 @@ import (
 	"steve/structs/proto/gate_rpc"
 )
 
-// TuoGuanMgr 牌桌托管管理器
-type TuoGuanMgr interface {
-	// GetTuoGuanPlayers 获取托管玩家
-	GetTuoGuanPlayers() []uint64
-	// OnPlayerTimeOut 玩家超时
-	OnPlayerTimeOut(playerID uint64)
-	// SetTuoGuan 设置玩家托管
-	SetTuoGuan(playerID uint64, set bool, notify bool)
-}
-
 // DeskPlayer 牌桌玩家
 type DeskPlayer interface {
 	// GetPlayerID 获取玩家 ID
@@ -37,19 +27,42 @@ type DeskPlayer interface {
 	SetTuoguan(tuoguan bool, notify bool)
 }
 
+// PlayerEnterQuitInfo 玩家退出进入信息
+type PlayerEnterQuitInfo struct {
+	PlayerID uint64
+	Quit     bool // true 为退出， false 为进入
+}
+
+// DeskPlayerMgr 牌桌玩家管理器
+type DeskPlayerMgr interface {
+
+	// GetDeskPlayers 获取牌桌玩家
+	GetDeskPlayers() []DeskPlayer
+
+	// PlayerQuit 玩家退出
+	PlayerQuit(playerID uint64)
+
+	// PlayerEnter 玩家进入
+	PlayerEnter(playerID uint64)
+
+	// BroadcastMessage 广播消息给牌桌玩家
+	// playerIDs ： 目标玩家，如果为 nil 或者长度为0，则针对牌桌所有玩家
+	// exceptQuit ： 已经退出的玩家是否排除
+	BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool)
+
+	// PlayerEnterQuitChannel 获取玩家进入退出通道
+	PlayerEnterQuitChannel() <-chan PlayerEnterQuitInfo
+}
+
 // Desk 牌桌
 type Desk interface {
+	DeskPlayerMgr
+
 	// GetUID 获取牌桌 UID
 	GetUID() uint64
 
 	// GetGameID 获取游戏 ID
 	GetGameID() int
-
-	// GetPlayers 获取牌桌玩家数据 (将会被废弃，不要使用， 改为 GetDeskPlayers 代替)
-	// GetPlayers() []*room.RoomPlayerInfo
-
-	// GetDeskPlayers 获取牌桌玩家
-	GetDeskPlayers() []DeskPlayer
 
 	// Start 启动牌桌逻辑
 	// finish : 当牌桌逻辑完成时调用
@@ -63,20 +76,6 @@ type Desk interface {
 
 	// PushEvent 压入事件
 	PushEvent(event Event)
-
-	// PlayerQuit 玩家退出
-	PlayerQuit(playerID uint64)
-
-	// PlayerEnter 玩家进入
-	PlayerEnter(playerID uint64)
-
-	// GetTuoGuanMgr 获取托管管理器
-	// GetTuoGuanMgr() TuoGuanMgr
-
-	// BroadcastMessage 广播消息给牌桌玩家
-	// playerIDs ： 目标玩家，如果为 nil 或者长度为0，则针对牌桌所有玩家
-	// exceptQuit ： 已经退出的玩家是否排除
-	BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool)
 }
 
 // DeskMgr 牌桌管理器
