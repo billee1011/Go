@@ -480,9 +480,12 @@ func (s *scxlSettle) getRoundBillPlayerInfo(currentPid uint64, cardValue int32, 
 			Score:     proto.Int64(s.roundScore[playerID]),
 			CardValue: proto.Int32(cardValue),
 		}
-		if playerID == currentPid {
+		if len(player.CardsGroup) != 0 {
+			billPlayerInfo.CardsGroup = gutils.CardsGroupSvr2Client(player.CardsGroup)
+		} else if playerID == currentPid {
 			billPlayerInfo.CardsGroup = gutils.GetCardsGroup(player)
 		}
+
 		billPlayerInfos = append(billPlayerInfos, billPlayerInfo)
 	}
 	return billPlayerInfos
