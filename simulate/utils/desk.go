@@ -108,15 +108,15 @@ func StartPokeGame(params structs.StartPukeGameParams) /*(*DeskData, error)*/ er
 	//	return nil, err
 	//}
 
-	// 所有玩家的洗牌通知期望
-	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
+	/* 	// 所有玩家的洗牌通知期望
+	   	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 
-	// 所有玩家的发牌通知期望
-	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
+	   	// 所有玩家的发牌通知期望
+	   	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
 
-	// hszNotifyExpectors := createHSZNotifyExpector(players)
+	   	// hszNotifyExpectors := createHSZNotifyExpector(players)
 
-	gameID := params.GameID // 设置游戏ID
+	   	gameID := params.GameID // 设置游戏ID */
 
 	/* 	// 加入牌桌
 	   	// 返回的 seatMap:座位ID 与errlayerID 的map
