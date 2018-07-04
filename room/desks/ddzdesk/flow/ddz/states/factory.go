@@ -18,6 +18,14 @@ func (f *stateFactory) NewState(stateID int) machine.State {
 		{
 			return new(dealState)
 		}
+	case ddz.StateID_state_grab:
+		{
+			return new(grabState)
+		}
+	case ddz.StateID_state_double:
+		{
+			return new(doubleState)
+		}
 	}
 	return nil
 }

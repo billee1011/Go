@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gogo/protobuf/proto"
+	"steve/majong/global"
 )
 
 type dealState struct{}
@@ -32,7 +33,7 @@ func (s *dealState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if event.EventID == int(ddz.EventID_event_deal_finish) {
 		return int(ddz.StateID_state_grab), nil
 	}
-	return int(ddz.StateID_state_deal), nil
+	return int(ddz.StateID_state_deal), global.ErrInvalidEvent
 }
 
 var wallCards = []uint32{0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D,

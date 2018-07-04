@@ -25,8 +25,9 @@ message DDZContext {
     uint64 current_player_id = 5;   // 当前操作玩家
     uint64 last_player_id = 6;      // 上一个操作玩家
     uint64 first_grab_player_id = 7; // 第一个实际叫地主玩家
-    int32 grabbed_count = 8;        // 已抢/弃地主人数
+    int32 grabbed_count = 8;        // 已抢/弃地主玩家人数
     uint64 load_player_id = 9;      //地主id
+    int32 doubled_count = 10;       //加倍/弃加倍玩家人数
 }
 
 // AutoEvent 自动事件
