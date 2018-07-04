@@ -430,7 +430,8 @@ func FastCheckHuV2(cards []Card, laizis map[Card]bool) bool {
 	for card, count := range cm {
 		if count >= 2 {
 			jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{card, card}})
-		} else if count == 1 && laiziCount > 0 {
+		}
+		if count >= 1 && laiziCount > 0 {
 			jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{card, Laizi}})
 		}
 	}
@@ -443,9 +444,11 @@ func FastCheckHuV2(cards []Card, laizis map[Card]bool) bool {
 	for card, count := range cm {
 		if count >= 3 {
 			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, card, card}})
-		} else if count == 2 && laiziCount > 0 {
+		}
+		if count >= 2 && laiziCount > 0 {
 			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, card, Laizi}})
-		} else if count == 1 && laiziCount > 1 {
+		}
+		if count >= 1 && laiziCount > 1 {
 			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, Laizi, Laizi}})
 		}
 	}
@@ -683,9 +686,9 @@ func FastCheckTingInfoV2(cards []Card, laizis map[Card]bool) map[Card][]Card {
 			//细化搜索 TODO 时间级过大
 			tingCards := make([]Card, 0)
 			for _, availableCard := range availableCards {
-				if cm[availableCard] == 4 && card != availableCard {
-					continue
-				}
+				// if cm[availableCard] == 4 && card != availableCard {
+				// 	continue
+				// }
 				checkCards = append(checkCards, availableCard)
 				if FastCheckHuV2(checkCards, laizis) {
 					tingCards = append(tingCards, availableCard)
