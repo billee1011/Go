@@ -1,5 +1,12 @@
 id: 1 # 选项 ID
 
+enable_geng: true # 是否启用根
+geng_score: 2 # 根的番数
+geng_method: 2 # 根的计算方式，0相加，1相乘， 2幂乘
+
+enable_hua: true # 是否启用花
+hua_score: 2 # 花的番数
+hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
 
 # 支持的番型列表
 enable_fan_types:
@@ -9,9 +16,11 @@ enable_fan_types:
     mutex: []   # 不和任何牌互斥
     method: 0   # 计算方式：相加
     score: 1    # 番数 1
+    subgeng: 0  # 扣除的根数量
   1:  # 清一色
     id: 1 # 清一色
     func_id: 1  # 计算函数 ID : 1
     mutex: [0]  # 和平胡互斥
     method: 1   # 计算方式：相乘
     score: 1    # 番数 1
+    subgeng: 0  # 扣除的根数量

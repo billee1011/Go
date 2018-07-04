@@ -1,6 +1,7 @@
 package fantype
 
 import (
+	"math"
 	"steve/common/mjoption"
 	"steve/server_pb/majong"
 )
@@ -16,18 +17,23 @@ type combine struct {
 type typeCalculator struct {
 	mjContext *majong.MajongContext
 	playerID  uint64
-
-	combines  []combine
-	player    *majong.Player
 	handCards []*majong.Card // 手牌
-	huCard    *majong.HuCard
-	cache     map[int]bool // 函数执行结果缓存, 函数ID->bool
+	huCard    *majong.HuCard // 胡的牌
+
+	combines []combine
+	player   *majong.Player // 玩家
+	cache    map[int]bool   // 函数执行结果缓存, 函数ID->bool
+}
+
+// getOption 获取选项
+func getOption(mjContext *majong.MajongContext) *mjoption.CardTypeOption {
+	optionID := mjContext.GetCardtypeOptionId()
+	return mjoption.GetCardTypeOption(int(optionID))
 }
 
 // getOption 获取牌型选项
-func (tc *typeCalculator) getOption(mjContext *majong.MajongContext) *mjoption.CardTypeOption {
-	optionID := mjContext.GetCardtypeOptionId()
-	return mjoption.GetCardTypeOption(int(optionID))
+func (tc *typeCalculator) getOption() *mjoption.CardTypeOption {
+	return getOption(tc.mjContext)
 }
 
 // makeCombines 计算所有组合
@@ -37,19 +43,26 @@ func (tc *typeCalculator) makeCombines() {
 }
 
 // typeCalculator 计算出玩家胡牌所有的番型
-func (tc *typeCalculator) calclate() []int {
-	result := []int{}
+func (tc *typeCalculator) calclate() (fantypes []int, gengcount int, huacount int) {
 	tc.cache = make(map[int]bool)
 	tc.makeCombines()
 
-	option := tc.getOption(tc.mjContext)
+	fantypes = []int{}
+
+	option := tc.getOption()
 	for ID, fantype := range option.Fantypes {
 		match := tc.callCheckFunc(fantype.FuncID)
 		if match {
-			result = append(result, ID)
+			fantypes = append(fantypes, ID)
 		}
 	}
-	return result
+	if option.EnableGeng {
+		gengcount = tc.calcGengCount(fantypes)
+	}
+	if option.EnableHua {
+		huacount = tc.calcHuaCount()
+	}
+	return
 }
 
 // callCheckFunc 调用检测函数，如果有缓存，从缓存中取出结果
@@ -119,7 +132,11 @@ func (tc *typeCalculator) getHuCard() *majong.HuCard {
 // CalculateFanTypes 计算番型
 // handCards 手牌，如果为nil，则使用玩家自己的手牌
 // huCard : 胡的牌，如果为 nil ，则使用玩家最后一次胡的牌
-func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCards []*majong.Card, huCard *majong.HuCard) []int {
+// 返回值：
+//	fantypes 番型列表
+//	gengcount 根数量
+//  huacount 花数量
+func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCards []*majong.Card, huCard *majong.HuCard) (fantypes []int, gengcount int, huacount int) {
 	tc := typeCalculator{
 		mjContext: mjContext,
 		playerID:  playerID,
@@ -127,4 +144,39 @@ func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCar
 		huCard:    huCard,
 	}
 	return tc.calclate()
+}
+
+// CalculateScore 计算总番数
+func CalculateScore(mjContext *majong.MajongContext, fantypes []int, gengcount int, huacount int) uint64 {
+	var sumScore uint64     // 相加值
+	var mulScore uint64 = 1 // 相乘值
+	option := getOption(mjContext)
+
+	if option.EnableGeng {
+		calcScoreByMethod(option.GengMethod, &sumScore, &mulScore, gengcount, option.GengScore)
+	}
+	if option.EnableHua {
+		calcScoreByMethod(option.HuaMethod, &sumScore, &mulScore, huacount, option.HuaScore)
+	}
+	for _, fan := range fantypes {
+		fantype, ok := option.Fantypes[fan]
+		if !ok {
+			continue
+		}
+		calcScoreByMethod(fantype.Method, &sumScore, &mulScore, 1, fantype.Score)
+	}
+	if sumScore == 0 {
+		sumScore = 1
+	}
+	return sumScore * mulScore
+}
+
+func calcScoreByMethod(method int, sumScore *uint64, mulScore *uint64, count int, score int) {
+	if method == 0 {
+		*sumScore += uint64(score * count)
+	} else if method == 1 {
+		*mulScore *= uint64(score * count)
+	} else if method == 2 {
+		*mulScore *= uint64(math.Pow(float64(score), float64(count)))
+	}
 }
