@@ -9,6 +9,7 @@ import (
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/gogo/protobuf/proto"
 )
 
 type dealState struct{}
@@ -16,6 +17,7 @@ type dealState struct{}
 func (s *dealState) OnEnter(m machine.Machine) {
 	logrus.WithField("context", getDDZContext(m)).Debugln("进入发牌状态")
 	s.deal(m)
+	setMachineAutoEvent(m, machine.Event{EventID:int(ddz.EventID_event_deal_finish), EventData:nil}, 0);
 }
 
 func (s *dealState) OnExit(m machine.Machine) {
@@ -27,6 +29,9 @@ func (s *dealState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		"context": getDDZContext(m),
 		"event":   event,
 	}).Debugln("发牌处理事件")
+	if event.EventID == int(ddz.EventID_event_deal_finish) {
+		return int(ddz.StateID_state_grab), nil
+	}
 	return int(ddz.StateID_state_deal), nil
 }
 
@@ -37,20 +42,22 @@ var wallCards = []uint32{0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0
 	0x0E, 0x0F,
 }
 
-func shuffle() {
-	for i := range wallCards {
-		j := rand.Intn(len(wallCards))
-		wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
-	}
-}
-
 func (s *dealState) deal(m machine.Machine) {
-	shuffle()
+	rand.Shuffle(len(wallCards), func(i, j int) {
+		wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
+	})
 	context := getDDZContext(m)
 	players := context.GetPlayers()
-	var stageTime uint32 = 15
-	for i, _ := range players {
+	for i := range players {
 		players[i].Cards = wallCards[i*17 : (i+1)*17]
-		sendToPlayer(m, players[i].PalyerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{Cards: players[i].Cards, NextStage: &room.NextStage{Stage: room.DDZStage_DDZ_STAGE_CALL.Enum(), Time: &stageTime}})
+		players[i].OutCards = make([]uint32, 0)
+		sendToPlayer(m, players[i].PalyerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{
+			Cards:players[i].Cards,
+			NextStage: &room.NextStage{
+				Stage: room.DDZStage_DDZ_STAGE_CALL.Enum(),
+				Time: proto.Uint32(15),
+			},
+		})
 	}
+	context.WallCards = wallCards[51:]
 }

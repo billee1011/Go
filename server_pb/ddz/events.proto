@@ -13,29 +13,44 @@ enum EventID {
     event_timer = 6;                   // 定时事件
 }
 
+enum CardType {
+    CT_NONE = 0;/*!< 无牌型 */
+    CT_SINGLE = 1;/*!< 单张 */
+    CT_PAIR = 2; /*!< 对子: KK */
+    CT_SHUNZI = 3;/*!< 顺子: 34567... */
+    CT_PAIRS = 4; /*!< 连对(最少3对): QQKKAA... */
+    CT_TRIPLE = 5;/*!< 三张: KKK */
+    CT_3AND1 = 6;/*!< 三带一: JJJ+K */
+    CT_3AND2 = 7;/*!< 三带一对: JJJ+KK */
+    CT_TRIPLES = 8;/*!< 飞机: JJJQQQ... */
+    CT_3SAND1S = 9;/*!< 飞机带翅膀: JJJQQQ...+KA... */
+    CT_3SAND2S = 10; /*!< 飞机带翅膀: JJJQQQ...+KKAA... */
+    CT_4SAND1S = 11; /*!< 四带二: JJJ+QK */
+    CT_4SAND2S = 12; /*!< 四带两对: JJJ+QK */
+    CT_BOMB = 13; /*!< 炸弹:  KKKK... 默认炸弹比其它牌型大 */
+    CT_KINGBOMB = 14; /*!< 火箭:小王+大王*/
+}
+
 // RequestEventHead 请求事件通用头
 message RequestEventHead {
     uint64 player_id = 1;   // 请求者 ID 
 }
 
-// StartGameEvent 开始游戏事件
-message StartGameEvent {}
-
-// DealFinishEvent 发牌完成事件
-message DealFinishEvent {}
-
 // GrabRequestEvent 叫/抢地主请求事件
 message GrabRequestEvent {
     RequestEventHead head = 1;  // 请求头
+    bool grab = 2;//是否叫/抢地主
 }
 
 // DoubleRequestEvent 加倍请求事件
 message DoubleRequestEvent {
-    RequestEventHead head = 1;  // 请求头、
+    RequestEventHead head = 1;  // 请求头
+    bool is_double = 2;
 }
 
 // PlayCardRequestEvent 出牌请求事件
 message PlayCardRequestEvent{
      RequestEventHead head = 1;  // 请求头
      repeated uint32 cards = 2;  // 出的牌
+     CardType card_type = 3;     // 出的牌如果有多种牌型，选择的牌型
 }

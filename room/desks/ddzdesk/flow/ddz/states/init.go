@@ -9,6 +9,7 @@ import (
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/gogo/protobuf/proto"
 )
 
 type initState struct{}
@@ -34,10 +35,13 @@ func (s *initState) onStartGame(m machine.Machine) (int, error) {
 	players := getPlayers(m)
 	i := rand.Intn(len(players))
 	callPlayer := players[i] //叫地主玩家
-	var stageTime uint32 = 4
+	context := getDDZContext(m)
+	context.CurrentPlayerId = callPlayer
+	context.GrabbedCount = 0
+	context.FirstGrabPlayerId = 0
 	broadcast(m, msgid.MsgID_ROOM_DDZ_START_GAME_NTF, &room.DDZStartGameNtf{
 		PlayerId:  &callPlayer,
-		NextStage: &room.NextStage{Stage: room.DDZStage_DDZ_STAGE_DEAL.Enum(), Time: &stageTime},
+		NextStage: &room.NextStage{Stage: room.DDZStage_DDZ_STAGE_DEAL.Enum(), Time: proto.Uint32(2)},
 	})
 	return int(ddz.StateID_state_deal), nil
 }

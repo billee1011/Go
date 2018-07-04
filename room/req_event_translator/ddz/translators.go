@@ -22,7 +22,35 @@ func TranslateGrabRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.GrabRequestEvent{
 		Head: &head,
+		Grab: *req.Grab,
 	}
 	eventID = int(ddz.EventID_event_grab_request)
+	return
+}
+
+// TranslateDoubleRequest 转换加倍请求
+func TranslateDoubleRequest(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.DDZDoubleReq) (eventID int, eventContext proto.Message, err error) {
+
+	head := translateHeader(playerID, header, &req)
+	eventContext = &ddz.DoubleRequestEvent{
+		Head: &head,
+		IsDouble: *req.IsDouble,
+	}
+	eventID = int(ddz.EventID_event_double_request)
+	return
+}
+
+// TranslatePlayCardRequest 转换出牌请求
+func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.DDZPlayCardReq) (eventID int, eventContext proto.Message, err error) {
+
+	head := translateHeader(playerID, header, &req)
+	eventContext = &ddz.PlayCardRequestEvent{
+		Head: &head,
+		Cards: req.Cards,
+		CardType: ddz.CardType(int32(*req.CardType)),
+	}
+	eventID = int(ddz.EventID_event_double_request)
 	return
 }

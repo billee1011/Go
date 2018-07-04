@@ -10,15 +10,11 @@ import "events.proto";
 message Player {
     uint64 palyer_id = 1;                   // 玩家 ID 
     repeated uint32 cards = 2;              // 玩家手牌
+    bool lord = 3;                          // 是否是庄家
+    bool grab = 4;                          // 是否抢庄
+    bool is_double = 5;                     // 是否加倍
+    repeated uint32 out_cards = 6;          // 打出的牌
 } 
-
-// 玩家操作
-enum Action {
-    action_grab         = 0;  // 叫/抢地主
-    action_double       = 1;  // 胡
-    action_chupai       = 2;  //
-    action_qi           = 3;  // 弃
-}
 
 // DDZContext 麻将现场
 message DDZContext {
@@ -26,6 +22,11 @@ message DDZContext {
     StateID cur_state = 2;          // 当前状态
     repeated Player players = 3;    // 玩家列表
     repeated uint32 wall_cards = 4; // 墙牌
+    uint64 current_player_id = 5;   // 当前操作玩家
+    uint64 last_player_id = 6;      // 上一个操作玩家
+    uint64 first_grab_player_id = 7; // 第一个实际叫地主玩家
+    int32 grabbed_count = 8;        // 已抢/弃地主人数
+    uint64 load_player_id = 9;      //地主id
 }
 
 // AutoEvent 自动事件

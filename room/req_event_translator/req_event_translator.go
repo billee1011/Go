@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/room/req_event_translator/ddz"
 )
 
 type msgTranslator struct {
@@ -110,7 +111,9 @@ func (t *translator) addTranslators() {
 	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, majong.TranslateCartoonFinishReq)
 
 	// 斗地主
-	// t.addTranslator(msgid.MsgID_grab)
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ, ddz.TranslateGrabRequest)
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_DOUBLE_REQ, ddz.TranslateDoubleRequest)
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ, ddz.TranslatePlayCardRequest)
 }
 
 func init() {

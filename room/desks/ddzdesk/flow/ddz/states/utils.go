@@ -34,6 +34,48 @@ func getPlayers(m machine.Machine) []uint64 {
 	return players
 }
 
+// IsAllAbandon 判断是否三家都弃地主
+func IsAllAbandon(players []*ddz.Player) bool {
+	for _, player := range players {
+		if player.Grab {
+			return false
+		}
+	}
+	return true
+}
+
+// GetTotalGrab 获取抢庄总倍数
+func GetTotalGrab(players []*ddz.Player) (totalGrab uint32) {
+	totalGrab = 1
+	for _, player := range players {
+		if player.Grab {
+			totalGrab = totalGrab * 2
+		}
+	}
+	return
+}
+
+//GetPlayerByID 根据玩家id获取玩家
+func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
+	for _, player := range players {
+		if player.PalyerId == id {
+			return player
+		}
+	}
+	return nil
+}
+
+//GetNextPlayerByID 根据玩家id获取下个玩家
+func GetNextPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
+	for k, player := range players {
+		if player.PalyerId == id {
+			index := (k + 1) % len(players)
+			return players[index]
+		}
+	}
+	return nil
+}
+
 // sendMessage 向玩家发送消息
 func sendMessage(m machine.Machine, players []uint64, msgID msgid.MsgID, body proto.Message) error {
 	dm, ok := m.(*ddzmachine.DDZMachine)
