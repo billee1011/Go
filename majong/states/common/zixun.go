@@ -463,7 +463,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
 				HandCard: newHand,
 				PengCard: s.getPengCards(player.GetPengCards()),
-				GangCard: s.getGangCards(player.GetGangCards()),
+				GangCard: player.GetGangCards(),
 				HuCard:   huCard,
 				GameID:   int(context.GetGameId()),
 			})

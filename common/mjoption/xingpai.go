@@ -19,6 +19,7 @@ type XingPaiOption struct {
 	NeedAddflower bool           `yaml:"need_addflower"` //是否需要补花
 	NeedChi       bool           `yaml:"need_chi"`       //是否可以吃牌
 	PlayerStates  []XingpaiState `yaml:"player_states"`  //玩家不参与游戏的状态
+	PlayerNum     int            `yaml:"player_num"`     //玩家人数
 	// Zhuang        int            `yaml:"zhuang"`         //选庄的方式
 }
 

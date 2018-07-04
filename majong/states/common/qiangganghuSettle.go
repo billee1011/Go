@@ -86,7 +86,7 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 		cardParams := interfaces.CardCalcParams{
 			HandCard: huPlayer.HandCards,
 			PengCard: utils.TransPengCard(huPlayer.PengCards),
-			GangCard: utils.TransGangCard(huPlayer.GangCards),
+			GangCard: huPlayer.GangCards,
 			HuCard:   mjContext.GetGangCard(),
 			GameID:   gameID,
 		}

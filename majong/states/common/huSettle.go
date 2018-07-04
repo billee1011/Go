@@ -100,7 +100,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		cardParams := interfaces.CardCalcParams{
 			HandCard: huPlayer.HandCards,
 			PengCard: utils.TransPengCard(huPlayer.PengCards),
-			GangCard: utils.TransGangCard(huPlayer.GangCards),
+			GangCard: huPlayer.GangCards,
 			HuCard:   mjContext.GetLastOutCard(),
 			GameID:   gameID,
 		}

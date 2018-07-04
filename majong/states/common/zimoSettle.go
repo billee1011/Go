@@ -101,7 +101,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	cardParams := interfaces.CardCalcParams{
 		HandCard: append(huPlayer.HandCards, huCard.GetCard()),
 		PengCard: utils.TransPengCard(huPlayer.PengCards),
-		GangCard: utils.TransGangCard(huPlayer.GangCards),
+		GangCard: huPlayer.GangCards,
 		HuCard:   nil,
 		GameID:   gameID,
 	}
