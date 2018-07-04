@@ -41,7 +41,8 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	mjContext := flow.GetMajongContext()
 	player := GetMajongPlayer(playerID, mjContext)
 	playerCards := player.GetHandCards()
-
+	//清除上一次听牌记录
+	player.TingCardInfo = nil
 	// 不存在定缺牌
 	if gutils.CheckHasDingQueCard(playerCards, player.GetDingqueColor()) {
 		return

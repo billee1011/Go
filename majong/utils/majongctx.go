@@ -2,11 +2,8 @@ package utils
 
 import (
 	"errors"
-	"steve/client_pb/room"
 	"steve/gutils"
 	majongpb "steve/server_pb/majong"
-
-	"github.com/golang/protobuf/proto"
 )
 
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家
@@ -59,57 +56,53 @@ func GetPalyerCloseFromTarget(index int, allPlayer, targets []uint64) uint64 {
 }
 
 // GetCardsGroup 获取玩家牌组信息
-func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
-	cardsGroupList := make([]*room.CardsGroup, 0)
+func GetCardsGroup(player *majongpb.Player, huCard *majongpb.Card) []*majongpb.CardsGroup {
+	cardsGroupList := make([]*majongpb.CardsGroup, 0)
 	// 碰牌
 	for _, pengCard := range player.PengCards {
-		card, _ := CardToInt(*pengCard.Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  room.CardsGroupType_CGT_PENG.Enum(),
-			Cards: []uint32{uint32(*card)},
+		card := gutils.ServerCard2Number(pengCard.Card)
+		cardsGroup := &majongpb.CardsGroup{
+			Pid:   player.PalyerId,
+			Type:  majongpb.CardsGroupType_CGT_PENG,
+			Cards: []uint32{card},
 		}
 		cardsGroupList = append(cardsGroupList, cardsGroup)
 	}
 	// 杠牌
-	var groupType *room.CardsGroupType
+	var groupType majongpb.CardsGroupType
 	for _, gangCard := range player.GangCards {
 		if gangCard.Type == majongpb.GangType_gang_angang {
-			groupType = room.CardsGroupType_CGT_ANGANG.Enum()
+			groupType = majongpb.CardsGroupType_CGT_ANGANG
 		}
 		if gangCard.Type == majongpb.GangType_gang_minggang {
-			groupType = room.CardsGroupType_CGT_MINGGANG.Enum()
+			groupType = majongpb.CardsGroupType_CGT_MINGGANG
 		}
 		if gangCard.Type == majongpb.GangType_gang_bugang {
-			groupType = room.CardsGroupType_CGT_BUGANG.Enum()
+			groupType = majongpb.CardsGroupType_CGT_BUGANG
 		}
-		card, _ := CardToInt(*gangCard.Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
+		card := gutils.ServerCard2Number(gangCard.Card)
+		cardsGroup := &majongpb.CardsGroup{
+			Pid:   player.PalyerId,
 			Type:  groupType,
-			Cards: []uint32{uint32(*card)},
+			Cards: []uint32{card},
 		}
 		cardsGroupList = append(cardsGroupList, cardsGroup)
 	}
 	// 胡牌
-	for _, huCard := range player.GetHuCards() {
-		srcPlayerID := huCard.GetSrcPlayer()
-		huCardGroup := &room.CardsGroup{
-			Cards: []uint32{gutils.ServerCard2Number(huCard.GetCard())},
-			Type:  room.CardsGroupType_CGT_HU.Enum(),
-			Pid:   &srcPlayerID,
-		}
-		cardsGroupList = append(cardsGroupList, huCardGroup)
+	huCardGroup := &majongpb.CardsGroup{
+		Cards: []uint32{gutils.ServerCard2Number(huCard)},
+		Type:  majongpb.CardsGroupType_CGT_HU,
 	}
+	cardsGroupList = append(cardsGroupList, huCardGroup)
 	// 手牌
 	handCards := gutils.ServerCards2Numbers(player.HandCards)
 	cards := make([]uint32, 0)
 	for _, handCard := range handCards {
 		cards = append(cards, uint32(handCard))
 	}
-	cardsGroup := &room.CardsGroup{
-		Pid:   proto.Uint64(player.PalyerId),
-		Type:  room.CardsGroupType_CGT_HAND.Enum(),
+	cardsGroup := &majongpb.CardsGroup{
+		Pid:   player.PalyerId,
+		Type:  majongpb.CardsGroupType_CGT_HAND,
 		Cards: cards,
 	}
 	cardsGroupList = append(cardsGroupList, cardsGroup)
