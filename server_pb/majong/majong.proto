@@ -131,10 +131,9 @@ enum CardType{
 
 // 玩家行牌状态
 enum XingPaiState{
-    normal  = 0;   // 正常行牌,二进制: 0000
-    hu      = 1;   // 已胡牌,二进制: 0001
-    give_up = 2;   // 已认输, 二进制: 0010
-    hu_giveup = 3; // 已胡牌且认输, 二进制: 0011
+    normal  = 0x0;   // 正常行牌,二进制: 0000
+    hu      = 0x1;   // 已胡牌,二进制:   0001
+    give_up = 0x2;   // 已认输, 二进制:  0010
  }
 
 // 胡牌数据
@@ -147,7 +146,7 @@ message HuCard {
 
 // 吃牌数据
 message ChiCard {
-    repeated Card cards = 1;    // 牌列表
+    Card card = 1;    // 最小牌
     Card opr_card = 2;  // 吃的牌
     uint64 src_player = 3; // 吃牌来源玩家
 }

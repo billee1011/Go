@@ -136,5 +136,5 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (s *ZiMoSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return utils.GetNextState(mjcontext)
+	return utils.IsGameOverReturnState(mjcontext)
 }

@@ -132,7 +132,7 @@ func (s *QiangGangHuSettleState) settleFinishEvent(eventContext []byte, flow int
 	}
 	utils.SettleOver(flow, message)
 
-	nextState := utils.GetNextState(flow.GetMajongContext())
+	nextState := utils.IsGameOverReturnState(flow.GetMajongContext())
 	if nextState == majongpb.StateID_state_mopai {
 		s.setMopaiPlayer(flow)
 	}

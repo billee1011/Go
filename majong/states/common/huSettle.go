@@ -162,5 +162,5 @@ func (s *HuSettleState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 
 // nextState 下个状态
 func (s *HuSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return utils.GetNextState(mjcontext)
+	return utils.IsGameOverReturnState(mjcontext)
 }
