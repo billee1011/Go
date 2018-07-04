@@ -41,12 +41,15 @@ func LogOptionInfos() {
 	}
 }
 
+// idIntToStr 根据游戏ID得到游戏名字
 func idIntToStr(gameID int) string {
 	switch gameID {
 	case gutils.SCXLGameID:
 		return SCXL
 	case gutils.SCXZGameID:
 		return SCXZ
+	case gutils.DDZGameID:
+		return DDZ
 	}
 	return ""
 }

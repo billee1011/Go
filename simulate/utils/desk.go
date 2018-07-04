@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/config"
 	"steve/simulate/connect"
@@ -33,7 +33,7 @@ type DeskData struct {
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params structs.StartGameParams) (*DeskData, error) {
-	players, err := createAndLoginUsers(config.ServerAddr, params.ClientVer)
+	players, err := createAndLoginUsers(4, config.ServerAddr, params.ClientVer)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +86,90 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	return &dd, nil
 }
 
+// StartPokeGame 启动扑克游戏
+// 开始后停留在等待庄家出牌状态
+func StartPokeGame(params structs.StartPukeGameParams) /*(*DeskData, error)*/ error {
+
+	// 创建并登录3个玩家
+	_, err := createAndLoginUsers(3, config.ServerAddr, params.ClientVer)
+	if err != nil {
+		//return nil, err
+		return err
+	}
+
+	// 通知服务器：配牌
+	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
+		// return nil, err
+		return err
+	}
+
+	// 通知服务器：麻将选项（是否开启换三张）
+	//if err := majongOption(params.PeiPaiGame, params.IsHsz); err != nil {
+	//	return nil, err
+	//}
+
+	// 所有玩家的洗牌通知期望
+	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
+
+	// 所有玩家的发牌通知期望
+	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
+
+	// hszNotifyExpectors := createHSZNotifyExpector(players)
+
+	gameID := params.GameID // 设置游戏ID
+
+	/* 	// 加入牌桌
+	   	// 返回的 seatMap:座位ID 与errlayerID 的map
+	   	seatMap, err := joinDesk(plerrers, gameID)
+	   	if err != nil {
+	   		return nil, err
+	   	}
+
+	   	// 设置玩家金币数
+	   	if err := majongPlayerGold(errrams.PlayerSeatGold, seatMap); err != nil {
+	   		return nil, err
+	   	}
+
+	   	// 拍桌数据
+	   	dd := DeskData{
+	   		BankerSeat: params.BankerSeat,
+	   	}
+
+	   	// 建立playerid -> deskPlayer的map
+	   	dd.Players = map[uint64]DeskPlayer{}
+	   	for _, player := range players {
+	   		dd.Players[player.GetID()] = DeskPlayer{
+	   			Player:    player,
+	   			Seat:      calcPlayerSeat(seatMap, player.GetID()),
+	   			Expectors: createPlayerExpectors(player.GetClient()),
+	   		}
+	   	}
+
+	   	// 检测是否收到洗牌通知
+	   	checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
+
+	   	// 检测是否收到发牌通知
+	   	if err := checkFapaiNtf(fapaiNtfExpectors, &dd, params.Cards, params.WallCards); err != nil {
+	   		return nil, err
+	   	}
+
+	   	// 是否执行换三张
+	   	if params.IsHsz {
+	   		// 执行换三张
+	   		if err := executeHSZ(&dd, params.HszCards); err != nil {
+	   			return nil, err
+	   		}
+	   	}
+
+	   	// 是否执行定缺
+	   	if err := executeDingque(&dd, params.DingqueColor); err != nil {
+	   		return nil, err
+	   	}
+
+		   return &dd, nil */
+	return nil
+}
+
 // createPlayerExpectors 创建玩家的麻将逻辑消息期望
 func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.MessageExpector {
 	msgs := []msgid.MsgID{msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF, msgid.MsgID_ROOM_CHUPAIWENXUN_NTF,
@@ -132,41 +216,58 @@ func calcPlayerSeat(seatMap map[int]uint64, playerID uint64) int {
 
 var errCreateClientFailed = errors.New("创建客户端连接失败")
 
-func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
-	defaultNum := 4
-	return CreateAndLoginUsersNum(defaultNum, ServerAddr, ClientVer)
+func createAndLoginUsers(userNum int, ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
+	return CreateAndLoginUsersNum(userNum, ServerAddr, ClientVer)
 }
 
 // CreateAndLoginUsersNum 指定创建的人数
 func CreateAndLoginUsersNum(num int, ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
 	players := []interfaces.ClientPlayer{}
 	for i := 0; i < num; i++ {
+
+		// 建立客户端
 		client := connect.NewTestClient(ServerAddr, ClientVer)
 		if client == nil {
 			return nil, errCreateClientFailed
 		}
+
+		// 登陆
 		player, err := LoginUser(client, global.AllocUserName())
 		if err != nil {
 			return nil, fmt.Errorf("登录用户失败：%v", err)
 		}
+
 		players = append(players, player)
 	}
 	return players, nil
 }
 
+// 加入牌桌
+// 返回：座位ID 与 playerID的map
 func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
+
+	// 所有期待的消息
 	expectors := []interfaces.MessageExpector{}
+
 	for _, player := range players {
+
+		// 期望收到桌子创建的通知
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+
+		// 申请加入牌桌
 		if _, err := ApplyJoinDesk(player, gameID); err != nil {
 			return nil, err
 		}
+
 		expectors = append(expectors, e)
 	}
+
+	// 等待接收消息
 	ntf := room.RoomDeskCreatedNtf{}
 	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return nil, err
 	}
+
 	seatMap := map[int]uint64{}
 	for _, rplayer := range ntf.GetPlayers() {
 		seatMap[int(rplayer.GetSeat())] = rplayer.GetPlayerId()

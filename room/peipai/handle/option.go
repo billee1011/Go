@@ -8,11 +8,13 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
+// 所有游戏的选项配置
 var optionInfos []optionInfo
 
+// 单个游戏的选项
 type optionInfo struct {
-	Key string
-	Hsz bool
+	Key string // 游戏名字
+	Hsz bool   // 是否开启换三张
 }
 
 //addOptionInfo 添加新的选项请求
@@ -48,12 +50,17 @@ func GetHsz(gameID int) bool {
 //Option 处理选项请求
 func Option(resp http.ResponseWriter, req *http.Request) {
 	opt := optionInfo{}
+
+	// 游戏名字
 	gameName := req.FormValue(game)
 	if len(gameName) == 0 {
 		respMSG(resp, fmt.Sprintf("缺少游戏ID"), 404)
 		return
 	}
+
 	opt.Key = gameName
+
+	// 换三张选项
 	value := req.FormValue(HszSwitch)
 	if len(value) != 0 {
 		open, err := strconv.ParseBool(value)
@@ -64,7 +71,10 @@ func Option(resp http.ResponseWriter, req *http.Request) {
 		opt.Hsz = open
 		respMSG(resp, fmt.Sprintf("配置换三张开关成功,当前为:%v", opt.Hsz), 200)
 	}
+
+	// 添加进来
 	addOptionInfo(opt)
+
 	logrus.WithFields(logrus.Fields{
 		"游戏":    opt.Key,
 		"换三张开关": opt.Hsz,
