@@ -73,7 +73,7 @@ message HuCard {
 
 // 吃牌数据
 message ChiCard {
-    repeated Card cards = 1;    // 牌列表
+    Card card = 1;    // 最小牌
     Card opr_card = 2;  // 吃的牌
     uint64 src_player = 3; // 吃牌来源玩家
 }

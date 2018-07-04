@@ -9,10 +9,19 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// FanType 番型
+type FanType struct {
+	ID     int   `yaml:"id"`      // 番型 ID
+	FuncID int   `yaml:"func_id"` // 计算函数 ID
+	Mutex  []int `yaml:"mutex"`   // 互斥番型列表
+	Method int   `yaml:"method"`  // 分数计算方式
+	Score  int   `yaml:"score"`   // 番数
+}
+
 // CardTypeOption 牌型选项
 type CardTypeOption struct {
-	ID          int  `yaml:"id"`           // 选项 ID
-	EnableQidui bool `yaml:"enable_qidui"` // 是否有7对
+	ID       int             `yaml:"id"`               // 选项 ID
+	Fantypes map[int]FanType `yaml:"enable_fan_types"` // 支持的番型
 }
 
 // CardTypeOptionManager 选项管理器
