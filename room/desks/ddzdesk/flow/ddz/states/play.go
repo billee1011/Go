@@ -45,14 +45,14 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	player := GetPlayerByID(context.GetPlayers(), playerId)
 	outCards := message.GetCards()
 
-	if(!ContainsAll(player.Cards, outCards)){
+	if(!ContainsAll(player.HandCards, outCards)){
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: &room.Result{ErrCode:proto.Uint32(2), ErrDesc: proto.String("手牌不存在")},
 		})
 		return int(ddz.StateID_state_playing), errors.New("手牌没有包含所有出的牌")
 	}
 
-	if len(player.Cards) == 0 {
+	if len(player.HandCards) == 0 {
 		broadcast(m, msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF, &room.DDZGameOverNtf{WinnerId:&playerId,ShowHandTime:proto.Uint32(4)})
 		return int(ddz.StateID_state_over), nil
 	} else {
