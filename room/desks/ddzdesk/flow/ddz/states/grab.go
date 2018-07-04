@@ -119,7 +119,13 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.CurrentPlayerId = nextPlayerId
 
 	if lordPlayerId != 0 {
-		GetPlayerByID(context.GetPlayers(), lordPlayerId).Lord = true
+		lordPlayer := GetPlayerByID(context.GetPlayers(), lordPlayerId)
+		lordPlayer.Lord = true
+		for _, card := range context.WallCards {
+			lordPlayer.HandCards = append(lordPlayer.HandCards, card)
+		}
+		lordPlayer.HandCards = ddzSort(lordPlayer.HandCards)
+		context.WallCards = []uint32{}
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil
