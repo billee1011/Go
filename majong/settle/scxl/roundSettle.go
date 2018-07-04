@@ -18,6 +18,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 		"flowPigPlayers":  params.FlowerPigPlayers,
 		"huPlayers":       params.HuPlayers,
 		"notTinPlayers":   params.NotTingPlayers,
+		"giveupPlayers":   params.GiveupPlayers,
 		"tingPlayersInfo": params.TingPlayersInfo,
 	})
 	setletInfos := make([]*majongpb.SettleInfo, 0)
@@ -49,11 +50,17 @@ func (roundSettle *RoundSettle) yellSettle(params *interfaces.RoundSettleParams)
 	yellSettleInfos := make([]*majongpb.SettleInfo, 0)
 
 	for _, noTingPlayer := range params.NotTingPlayers {
+		if isGiveUpPlayer(noTingPlayer, params.GiveupPlayers) {
+			continue
+		}
 		// 关联
 		groupIds := make([]uint64, 0)
 		groupyellSettles := make([]*majongpb.SettleInfo, 0)
 		// 听玩家结算处理
 		for playerID, value := range params.TingPlayersInfo {
+			if isGiveUpPlayer(playerID, params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				playerID:     int64(value) * ante,
 				noTingPlayer: -(int64(value) * ante)}
@@ -80,11 +87,20 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 	// 查花猪信息
 	flowwePigSettleInfos := make([]*majongpb.SettleInfo, 0)
 	for _, flowerPig := range params.FlowerPigPlayers {
+		if isGiveUpPlayer(flowerPig, params.GiveupPlayers) {
+			continue
+		}
+		logrus.WithFields(logrus.Fields{
+			"flowerPig": flowerPig,
+		}).Debugln("查花猪结算-------------")
 		// 关联
 		groupIds := make([]uint64, 0)
 		groupflowerSettles := make([]*majongpb.SettleInfo, 0)
 		// 胡玩家结算处理
 		for j := 0; j < len(params.HuPlayers); j++ {
+			if isGiveUpPlayer(params.HuPlayers[j], params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				params.HuPlayers[j]: ante * 16,
 				flowerPig:           -(ante * 16),
@@ -96,6 +112,9 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		}
 		// 不是花猪的未听玩家结算处理
 		for n := 0; n < len(params.NotTingPlayers); n++ {
+			if isGiveUpPlayer(params.NotTingPlayers[n], params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				params.NotTingPlayers[n]: ante * 16,
 				flowerPig:                -(ante * 16),
@@ -107,6 +126,9 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		}
 		// 听玩家结算处理
 		for playerID, value := range params.TingPlayersInfo {
+			if isGiveUpPlayer(playerID, params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				playerID:  (int64(16+value) * ante),
 				flowerPig: -(int64(16+value) * ante),
@@ -140,6 +162,9 @@ func (roundSettle *RoundSettle) GetTaxRebeatIds(params interfaces.RoundSettlePar
 		taxRebeatPlayers = append(taxRebeatPlayers, flowerPigPlayer)
 	}
 	for _, taxRebeatPlayer := range taxRebeatPlayers {
+		if isGiveUpPlayer(taxRebeatPlayer, params.GiveupPlayers) {
+			continue
+		}
 		for _, sInfo := range params.SettleInfos {
 			if gangSettleType[sInfo.SettleType] == true {
 				score := sInfo.Scores[taxRebeatPlayer]
@@ -163,4 +188,13 @@ func newRoundSettleInfo(id uint64, scoreMap map[uint64]int64,
 		SettleType: settleType,
 		CardValue:  uint32(cardValue),
 	}
+}
+
+func isGiveUpPlayer(playerID uint64, giveupPlayers []uint64) bool {
+	for _, giveupPlayer := range giveupPlayers {
+		if giveupPlayer == playerID {
+			return true
+		}
+	}
+	return false
 }
