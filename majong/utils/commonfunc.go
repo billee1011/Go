@@ -87,6 +87,7 @@ func SettleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent)
 		}
 		player.XpState = player.GetXpState() | majongpb.XingPaiState_give_up
 	}
+
 }
 
 // GetNextState 下一状态获取
