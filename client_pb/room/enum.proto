@@ -1,0 +1,141 @@
+syntax = "proto2";
+
+package room;
+
+// CardColor 卡牌花色
+enum CardColor {
+    CC_WAN = 1;      // 万
+    CC_TIAO = 2;     // 条
+    CC_TONG = 3;     // 筒
+    CC_FENG = 4;     // 风
+}
+
+// Direction 换三张方向
+enum Direction {
+    ClockWise = 0;  // 顺时针
+    Opposite = 1;   // 对家
+    AntiClockWise = 2;  // 逆时针
+}
+
+// XingpaiAction 行牌 ACTION
+enum XingpaiAction {
+    XA_CHI = 0; // 吃
+    XA_PENG = 1; // 碰
+    XA_GANG = 2; // 杠
+    XA_HU = 3;  // 胡
+    XA_QI = 4;  // 弃
+}
+
+// GangType 杠的类型
+enum GangType{
+    MingGang = 0; // 明杠
+    BuGang = 1;   // 补杠
+    AnGang =2;    // 暗杠
+}
+
+// HuType 胡类型
+enum HuType{
+    HT_GANGHOUPAO = 0;         // 杠后炮
+    HT_QIANGGANGHU = 1;        // 抢杠胡
+    HT_DIANPAO = 2;            // 点炮
+    HT_GANGKAI = 3;            // 杠开
+    HT_HAIDILAO = 4;           // 海底捞
+    HT_GANGSHANGHAIDILAO = 5;  // 杠上海底捞
+    HT_ZIMO = 6;               // 自摸
+    HT_TIANHU = 7;             // 天胡
+    HT_DIHU = 8;               // 地胡
+    
+}
+
+// 麻将组类型
+enum CardsGroupType{
+    CGT_HAND = 0;     // 手牌
+    CGT_CHI = 1;      // 吃牌
+    CGT_PENG = 2;     // 碰牌
+    CGT_MINGGANG = 3; // 明杠牌
+    CGT_ANGANG = 4;   // 暗杠牌
+    CGT_BUGANG = 5;   // 补杠牌
+    CGT_HU = 6;       // 胡的牌
+    CGT_HUA = 7;      // 花牌 
+	CGT_OUT = 8;      // 出去的牌 
+}
+
+// SettleType 结算类型
+enum SettleType{
+    ST_ANGANG = 0;         // 暗杠
+    ST_MINGGANG = 1;       // 明杠
+    ST_BUGANG = 2;         // 补杠
+    ST_DIANPAO = 3;        // 点炮
+    ST_ZIMO = 4;           // 自摸
+    ST_FLOWERPIG = 5;      // 查花猪
+    ST_YELL = 6;           // 查大叫
+    ST_TAXREBEAT = 7;      // 退税
+    ST_CALLDIVER = 8;      // 呼叫转移
+}
+
+// FanType 胡牌牌型
+enum FanType{
+    FT_PINGHU  = 0;            // 平胡
+    FT_QINGYISE  = 1;          // 清一对
+    FT_QIDUI  = 2;             // 七对
+    FT_QINGQIDUI  = 3;         // 清七对
+    FT_LONGQIDUI  = 4;         // 龙七对
+    FT_QINGLONGQIDUI  = 5;     // 清龙七对   
+    FT_PENGPENGHU  = 6;        // 碰碰胡
+    FT_QINGPENG  = 7;          // 清碰
+    FT_JINGGOUDIAO  = 8;       // 金钩钓
+    FT_QINGJINGGOUDIAO  = 9;   // 清金钩钓
+    FT_SHIBALUOHAN   = 10;     // 十八罗汉
+    FT_QINGSHIBALUOHAN  = 11;  // 清十八罗汉
+}
+
+// 结算类型
+enum BillType {
+    BILL_GANG 	    = 0; // 杠结算
+    BILL_DIANPAO    = 1; // 点跑结算
+    BILL_ZIMO       = 2; // 自摸结算
+    BILL_CHECKPIG 	= 3; // 查花猪
+    BILL_CHECKSHOUT = 4; // 查大叫
+    BILL_REFUND 	= 5; // 退税结算
+    BILL_TRANSFER 	= 6; // 呼叫转移结算
+}
+
+// CartoonType 动画类型
+enum CartoonType {
+    CTNT_FAPAI = 1; // 发牌动画
+    CTNT_HUANSANZHANG = 2;  // 换三张动画
+}
+
+//GameStage:恢复对局当前游戏状态
+enum GameStage{
+	GAMESTAGE_INIT = 0;// 无
+	GAMESTAGE_HUANSANZHANG = 1;// 换三张阶段
+	GAMESTAGE_DINGQUE = 2;// 定缺阶段
+	GAMESTAGE_PLAYCARD = 3;// 行牌
+    GAMESTAGE_END = 4; // 游戏结束
+}
+
+// DeviceType 设备类型
+enum DeviceType {
+    DT_ANDROID = 0; // 安卓
+    DT_IPHONE = 1;  // 苹果
+}
+
+// GameId 游戏id
+enum GameId{
+    GAMEID_XUELIU = 1; //血流
+    GAMEID_XUEZHAN = 2; //血战
+}
+
+// LocSourceType 位置信息来源类型
+enum LocSourceType{
+    LOC_SOURCE_BAIDU = 0;  // 百度SDK
+    LOC_SOURCE_JIZHAN = 1; // 基站
+}
+
+// XingPaiState 玩家行牌状态，前端显示
+enum XingPaiState{
+    XP_STATE_NORMAL = 0x0; // 正常行牌，未胡且未认输
+    XP_STATE_HU = 0x1; // 胡牌
+    XP_STATE_GIVEUP = 0x2; // 认输 
+}

@@ -1,0 +1,158 @@
+syntax = "proto2";
+
+package msgid;
+
+// MsgID 消息 ID
+enum MsgID {
+
+	/////////////////////////////////////////////////////////////
+	// LOGIN_BEGIN 0x0001 登录逻辑消息区间开始
+	
+	LOGIN_AUTH_REQ = 0x0001;	// 请求认证
+	LOGIN_AUTH_RSP = 0x0002;	// 响应认证
+
+	// LOGIN_END 0x0FFF 登录逻辑消息区间结束
+	/////////////////////////////////////////////////////////////
+
+	/////////////////////////////////////////////////////////////
+	// GATE_BEGIN 0x1001
+	
+	GATE_AUTH_REQ = 0x1001;	// 网关认证请求
+	GATE_AUTH_RSP = 0x1002;	// 网关认证应答
+	
+	GATE_HEART_BEAT_REQ = 0x1003;	// 心跳检测请求
+	GATE_HEART_BEAT_RSP = 0x1004;	// 心跳检测应答
+
+	// GATE_END 0x1FFF
+	/////////////////////////////////////////////////////////////	
+
+	/////////////////////////////////////////////////////////////
+	// MATCH_BEGIN 0x2001
+	
+	MATCH_REQ = 0x2001;	// 匹配请求
+	MATCH_RSP = 0x2002;	// 匹配应答
+
+	// MATCH_END 0x2FFF
+	/////////////////////////////////////////////////////////////	
+
+
+	// ROOM_BEGIN 消息区间开始
+	ROOM_BEGIN = 0x10000;
+
+	// ROOM_BASE_BEGIN 房间逻辑消息区间开始
+	ROOM_BASE_BEGIN = 0x10001;
+
+	ROOM_LOGIN_REQ = 0x10002;	// 请求登录房间服务器 客户端->服务端
+	ROOM_LOGIN_RSP = 0x10003;	// 响应登录房间服务器 服务器->客户端
+
+	ROOM_JOIN_DESK_REQ = 0x10004;	// 加入房间请求 客户端->服务端
+	ROOM_JOIN_DESK_RSP = 0x10005;	// 加入房间响应 服务器->客户端
+	ROOM_DESK_CREATED_NTF = 0x10006;	// 房间创建成功通知 服务器->客户端
+
+	ROOM_DESK_QUIT_REQ = 0x10007;	// 退出牌桌请求	客户端->服务器
+	ROOM_DESK_DISMISS_NTF = 0x10008;	// 牌桌解散通知 服务器->客户端
+
+	ROOM_DESK_CONTINUE_REQ = 0x10009;	// 续局请求
+	ROOM_DESK_CONTINUE_RSP = 0x1000A;	// 续局应答
+
+	ROOM_VISITOR_LOGIN_REQ = 0x1000B; // 游客登录请求
+	ROOM_VISITOR_LOGIN_RSP = 0x1000C; // 游客登录应答
+	
+	ROOM_DESK_NEED_RESUME_REQ = 0x1000D; // 是否需要恢复牌局请求 客户端->服务器
+	ROOM_DESK_NEED_RESUME_RSP = 0x1000E; // 是否需要恢复牌局应答 服务器->客户端
+
+	ROOM_DESK_QUIT_RSP = 0x1000F;	// 退出牌桌响应	客户端->服务器
+
+	ROOM_PLAYER_LOCATION_REQ = 0x10010; // 玩家位置信息请求
+	ROOM_PLAYER_LOCATION_RSP = 0x10011; // 玩家位置信息应答
+
+	ROOM_PLAYER_GIVEUP_REQ = 0x10100; // 玩家认输请求 客户端->服务器
+	ROOM_PLAYER_GIVEUP_RSP = 0x10101; // 玩家认输响应 服务器->客户端
+	ROOM_PLAYER_GIVEUP_NTF = 0x10102; // 玩家认输通知 服务器->客户端
+
+	// ROOM_BASE_END ROOM 房间逻辑消息区间结束
+	ROOM_BASE_END = 0x10FFF;
+
+
+	// ROOM_GAME_BEGIN ROOM 游戏逻辑消息区间开始
+	ROOM_GAME_BEGIN = 0x11000;	
+
+	ROOM_START_GAME_NTF = 0x11001; 	// 游戏开始通知 方向：服务器->客户端
+	ROOM_XIPAI_NTF = 0x11002;	// 洗牌通知 方向：服务器->客户端
+	ROOM_FAPAI_NTF = 0x11003;	// 发牌通知 方向： 服务器->客户端
+
+	// ROOM_HUANSANZHANG_NTF = 0x11020;	// 换三张通知  方向： 服务器->客户端
+	ROOM_HUANSANZHANG_REQ = 0x11021;	// 换三张请求 方向： 客户端->服务端
+	ROOM_HUANSANZHANG_RSP = 0x11022;	// 换三张回复 方向： 服务器->客户端
+	ROOM_HUANSANZHANG_FINISH_NTF = 0x11023;	// 换三张完成通知 方向：服务器->客户端
+
+	// ROOM_DINGQUE_NTF = 0x11040;	   // 定缺通知 服务器->客户端
+	ROOM_DINGQUE_REQ = 0x11041;	   // 定缺请求 客户端->服务器
+	ROOM_DINGQUE_RSP = 0x11042;    // 定缺响应 服务器->客户端
+	ROOM_DINGQUE_FINISH_NTF = 0x11043;	// 定缺完成通知 服务器->客户端
+
+	ROOM_CHUPAIWENXUN_NTF = 0x11060;	// 出牌问询通知  服务器-> 客户端
+
+	ROOM_XINGPAI_ACTION_REQ = 0x11070;	// 行牌动作请求 客户端->服务器
+
+	// ROOM_PENG_REQ = 0x11080;	// 请求碰 客户端->服务器
+	ROOM_PENG_RSP = 0x11081;	// 响应碰 服务器->客户端
+	ROOM_PENG_NTF = 0x11082;	// 碰通知 服务器->客户端
+
+	// ROOM_GANG_REQ = 0x110A0;	// 请求杠 客户端->服务器
+	ROOM_GANG_RSP = 0x110A1;	// 响应杠 服务器->客户端
+	ROOM_GANG_NTF = 0x110A2;	// 杠通知 服务器->客户端
+
+	// ROOM_HU_REQ = 0x110C0;	   // 胡请求 客户端->服务端
+	ROOM_HU_RSP = 0x110C1;	   // 胡应答 服务器->客户端
+	ROOM_HU_NTF = 0x110C2;	   // 胡通知 服务器->客户端
+
+	// ROOM_QI_REQ = 0x110E0;	   // 请求弃 客户端->服务端
+	ROOM_QI_RSP = 0x110E1;	   // 响应弃 服务器->客户端
+
+	ROOM_ZIXUN_NTF = 0x11100;	   // 自询通知 服务器->客户端
+	ROOM_CHUPAI_REQ = 0x11101;	   // 出牌请求 客户端->服务端
+	ROOM_CHUPAI_NTF = 0x11102;	   // 出牌通知 服务器->客户端
+	ROOM_MOPAI_NTF = 0x11103;	   // 摸牌通知 服务器->客户端
+
+	ROOM_WAIT_QIANGGANGHU_NTF = 0x11120;	// 等待抢杠胡通知 服务器->客户端
+
+	ROOM_TINGINFO_NTF = 0x11121; // 听牌信息通知 服务端->客户端
+
+	ROOM_CARTOON_FINISH_REQ = 0x11125;	// 动画完成 客户端->服务器
+
+	ROOM_GAMEOVER_NTF = 0x11140;	// 游戏结束通知 服务器->客户端
+	
+	
+	ROOM_RESUME_GAME_REQ = 0x11151; // 恢复对局请求
+	ROOM_RESUME_GAME_RSP = 0x11152; // 恢复对局应答
+
+
+	// ROOM_GAME_END 游戏逻辑消息区间结束
+	ROOM_GAME_END = 0x11FFF;
+
+	// ROOM_SETTLE_BEGIN ROOM 游戏结算消息区间开始
+	ROOM_SETTLE_BEGIN = 0x12000;
+
+	ROOM_INSTANT_SETTLE = 0x12001;	   // 即时结算   服务器->客户端
+	ROOM_ROUND_SETTLE = 0x12002;	   // 单局结算   服务器->客户端
+	
+	// ROOM_SETTLE_END 游戏结算消息区间结束
+	ROOM_SETTLE_END = 0x12FFF;
+
+	// 托管逻辑区间开始
+	ROOM_TUOGUAN_BEGIN = 0x13000;
+
+	ROOM_TUOGUAN_NTF = 0x13001;	 		// 托管状态通知
+	ROOM_CANCEL_TUOGUAN_REQ = 0x13002;	 // 取消托管请求
+
+	// 托管逻辑区间结束
+	ROOM_TUOGUAN_END = 0x130FF;
+	
+    // 房间聊天
+    ROOM_CHAT_REQ = 0x14000;           // ROOM_CHAT_REQ 房间聊天请求  客户端->服务端
+	ROOM_CHAT_NTF = 0x14001 ;          // ROOM_CHAT_NTF 房间聊天通知  服务器->客户端
+
+	// ROOM END 房间消息区间结束
+	ROOM_END = 0x1FFFF; 
+}

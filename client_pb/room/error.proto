@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package room;
+
+
+enum RoomError {
+    SUCCESS = 0x0;
+    NOT_LOGIN = 0x1;    // 未登录
+    EMPTY_USER_NAME = 0x2;  // 用户名为空
+    FAILED = 0x3; // 失败
+
+    // desk 0x10000 - 0x1ffff
+    DESK_ALREADY_APPLIED = 0x10001; // 已经申请过了
+    GAME_ALREADY_FINISHED = 0x10002; // 游戏已经结束了
+    DESK_GAME_PLAYING = 0x10003;    // 正在游戏中
+    DESK_NO_GAME_PLAYING = 0x10004;  // 没有正在进行的游戏
+
+}
