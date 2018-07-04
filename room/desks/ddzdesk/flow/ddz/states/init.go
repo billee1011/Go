@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gogo/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 type initState struct{}
@@ -33,6 +34,9 @@ func (s *initState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 func (s *initState) onStartGame(m machine.Machine) (int, error) {
 	logrus.WithField("context", getDDZContext(m)).Debugln("开始游戏")
 	players := getPlayers(m)
+	if len(players) != 3 {
+		return int(ddz.StateID_state_init), errors.New("玩家人数错误")
+	}
 	i := rand.Intn(len(players))
 	callPlayer := players[i] //叫地主玩家
 	context := getDDZContext(m)
