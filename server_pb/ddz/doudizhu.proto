@@ -8,11 +8,11 @@ import "events.proto";
 
 // Player 玩家数据
 message Player {
-    uint64 palyer_id = 1;                   // 玩家 ID 
-    repeated uint32 cards = 2;              // 玩家手牌
-    bool lord = 3;                          // 是否是庄家
-    bool grab = 4;                          // 是否抢庄
-    bool is_double = 5;                     // 是否加倍
+    uint64 palyer_id = 1;                   // 玩家 ID
+    bool lord = 2;                          // 是否是庄家
+    bool grab = 3;                          // 是否抢庄
+    bool is_double = 4;                     // 是否加倍
+    repeated uint32 hand_cards = 5;         // 玩家手牌
     repeated uint32 out_cards = 6;          // 打出的牌
 } 
 
@@ -21,7 +21,7 @@ message DDZContext {
     int32 game_id = 1;              // 游戏 ID 
     StateID cur_state = 2;          // 当前状态
     repeated Player players = 3;    // 玩家列表
-    repeated uint32 wall_cards = 4; // 墙牌
+    repeated uint32 wall_cards = 4; // 墙牌(开局发好牌后，只剩3张)
     uint64 current_player_id = 5;   // 当前操作玩家
     uint64 last_player_id = 6;      // 上一个操作玩家
     uint64 first_grab_player_id = 7; // 第一个实际叫地主玩家

@@ -135,3 +135,24 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 	}
 	dm.SetAutoEvent(event, duration)
 }
+
+
+// ContainsAll handCards是否包含所有outCards
+func ContainsAll(handCards []uint32, outCards []uint32) bool {
+	for _, outCard := range outCards {
+		if(!Contains(handCards, outCard)){
+			return false
+		}
+	}
+	return true
+}
+
+// ContainsAll cards是否包含card
+func Contains(cards []uint32, card uint32) bool {
+	for _, value := range cards {
+		if value == card {
+			return true
+		}
+	}
+	return false
+}

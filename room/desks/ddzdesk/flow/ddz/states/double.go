@@ -54,6 +54,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	})
 
 	if context.DoubledCount >= 3 {
+		context.CurrentPlayerId = context.LoadPlayerId
 		return int(ddz.StateID_state_playing), nil
 	} else {
 		return int(ddz.StateID_state_double), nil
