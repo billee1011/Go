@@ -1,54 +1,41 @@
-package core
+package match
 
 import (
 	"github.com/Sirupsen/logrus"
 	"steve/server_pb/room_mgr"
-	"fmt"
-	"errors"
 	"context"
 	"steve/structs"
 )
 
 type Sender struct {
-	e *structs.Exposer
 }
 
 func NewSender() *Sender {
-	s:= &Sender{
-		e: matchCore.e,
-	}
-
-	return s
+	return &Sender{}
 }
 
 // 通知room服创建desk
-func (s *Sender) createDesk(playersID []uint64) error {
+func (s *Sender) createDesk(playersID []uint64) (resp *roommgr.CreateDeskResponse, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "sender::CreateDesk",
+		"func_name": "Sender::createDesk()",
 	})
-	logEntry.Debugln("sender::CreateDesk()")
+	e := structs.GetGlobalExposer()
 
-	roomConnection, roomErr := s.core.e.RPCClient.GetConnectByServerName("room")
-	if roomErr != nil {
-		logEntry.WithError(roomErr).Errorln("获取room服失败")
+	rs, err := e.RPCClient.GetConnectByServerName("room")
+	if err != nil {
+		logEntry.WithError(err).Errorln("get 'room' service failed!!!")
 	}
 
-	if roomConnection == nil {
-		logEntry.Errorln("获取room服失败，room_connection == nil")
-		return errors.New("获取room服失败，matchCore::NofityRoomCreateDesk() room_connection == nil")
-	}
-
-	// 建立一个新的连接
-	roomMgrClient := roommgr.NewRoomMgrClient(roomConnection)
-	deskResp, deskErr := roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
+	roomMgrClient := roommgr.NewRoomMgrClient(rs)
+	resp, err = roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
 		PlayerId: playersID,
 	})
 
-	if deskErr != nil {
-		logEntry.WithError(deskErr).Errorln("调用room服的CreateDesk()失败")
-		return fmt.Errorf("call room::CreateDesk() failed: %v", deskErr)
+	if err != nil {
+		logEntry.WithError(err).Errorln("create desk failed!!!")
+		return
 	}
 
-	fmt.Println("收到room服 CreateDesk()返回消息 : ", deskResp.GetErrCode())
-	return nil
+	logEntry.Debugln("create desk success.")
+	return
 }
