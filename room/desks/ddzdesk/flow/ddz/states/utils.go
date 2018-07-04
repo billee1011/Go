@@ -138,7 +138,7 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 
 
 // ContainsAll handCards是否包含所有outCards
-func ContainsAll(handCards []uint32, outCards []uint32) bool {
+func ContainsAll(handCards []DDZCard, outCards []DDZCard) bool {
 	for _, outCard := range outCards {
 		if(!Contains(handCards, outCard)){
 			return false
@@ -147,12 +147,56 @@ func ContainsAll(handCards []uint32, outCards []uint32) bool {
 	return true
 }
 
-// ContainsAll cards是否包含card
-func Contains(cards []uint32, card uint32) bool {
+// Contains cards是否包含card
+func Contains(cards []DDZCard, card DDZCard) bool {
 	for _, value := range cards {
-		if value == card {
+		if value.equals(card) {
 			return true
 		}
 	}
 	return false
+}
+
+// ContainsPoint cards是否包含点数
+func ContainsPoint(cards []DDZCard, point uint32) bool {
+	for _, card := range cards {
+		if card.point == point {
+			return true
+		}
+	}
+	return false
+}
+
+// RemovePoint 删除cards中所有点数为point的牌,并分别返回
+func RemovePoint(cards []DDZCard, point uint32) (remain []DDZCard, deleted []DDZCard) {
+	for _, card := range cards {
+		if card.point == point {
+			deleted = append(deleted, card)
+		} else {
+			remain = append(remain, card)
+		}
+	}
+	return
+}
+
+// RemoveAll 从cards中删除removeCards
+func RemoveAll(cards []DDZCard, removeCards []DDZCard) []DDZCard {
+	var result []DDZCard
+	for _, card := range cards {
+		if !Contains(removeCards, card) {
+			result = append(result, card)
+		}
+	}
+	return result
+}
+
+// Remove 从cards中删除removeCard
+func Remove(cards []DDZCard, removeCard DDZCard) []DDZCard {
+	var result []DDZCard
+	for _, card := range cards {
+		if !card.equals(removeCard) {
+			result = append(result, card)
+		}
+	}
+	return result
 }

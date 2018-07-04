@@ -43,13 +43,21 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	player := GetPlayerByID(context.GetPlayers(), playerId)
-	outCards := message.GetCards()
+	outCards := toDDZCards(message.GetCards())
+	handCards := toDDZCards(player.HandCards)
 
-	if(!ContainsAll(player.HandCards, outCards)){
+	if(!ContainsAll(handCards, outCards)){
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: &room.Result{ErrCode:proto.Uint32(2), ErrDesc: proto.String("手牌不存在")},
 		})
 		return int(ddz.StateID_state_playing), errors.New("手牌没有包含所有出的牌")
+	}
+
+	if getCardType(outCards) == ddz.CardType_CT_NONE {
+		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+			Result: &room.Result{ErrCode:proto.Uint32(3), ErrDesc: proto.String("牌型错误")},
+		})
+		return int(ddz.StateID_state_playing), errors.New("所出的牌无法组成牌型")
 	}
 
 	if len(player.HandCards) == 0 {
