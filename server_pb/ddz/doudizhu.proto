@@ -24,10 +24,13 @@ message DDZContext {
     repeated uint32 wall_cards = 4; // 墙牌(开局发好牌后，只剩3张)
     uint64 current_player_id = 5;   // 当前操作玩家
     uint64 last_player_id = 6;      // 上一个操作玩家
-    uint64 first_grab_player_id = 7; // 第一个实际叫地主玩家
+    uint64 first_grab_player_id = 7;// 第一个实际叫地主玩家
     int32 grabbed_count = 8;        // 已抢/弃地主玩家人数
     uint64 load_player_id = 9;      //地主id
     int32 doubled_count = 10;       //加倍/弃加倍玩家人数
+    repeated uint32 cur_out_cards = 11; //当前出牌
+    CardType cur_card_type = 12;    //当前出牌牌型
+    string peipai = 13;             //测试配牌
 }
 
 // AutoEvent 自动事件

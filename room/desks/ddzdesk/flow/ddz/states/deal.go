@@ -47,6 +47,7 @@ func (s *dealState) deal(m machine.Machine) {
 	rand.Shuffle(len(wallCards), func(i, j int) {
 		wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
 	})
+	PeiPai(wallCards, getDDZContext(m).Peipai)
 	context := getDDZContext(m)
 	players := context.GetPlayers()
 	for i := range players {

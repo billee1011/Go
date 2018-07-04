@@ -9,7 +9,29 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"strconv"
 )
+
+// PeiPai 配牌工具
+func PeiPai(wallCards []uint32, value string) ([]uint32, error) {
+	var cards []uint32
+	for i := 0; i < len(value); i = i + 3 {
+		card, err := strconv.Atoi(value[i : i+2])
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, uint32(card))
+	}
+	for i := 0; i < len(cards); i++ {
+		for j := len(wallCards) - 1; j >= 0; j-- {
+			if cards[i] == wallCards[j] {
+				wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
+				break
+			}
+		}
+	}
+	return wallCards, nil
+}
 
 // getDDZContext 从状态机中获取斗地主现场
 func getDDZContext(m machine.Machine) *ddz.DDZContext {
