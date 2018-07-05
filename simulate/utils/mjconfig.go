@@ -18,6 +18,7 @@ func majongOption(gameName string, open bool) error {
 // 参数seatGold : 座位ID 与 金币 的map
 // 参数seatID 	: 座位ID 与 playerID 的map
 func majongPlayerGold(seatGold, seatID map[int]uint64) error {
+	logrus.WithField("url", seatID).Info("通知服务器设置玩家的金币数")
 	for seat, playerID := range seatID {
 		if gold, isExist := seatGold[seat]; isExist {
 			url := fmt.Sprintf("%s/setgold/?player_id=%v&gold=%v", config.MaJongConfigURL, playerID, gold)
@@ -31,7 +32,7 @@ func majongPlayerGold(seatGold, seatID map[int]uint64) error {
 
 // 发出url的get请求
 func requestOpen(url string) error {
-	logrus.WithField("url", url).Info("")
+	logrus.WithField("url", url).Info("mjconfig.go::requestOpen()")
 	_, err := http.DefaultClient.Get(url)
 	return err
 }

@@ -40,8 +40,8 @@ func NewCommonStartGameParams() structs.StartGameParams {
 	}
 }
 
-// NewStartPokeGameParams 创建棋牌启动参数
-func NewStartPokeGameParams() structs.StartPukeGameParams {
+// NewStartDDZGameParams 创建棋牌启动参数
+func NewStartDDZGameParams() structs.StartPukeGameParams {
 	return structs.StartPukeGameParams{
 		GameID: room.GameId_GAMEID_DDZ, // 斗地主
 		Cards: [][]uint32{
