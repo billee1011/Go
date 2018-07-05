@@ -13,12 +13,12 @@ import (
 )
 
 // PeiPai 配牌工具
-func PeiPai(wallCards []uint32, value string) ([]uint32, error) {
+func PeiPai(wallCards []uint32, value string) error {
 	var cards []uint32
 	for i := 0; i < len(value); i = i + 3 {
 		card, err := strconv.Atoi(value[i : i+2])
 		if err != nil {
-			return nil, err
+			return err
 		}
 		cards = append(cards, uint32(card))
 	}
@@ -30,7 +30,7 @@ func PeiPai(wallCards []uint32, value string) ([]uint32, error) {
 			}
 		}
 	}
-	return wallCards, nil
+	return nil
 }
 
 // getDDZContext 从状态机中获取斗地主现场
@@ -42,14 +42,13 @@ func getDDZContext(m machine.Machine) *ddz.DDZContext {
 	return dm.GetDDZContext()
 }
 
-func getPlayers(m machine.Machine) []uint64 {
+func getPlayerIds(m machine.Machine) []uint64 {
 	dm, ok := m.(*ddzmachine.DDZMachine)
 	if !ok {
 		return nil
 	}
 
 	players := []uint64{}
-
 	for _, player := range dm.GetDDZContext().GetPlayers() {
 		players = append(players, player.GetPalyerId())
 	}
@@ -119,34 +118,22 @@ func sendMessage(m machine.Machine, players []uint64, msgID msgid.MsgID, body pr
 }
 
 func sendToPlayer(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
-	dm, ok := m.(*ddzmachine.DDZMachine)
-	if !ok {
-		return fmt.Errorf("不是斗地主状态机")
-	}
-	return dm.SendMessage([]uint64{playerID}, msgID, body)
+	return sendMessage(m, []uint64{playerID}, msgID, body)
 }
 
 func broadcast(m machine.Machine, msgID msgid.MsgID, body proto.Message) error {
-	dm, ok := m.(*ddzmachine.DDZMachine)
-	if !ok {
-		return fmt.Errorf("不是斗地主状态机")
-	}
-	return dm.SendMessage(getPlayers(m), msgID, body)
+	return sendMessage(m, getPlayerIds(m), msgID, body)
 }
 
 func broadcastExcept(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
-	dm, ok := m.(*ddzmachine.DDZMachine)
-	if !ok {
-		return fmt.Errorf("不是斗地主状态机")
-	}
-	allPlayers := getPlayers(m)
+	allPlayers := getPlayerIds(m)
 	players := []uint64{}
 	for _, pid := range allPlayers {
 		if pid != playerID {
 			players = append(players, pid)
 		}
 	}
-	return dm.SendMessage(players, msgID, body)
+	return sendMessage(m, players, msgID, body)
 }
 
 // setMachineAutoEvent 设置状态机自动事件
@@ -160,7 +147,7 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 
 
 // ContainsAll handCards是否包含所有outCards
-func ContainsAll(handCards []DDZCard, outCards []DDZCard) bool {
+func ContainsAll(handCards []Poker, outCards []Poker) bool {
 	for _, outCard := range outCards {
 		if(!Contains(handCards, outCard)){
 			return false
@@ -170,7 +157,7 @@ func ContainsAll(handCards []DDZCard, outCards []DDZCard) bool {
 }
 
 // Contains cards是否包含card
-func Contains(cards []DDZCard, card DDZCard) bool {
+func Contains(cards []Poker, card Poker) bool {
 	for _, value := range cards {
 		if value.equals(card) {
 			return true
@@ -180,7 +167,7 @@ func Contains(cards []DDZCard, card DDZCard) bool {
 }
 
 // ContainsPoint cards是否包含点数
-func ContainsPoint(cards []DDZCard, point uint32) bool {
+func ContainsPoint(cards []Poker, point uint32) bool {
 	for _, card := range cards {
 		if card.point == point {
 			return true
@@ -190,7 +177,7 @@ func ContainsPoint(cards []DDZCard, point uint32) bool {
 }
 
 // RemovePoint 删除cards中所有点数为point的牌,并分别返回
-func RemovePoint(cards []DDZCard, point uint32) (remain []DDZCard, deleted []DDZCard) {
+func RemovePoint(cards []Poker, point uint32) (remain []Poker, deleted []Poker) {
 	for _, card := range cards {
 		if card.point == point {
 			deleted = append(deleted, card)
@@ -202,8 +189,8 @@ func RemovePoint(cards []DDZCard, point uint32) (remain []DDZCard, deleted []DDZ
 }
 
 // RemoveAll 从cards中删除removeCards
-func RemoveAll(cards []DDZCard, removeCards []DDZCard) []DDZCard {
-	var result []DDZCard
+func RemoveAll(cards []Poker, removeCards []Poker) []Poker {
+	var result []Poker
 	for _, card := range cards {
 		if !Contains(removeCards, card) {
 			result = append(result, card)
@@ -212,9 +199,17 @@ func RemoveAll(cards []DDZCard, removeCards []DDZCard) []DDZCard {
 	return result
 }
 
+// AppendAll 从cards中添加addCards
+func AppendAll(cards []Poker, addCards []Poker) []Poker {
+	for _, card := range addCards {
+		cards = append(cards, card)
+	}
+	return cards
+}
+
 // Remove 从cards中删除removeCard
-func Remove(cards []DDZCard, removeCard DDZCard) []DDZCard {
-	var result []DDZCard
+func Remove(cards []Poker, removeCard Poker) []Poker {
+	var result []Poker
 	for _, card := range cards {
 		if !card.equals(removeCard) {
 			result = append(result, card)

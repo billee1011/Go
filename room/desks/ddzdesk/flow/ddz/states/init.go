@@ -33,7 +33,7 @@ func (s *initState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 // 开局随即确定一个叫地主玩家,然后广播通知游戏开始
 func (s *initState) onStartGame(m machine.Machine) (int, error) {
 	logrus.WithField("context", getDDZContext(m)).Debugln("开始游戏")
-	players := getPlayers(m)
+	players := getPlayerIds(m)
 	if len(players) != 3 {
 		return int(ddz.StateID_state_init), errors.New("玩家人数错误")
 	}

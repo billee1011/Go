@@ -14,11 +14,11 @@ import (
 type doubleState struct{}
 
 func (s *doubleState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("进入加倍状态")
 }
 
 func (s *doubleState) OnExit(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("离开初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("离开加倍状态")
 }
 
 func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, error) {
@@ -54,7 +54,9 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	})
 
 	if context.DoubledCount >= 3 {
-		context.CurrentPlayerId = context.LoadPlayerId
+		context.CurrentPlayerId = context.LordPlayerId
+		context.CurCardType = ddz.CardType_CT_NONE
+		context.TotalBomb = 1
 		return int(ddz.StateID_state_playing), nil
 	} else {
 		return int(ddz.StateID_state_double), nil
