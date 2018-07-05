@@ -26,7 +26,7 @@ func (c Poker) biggerThan(other Poker) bool {
 	return c.weight > other.weight
 }
 
-// 无花色比较，黑桃A 和 方块A比较返回true
+// 无花色比较，黑桃A 和 方块A比较返回false
 func (c Poker) pointBiggerThan(other Poker) bool {
 	return c.getPointWeight() > other.getPointWeight()
 }

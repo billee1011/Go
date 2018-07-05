@@ -14,11 +14,11 @@ import (
 type doubleState struct{}
 
 func (s *doubleState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("进入加倍状态")
 }
 
 func (s *doubleState) OnExit(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("离开初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("离开加倍状态")
 }
 
 func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, error) {

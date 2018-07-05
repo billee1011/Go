@@ -15,11 +15,11 @@ import (
 type playState struct{}
 
 func (s *playState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("进入出牌状态")
 }
 
 func (s *playState) OnExit(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("离开初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("离开出牌状态")
 }
 
 func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error) {

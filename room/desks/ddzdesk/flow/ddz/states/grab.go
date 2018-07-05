@@ -15,11 +15,11 @@ import (
 type grabState struct{}
 
 func (s *grabState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("进入叫/抢地主状态")
 }
 
 func (s *grabState) OnExit(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("离开初始状态")
+	logrus.WithField("context", getDDZContext(m)).Debugln("离开叫/抢地主状态")
 }
 
 func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error) {
