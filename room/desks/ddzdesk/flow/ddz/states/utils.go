@@ -160,7 +160,7 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 
 
 // ContainsAll handCards是否包含所有outCards
-func ContainsAll(handCards []DDZCard, outCards []DDZCard) bool {
+func ContainsAll(handCards []Poker, outCards []Poker) bool {
 	for _, outCard := range outCards {
 		if(!Contains(handCards, outCard)){
 			return false
@@ -170,7 +170,7 @@ func ContainsAll(handCards []DDZCard, outCards []DDZCard) bool {
 }
 
 // Contains cards是否包含card
-func Contains(cards []DDZCard, card DDZCard) bool {
+func Contains(cards []Poker, card Poker) bool {
 	for _, value := range cards {
 		if value.equals(card) {
 			return true
@@ -180,7 +180,7 @@ func Contains(cards []DDZCard, card DDZCard) bool {
 }
 
 // ContainsPoint cards是否包含点数
-func ContainsPoint(cards []DDZCard, point uint32) bool {
+func ContainsPoint(cards []Poker, point uint32) bool {
 	for _, card := range cards {
 		if card.point == point {
 			return true
@@ -190,7 +190,7 @@ func ContainsPoint(cards []DDZCard, point uint32) bool {
 }
 
 // RemovePoint 删除cards中所有点数为point的牌,并分别返回
-func RemovePoint(cards []DDZCard, point uint32) (remain []DDZCard, deleted []DDZCard) {
+func RemovePoint(cards []Poker, point uint32) (remain []Poker, deleted []Poker) {
 	for _, card := range cards {
 		if card.point == point {
 			deleted = append(deleted, card)
@@ -202,8 +202,8 @@ func RemovePoint(cards []DDZCard, point uint32) (remain []DDZCard, deleted []DDZ
 }
 
 // RemoveAll 从cards中删除removeCards
-func RemoveAll(cards []DDZCard, removeCards []DDZCard) []DDZCard {
-	var result []DDZCard
+func RemoveAll(cards []Poker, removeCards []Poker) []Poker {
+	var result []Poker
 	for _, card := range cards {
 		if !Contains(removeCards, card) {
 			result = append(result, card)
@@ -213,8 +213,8 @@ func RemoveAll(cards []DDZCard, removeCards []DDZCard) []DDZCard {
 }
 
 // Remove 从cards中删除removeCard
-func Remove(cards []DDZCard, removeCard DDZCard) []DDZCard {
-	var result []DDZCard
+func Remove(cards []Poker, removeCard Poker) []Poker {
+	var result []Poker
 	for _, card := range cards {
 		if !card.equals(removeCard) {
 			result = append(result, card)

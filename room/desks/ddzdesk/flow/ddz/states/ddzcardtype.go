@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func getCardType(cards []DDZCard) ddz.CardType {
+func getCardType(cards []Poker) ddz.CardType {
 	if isKingBomb(cards) {
 		return ddz.CardType_CT_KINGBOMB
 	} else if isBomb(cards) {
@@ -40,7 +40,7 @@ func getCardType(cards []DDZCard) ddz.CardType {
 }
 
 // 火箭
-func isKingBomb(cards []DDZCard) bool {
+func isKingBomb(cards []Poker) bool {
 	if len(cards) != 2 {
 		return false
 	}
@@ -48,7 +48,7 @@ func isKingBomb(cards []DDZCard) bool {
 }
 
 // 炸弹
-func isBomb(cards []DDZCard) bool {
+func isBomb(cards []Poker) bool {
 	if len(cards) != 4 {
 		return false
 	}
@@ -56,7 +56,7 @@ func isBomb(cards []DDZCard) bool {
 }
 
 // 四带两对
-func isBombAndPairs(cards []DDZCard) bool {
+func isBombAndPairs(cards []Poker) bool {
 	if len(cards) != 8 {
 		return false
 	}
@@ -81,7 +81,7 @@ func isBombAndPairs(cards []DDZCard) bool {
 }
 
 // 四带二
-func isBombAndSingles(cards []DDZCard) bool {
+func isBombAndSingles(cards []Poker) bool {
 	if len(cards) != 6 {
 		return false
 	}
@@ -95,7 +95,7 @@ func isBombAndSingles(cards []DDZCard) bool {
 }
 
 // 飞机
-func isTriples(cards []DDZCard) bool {
+func isTriples(cards []Poker) bool {
 	planeCount := len(cards)/3
 	if planeCount < 2 {
 		return false
@@ -113,7 +113,7 @@ func isTriples(cards []DDZCard) bool {
 }
 
 // 飞机带对子
-func isTriplesAndPairs(cards []DDZCard) bool {
+func isTriplesAndPairs(cards []Poker) bool {
 	planeCount := len(cards)/5
 	if planeCount < 2 {
 		return false
@@ -139,7 +139,7 @@ func isTriplesAndPairs(cards []DDZCard) bool {
 }
 
 // 飞机带单张
-func isTriplesAndSingles(cards []DDZCard) bool {
+func isTriplesAndSingles(cards []Poker) bool {
 	planeCount := len(cards)/4
 	if planeCount < 2 {
 		return false
@@ -158,7 +158,7 @@ func isTriplesAndSingles(cards []DDZCard) bool {
 }
 
 // 连对
-func isPairs(cards []DDZCard) bool {
+func isPairs(cards []Poker) bool {
 	pairs := len(cards)/2
 	if pairs < 3 {
 		return false
@@ -176,7 +176,7 @@ func isPairs(cards []DDZCard) bool {
 }
 
 // 顺子
-func isShunZi(cards []DDZCard) bool {
+func isShunZi(cards []Poker) bool {
 	if len(cards) < 5 {
 		return false
 	}
@@ -208,7 +208,7 @@ func isShunZi(cards []DDZCard) bool {
 }
 
 // 三张
-func isTriple(cards []DDZCard) bool {
+func isTriple(cards []Poker) bool {
 	if len(cards) != 3 {
 		return false
 	}
@@ -216,7 +216,7 @@ func isTriple(cards []DDZCard) bool {
 }
 
 // 三张带对子
-func isTripleAndPair(cards []DDZCard) bool {
+func isTripleAndPair(cards []Poker) bool {
 	if len(cards) != 5 {
 		return false
 	}
@@ -231,7 +231,7 @@ func isTripleAndPair(cards []DDZCard) bool {
 }
 
 // 三张带单张
-func isTripleAndSingle(cards []DDZCard) bool {
+func isTripleAndSingle(cards []Poker) bool {
 	if len(cards) != 4 {
 		return false
 	}
@@ -245,7 +245,7 @@ func isTripleAndSingle(cards []DDZCard) bool {
 }
 
 // 对子
-func isPair(cards []DDZCard) bool {
+func isPair(cards []Poker) bool {
 	if len(cards) != 2 {
 		return false
 	}
@@ -253,7 +253,7 @@ func isPair(cards []DDZCard) bool {
 }
 
 // 单张
-func isSingle(cards []DDZCard) bool {
+func isSingle(cards []Poker) bool {
 	if len(cards) != 1 {
 		return false
 	}
@@ -261,9 +261,9 @@ func isSingle(cards []DDZCard) bool {
 }
 
 // 获取最大相同点数的牌, 如 444555533 返回 5555
-func getMaxSamePointCards(cards []DDZCard) []DDZCard {
+func getMaxSamePointCards(cards []Poker) []Poker {
 	point, count := getMaxSamePoint(cards)
-	maxSamePointCards := make([]DDZCard, count)
+	maxSamePointCards := make([]Poker, count)
 	for _, card := range cards {
 		if card.point == point {
 			maxSamePointCards = append(maxSamePointCards, card)
@@ -273,7 +273,7 @@ func getMaxSamePointCards(cards []DDZCard) []DDZCard {
 }
 
 // 获取最大相同点数, 如 444555533 返回 5,4
-func getMaxSamePoint(cards []DDZCard) (maxCountPoint uint32, maxCount uint32) {
+func getMaxSamePoint(cards []Poker) (maxCountPoint uint32, maxCount uint32) {
 	counts := make(map[uint32]uint32) //Map<point, count>
 	for _, card := range cards {
 		point := card.point
@@ -294,7 +294,7 @@ func getMaxSamePoint(cards []DDZCard) (maxCountPoint uint32, maxCount uint32) {
 	return
 }
 
-func isAllSamePoint(cards []DDZCard) bool {
+func isAllSamePoint(cards []Poker) bool {
 	for i:=0;i<len(cards)-1;i++ {
 		if(cards[i].point != cards[i+1].point){
 			return false

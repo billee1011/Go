@@ -7,32 +7,32 @@ var (
 	redJoker = toDDZCard(0x0F)
 )
 
-type DDZCard struct {
+type Poker struct {
 	suit uint32
 	point uint32
 	weight uint32
 }
 
-func (c DDZCard) toInt() uint32 {
+func (c Poker) toInt() uint32 {
 	return c.suit + c.point
 }
 
-func (c DDZCard) equals(other DDZCard) bool {
+func (c Poker) equals(other Poker) bool {
 	return c.suit == other.suit && c.point == other.point
 }
 
-type DDZCardSlice []DDZCard
+type DDZCardSlice []Poker
 func (cs DDZCardSlice) Len() int           { return len(cs) }
 func (cs DDZCardSlice) Swap(i, j int)      { cs[i], cs[j] = cs[j], cs[i] }
 func (cs DDZCardSlice) Less(i, j int) bool { return cs[i].weight < cs[j].weight }
 
-type DDZPointSlice []DDZCard
+type DDZPointSlice []Poker
 func (cs DDZPointSlice) Len() int           { return len(cs) }
 func (cs DDZPointSlice) Swap(i, j int)      { cs[i], cs[j] = cs[j], cs[i] }
 func (cs DDZPointSlice) Less(i, j int) bool { return cs[i].point < cs[j].point }
 
-func toDDZCard(card uint32) DDZCard {
-	result := DDZCard{}
+func toDDZCard(card uint32) Poker {
+	result := Poker{}
 	result.suit = card / 16
 	result.point = card % 16
 
@@ -46,8 +46,8 @@ func toDDZCard(card uint32) DDZCard {
 	return result
 }
 
-func toDDZCards(cards []uint32) []DDZCard {
-	result := make([]DDZCard, len(cards))
+func toDDZCards(cards []uint32) []Poker {
+	result := make([]Poker, len(cards))
 	for _, card := range cards {
 		result = append(result, toDDZCard(card))
 	}
@@ -66,7 +66,7 @@ func ddzSort(cards []uint32) []uint32 {
 }
 
 // 按斗地主点数的大小排序后返回
-func ddzPointSort(cards []DDZCard) []DDZCard {
+func ddzPointSort(cards []Poker) []Poker {
 	ps := DDZPointSlice(cards)
 	sort.Sort(ps)
 	return ps
