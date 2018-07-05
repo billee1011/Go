@@ -34,8 +34,8 @@ func DefaultProcessor(m Machine, stateFactory StateFactory, event Event) error {
 		return fmt.Errorf("创建状态失败 %v", newStateID)
 	}
 
-	curState.OnEnter(m)
+	curState.OnExit(m)
 	m.SetStateID(newStateID)
-	newState.OnExit(m)
+	newState.OnEnter(m)
 	return nil
 }
