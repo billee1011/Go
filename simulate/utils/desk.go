@@ -115,8 +115,8 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	// 所有玩家的洗牌通知期望
 	//xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 
-	// 所有玩家的发牌通知期望
-	//fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
+	// 所有玩家的斗地主发牌通知期望
+	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_DDZ_DEAL_NTF)
 
 	// hszNotifyExpectors := createHSZNotifyExpector(players)
 
@@ -127,6 +127,14 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		BankerSeat: params.BankerSeat, // 地主的座位号
 	}
 
+	// 三个玩家的游戏开始消息的期望
+	expectorsStart := []interfaces.MessageExpector{}
+
+	for _, player := range players {
+		es, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_START_GAME_NTF)
+		expectorsStart = append(expectorsStart, es)
+	}
+
 	// 加入牌桌
 	// 返回的 seatMap:座位ID 与playerID 的map
 	seatMap, err := DDZjoinDesk(players, gameID)
@@ -134,16 +142,21 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		return nil, err
 	}
 
-	/* 	// 每一个玩家需收到游戏开启的通知消息
-	   	for _, player := range players {
-	   		expector := player.GetExpector(msgid.MsgID_ROOM_DDZ_START_GAME_NTF)
-	   		ntf := room.DDZStartGameNtf{}
-	   		err := expector.Recv(global.DefaultWaitMessageTime, &ntf)
-	   		if err != nil {
-	   			logEntry.Error("没有收到斗地主游戏开始的通知 %v", err)
-	   		}
-	   		logEntry.Info("玩家%d收到游戏开始的通知", player.GetID())
-	   	} */
+	// 设置玩家金币数
+	if err := majongPlayerGold(params.PlayerSeatGold, seatMap); err != nil {
+		return nil, err
+	}
+
+	// 等待接收游戏开始消息
+	for i, player := range players {
+		stntf := room.DDZStartGameNtf{}
+		if err := expectorsStart[i].Recv(global.DefaultWaitMessageTime, &stntf); err != nil {
+			logEntry.Info("接收斗地主游戏开始的通知超时,playerID = ", player.GetID())
+			return nil, err
+		}
+
+		logEntry.Info("收到了斗地主游戏开始的通知,playerID = ", player.GetID())
+	}
 
 	// 建立playerid -> deskPlayer的map
 	deskData.Players = map[uint64]DeskPlayer{}
@@ -156,12 +169,7 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	}
 
 	// 检测收到的发牌消息是否符合预期
-	//if err := checkDDZFapaiNtf(fapaiNtfExpectors, &deskData, params.Cards); err != nil {
-	//	return nil, err
-	//}
-
-	// 设置玩家金币数
-	if err := majongPlayerGold(params.PlayerSeatGold, seatMap); err != nil {
+	if err := checkDDZFapaiNtf(fapaiNtfExpectors, &deskData, params.Cards); err != nil {
 		return nil, err
 	}
 
@@ -342,20 +350,19 @@ func DDZjoinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int
 
 	logEntry.Info("申请加入牌桌")
 
-	// 所有期待的消息
+	// 所有的期待桌子创建消息
 	expectors := []interfaces.MessageExpector{}
 
 	for _, player := range players {
 
 		// 期望收到桌子创建的通知
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+		expectors = append(expectors, e)
 
 		// 申请加入牌桌
 		if _, err := ApplyJoinDesk(player, gameID); err != nil {
 			return nil, err
 		}
-
-		expectors = append(expectors, e)
 	}
 
 	// 等待接收桌子创建消息
