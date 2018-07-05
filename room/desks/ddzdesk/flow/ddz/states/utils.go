@@ -13,12 +13,12 @@ import (
 )
 
 // PeiPai 配牌工具
-func PeiPai(wallCards []uint32, value string) ([]uint32, error) {
+func PeiPai(wallCards []uint32, value string) error {
 	var cards []uint32
 	for i := 0; i < len(value); i = i + 3 {
 		card, err := strconv.Atoi(value[i : i+2])
 		if err != nil {
-			return nil, err
+			return err
 		}
 		cards = append(cards, uint32(card))
 	}
@@ -30,7 +30,7 @@ func PeiPai(wallCards []uint32, value string) ([]uint32, error) {
 			}
 		}
 	}
-	return wallCards, nil
+	return nil
 }
 
 // getDDZContext 从状态机中获取斗地主现场
@@ -42,14 +42,13 @@ func getDDZContext(m machine.Machine) *ddz.DDZContext {
 	return dm.GetDDZContext()
 }
 
-func getPlayers(m machine.Machine) []uint64 {
+func getPlayerIds(m machine.Machine) []uint64 {
 	dm, ok := m.(*ddzmachine.DDZMachine)
 	if !ok {
 		return nil
 	}
 
 	players := []uint64{}
-
 	for _, player := range dm.GetDDZContext().GetPlayers() {
 		players = append(players, player.GetPalyerId())
 	}
@@ -119,34 +118,22 @@ func sendMessage(m machine.Machine, players []uint64, msgID msgid.MsgID, body pr
 }
 
 func sendToPlayer(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
-	dm, ok := m.(*ddzmachine.DDZMachine)
-	if !ok {
-		return fmt.Errorf("不是斗地主状态机")
-	}
-	return dm.SendMessage([]uint64{playerID}, msgID, body)
+	return sendMessage(m, []uint64{playerID}, msgID, body)
 }
 
 func broadcast(m machine.Machine, msgID msgid.MsgID, body proto.Message) error {
-	dm, ok := m.(*ddzmachine.DDZMachine)
-	if !ok {
-		return fmt.Errorf("不是斗地主状态机")
-	}
-	return dm.SendMessage(getPlayers(m), msgID, body)
+	return sendMessage(m, getPlayerIds(m), msgID, body)
 }
 
 func broadcastExcept(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
-	dm, ok := m.(*ddzmachine.DDZMachine)
-	if !ok {
-		return fmt.Errorf("不是斗地主状态机")
-	}
-	allPlayers := getPlayers(m)
+	allPlayers := getPlayerIds(m)
 	players := []uint64{}
 	for _, pid := range allPlayers {
 		if pid != playerID {
 			players = append(players, pid)
 		}
 	}
-	return dm.SendMessage(players, msgID, body)
+	return sendMessage(m, players, msgID, body)
 }
 
 // setMachineAutoEvent 设置状态机自动事件
@@ -210,6 +197,14 @@ func RemoveAll(cards []Poker, removeCards []Poker) []Poker {
 		}
 	}
 	return result
+}
+
+// AppendAll 从cards中添加addCards
+func AppendAll(cards []Poker, addCards []Poker) []Poker {
+	for _, card := range addCards {
+		cards = append(cards, card)
+	}
+	return cards
 }
 
 // Remove 从cards中删除removeCard

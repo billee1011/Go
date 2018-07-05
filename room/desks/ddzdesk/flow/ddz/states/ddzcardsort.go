@@ -21,6 +21,10 @@ func (c Poker) equals(other Poker) bool {
 	return c.suit == other.suit && c.point == other.point
 }
 
+func (c Poker) biggerThan(other Poker) bool {
+	return c.weight > other.weight
+}
+
 type DDZCardSlice []Poker
 func (cs DDZCardSlice) Len() int           { return len(cs) }
 func (cs DDZCardSlice) Swap(i, j int)      { cs[i], cs[j] = cs[j], cs[i] }
@@ -54,6 +58,14 @@ func toDDZCards(cards []uint32) []Poker {
 	return result
 }
 
+func toInts(cards []Poker) []uint32 {
+	result := make([]uint32, len(cards))
+	for _, card := range cards {
+		result = append(result, card.toInt())
+	}
+	return result
+}
+
 // 按斗地主牌的大小排序后返回
 func ddzSort(cards []uint32) []uint32 {
 	cs := DDZCardSlice(toDDZCards(cards))
@@ -65,10 +77,14 @@ func ddzSort(cards []uint32) []uint32 {
 	return result
 }
 
+func ddzPokerSort(cards []Poker) {
+	cs := DDZCardSlice(cards)
+	sort.Sort(cs)
+}
+
 // 按斗地主点数的大小排序后返回
-func ddzPointSort(cards []Poker) []Poker {
+func ddzPointSort(cards []Poker) {
 	ps := DDZPointSlice(cards)
 	sort.Sort(ps)
-	return ps
 }
 
