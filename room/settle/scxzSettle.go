@@ -123,7 +123,10 @@ func (s *scxzSettle) RoundSettle(desk interfaces.Desk, mjContext majongpb.Majong
 					cardValue = cardValue + bd.GetFanValue()
 					balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
 				}
-				// 退税结算详情
+
+			}
+			// 退税结算详情
+			for _, sInfo := range contextSInfos {
 				for rID, rScore := range s.revertScore {
 					if rID == sInfo.Id && rScore[pid] != 0 {
 						revertbd := s.getRevertbillDetail(pid, rScore)
