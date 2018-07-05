@@ -180,7 +180,11 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		newcardsI, _ := utils.CardsToInt(newcards)
 		cardsI := utils.IntToUtilCard(newcardsI)
 		laizi := make(map[utils.Card]bool)
-		huCards := utils.FastCheckTingV2(cardsI, laizi)
+		cardCombines := utils.FastCheckTingV2(cardsI, laizi)
+		huCards := []utils.Card{}
+		for card := range cardCombines {
+			huCards = append(huCards, card)
+		}
 		if !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 			return false, fmt.Errorf("当前的明杠操作会影响胡牌后的胡牌牌型，不允许暗杠")
 		}
@@ -231,7 +235,11 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		newcardsI, _ := utils.CardsToInt(newcards)
 		cardsI := utils.IntToUtilCard(newcardsI)
 		laizi := make(map[utils.Card]bool)
-		huCards := utils.FastCheckTingV2(cardsI, laizi)
+		cardCombines := utils.FastCheckTingV2(cardsI, laizi)
+		huCards := []utils.Card{}
+		for card := range cardCombines {
+			huCards = append(huCards, card)
+		}
 		if !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 			return false, fmt.Errorf("当前的补杠杠操作会影响胡牌后的胡牌牌型，不允许补杠")
 		}
@@ -527,7 +535,12 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 				newCards = append(newCards, handCard...)
 				newCards, _ = utils.RemoveCards(newCards, &k, 4)
 				utilCards := utils.CardsToUtilCards(newCards)
-				tingCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
+
+				cardCombines := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
+				tingCards := []utils.Card{}
+				for card := range cardCombines {
+					tingCards = append(tingCards, card)
+				}
 				if utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
 					result = append(result, utils.ServerCard2Uint32(&k))
 				}
@@ -586,7 +599,11 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, *removeCard)
 					utilCards := utils.IntToUtilCard(newcardsI)
 					laizi := make(map[utils.Card]bool)
-					huCards := utils.FastCheckTingV2(utilCards, laizi)
+					cardCombines := utils.FastCheckTingV2(utilCards, laizi)
+					huCards := []utils.Card{}
+					for card := range cardCombines {
+						huCards = append(huCards, card)
+					}
 					if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 						enableBugangCards = append(enableBugangCards, uint32(*removeCard))
 					}

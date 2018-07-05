@@ -295,7 +295,7 @@ func CheckHu(cards []*majongpb.Card, huCard uint32) bool {
 	}
 	// flag, _ := util.FastCheckHuV1(cardsCard) // 检测玩家能否推倒胡
 	laizi := make(map[Card]bool)
-	flag := FastCheckHuV2(cardsCard, laizi) // 检测玩家能否推倒胡
+	flag, _ := FastCheckHuV2(cardsCard, laizi, false) // 检测玩家能否推倒胡
 	if flag != true {
 		flag = FastCheckQiDuiHu(cardsCard) // 检测玩家能否七对胡
 	}
@@ -379,7 +379,11 @@ func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]*majongpb.
 	}
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡
-	huCards := FastCheckTingV2(cardsCard, laizi)
+	cardCombines := FastCheckTingV2(cardsCard, laizi)
+	huCards := []Card{}
+	for card := range cardCombines {
+		huCards = append(huCards, card)
+	}
 	// 七对
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
@@ -444,7 +448,15 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[C
 	// 手牌转查胡的工具牌
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡查胡，打那张牌可以胡那些牌
-	tingInfo = FastCheckTingInfoV2(cardsCard, laizi)
+	tingCombines := FastCheckTingInfoV2(cardsCard, laizi)
+	for card, cardCombines := range tingCombines {
+		tingcards := []Card{}
+		for card := range cardCombines {
+			tingcards = append(tingcards, card)
+		}
+		tingInfo[card] = tingcards
+	}
+
 	// 1-9所有牌
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	// 七对查胡，打那张牌可以胡那些牌
