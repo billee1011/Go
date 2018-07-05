@@ -133,7 +133,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	}
 	if totalValue > huPlayer.MaxCardValue {
 		huPlayer.CardsGroup = utils.GetCardsGroup(huPlayer, huCard.Card)
-
+		huPlayer.MaxCardValue = totalValue
 	}
 }
 

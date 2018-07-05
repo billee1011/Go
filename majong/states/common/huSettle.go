@@ -146,6 +146,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
 		if totalValue > huPlayer.MaxCardValue {
 			huPlayer.CardsGroup = cardsGroup[huPlayerID]
+			huPlayer.MaxCardValue = totalValue
 		}
 	}
 	mjContext.CurrentSettleId = maxSID
