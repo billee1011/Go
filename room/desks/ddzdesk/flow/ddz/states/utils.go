@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"strconv"
+	"github.com/Sirupsen/logrus"
 )
 
 // PeiPai 配牌工具
@@ -30,6 +31,7 @@ func PeiPai(wallCards []uint32, value string) error {
 			}
 		}
 	}
+	logrus.WithFields(logrus.Fields{"wallCards":wallCards, "peipai:":value}).Debug("斗地主配牌成功")
 	return nil
 }
 

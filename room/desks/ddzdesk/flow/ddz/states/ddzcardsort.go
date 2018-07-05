@@ -1,6 +1,9 @@
 package states
 
-import "sort"
+import (
+	"sort"
+	"github.com/Sirupsen/logrus"
+)
 
 var (
 	blackJoker = toDDZCard(0x0E)
@@ -14,7 +17,7 @@ type Poker struct {
 }
 
 func (c Poker) toInt() uint32 {
-	return c.suit + c.point
+	return c.suit*16 + c.point
 }
 
 func (c Poker) equals(other Poker) bool {
@@ -57,17 +60,17 @@ func toDDZCard(card uint32) Poker {
 	result.point = card % 16
 
 	if result.point == 0x01 || result.point == 0x02 {
-		result.weight = result.suit + 0x0D + result.point//A和2，加大权重
+		result.weight = result.suit * 16 + 0x0D + result.point//A和2，加大权重
 	} else if result.point == 0x0E || result.point == 0x0F {
 		result.weight = 0x50 + result.point//大小王，加大权重
 	} else {
-		result.weight = result.suit + result.point
+		result.weight = result.suit * 16 + result.point
 	}
 	return result
 }
 
 func toDDZCards(cards []uint32) []Poker {
-	result := make([]Poker, len(cards))
+	result := make([]Poker, 0, len(cards))
 	for _, card := range cards {
 		result = append(result, toDDZCard(card))
 	}
@@ -75,7 +78,7 @@ func toDDZCards(cards []uint32) []Poker {
 }
 
 func toInts(cards []Poker) []uint32 {
-	result := make([]uint32, len(cards))
+	result := make([]uint32, 0, len(cards))
 	for _, card := range cards {
 		result = append(result, card.toInt())
 	}
@@ -83,13 +86,14 @@ func toInts(cards []Poker) []uint32 {
 }
 
 // 按斗地主牌的大小排序后返回
-func ddzSort(cards []uint32) []uint32 {
+func DDZSort(cards []uint32) []uint32 {
 	cs := DDZCardSlice(toDDZCards(cards))
 	sort.Sort(cs)
-	result := make([]uint32, len(cards))
-	for _, c := range cs {
-		result = append(result, c.toInt())
+	result := make([]uint32, 0, cs.Len())
+	for i := range cs {
+		result = append(result, cs[i].toInt())
 	}
+	logrus.WithFields(logrus.Fields{"in":cards, "out:":result}).Debug("斗地主排序")
 	return result
 }
 

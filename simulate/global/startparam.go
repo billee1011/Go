@@ -69,10 +69,7 @@ func NewStartDDZGameParams() structs.StartPukeGameParams {
 
 				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_5), // 方块5
 
-				// 三张底牌
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_K),          // 红桃K
-				uint32(room.PokerSuit_PS_NONE) + uint32(room.PokerValue_PV_BLACK_JOKER), // 小王
-				uint32(room.PokerSuit_PS_NONE) + uint32(room.PokerValue_PV_RED_JOKER),   // 大王
+
 			},
 
 			// 第二个人的牌
@@ -123,6 +120,12 @@ func NewStartDDZGameParams() structs.StartPukeGameParams {
 				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_K), // 方块K
 				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_K),    // 梅花K
 				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_K),   // 红桃K
+			},
+			{
+				// 三张底牌
+				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_K),          // 红桃K
+				uint32(room.PokerSuit_PS_NONE) + uint32(room.PokerValue_PV_BLACK_JOKER), // 小王
+				uint32(room.PokerSuit_PS_NONE) + uint32(room.PokerValue_PV_RED_JOKER),   // 大王
 			},
 		},
 

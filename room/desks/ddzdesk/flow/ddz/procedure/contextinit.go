@@ -3,6 +3,7 @@ package procedure
 import (
 	"steve/client_pb/room"
 	"steve/server_pb/ddz"
+	"steve/room/peipai/handle"
 )
 
 // CreateInitDDZContext 创建初始斗地主现场
@@ -12,6 +13,7 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 		CurState:  ddz.StateID_state_init,
 		Players:   createDDZPlayers(players),
 		WallCards: []uint32{},
+		Peipai:    handle.GetPeiPai(int(room.GameId_GAMEID_DDZ)),
 	}
 }
 

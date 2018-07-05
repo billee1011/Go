@@ -29,7 +29,7 @@ func (s *dealState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	logrus.WithFields(logrus.Fields{
 		"context": getDDZContext(m),
 		"event":   event,
-	}).Debugln("发牌处理事件")
+	}).Debugln("发牌完成")
 	if event.EventID == int(ddz.EventID_event_deal_finish) {
 		return int(ddz.StateID_state_grab), nil
 	}
@@ -51,7 +51,7 @@ func (s *dealState) deal(m machine.Machine) {
 	context := getDDZContext(m)
 	players := context.GetPlayers()
 	for i := range players {
-		players[i].HandCards = ddzSort(wallCards[i*17 : (i+1)*17])
+		players[i].HandCards = DDZSort(wallCards[i*17 : (i+1)*17])
 		players[i].OutCards = make([]uint32, 0)
 		sendToPlayer(m, players[i].PalyerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{
 			Cards:players[i].HandCards,

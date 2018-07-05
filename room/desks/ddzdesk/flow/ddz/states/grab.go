@@ -124,7 +124,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		for _, card := range context.WallCards {
 			lordPlayer.HandCards = append(lordPlayer.HandCards, card)
 		}
-		lordPlayer.HandCards = ddzSort(lordPlayer.HandCards)
+		lordPlayer.HandCards = DDZSort(lordPlayer.HandCards)
 		context.WallCards = []uint32{}
 		return int(ddz.StateID_state_double), nil
 	} else {
