@@ -125,8 +125,14 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.CurOutCards = message.GetCards()
 	context.CurCardType = cardType
 	context.CardTypePivot = (*pivot).toInt()
-	if(cardType == ddz.CardType_CT_BOMB || cardType == ddz.CardType_CT_KINGBOMB) {
+	if cardType == ddz.CardType_CT_BOMB || cardType == ddz.CardType_CT_KINGBOMB {
 		context.TotalBomb = context.TotalBomb * 2
+	}
+	if playerId != context.LordPlayerId {
+		context.Spring = false //农民出牌了，没有春天了
+	}
+	if context.Spring == false && playerId == context.LordPlayerId {
+		context.AntiSpring = false // 地主第二次出牌了，没有反春天了
 	}
 
 	sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{//成功出牌

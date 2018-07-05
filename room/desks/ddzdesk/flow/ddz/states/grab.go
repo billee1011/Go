@@ -58,9 +58,11 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 	}
 
+	totalGrab := GetTotalGrab(context.GetPlayers())
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId: &playerId,
 		Grab: &grab,
+		TotalGrab: &totalGrab,
 		NextPlayerId: &nextPlayerId,
 		NextStage: &room.NextStage{
 			Stage: nextStage,
@@ -69,7 +71,6 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	})
 	context.GrabbedCount++
 
-	totalGrab := GetTotalGrab(context.GetPlayers())
 	lordPlayerId := uint64(0)
 	if context.GrabbedCount == 3 && IsAllAbandon(context.GetPlayers()) {//没人叫地主，随机确定庄家
 		i := rand.Intn(3)

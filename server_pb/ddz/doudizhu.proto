@@ -27,17 +27,22 @@ message DDZContext {
     //叫地主阶段
     uint64 first_grab_player_id = 7;// 第一个实际叫地主玩家
     uint32 grabbed_count = 8;        // 已抢/弃地主玩家人数
-    uint64 lord_player_id = 9;      //地主id
+    uint64 lord_player_id = 9;      // 地主id
+    uint32 all_abandon_count = 10;  // 全部玩家弃地主的次数,3次随机确定地主
     //加倍阶段
-    uint32 doubled_count = 10;       //加倍/弃加倍玩家人数
+    uint32 doubled_count = 11;       //加倍/弃加倍玩家人数
     //出牌阶段
-    repeated uint32 cur_out_cards = 11; //当前出牌
-    CardType cur_card_type = 12;    //当前出牌牌型
-    uint32 card_type_pivot = 13;    //当前牌型用来比较的pivot
-    uint32 pass_count = 14;         //过牌人数
-    uint32 total_bomb = 15;         //炸弹总倍数 2的n次方
+    repeated uint32 cur_out_cards = 12; //当前出牌
+    CardType cur_card_type = 13;    //当前出牌牌型
+    uint32 card_type_pivot = 14;    //当前牌型用来比较的pivot
+    uint32 pass_count = 15;         //过牌人数
+    uint32 total_bomb = 16;         //炸弹总倍数 2的n次方
+    //结算阶段
+    uint64 winner_id = 17;          //胜利玩家id
+    bool spring = 18;               //春天(农民没有出过牌)
+    bool anti_spring = 19;          //反春天(地主只出了一次牌)
     //配牌
-    string peipai = 16;             //测试配牌
+    string peipai = 20;             //测试配牌
 }
 
 // AutoEvent 自动事件

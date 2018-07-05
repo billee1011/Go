@@ -30,6 +30,10 @@ func (f *stateFactory) NewState(stateID int) machine.State {
 		{
 			return new(playState)
 		}
+	case ddz.StateID_state_over:
+		{
+			return new(overState)
+		}
 	}
 	return nil
 }

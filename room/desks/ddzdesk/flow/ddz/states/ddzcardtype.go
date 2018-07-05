@@ -80,11 +80,11 @@ func isBombAndPairs(cards []Poker) (bool, *Poker) {
 
 	remain := RemoveAll(cards, bomb)
 	firstPair := getMaxSamePointCards(remain)
-	if len(firstPair) != 2 {
+	if len(firstPair) < 2 { //44445555视为四带两对
 		return false, nil
 	}
 
-	remain = RemoveAll(remain, firstPair)
+	remain = RemoveAll(remain, firstPair[0:2])
 	if remain[0].Point != remain[1].Point {
 		return false, nil
 	}
@@ -113,15 +113,17 @@ func isTriples(cards []Poker) (bool, *Poker) {
 		return false, nil
 	}
 
+	shunZi := make([]Poker, 0, planeCount)
 	remain := cards
 	for i:=0; i<planeCount; i++ {
 		triple := getMaxSamePointCards(remain)
 		if len(triple) != 3 {
 			return false, nil
 		}
+		shunZi = append(shunZi, triple[0])
 		remain = RemoveAll(remain, triple)
 	}
-	return true, getMaxCard(cards)
+	return isMinShunZi(shunZi, 2)
 }
 
 // 飞机带对子
@@ -131,27 +133,25 @@ func isTriplesAndPairs(cards []Poker) (bool, *Poker) {
 		return false, nil
 	}
 
-	triples := []Poker{}
+	shunZi := make([]Poker, 0, planeCount)
 	remain := cards
 	for i:=0; i<planeCount; i++ {
 		triple := getMaxSamePointCards(remain)
 		if len(triple) != 3 {
 			return false, nil
 		}
-		for j := range triple{
-			triples = append(triples, triple[j])
-		}
+		shunZi = append(shunZi, triple[0])
 		remain = RemoveAll(remain, triple)
 	}
 
 	for i:=0; i<planeCount; i++ {
 		pair := getMaxSamePointCards(remain)
-		if len(pair) != 2 {
+		if len(pair) < 2 {// 3334445555视为飞机带对子
 			return false, nil
 		}
-		remain = RemoveAll(remain, pair)
+		remain = RemoveAll(remain, pair[0:2])
 	}
-	return true, getMaxCard(triples)
+	return isMinShunZi(shunZi, 2)
 }
 
 // 飞机带单张
@@ -161,20 +161,18 @@ func isTriplesAndSingles(cards []Poker) (bool, *Poker) {
 		return false, nil
 	}
 
-	triples := []Poker{}
+	shunZi := make([]Poker, 0, planeCount)
 	remain := cards
 	for i:=0; i<planeCount; i++ {
 		triple := getMaxSamePointCards(cards)
-		if len(triple) != 3 {
+		if len(triple) < 3 { // 333344445555视为飞机带翅膀
 			return false, nil
 		}
-		for j := range triple{
-			triples = append(triples, triple[j])
-		}
-		remain = RemoveAll(remain, triple)
+		shunZi = append(shunZi, triple[0])
+		remain = RemoveAll(remain, triple[0:3])
 	}
 
-	return true, getMaxCard(triples)
+	return isMinShunZi(shunZi, 2)
 }
 
 // 连对
@@ -184,18 +182,18 @@ func isPairs(cards []Poker) (bool, *Poker) {
 		return false, nil
 	}
 
-	shunzi := []Poker{}
+	shunZi := make([]Poker, 0, pairs)
 	remain := cards
 	for i:=0; i< pairs; i++ {
 		pair := getMaxSamePointCards(cards)
 		if len(pair) != 2 {
 			return false, nil
 		}
-		shunzi = append(shunzi, pair[0])
+		shunZi = append(shunZi, pair[0])
 		remain = RemoveAll(remain, pair)
 	}
 
-	return isMinShunZi(shunzi, 3)
+	return isMinShunZi(shunZi, 3)
 }
 
 // 顺子
@@ -228,7 +226,10 @@ func isTriple(cards []Poker) (bool, *Poker) {
 	if len(cards) != 3 {
 		return false, nil
 	}
-	return isAllSamePoint(cards), getMaxCard(cards)
+	if !isAllSamePoint(cards) {
+		return false, nil
+	}
+	return true, getMaxCard(cards)
 }
 
 // 三张带对子
@@ -243,7 +244,10 @@ func isTripleAndPair(cards []Poker) (bool, *Poker) {
 	}
 
 	remain := RemoveAll(cards, triple)
-	return isAllSamePoint(remain), getMaxCard(triple)
+	if yes,_ := isPair(remain); !yes {
+		return false, nil
+	}
+	return true, getMaxCard(triple)
 }
 
 // 三张带单张
@@ -265,7 +269,10 @@ func isPair(cards []Poker) (bool, *Poker) {
 	if len(cards) != 2 {
 		return false, nil
 	}
-	return isAllSamePoint(cards), getMaxCard(cards)
+	if !isAllSamePoint(cards) {
+		return false, nil
+	}
+	return true, getMaxCard(cards)
 }
 
 // 单张
