@@ -529,9 +529,9 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
 			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false)
 		}
+		deskPlayer.enterDesk()
 		d.recoverGameForPlayer(eqi.playerID)
 		d.playerQuitEnterDeskNtf(eqi.playerID, room.QuitEnterType_QET_ENTER)
-		deskPlayer.enterDesk()
 		logEntry.Debugln("玩家进入")
 	}
 }
@@ -827,6 +827,8 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 		return errPlayerNeedXingPai
 	}
 	deskMgr := global.GetDeskMgr()
+	deskPlayer := d.getDeskPlayer(playerID)
+	deskPlayer.quitDesk()
 	deskMgr.RemoveDeskPlayerByPlayerID(playerID)
 	getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil
