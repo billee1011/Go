@@ -131,7 +131,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 		mjContext.CurrentSettleId++
 		totalValue = settleInfo.CardValue
 	}
-	if totalValue >= huPlayer.MaxCardValue {
+	if totalValue > huPlayer.MaxCardValue {
 		huPlayer.CardsGroup = utils.GetCardsGroup(huPlayer, huCard.Card)
 
 	}
