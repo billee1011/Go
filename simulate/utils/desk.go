@@ -493,7 +493,7 @@ func checkDDZFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskDa
 		seat := deskData.Players[playerID].Seat
 
 		// 期待的牌（由于seatCards里面的牌是客户端配置的，所以服务器发下来时应该一致）
-		expectCards := states.DDZSort(seatCards[seat])
+		expectCards := states.DDZSortDescend(seatCards[seat])
 
 		// 服务器下发的牌
 		ntfCards := fapaiNtf.GetCards()

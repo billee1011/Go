@@ -171,7 +171,7 @@ func Contains(cards []Poker, card Poker) bool {
 // ContainsPoint cards是否包含点数
 func ContainsPoint(cards []Poker, point uint32) bool {
 	for _, card := range cards {
-		if card.point == point {
+		if card.Point == point {
 			return true
 		}
 	}
@@ -181,7 +181,7 @@ func ContainsPoint(cards []Poker, point uint32) bool {
 // RemovePoint 删除cards中所有点数为point的牌,并分别返回
 func RemovePoint(cards []Poker, point uint32) (remain []Poker, deleted []Poker) {
 	for _, card := range cards {
-		if card.point == point {
+		if card.Point == point {
 			deleted = append(deleted, card)
 		} else {
 			remain = append(remain, card)

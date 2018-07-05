@@ -85,7 +85,7 @@ func isBombAndPairs(cards []Poker) (bool, *Poker) {
 	}
 
 	remain = RemoveAll(remain, firstPair)
-	if remain[0].point != remain[1].point {
+	if remain[0].Point != remain[1].Point {
 		return false, nil
 	}
 
@@ -194,40 +194,28 @@ func isPairs(cards []Poker) (bool, *Poker) {
 		shunzi = append(shunzi, pair[0])
 		remain = RemoveAll(remain, pair)
 	}
-	ddzPointSort(shunzi)
-	for i:=0; i<len(shunzi)-1; i++ {
-		if shunzi[i+1].point - shunzi[i].point != 1 {
-			return false, nil
-		}
-	}
-	return true, getMaxCard(shunzi)
+
+	return isMinShunZi(shunzi, 3)
 }
 
 // 顺子
 func isShunZi(cards []Poker) (bool, *Poker) {
-	if len(cards) < 5 {
+	return isMinShunZi(cards, 5)
+}
+
+// 带最小长度的顺子判断
+func isMinShunZi(cards []Poker, minLen int) (bool, *Poker) {
+	if len(cards) < minLen {
 		return false, nil
 	}
 
-	if ContainsPoint(cards, 0x02) || ContainsPoint(cards, redJoker.point) || ContainsPoint(cards, blackJoker.point) {//有2或着大小王直接返回
+	if ContainsPoint(cards, p2) || ContainsPoint(cards, pRedJoker) || ContainsPoint(cards, pBlackJoker) { //有2或着大小王直接返回
 		return false, nil
-	}
-
-	if ContainsPoint(cards, 0x01) && !ContainsPoint(cards, 0x0D) {//有A没K直接返回
-		return false, nil
-	}
-
-	if ContainsPoint(cards, 0x01) {
-		remain, deleted := RemovePoint(cards, 0x01)
-		if len(deleted) != 1 {//有多张A，直接返回
-			return false, nil
-		}
-		cards = remain
 	}
 
 	ddzPointSort(cards)
 	for i:=0; i<len(cards)-1; i++ {
-		if cards[i+1].point - cards[i].point != 1 {
+		if cards[i+1].PointWeight- cards[i].PointWeight != 1 {
 			return false, nil
 		}
 	}
@@ -298,7 +286,7 @@ func getMaxSamePointCards(cards []Poker) []Poker {
 	point, count := getMaxSamePoint(cards)
 	maxSamePointCards := make([]Poker, count)
 	for _, card := range cards {
-		if card.point == point {
+		if card.Point == point {
 			maxSamePointCards = append(maxSamePointCards, card)
 		}
 	}
@@ -307,9 +295,9 @@ func getMaxSamePointCards(cards []Poker) []Poker {
 
 // 获取最大相同点数, 如 444555533 返回 5,4
 func getMaxSamePoint(cards []Poker) (maxCountPoint uint32, maxCount uint32) {
-	counts := make(map[uint32]uint32) //Map<point, count>
+	counts := make(map[uint32]uint32) //Map<Point, count>
 	for _, card := range cards {
-		point := card.point
+		point := card.Point
 		count, exists := counts[point]
 		if !exists {
 			counts[point] = 1
@@ -329,7 +317,7 @@ func getMaxSamePoint(cards []Poker) (maxCountPoint uint32, maxCount uint32) {
 
 func isAllSamePoint(cards []Poker) bool {
 	for i:=0;i<len(cards)-1;i++ {
-		if cards[i].point != cards[i+1].point {
+		if cards[i].Point != cards[i+1].Point {
 			return false
 		}
 	}
