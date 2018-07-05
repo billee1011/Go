@@ -75,9 +75,15 @@ func (s *scxzSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongConte
 					BillPlayersInfo: s.getBillPlayerInfos(deskPlayers, sInfo, score),
 				})
 				if len(brokerPlayers) != 0 {
+					needSend := make([]uint64, 0)
+					for _, brokerPlayer := range brokerPlayers {
+						if !giveUpPlayers[brokerPlayer] {
+							needSend = append(needSend, brokerPlayer)
+						}
+					}
 					// 广播认输信息
 					NotifyMessage(desk, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
-						PlayerId: brokerPlayers,
+						PlayerId: needSend,
 					})
 				}
 				// 生成结算完成事件
