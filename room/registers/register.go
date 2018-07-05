@@ -26,5 +26,6 @@ func RegisterHandlers(e exchanger.Exchanger) {
 	registe(msgid.MsgID_ROOM_RESUME_GAME_REQ, desks.HandleResumeGameReq)          // 恢复对局请求
 	registe(msgid.MsgID_ROOM_CHAT_REQ, chat.RoomChatMsgReq)                       // 房间玩家聊天请求
 	registe(msgid.MsgID_ROOM_DESK_NEED_RESUME_REQ, desks.HandleRoomNeedResumeReq) // 是否需要恢复对局请求
+	registe(msgid.MsgID_ROOM_CHANGE_PLAYERS_REQ, desks.HandleRoomChangePlayerReq) // 换对手请求
 	RegisterRoomReqHandlers(e)
 }

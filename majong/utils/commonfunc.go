@@ -1,27 +1,12 @@
 package utils
 
 import (
+	"steve/gutils"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 )
-
-// IsPlayerContinue   玩家的状态在麻将可行牌数组中包含则返回true
-func IsPlayerContinue(playerStater majongpb.XingPaiState, option *majongpb.MajongCommonOption) bool {
-	// 麻将可行牌数组
-	xpStates := option.GetValidXpStateSet()
-	flag := false
-	for _, state := range xpStates {
-		if state == playerStater {
-			flag = true
-			break
-		}
-	}
-	logrus.WithFields(logrus.Fields{"playerStater": playerStater,
-		"xpStates": xpStates, "isCanXp": flag}).Info("判断玩家是否可以继续")
-	return flag
-}
 
 //GetNextXpPlayerByID 获取下一个行牌玩家
 func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, option *majongpb.MajongCommonOption) (nextPalyer *majongpb.Player) {
@@ -29,7 +14,7 @@ func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, option 
 	for i < 4 {
 		nextPalyer = GetNextPlayerByID(players, curPlayerID)
 		// 当前下个玩家可以继续，退出循环
-		if IsPlayerContinue(nextPalyer.GetXpState(), option) {
+		if gutils.IsPlayerContinue(nextPalyer.GetXpState(), option) {
 			break
 		}
 		curPlayerID = nextPalyer.GetPalyerId()
@@ -44,7 +29,7 @@ func GetXpPlayers(players []*majongpb.Player, option *majongpb.MajongCommonOptio
 	newPlalyers := make([]*majongpb.Player, 0)
 	for _, player := range players {
 		// 不是正常行牌的玩家，不能检查胡，碰，杠，摸牌。。。
-		if !IsPlayerContinue(player.GetXpState(), option) {
+		if !gutils.IsPlayerContinue(player.GetXpState(), option) {
 			continue
 		}
 		newPlalyers = append(newPlalyers, player)
@@ -62,7 +47,7 @@ func GetXpPlayers(players []*majongpb.Player, option *majongpb.MajongCommonOptio
 func IsXpPlayerInsufficient(players []*majongpb.Player, option *majongpb.MajongCommonOption) bool {
 	conut := 0
 	for _, player := range players {
-		if IsPlayerContinue(player.GetXpState(), option) {
+		if gutils.IsPlayerContinue(player.GetXpState(), option) {
 			conut++
 		}
 	}
