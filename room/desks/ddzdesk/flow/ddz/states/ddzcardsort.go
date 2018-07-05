@@ -21,8 +21,24 @@ func (c Poker) equals(other Poker) bool {
 	return c.suit == other.suit && c.point == other.point
 }
 
+// 带花色比较，黑桃A 和 方块A比较返回true
 func (c Poker) biggerThan(other Poker) bool {
 	return c.weight > other.weight
+}
+
+// 无花色比较，黑桃A 和 方块A比较返回true
+func (c Poker) pointBiggerThan(other Poker) bool {
+	return c.getPointWeight() > other.getPointWeight()
+}
+
+func (c Poker) getPointWeight() uint32{//方法的方式节省空间，用时间换空间(因为不常用，常用的weight还是得保存到内存中)
+	if c.point == 0x01 || c.point == 0x02 {
+		return 0x0D + c.point
+	} else if c.point == 0x0E || c.point == 0x0F {
+		return 0x10 + c.point
+	} else {
+		return c.point
+	}
 }
 
 type DDZCardSlice []Poker

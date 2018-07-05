@@ -105,7 +105,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	lastPivot := toDDZCard(context.CardTypePivot)
 	currPivot := *pivot
-	if lastPivot.biggerThan(currPivot) {
+	if lastPivot.pointBiggerThan(currPivot) {
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: &room.Result{ErrCode:proto.Uint32(5), ErrDesc: proto.String("牌比上家小")},
 		})
