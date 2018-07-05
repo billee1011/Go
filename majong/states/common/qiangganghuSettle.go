@@ -1,6 +1,7 @@
 package common
 
 import (
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -51,7 +52,7 @@ func (s *QiangGangHuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mopaiPlayerID := CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
 	// 摸牌玩家不能是非正常状态玩家
 	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
-	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
+	if !gutils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
 		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext)
 	}
 	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
