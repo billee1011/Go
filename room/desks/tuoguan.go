@@ -60,6 +60,19 @@ func (tg *tuoGuanMgr) SetTuoGuan(playerID uint64, set bool, notify bool) {
 	tg.notifyTuoguan(playerID, set)
 }
 
+// isTuoGuan 是否在托管
+func (tg *tuoGuanMgr) IsTuoGuan(playerID uint64) bool {
+	tg.mu.Lock()
+	defer tg.mu.Unlock()
+
+	player, exist := tg.players[playerID]
+	if !exist {
+		player = &tuoGuanPlayer{}
+		tg.players[playerID] = player
+	}
+	return player.tuoGuaning
+}
+
 // OnPlayerTimeOut 处理完成超时事件
 func (tg *tuoGuanMgr) OnPlayerTimeOut(playerID uint64) {
 	tg.mu.Lock()
