@@ -61,6 +61,9 @@ type Desk interface {
 	// PlayerEnter 玩家进入
 	PlayerEnter(playerID uint64)
 
+	// ChangePlayer 换对手
+	ChangePlayer(playerID uint64) error
+
 	// GetTuoGuanMgr 获取托管管理器
 	GetTuoGuanMgr() TuoGuanMgr
 

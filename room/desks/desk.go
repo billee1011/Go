@@ -27,6 +27,7 @@ import (
 var errInitMajongContext = errors.New("初始化麻将现场失败")
 var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
+var errPlayerNeedXingPai = errors.New("玩家需要参与行牌")
 
 // deskEvent 房间事件
 type deskEvent struct {
@@ -148,6 +149,34 @@ func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
 		})
 	}
 	return result
+}
+
+// GetPlayers 获取牌桌玩家数据
+func (d *desk) GetPlayerByPlayerID(palyerID uint64) *room.RoomPlayerInfo {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "desk.GetPlayers",
+		"desk_uid":  d.deskUID,
+		"game_id":   d.gameID,
+	})
+
+	playerMgr := global.GetPlayerMgr()
+
+	for seat, deskPlayer := range d.players {
+		if palyerID != deskPlayer.playerID {
+			continue
+		}
+		player := playerMgr.GetPlayer(deskPlayer.playerID)
+		if player == nil {
+			logEntry.WithField("player_id", deskPlayer.playerID).Errorln("玩家不存在")
+			return nil
+		}
+		return &room.RoomPlayerInfo{
+			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
+			Coin:     proto.Uint64(player.GetCoin()),
+			Seat:     proto.Uint32(uint32(seat)),
+		}
+	}
+	return nil
 }
 
 // GetDeskPlayers 获取牌桌玩家
@@ -471,47 +500,41 @@ func (d *desk) handleEnterQuit(eqi enterQuitInfo) {
 		"player_id": eqi.playerID,
 		"quit":      eqi.quit,
 	})
-	var msgs []server_pb.ReplyClientMessage
 	deskPlayer := d.getDeskPlayer(eqi.playerID)
 
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
 		return
 	}
+	// TODO 下面这个部分要整体重构一下
 	if eqi.quit {
-		msgs = getDeskQuitRspMsg(eqi.playerID)
-		d.reply(msgs)
+		d.deskQuitRsp(eqi.playerID)
+		d.playerQuitEnterDeskNtf(eqi.playerID, room.QuitEnterType_QET_QUIT)
 		deskPlayer.quitDesk()
 		d.setMjPlayerQuitDesk(eqi.playerID, true)
 		d.tuoGuanMgr.SetTuoGuan(eqi.playerID, true, false) // 退出后自动托管
-		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
-		d.handleQuitByPlayerState(eqi.playerID, xpOption.PlayerNoNormalStates)
+		d.handleQuitByPlayerState(eqi.playerID)
 		logEntry.Debugln("玩家退出")
 	} else {
 		d.setMjPlayerQuitDesk(eqi.playerID, false)
-		// 判断行牌状态, 选项化后需修改
 		mjPlayer := gutils.GetMajongPlayer(eqi.playerID, &d.dContext.mjContext)
 		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
-		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌
+		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌,重新进入后把托管取消
 		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
 			d.tuoGuanMgr.SetTuoGuan(eqi.playerID, false, false)
 		}
-		msgs = d.recoverGameForPlayer(eqi.playerID)
 		deskPlayer.enterDesk()
-		d.reply(msgs)
+		d.recoverGameForPlayer(eqi.playerID)
+		d.playerQuitEnterDeskNtf(eqi.playerID, room.QuitEnterType_QET_ENTER)
 		logEntry.Debugln("玩家进入")
 	}
 }
 
-func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates int32) {
+func (d *desk) handleQuitByPlayerState(playerID uint64) {
 	mjContext := d.dContext.mjContext
 	player := gutils.GetMajongPlayer(playerID, &mjContext)
-	//判断当前状态是否与行牌option中的状态列表一致
-	needQuit := false
-	if xpStates&int32(player.GetXpState()) != 0 {
-		needQuit = true
-	}
-	if needQuit {
+
+	if !gutils.IsPlayerContinue(player.GetXpState(), &mjContext) {
 		deskMgr := global.GetDeskMgr()
 		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
 	}
@@ -657,6 +680,23 @@ func (d *desk) allPlayerIDs() []uint64 {
 	return result
 }
 
+// allPlayerIDsWithExcept 获取所有玩家的 ID，需要排除exceptPlayers
+func (d *desk) allPlayerIDsWithExcept(exceptPlayers []uint64) []uint64 {
+	result := []uint64{}
+	deskPlayers := d.GetDeskPlayers()
+loop:
+	for _, deskPlayer := range deskPlayers {
+		playerID := deskPlayer.GetPlayerID()
+		for _, except := range exceptPlayers {
+			if except == playerID {
+				break loop
+			}
+		}
+		result = append(result, playerID)
+	}
+	return result
+}
+
 // BroadcastMessage 向玩家广播消息
 func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -679,7 +719,7 @@ func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []by
 	logEntry.Debugln("广播消息")
 }
 
-func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMessage {
+func (d *desk) recoverGameForPlayer(playerID uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "recoverGameForPlayer",
 		"playerID":  playerID,
@@ -714,17 +754,18 @@ func (d *desk) recoverGameForPlayer(playerID uint64) []server_pb.ReplyClientMess
 	logEntry.Errorln(gameDeskInfo)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
-		return nil
+		return
 	}
-	return []server_pb.ReplyClientMessage{
+	d.reply([]server_pb.ReplyClientMessage{
 		server_pb.ReplyClientMessage{
 			Players: []uint64{playerID},
 			MsgId:   int32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
 			Msg:     rsp,
-		}}
+		},
+	})
 }
 
-func getDeskQuitRspMsg(playerID uint64) []server_pb.ReplyClientMessage {
+func (d *desk) deskQuitRsp(playerID uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "handleEnterQuit",
 		"player_id": playerID,
@@ -735,15 +776,42 @@ func getDeskQuitRspMsg(playerID uint64) []server_pb.ReplyClientMessage {
 	body, err := proto.Marshal(&msg)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
-		return nil
+		return
 	}
-	return []server_pb.ReplyClientMessage{
+	msgs := []server_pb.ReplyClientMessage{
 		server_pb.ReplyClientMessage{
 			Players: []uint64{playerID},
 			MsgId:   int32(msgid.MsgID_ROOM_DESK_QUIT_RSP),
 			Msg:     body,
 		},
 	}
+	d.reply(msgs)
+}
+
+func (d *desk) playerQuitEnterDeskNtf(playerID uint64, qeType room.QuitEnterType) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "d.playerQuitEnterDeskNtf",
+		"player_id": playerID,
+	})
+	ntf := room.RoomDeskQuitEnterNtf{
+		PlayerId:   &playerID,
+		Type:       &qeType,
+		PlayerInfo: d.GetPlayerByPlayerID(playerID),
+	}
+	body, err := proto.Marshal(&ntf)
+	if err != nil {
+		logEntry.WithError(err).Errorln("序列化失败")
+		return
+	}
+	msgs := []server_pb.ReplyClientMessage{
+		server_pb.ReplyClientMessage{
+			Players: d.allPlayerIDsWithExcept([]uint64{playerID}),
+			MsgId:   int32(msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF),
+			Msg:     body,
+		},
+	}
+	d.reply(msgs)
+	return
 }
 
 func (d *desk) setMjPlayerQuitDesk(playerID uint64, isQuit bool) {
@@ -751,4 +819,28 @@ func (d *desk) setMjPlayerQuitDesk(playerID uint64, isQuit bool) {
 	if mjPlayer != nil {
 		mjPlayer.IsQuit = isQuit
 	}
+}
+
+// ChangePlayer 换对手
+func (d *desk) ChangePlayer(playerID uint64) error {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "d.ChangePlayer",
+		"playerID":  playerID,
+	})
+	mjContext := &d.dContext.mjContext
+	player := gutils.GetMajongPlayer(playerID, mjContext)
+
+	option := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+	xpState := int32(player.GetXpState())
+	if xpState&option.PlayerNoNormalStates == 0 {
+		deskMgr := global.GetDeskMgr()
+		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+		getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
+		return nil
+	}
+	logEntry.WithFields(logrus.Fields{
+		"XpState":               xpState,
+		"option.NoNormalStates": option.PlayerNoNormalStates,
+	}).WithError(errPlayerNeedXingPai).Errorln("不能换对手")
+	return errPlayerNeedXingPai
 }
