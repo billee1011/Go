@@ -83,7 +83,7 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 			PlayerInfo:    roomPlayerInfo,
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
-			IsTuoguan:     proto.Bool(d.getDeskPlayer(playerID).IsQuit()),
+			IsTuoguan:     proto.Bool(d.tuoGuanMgr.IsTuoGuan(playerID)),
 		}
 		xpState := room.XingPaiState(player.GetXpState())
 		gamePlayerInfo.XpState = &xpState
