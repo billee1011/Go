@@ -313,3 +313,30 @@ func HandleRoomNeedResumeReq(clientID uint64, header *steve_proto_gaterpc.Header
 		},
 	}
 }
+
+// HandleRoomChangePlayerReq 换对手请求
+func HandleRoomChangePlayerReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomChangePlayersReq) (ret []exchanger.ResponseMsg) {
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+	playerID := player.GetID()
+	desk, exist := ExistInDesk(playerID)
+	if !exist {
+		getJoinApplyMgr().joinPlayer(player.GetID(), req.GetGameId())
+		return nil
+	}
+	var errCode room.RoomError
+	if err := desk.ChangePlayer(playerID); err == nil {
+		errCode = room.RoomError_SUCCESS
+	} else {
+		errCode = room.RoomError_FAILED
+	}
+
+	return []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP),
+			Body: &room.RoomChangePlayersRsp{
+				ErrCode: errCode.Enum(),
+			},
+		},
+	}
+}
