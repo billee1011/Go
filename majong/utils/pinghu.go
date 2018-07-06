@@ -704,9 +704,9 @@ func combineFuncWithStop(m, n int, f func([]int), stop *bool) {
 	}
 }
 
-// FastCheckTingV2 检查当前可以听哪些牌
+// FastCheckTingV2Old 检查当前可以听哪些牌
 // 返回所有正在听的牌与对应的组合
-func FastCheckTingV2(cards []Card, laizis map[Card]bool) CardCombines {
+func FastCheckTingV2Old(cards []Card, laizis map[Card]bool) CardCombines {
 	checkCards := make([]Card, 0, len(cards)+1)
 	checkCards = append(checkCards, cards...)
 	checkCards = append(checkCards, Laizi) // 加一张癞子牌查胡，然后从组合中取出癞子可以替换的牌
@@ -730,7 +730,47 @@ func FastCheckTingV2(cards []Card, laizis map[Card]bool) CardCombines {
 	return result
 }
 
+// FastCheckTingV2 检查当前可以听哪些牌
+// 返回所有正在听的牌与对应的组合
+// TODO: 需要优化
+func FastCheckTingV2(cards []Card, laizis map[Card]bool) CardCombines {
+
+	laizicount := 0
+	for _, card := range cards {
+		if card == Laizi || (laizis != nil && laizis[card]) {
+			laizicount++
+		}
+	}
+	if laizicount >= 2 {
+		return FastCheckTingV2Old(cards, laizis)
+	}
+
+	checkCards := make([]Card, 0, len(cards)+1)
+	checkCards = append(checkCards, cards...)
+	checkCards = append(checkCards, Laizi) // 加一张癞子牌查胡，然后从组合中取出癞子可以替换的牌
+
+	result := CardCombines{}
+
+	ok, combines := FastCheckHuV2(checkCards, laizis, true)
+	if !ok {
+		return result
+	}
+	for _, combine := range combines {
+		tingCards := getLaiziCanReplaceCards(combine)
+		for _, card := range tingCards {
+			if result[card] != nil {
+				continue
+			}
+			checkCards := append(checkCards[:len(checkCards)-1], card)
+			_, newcombines := FastCheckHuV2(checkCards, laizis, true)
+			result[card] = newcombines
+		}
+	}
+	return result
+}
+
 // getLaiziCanReplaceCards 获取癞子可以替换的牌列表
+// 以及替换每张牌后的 Combine
 func getLaiziCanReplaceCards(combine Combine) []Card {
 	result := []Card{}
 	for _, group := range combine {

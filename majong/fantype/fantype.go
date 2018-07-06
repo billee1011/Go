@@ -3,27 +3,60 @@ package fantype
 import (
 	"math"
 	"steve/common/mjoption"
+	"steve/majong/utils"
 	"steve/server_pb/majong"
 )
 
 // Combine 牌型组合
 type Combine struct {
-	jiang       *majong.Card   // 将牌
-	shuns       []*majong.Card // 顺牌
-	kes         []*majong.Card // 刻牌
-	isQidui     bool           // 是否为七对
-	isShisanyao bool           // 是否为十三幺
+	jiang int   // 将牌
+	shuns []int // 顺牌
+	kes   []int // 刻牌
 }
 
-// NewCombine 创建 Combine
-func NewCombine(jiang *majong.Card, shuns []*majong.Card, kes []*majong.Card, isQidui bool, isShisanyao bool) Combine {
-	return Combine{
-		jiang:       jiang,
-		shuns:       shuns,
-		kes:         kes,
-		isQidui:     isQidui,
-		isShisanyao: isShisanyao,
+func min(values ...int) int {
+	t := values[0]
+	for _, v := range values {
+		if t > v {
+			t = v
+		}
 	}
+	return t
+}
+
+func minCard(values ...utils.Card) utils.Card {
+	t := values[0]
+	for _, v := range values {
+		if t > v {
+			t = v
+		}
+	}
+	return t
+}
+
+// NewCombines 根据 utils 的 Combine 创建 Combine 数组
+func NewCombines(combines utils.Combines) []Combine {
+	result := make([]Combine, 0, len(combines))
+	for _, combine := range combines {
+		localCombine := Combine{
+			shuns: []int{},
+			kes:   []int{},
+		}
+		// TODO 先作一个能暂时满足需求的， 目前牌中没有癞子
+		for _, group := range combine {
+			if group.GroupType == utils.TypeJiang {
+				localCombine.jiang = int(group.Cards[1])
+			}
+			if group.GroupType == utils.TypeShun {
+				localCombine.shuns = append(localCombine.shuns, int(minCard(group.Cards...)))
+			}
+			if group.GroupType == utils.TypeKe {
+				localCombine.kes = append(localCombine.kes, int(group.Cards[0]))
+			}
+		}
+		result = append(result, localCombine)
+	}
+	return result
 }
 
 // typeCalculator 牌型计算器
@@ -155,6 +188,7 @@ func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCar
 		playerID:  playerID,
 		handCards: handCards,
 		huCard:    huCard,
+		combines:  combines,
 	}
 	return tc.calclate()
 }
