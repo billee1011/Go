@@ -32,7 +32,6 @@ func IsRoundSettle(settleType majongpb.SettleType) bool {
 	return map[majongpb.SettleType]bool{
 		majongpb.SettleType_settle_yell:      true,
 		majongpb.SettleType_settle_flowerpig: true,
-		majongpb.SettleType_settle_calldiver: true,
 		majongpb.SettleType_settle_taxrebeat: true,
 	}[settleType]
 }

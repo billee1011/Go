@@ -129,7 +129,7 @@ func (majongSettle *majongSettle) RoundSettle(desk interfaces.Desk, mjContext ma
 			for _, sInfo := range contextSInfos {
 				if sInfo.Scores[pid] != 0 {
 					bd := majongSettle.getBillDetail(pid, sInfo)
-					cardValue = cardValue + bd.GetFanValue()
+					cardValue = cardValue + bd.GetFanValue()*int32(len(bd.GetRelatedPid()))
 					balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
 				}
 
