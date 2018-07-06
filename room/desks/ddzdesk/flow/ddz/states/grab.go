@@ -86,7 +86,6 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.GrabbedCount == 4 {
 		if grab {//叫地主玩家抢庄
 			lordPlayerId = playerId
-			totalGrab = totalGrab * 2
 		} else {//叫地主玩家弃庄
 			lordPlayerId = context.LastPlayerId
 		}
