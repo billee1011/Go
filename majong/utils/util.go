@@ -289,10 +289,8 @@ func ContainHuCards(targetHuCards []Card, HuCards []Card) bool {
 
 // CheckHuResult 查胡结果
 type CheckHuResult struct {
-	Can         bool
-	Combines    Combines // 推倒胡组合
-	IsQidui     bool     // 是否为七对
-	IsShisanyao bool     // 是否为十三幺
+	Can      bool
+	Combines Combines // 推倒胡组合
 }
 
 // CheckHu 用来辅助胡牌查胡工具 cards玩家的所有牌，huCard点炮的牌（自摸时huCard为0）
@@ -305,12 +303,9 @@ func CheckHu(cards []*majongpb.Card, huCard uint32, needCombines bool) CheckHuRe
 	}
 	laizi := make(map[Card]bool)
 	flag, combines := FastCheckHuV2(cardsCard, laizi, needCombines) // 检测玩家能否推倒胡
-	result.Can = result.Can || flag
+	canQidui := FastCheckQiDuiHu(cardsCard)
+	result.Can = result.Can || flag || canQidui
 	result.Combines = combines
-	if ok := FastCheckQiDuiHu(cardsCard); ok {
-		result.Can = true
-		result.IsQidui = true
-	}
 	return result
 }
 
@@ -366,13 +361,14 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 	handCardSum := len(player.HandCards)
 	//只差1张牌就能胡，并且玩家手牌不存在花牌
 	if handCardSum%3 == 1 && !gutils.CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
-		tingCards, err := GetTingCards(player.HandCards, laizi)
+		cardCombines, err := GetTingCards(player.HandCards, laizi)
 		if err != nil {
 			return false, 0, err
 		}
 		handCards := player.GetHandCards()
-		for i := 0; i < len(tingCards); i++ {
-			handCards = append(handCards, tingCards[i])
+		for card := range cardCombines {
+			pbCard, _ := IntToCard(int32(card))
+			handCards = append(handCards, pbCard)
 			// TODO 获取最大番型
 			mult := int64(2)
 			if max < mult {
@@ -385,33 +381,25 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 }
 
 //GetTingCards 获取玩家能胡的牌,必须是缺一张
-func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]*majongpb.Card, error) {
+func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) (CardCombines, error) {
+	result := CardCombines{}
+
 	if len(handCards)%3 != 1 {
-		return []*majongpb.Card{}, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
+		return result, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
 	}
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡
-	cardCombines := FastCheckTingV2(cardsCard, laizi)
-	huCards := []Card{}
-	for card := range cardCombines {
-		huCards = append(huCards, card)
-	}
+	result = FastCheckTingV2(cardsCard, laizi)
 	// 七对
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
-	// 合并去重复
-	tingCards := MergeAndNoRepeat(huCards, qiCards)
-	newTingCards, err := CheckHuUtilCardsToHandCards(tingCards)
-	// 特殊情况，手上只有4张相同的牌，胡这张相同的牌，但又不存在的牌，只能听，不能胡
-	if len(newTingCards) == 0 && len(handCards) == 4 {
-		for _, card := range handCards {
-			if !CardEqual(handCards[0], card) {
-				return newTingCards, err
-			}
+	for _, card := range qiCards {
+		if _, ok := result[card]; ok {
+			continue
 		}
-		newTingCards = append(newTingCards, handCards[0])
+		result[card] = Combines{}
 	}
-	return newTingCards, err
+	return result, nil
 }
 
 //MergeAndNoRepeat 合并去重复UtilCard
@@ -450,44 +438,76 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 	return nil
 }
 
-//GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
-func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card][]Card {
-	tingInfo := make(map[Card][]Card)
+// //GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
+// func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card][]Card {
+// 	tingInfo := make(map[Card][]Card)
+// 	// 不能少一张
+// 	if len(handCards)%3 != 2 {
+// 		return tingInfo
+// 	}
+// 	// 手牌转查胡的工具牌
+// 	cardsCard := CardsToUtilCards(handCards)
+// 	// 推倒胡查胡，打那张牌可以胡那些牌
+// 	tingCombines := FastCheckTingInfoV2(cardsCard, laizi)
+// 	for card, cardCombines := range tingCombines {
+// 		tingcards := []Card{}
+// 		for card := range cardCombines {
+// 			tingcards = append(tingcards, card)
+// 		}
+// 		tingInfo[card] = tingcards
+// 	}
+
+// 	// 1-9所有牌
+// 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
+// 	// 七对查胡，打那张牌可以胡那些牌
+// 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
+// 	// 存在相同的playCard,去重复
+// 	for playCard, huCard := range tingInfo {
+// 		tInfo, exite := qiStrategy[playCard]
+// 		if exite {
+// 			tingInfo[playCard] = MergeAndNoRepeat(tInfo, huCard)
+// 		}
+// 	}
+// 	// 存在不相同的playCard,合并,把推倒胡中不存在的听，加进去
+// 	for playCard, huCards := range qiStrategy {
+// 		_, exite := tingInfo[playCard]
+// 		if !exite {
+// 			tingInfo[playCard] = huCards
+// 		}
+// 	}
+// 	return tingInfo
+// }
+
+//GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌
+// 返回可胡的牌与对应的组合
+func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card]CardCombines {
+	result := make(map[Card]CardCombines)
 	// 不能少一张
 	if len(handCards)%3 != 2 {
-		return tingInfo
+		return result
 	}
 	// 手牌转查胡的工具牌
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡查胡，打那张牌可以胡那些牌
-	tingCombines := FastCheckTingInfoV2(cardsCard, laizi)
-	for card, cardCombines := range tingCombines {
-		tingcards := []Card{}
-		for card := range cardCombines {
-			tingcards = append(tingcards, card)
-		}
-		tingInfo[card] = tingcards
-	}
-
+	result = FastCheckTingInfoV2(cardsCard, laizi)
 	// 1-9所有牌
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	// 七对查胡，打那张牌可以胡那些牌
 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
-	// 存在相同的playCard,去重复
-	for playCard, huCard := range tingInfo {
-		tInfo, exite := qiStrategy[playCard]
-		if exite {
-			tingInfo[playCard] = MergeAndNoRepeat(tInfo, huCard)
+
+	for card, huCards := range qiStrategy {
+		cardCombines := result[card]
+		if cardCombines == nil {
+			result[card] = make(CardCombines)
+			cardCombines = result[card]
+		}
+		for _, huCard := range huCards {
+			if cardCombines[huCard] == nil {
+				cardCombines[huCard] = Combines{}
+			}
 		}
 	}
-	// 存在不相同的playCard,合并,把推倒胡中不存在的听，加进去
-	for playCard, huCards := range qiStrategy {
-		_, exite := tingInfo[playCard]
-		if !exite {
-			tingInfo[playCard] = huCards
-		}
-	}
-	return tingInfo
+	return result
 }
 
 // TransPengCard 碰牌转Card

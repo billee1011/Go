@@ -406,46 +406,31 @@ func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Ca
 
 // checkTing 查听
 func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
-	dqnum := 0
+	dingqueCards := []*majongpb.Card{}
+	checkCards := []*majongpb.Card{}
+
 	for _, card := range player.GetHandCards() {
-		if card.Color == player.DingqueColor {
-			dqnum++
+		if card.GetColor() == player.DingqueColor {
+			dingqueCards = append(dingqueCards, card)
+		} else {
+			checkCards = append(checkCards, card)
 		}
 	}
-	logrus.WithFields(logrus.Fields{
-		"手中定缺牌的个数": dqnum,
-	}).Info("查听")
-	switch dqnum {
-	//没有定缺牌的时候正常查听
-	case 0:
-		{
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-			s.addTingInfo(zixunNtf, player, context, tingInfos)
-		}
-	// 当定缺牌为1的时候,只有定缺牌才有听牌提示
-	case 1:
-		{
-			newTingInfos := map[utils.Card][]utils.Card{}
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-			for outCard, tingCard := range tingInfos {
-				card, _ := utils.IntToCard(int32(outCard))
-				if card.GetColor() == player.DingqueColor {
-					newTingInfos[outCard] = tingCard
-				}
-			}
-			//满足条件说明,打出这张定缺牌可以进入听牌状态
-			s.addTingInfo(zixunNtf, player, context, newTingInfos)
-		}
-	// 玩家的定缺牌数量超过1张的时候,不查听
-	default:
-		{
-			return
+	dqNum := len(dingqueCards)
+	if dqNum == 0 {
+		tingInfos := utils.GetPlayCardCheckTing(checkCards, nil)
+		s.addTingInfo(zixunNtf, player, context, tingInfos)
+	} else if dqNum == 1 {
+		tingInfos, err := utils.GetTingCards(checkCards, nil)
+		if err != nil && len(tingInfos) > 0 {
+			dingqueCard := utils.Card(utils.ServerCard2Number(dingqueCards[0]))
+			s.addTingInfo(zixunNtf, player, context, map[utils.Card]utils.CardCombines{dingqueCard: tingInfos})
 		}
 	}
 }
 
 // addTingInfo 自询通知添加听牌信息
-func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card][]utils.Card) {
+func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card]utils.CardCombines) {
 	canTingInfos := []*room.CanTingCardInfo{}
 	recordCanTingInfos := []*majongpb.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
@@ -463,7 +448,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
-		for _, tt := range tingInfo {
+		for tt := range tingInfo {
 			huCard, _ := utils.IntToCard(int32(tt))
 			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
 				HandCard: newHand,

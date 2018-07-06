@@ -387,10 +387,15 @@ func BenchmarkFastCheckHuV2Laizi7(b *testing.B) {
 }
 
 func TestFastCheckTingV2(t *testing.T) {
-	cards := []Card{11, 11, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19}
+	cards := []Card{11, 11, 11, 11}
 	//cards := []Card{11, 11, 11, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19}
 	laizis := map[Card]bool{21: true}
-	assert.Nil(t, FastCheckTingV2(cards, laizis))
+	result := FastCheckTingV2(cards, laizis)
+	tingCars := []Card{}
+	for card := range result {
+		tingCars = append(tingCars, card)
+	}
+	assert.Nil(t, tingCars)
 }
 
 // TestJiulianbaodengTing 测试九莲宝灯听牌
