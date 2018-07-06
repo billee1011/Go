@@ -129,6 +129,12 @@ func (tc *typeCalculator) getHuCard() *majong.HuCard {
 	return tc.huCard
 }
 
+// getHuaCards 获取花牌
+func (tc *typeCalculator) getHuaCards() []*majong.Card {
+	return tc.getPlayer().GetHandCards()
+
+}
+
 // CalculateFanTypes 计算番型
 // handCards 手牌，如果为nil，则使用玩家自己的手牌
 // huCard : 胡的牌，如果为 nil ，则使用玩家最后一次胡的牌
