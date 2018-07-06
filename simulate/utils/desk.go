@@ -14,8 +14,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/golang/protobuf/proto"
 	"steve/room/desks/ddzdesk/flow/ddz/states"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // DeskPlayer 牌桌玩家数据
@@ -29,6 +30,14 @@ type DeskPlayer struct {
 type DeskData struct {
 	Players    map[uint64]DeskPlayer // playerid -> deskPlayer
 	BankerSeat int                   // 庄家/地主 的座位号
+	DDZData    DDZData               // 斗地主信息
+}
+
+// DDZData 斗地主信息
+type DDZData struct {
+	CurState     int             // 当前状态
+	NextState    *room.NextStage // 下一状态的数据
+	AssignLordID uint64          // 服务器指定的叫地主玩家的playerID
 }
 
 // StartGame 启动一局游戏
@@ -156,7 +165,14 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 			return nil, err
 		}
 
-		logEntry.Info("收到了斗地主游戏开始的通知,playerID = ", player.GetID())
+		// 服务器指定的叫地主玩家
+		deskData.DDZData.AssignLordID = stntf.GetPlayerId()
+
+		// 下一状态信息
+		deskData.DDZData.NextState = stntf.GetNextStage()
+
+		logEntry.Infof("玩家%d收到了斗地主游戏开始的通知,叫地主玩家 = %d，当前状态 = %v, 进入下一状态等待时间 = %d",
+			player.GetID(), stntf.GetPlayerId(), deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 	}
 
 	// 建立playerid -> deskPlayer的map
@@ -168,6 +184,9 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 			Expectors: createDDZPlayerExpectors(player.GetClient()), // 斗地主所有的消息期望
 		}
 	}
+
+	// 暂停对应的秒数
+	time.Sleep(time.Duration(deskData.DDZData.NextState.GetTime()) * time.Second)
 
 	// 检测收到的发牌消息是否符合预期
 	if err := checkDDZFapaiNtf(fapaiNtfExpectors, &deskData, params.Cards); err != nil {
@@ -479,6 +498,10 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 //  seatCards		: 从地主开始，每个玩家的牌，客户端配置的
 //
 func checkDDZFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData *DeskData, seatCards [][]uint32) error {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "desk.go::checkDDZFapaiNtf",
+	})
+
 	for playerID, e := range ntfExpectors {
 
 		// 发牌通知消息
@@ -505,11 +528,16 @@ func checkDDZFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskDa
 			}
 		}
 
+		// 下一状态信息
+		deskData.DDZData.NextState = fapaiNtf.GetNextStage()
+
 		// 检测每个玩家的手牌数量是否和期待的相同
 		//if err := checkPlayerCardCount(fapaiNtf.GetPlayerCardCounts(), deskData, seatCards); err != nil {
 		//	return err
 		//}
 	}
+
+	logEntry.Infof("当前状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 
 	// 通知服务器，每个玩家的发牌动画播放完成
 	//return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData)

@@ -92,7 +92,7 @@ func apply(players []interfaces.ClientPlayer) (map[int]*DDZPlayer, error) {
 		se, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_START_GAME_NTF)
 
 		// 申请加入桌子
-		if _, err := utils.ApplyJoinDesk(player, room.GameId_GAMEID_DDZ); err != nil {
+		if _, err := utils.ApplyJoinDesk(player, room.GameId_GAMEID_DOUDIZHU); err != nil {
 			return nil, fmt.Errorf("申请加入房间失败 %v", err)
 		}
 

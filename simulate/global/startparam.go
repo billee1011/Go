@@ -43,7 +43,7 @@ func NewCommonStartGameParams() structs.StartGameParams {
 // NewStartDDZGameParams 创建棋牌启动参数
 func NewStartDDZGameParams() structs.StartPukeGameParams {
 	return structs.StartPukeGameParams{
-		GameID: room.GameId_GAMEID_DDZ, // 斗地主
+		GameID: room.GameId_GAMEID_DOUDIZHU, // 斗地主
 		Cards: [][]uint32{
 			// 第一个人的牌(地主)
 			{
@@ -68,7 +68,6 @@ func NewStartDDZGameParams() structs.StartPukeGameParams {
 				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_4),   // 黑桃4
 
 				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_5), // 方块5
-
 
 			},
 
