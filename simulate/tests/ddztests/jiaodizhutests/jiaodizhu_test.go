@@ -158,7 +158,7 @@ func TestJiaodizhu(t *testing.T) {
 		}
 	}
 
-	for j := 0; j < 2; /* len(lordCards) */ j++ {
+	for j := 0; j < 3; /* len(lordCards) */ j++ {
 
 		i++
 
@@ -174,20 +174,32 @@ func TestJiaodizhu(t *testing.T) {
 		}
 
 		// 农民1检测第i次出牌广播
-		assert.Nil(t, listenPlayCardNtf(&farmer1, i))
+		nextPlayerID, err := listenPlayCardNtf(&farmer1, i)
+		assert.Nil(t, err)
 
 		// 农民2检测第1次出牌广播
-		if farmer2.Seat == 0 {
-			logEntry.Errorf("农民2为空")
-			assert.NotNil(t, nil)
+		nextPlayerID, err = listenPlayCardNtf(&farmer2, i)
+		assert.Nil(t, err)
+
+		logEntry.Info("确定下次出牌玩家ID为", nextPlayerID)
+
+		// 农民1
+		if nextPlayerID == farmer1.Player.GetID() {
+
+			// 农民1放弃出牌
+			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
+
+			// 农民2放弃出牌
+			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
+		} else {
+			// 农民2放弃出牌
+			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
+
+			// 农民1放弃出牌
+			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
 		}
-		assert.Nil(t, listenPlayCardNtf(&farmer2, i))
 
-		// 农民1放弃出牌
-		assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
-
-		// 农民2放弃出牌
-		assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
+		// 重新建立监听
 
 		assert.NotNil(t, nil)
 	}
@@ -274,17 +286,17 @@ func sendPlayCardReq(player *utils.DeskPlayer, cards []uint32, cardType room.Car
 }
 
 // 指定的deskPlayer监听出牌的消息
-func listenPlayCardNtf(player *utils.DeskPlayer, i int) error {
+func listenPlayCardNtf(player *utils.DeskPlayer, i int) (nextPlayerID uint64, err error) {
 	logrus.WithFields(logrus.Fields{
 		"func_name": "listenPlayCardNtf()",
 	})
 
 	ntf := room.DDZPlayCardNtf{}
 	if err := player.Expectors[msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
-		return fmt.Errorf("%d监听第%d次出牌广播超时", player.Player.GetID(), i)
+		return 0, fmt.Errorf("%d监听第%d次出牌广播超时", player.Player.GetID(), i)
 	}
 
 	logrus.Infof("玩家%d监听到第%d次玩家%d出牌为%v，下一个出牌玩家为%v", player.Player.GetID(), i, ntf.GetPlayerId(), ntf.GetCards(), ntf.GetNextPlayerId())
 
-	return nil
+	return ntf.GetNextPlayerId(), nil
 }
