@@ -89,6 +89,8 @@ type DeskMgr interface {
 
 	// RemoveDeskPlayerByPlayerID 移除某个在桌子上的玩家
 	RemoveDeskPlayerByPlayerID(playerID uint64)
+	// GetDeskCount 获取牌桌数量
+	GetDeskCount() int
 }
 
 // CreateDeskOptions 创建牌桌选项

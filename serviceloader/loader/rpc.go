@@ -30,13 +30,14 @@ func createRPCServer(keyFile string, certFile string) *sgrpc.RPCServerImpl {
 }
 
 // createRPCClient 创建 RPC 客户端
-func createRPCClient(caFile string, caServerName string) rpcinterface.Client {
+func createRPCClient(caFile string, caServerName string, consulAddr string) rpcinterface.Client {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":      "createRPCClient",
 		"ca_file":        caFile,
 		"ca_server_name": caServerName,
+		"consul_addr":    consulAddr,
 	})
-	result := rpc.NewClient(caFile, caServerName)
+	result := rpc.NewClient(caFile, caServerName, consulAddr)
 	if result == nil {
 		logEntry.Panicln("创建 RPC 客户端失败")
 	}

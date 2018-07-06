@@ -1,13 +1,17 @@
 package core
 
 import (
-	"fmt"
+	"context"
+	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/room/config"
-	"steve/room/core/exchanger"
+	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
 	"steve/room/peipai"
 	"steve/room/registers"
+	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/net"
 	"steve/structs/service"
@@ -22,16 +26,6 @@ import (
 	_ "steve/room/settle"
 )
 
-var flags struct {
-	useGateway bool
-}
-
-func parseFlags() {
-	flags.useGateway = !viper.GetBool("independent")
-
-	logrus.WithField("flag", flags).Infoln("解析 flags ")
-}
-
 type roomCore struct {
 	e   *structs.Exposer
 	dog net.WatchDog
@@ -42,39 +36,100 @@ func NewService() service.Service {
 	return new(roomCore)
 }
 
+// RoomService room房间RPC服务
+type RoomService struct {
+}
+
+func notifyDeskCreate(desk interfaces.Desk) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "notifyDeskCreate",
+	})
+	ntf := room.RoomDeskCreatedNtf{
+		Players: desk.GetPlayers(),
+	}
+	facade.BroadCastDeskMessage(desk, nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
+	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
+}
+
+// CreateDesk 创建牌桌
+func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
+
+	// 日志
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "RoomService::CreateDesk",
+	})
+
+	logEntry.WithField("players", req.GetPlayerId()).Debugln("RoomService::CreateDesk()")
+
+	// 回复match服的消息
+	rsp = &roommgr.CreateDeskResponse{
+		ErrCode: roommgr.RoomError_FAILED, // 默认是失败的
+	}
+
+	// 请求的玩家ID数组
+	playersID := req.GetPlayerId()
+
+	// 个数须为4
+	if len(playersID) < 4 {
+		logEntry.WithField("len(playersID):", len(playersID)).Errorln("players数组长度不为4")
+		return
+	}
+
+	deskFactory := global.GetDeskFactory()
+
+	deskMgr := global.GetDeskMgr()
+
+	//playerMgr := global.GetPlayerMgr()
+
+	// 创建桌子
+	result, err := deskFactory.CreateDesk(playersID, int(req.GetGameId()), interfaces.CreateDeskOptions{})
+	if err != nil {
+		logEntry.WithFields(
+			logrus.Fields{
+				"players": playersID,
+				"result":  result,
+			},
+		).WithError(err).Errorln("创建桌子失败")
+
+		return
+	}
+
+	logEntry.WithField("players", req.GetPlayerId()).Debugln("创建桌子成功")
+
+	// 回复match：创建桌子成功
+	rsp.ErrCode = roommgr.RoomError_SUCCESS
+
+	// 通知该桌子的所有人
+	notifyDeskCreate(result.Desk)
+
+	// 桌子开始运行
+	deskMgr.RunDesk(result.Desk)
+
+	// 添加进playerManager
+	// todo
+
+	return
+}
+
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	logrus.Info("room init")
-	parseFlags()
 	c.e = e
-	if !flags.useGateway {
-		e.Exchanger = exchanger.CreateLocalExchanger(&connectObserver{})
-	}
 	global.SetMessageSender(e.Exchanger)
 	registers.RegisterHandlers(e.Exchanger)
 	registerLbReporter(e)
+
+	rpcServer := e.RPCServer
+	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, &RoomService{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (c *roomCore) Start() error {
 	go startPeipai()
-	if !flags.useGateway {
-		return c.startLocalExchanger()
-	}
 	return nil
-}
-
-func (c *roomCore) startLocalExchanger() error {
-	listenIP := viper.GetString(config.ListenClientAddr)
-	listenPort := viper.GetInt(config.ListenClientPort)
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"listen_ip":   listenIP,
-		"listen_port": listenPort,
-	})
-	logEntry.Info("准备监听")
-
-	addr := fmt.Sprintf("%s:%d", listenIP, listenPort)
-	return exchanger.StartLocalExchanger(c.e.Exchanger, addr, net.TCP)
 }
 
 func startPeipai() error {

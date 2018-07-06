@@ -9,35 +9,30 @@ import (
 )
 
 type exchangerImpl struct {
+	handlerMgr
 	sender   sender
 	receiver receiver
 }
 
 var _ iexchanger.Exchanger = new(exchangerImpl)
 
-func (e *exchangerImpl) RegisterHandle(msgID uint32, handler interface{}) error {
-	return e.receiver.register(msgID, handler)
+func (e *exchangerImpl) SendPackageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, body proto.Message) error {
+	return e.sender.send(playerID, head, body)
 }
-
-func (e *exchangerImpl) SendPackage(clientID uint64, head *steve_proto_gaterpc.Header, body proto.Message) error {
-	return e.sender.send(clientID, head, body)
+func (e *exchangerImpl) BroadcastPackageByPlayerID(playerIDs []uint64, head *steve_proto_gaterpc.Header, body proto.Message) error {
+	return e.sender.broadcast(playerIDs, head, body)
 }
-
-func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_gaterpc.Header, body proto.Message) error {
-	return e.sender.broadcast(clientIDs, head, body)
+func (e *exchangerImpl) SendPackageBareByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) error {
+	return e.sender.sendBare(playerID, head, bodyData)
 }
-
-func (e *exchangerImpl) SendPackageBare(clientID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) error {
-	return e.sender.sendBare(clientID, head, bodyData)
-}
-
-func (e *exchangerImpl) BroadcastPackageBare(clientIDs []uint64, head *steve_proto_gaterpc.Header, bodyData []byte) error {
-	return e.sender.broadcastBare(clientIDs, head, bodyData)
+func (e *exchangerImpl) BroadcastPackageBareByPlayerID(playerIDs []uint64, head *steve_proto_gaterpc.Header, bodyData []byte) error {
+	return e.sender.broadcastBare(playerIDs, head, bodyData)
 }
 
 // NewExchanger 创建 Exchanger
 func NewExchanger(rpcServer sgrpc.RPCServer) (iexchanger.Exchanger, error) {
 	e := exchangerImpl{}
+	e.receiver.handlerMgr = &e.handlerMgr
 	if err := rpcServer.RegisterService(steve_proto_gaterpc.RegisterMessageHandlerServer, &e.receiver); err != nil {
 		return nil, err
 	}

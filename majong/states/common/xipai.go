@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -43,6 +44,12 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	mjContext := flow.GetMajongContext()
 	mjContext.CardTotalNum = uint32(len(cards))
 	utils.PeiPai(cards, mjContext.GetOption().GetCards())
+
+	logrus.WithFields(logrus.Fields{
+		"func_name":    "XipaiState.xipai",
+		"option_cards": mjContext.GetOption().GetCards(),
+	}).Debugln("洗牌")
+
 	return cards
 }
 

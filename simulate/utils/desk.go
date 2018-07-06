@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/structs"
@@ -33,7 +31,7 @@ type DeskData struct {
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params structs.StartGameParams) (*DeskData, error) {
-	players, err := createAndLoginUsers(config.ServerAddr, params.ClientVer)
+	players, err := createAndLoginUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -132,22 +130,18 @@ func calcPlayerSeat(seatMap map[int]uint64, playerID uint64) int {
 
 var errCreateClientFailed = errors.New("创建客户端连接失败")
 
-func createAndLoginUsers(ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
+func createAndLoginUsers() ([]interfaces.ClientPlayer, error) {
 	defaultNum := 4
-	return CreateAndLoginUsersNum(defaultNum, ServerAddr, ClientVer)
+	return CreateAndLoginUsersNum(defaultNum)
 }
 
 // CreateAndLoginUsersNum 指定创建的人数
-func CreateAndLoginUsersNum(num int, ServerAddr string, ClientVer string) ([]interfaces.ClientPlayer, error) {
+func CreateAndLoginUsersNum(num int) ([]interfaces.ClientPlayer, error) {
 	players := []interfaces.ClientPlayer{}
 	for i := 0; i < num; i++ {
-		client := connect.NewTestClient(ServerAddr, ClientVer)
-		if client == nil {
-			return nil, errCreateClientFailed
-		}
-		player, err := LoginUser(client, global.AllocUserName())
+		player, err := LoginNewPlayer()
 		if err != nil {
-			return nil, fmt.Errorf("登录用户失败：%v", err)
+			return nil, fmt.Errorf("登录用户失败： %v", err)
 		}
 		players = append(players, player)
 	}
@@ -159,13 +153,13 @@ func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]ui
 	for _, player := range players {
 		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
 		if _, err := ApplyJoinDesk(player, gameID); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("请求加入房间失败: %v", err)
 		}
 		expectors = append(expectors, e)
 	}
 	ntf := room.RoomDeskCreatedNtf{}
 	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("没有收到创建房间通知: %v", err)
 	}
 	seatMap := map[int]uint64{}
 	for _, rplayer := range ntf.GetPlayers() {

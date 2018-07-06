@@ -35,7 +35,7 @@ func (cp *connectPool) getConnect(addr string) (*grpc.ClientConn, error) {
 		co := ico.(*grpc.ClientConn)
 		state := co.GetState()
 		logEntry = logEntry.WithField("state", state)
-		if state == connectivity.Ready || state == connectivity.Idle {
+		if state == connectivity.Ready || state == connectivity.Idle || state == connectivity.Connecting {
 			return co, nil
 		}
 		logEntry.Infoln("状态无效")

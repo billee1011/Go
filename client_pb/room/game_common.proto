@@ -1,0 +1,322 @@
+syntax = "proto2";
+
+package room;
+
+import "error.proto";
+import "base.proto";
+import "enum.proto";
+
+// Card 卡牌
+message Card {
+    optional CardColor color = 1;   // 卡牌花色
+    optional int32 point = 2;       // 卡牌点数
+}
+
+// RoomStartGameNtf 游戏开始通知。
+message RoomStartGameNtf {
+    // TODO 
+    optional uint32 reserve = 1;    // 保留字段
+    optional bool need_hsz = 2;          // 是否需要换三张
+}
+
+// RoomXipaiNtf 洗牌通知
+message RoomXipaiNtf {
+    repeated uint32 dices = 1 ;//[packed = true];   // 骰子
+    optional uint32 total_card = 2;              // 牌总数
+    optional uint32 banker_seat = 3;         // 庄家位置
+}
+
+// PlayerCardCount 玩家手牌数量
+message PlayerCardCount {
+    optional uint64 player_id = 1; // 玩家 ID
+    optional uint32 card_count = 2; // 卡牌数量
+}
+
+// RoomFapaiNtf 发牌通知
+message RoomFapaiNtf {
+    repeated uint32 cards = 1;    // 玩家自身的卡牌
+    repeated PlayerCardCount player_card_counts = 2;   // 玩家手牌数量
+}
+
+
+// RoomHuansanzhangNtf 换三张通知
+message RoomHuansanzhangNtf {
+    optional uint32 reserve = 1;    // 保留字段
+}
+
+
+// RoomHuansanzhangReq 换三张请求
+message RoomHuansanzhangReq {
+    repeated uint32 cards = 1;    // 请求换的牌
+    optional bool sure = 2;     // 是否确认
+}
+
+// RoomHuansanzhangRsp 换三张应答
+message RoomHuansanzhangRsp {
+    optional RoomError err_code = 1; // 错误码
+}
+
+
+// RoomHuansanzhangFinishNtf 换三张完成通知
+message RoomHuansanzhangFinishNtf {
+    repeated uint32 in_cards = 1;   // 获得的牌 
+    repeated uint32 out_cards = 2;   // 失去的牌
+    optional Direction direction = 3;   // 换牌方向
+}
+
+
+// RoomDingqueNtf 定缺通知
+message RoomDingqueNtf {
+    optional uint32 reserve = 1;    // 保留字段
+}
+
+// RoomDingqueReq 定缺请求
+message RoomDingqueReq {
+    optional CardColor color = 1;   // 卡牌花色
+}
+
+// RoomDingqueRsp 定缺响应  
+message RoomDingqueRsp {
+    optional RoomError err_code = 1; // 错误码    
+}
+
+// PlayerDingqueColor 玩家定缺花色
+message PlayerDingqueColor {
+    optional uint64 player_id = 1;  // 玩家 ID 
+    optional CardColor color = 2;   // 卡牌花色
+}
+
+// RoomDingqueFinishNtf 定缺完成通知
+message RoomDingqueFinishNtf {
+    repeated PlayerDingqueColor player_dingque_color = 1;    // 玩家定缺花色
+}
+
+// RoomChiInfo 吃牌信息
+message RoomChiInfo{
+    repeated uint32 cards = 1; // 吃牌组合，一维数组当二维数组用
+}
+
+// RoomChupaiWenxunNtf 出牌问询通知
+message RoomChupaiWenxunNtf {
+    optional uint32 card = 1;    // 当前问询的牌
+    optional bool enable_peng = 2;  // 是否可碰
+    optional bool enable_minggang = 3;  // 是否可明杠
+    optional bool enable_dianpao = 4;   // 是否可点炮
+    optional bool enable_qi = 5;        // 是否可弃
+    optional RoomChiInfo chi_info = 6;  // 吃牌信息
+}
+
+// RoomXingpaiActionReq 执行行牌动作请求
+message RoomXingpaiActionReq {
+    optional XingpaiAction action_id = 1;   // 行为 ID 
+    optional uint32 gang_card = 2;            // 请求杠的牌
+    optional GangType gang_type = 3;        // 请求杠类型（行为 ID 为杠时有效）
+    repeated uint32 chi_cards = 4;          // 吃牌构成的顺子
+}
+
+// RoomChiNtf 吃牌通知
+message RoomChiNtf{
+    optional uint64 to_player_id = 1; // 吃玩家 ID
+    optional uint64 from_player_id = 2; // 被吃玩家 ID
+    repeated uint32 cards = 3; // 吃牌构成的顺子
+}
+
+// RoomPengNtf 玩家碰通知
+message RoomPengNtf {
+    optional uint64 to_player_id = 1;  // 碰玩家 ID
+    optional uint64 from_player_id = 2;  // 被碰玩家 ID
+    optional uint32 card = 3;         // 碰的牌
+}
+
+
+// RoomGangNtf 杠通知
+message RoomGangNtf {
+    optional uint64 to_player_id = 1;  // 杠玩家 ID
+    optional uint64 from_player_id = 2; // 被杠玩家 ID
+    optional uint32 card = 3;         // 杠的牌
+    optional GangType gang_type = 4; //杠类型
+}
+
+// TingCardInfo 听牌信息
+message TingCardInfo{
+    optional uint32 ting_card = 1; // 听的牌
+    optional uint32 times = 2;   // 胡牌倍数
+}
+
+// CanTingCardInfo 出本张牌可以听
+message CanTingCardInfo{
+    optional uint32 out_card = 1; // 要出的牌
+    repeated TingCardInfo ting_card_info = 2; // 听的牌和倍数
+}
+
+// RoomZixunNtf 自询通知
+message RoomZixunNtf {
+    repeated uint32 enable_angang_cards = 1;  // 能暗杠的牌
+    repeated uint32 enable_bugang_cards = 2;  // 能补杠的牌
+    optional bool enable_zimo = 3;          // 是否能自摸
+    repeated uint32 enable_chupai_cards = 4;  // 可以出的牌
+    repeated CanTingCardInfo can_ting_card_info = 5; // 每张牌对应的听的牌和倍数
+    optional bool enable_qi = 6; //是否可弃牌
+    optional HuType hu_type = 7;  // 胡牌类型
+}
+
+// TingAction 听牌动作
+message TingAction{
+    optional bool enable_ting = 1; // 是否听牌
+    optional TingType ting_type = 2; // 听牌类型 
+}
+
+// RoomChupaiReq 请求出牌
+message RoomChupaiReq {
+    optional uint32 card = 1; // 要出的牌
+    optional TingAction ting_action = 2; // 听牌动作
+}
+
+// RoomChupaiNtf 出牌通知
+message RoomChupaiNtf {
+    optional uint64 player = 1; // 出牌玩家
+    optional uint32 card = 2; // 出的牌
+    optional TingAction ting_action = 3; // 听牌动作
+}
+
+// RoomMopaiNtf 摸牌通知
+message RoomMopaiNtf {
+    optional uint32 card = 1;     // 摸的牌（仅自己可见）
+    optional uint64 player = 2; // 摸牌的玩家
+    optional bool back = 3;     // 是否从墙牌尾部摸牌
+}
+
+
+// RoomWaitQianggangHuNtf 等待抢杠胡通知
+message RoomWaitQianggangHuNtf {
+    optional uint32 card = 1;
+    optional bool self_can = 2;         // 自己是否能抢杠胡
+    optional uint64 from_player_id = 3; // 谁的杠
+}
+
+// RoomHuNtf 胡通知
+message RoomHuNtf {
+    repeated uint64 players = 1; // 胡牌玩家列表， 抢杠胡可以有多个玩家
+    optional uint64 from_player_id = 2; //点炮或者被抢杠胡的玩家 ID 
+    optional uint32 card = 3;     // 胡的牌
+    optional HuType hu_type = 4;  // 胡牌类型
+}
+
+// RoomTingInfoNtf 听牌信息通知
+message RoomTingInfoNtf {
+    repeated TingCardInfo ting_card_infos = 1;
+}
+
+// 麻将组
+message CardsGroup { 
+    repeated uint32 cards = 1;           // 牌 
+    optional CardsGroupType type = 2;    // 麻将组类型
+    optional uint64 pid = 3;             // 吃碰杠谁的牌
+    optional bool is_real = 4;           // 是否是实牌，仅用于胡牌
+}
+
+// PlayerCardsGroup 玩家麻将组
+message PlayerCardsGroup {
+    optional uint64 player_id = 1; // 玩家 ID
+    repeated CardsGroup cards_group = 2; // 麻将组
+}
+
+// RoomGameOverNtf 游戏结束通知
+message RoomGameOverNtf {
+    repeated PlayerCardsGroup player_cards_group = 1; // 玩家麻将组,推倒牌墙用
+    optional bool game_flow = 2; // 是否流局
+}
+
+// BillDetail 结算账单详情
+message BillDetail 
+{
+    optional SettleType setle_type = 1;          // 结算类型
+    optional HuType hu_type = 2;                 // 胡牌类型
+    repeated FanType fan_type = 3;               // 胡牌牌型
+    optional int32 fan_value = 4;                // 牌型倍数
+    optional int64  score = 5;                   // 输赢分数
+    repeated uint64 related_pid = 6;             // 输赢相关玩家Id
+    optional uint32 gen_count = 7;               // 根的数目
+}
+
+// BillPlayersInfo 结算玩家账单
+message BillPlayerInfo
+{
+    optional uint64 pid = 1;               // 玩家ID
+    optional int64  score = 2;             // 输赢分数
+    optional int64  current_score = 3;     // 当前分数
+    optional int32  card_value = 4;        // 输赢倍数
+    repeated CardsGroup cards_group = 5;   // 玩家牌型
+    optional BillType bill_type = 6;       // 结算类型
+}
+
+// RoomBalanceInfoRsp 单局结算
+message RoomBalanceInfoRsp{
+    optional uint64 pid = 1;                        // 玩家 ID
+    repeated BillDetail bill_detail = 2;             // 单次结算账单汇总
+    repeated BillPlayerInfo bill_players_info = 3;   // 结算玩家单局账单
+}
+
+// RoomSettleInstantRsp 结算实时消息返回 
+message RoomSettleInstantRsp {
+	repeated BillPlayerInfo 	bill_players_info	= 1;  // 结算详情
+}
+
+// RoomResumeGameReq 恢复对局请求
+message RoomResumeGameReq{
+	optional uint32 reserve = 1;    // 保留字段
+}
+
+// RoomCartoonFinishReq 动画完成
+message RoomCartoonFinishReq {
+    optional CartoonType cartoon_type = 1;  // 动画类型
+}
+
+//GamePlayerInfo 游戏中的玩家信息
+message GamePlayerInfo{
+	optional RoomPlayerInfo player_info = 1;// 玩家基本信息
+	optional CardColor color = 2;   		// 定缺花色
+    repeated CardsGroup cards_group = 3;   	// 玩家牌型
+    optional uint32 hand_card_count = 4;    // 玩家手牌数量
+    optional bool is_tuoguan = 5; // 是否托管，不填表示不托管 
+    optional XingPaiState xp_state = 6; // 行牌状态
+    repeated TingCardInfo ting_card_infos = 7; // 听牌信息
+    optional HuType hu_type = 8; // 胡牌类型
+}
+
+// GameDeskInfo 游戏基本信息
+message GameDeskInfo{
+	optional GameStage game_stage = 1; 		// 游戏当前状态
+	repeated GamePlayerInfo players = 2;	// 玩家列表
+	repeated uint32 dices = 3;				// 骰子
+	optional uint32 banker_seat = 4;			// 庄家id
+	optional uint32 east_seat = 5;			// 东风的id
+	optional uint32 total_cards = 6;		// 总的牌数
+	optional uint32 remain_cards = 7;		// 剩余的牌总数	
+	optional uint32 cost_time = 8;			// 本次操作已经过的时间，单位：秒
+	optional uint64 operate_pid = 9;   		// 当前操作的玩家id
+	optional uint32 door_card = 10; 		// 自己摸牌后的门牌
+    optional bool has_zixun = 11;
+    optional RoomZixunNtf zixun_info = 12; // 玩家自询信息
+    optional bool has_wenxun = 13;
+    optional RoomChupaiWenxunNtf wenxun_info = 14;// 问询信息
+    optional bool has_qgh = 15;
+    optional RoomWaitQianggangHuNtf qgh_info = 16; // 抢杠胡信息
+    optional bool need_hsz = 17; // 是否需要换三张 
+}
+
+// RoomResumeGameRsp 恢复对局返回
+message RoomResumeGameRsp{
+	optional RoomError resume_res = 1; 		// 恢复对局结果
+	optional GameDeskInfo game_info = 2;	// 游戏信息
+}
+
+// RoomTuoGuanNtf 托管状态通知
+message RoomTuoGuanNtf {
+    optional bool tuoguan = 1;  // 进入托管还是取消托管， true 表示进入，false 表示取消
+}
+
+// RoomCancelTuoGuanReq 取消托管请求
+message RoomCancelTuoGuanReq {
+    optional bool reserved = 1; // 保留字段
+}

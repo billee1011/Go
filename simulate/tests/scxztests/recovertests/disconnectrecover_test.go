@@ -3,8 +3,6 @@ package recovertests
 import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -46,15 +44,18 @@ func Test_DisconnectRecover(t *testing.T) {
 	expector, _ = mopaiPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf2 := &room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf2))
-	client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-	assert.NotNil(t, client)
-	player, err := utils.LoginUser(client, disconnectPlayer.Player.GetUsrName())
+	// client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
+	// assert.NotNil(t, client)
+	// player, err := utils.LoginUser(client, disconnectPlayer.Player.GetUsrName())
+
+	player, err := utils.LoginPlayer(disconnectPlayer.Player.GetAccountID(), "")
+
 	assert.Nil(t, err)
 	assert.NotNil(t, player)
 	assert.Equal(t, disconnectPlayer.Player.GetID(), player.GetID())
 
 	// step 4
-	utils.UpdatePlayerClientInfo(client, player, deskData)
+	utils.UpdatePlayerClientInfo(player.GetClient(), player, deskData)
 	// // 发牌后睡眠，在关闭链接前保证发送成功
 	// time.Sleep(time.Second)
 	// assert.Nil(t, utils.SendNeedRecoverGameReq(disconnectSeat, deskData))

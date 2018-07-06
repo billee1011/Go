@@ -2,6 +2,12 @@ package core
 
 import (
 	"fmt"
+	"steve/gateway/config"
+	"steve/gateway/connection"
+	"steve/gateway/gateservice"
+	"steve/gateway/global"
+	"steve/gateway/register"
+	"steve/server_pb/gateway"
 	"steve/structs"
 	"steve/structs/net"
 	"steve/structs/proto/gate_rpc"
@@ -9,6 +15,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	_ "steve/gateway/player" // init player manager
 )
 
 type gatewayCore struct {
@@ -24,11 +32,12 @@ func NewService() service.Service {
 
 func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 	c.e = e
-	return c.registSender()
-	// if err := c.registSender(); err != nil {
-	// 	return err
-	// }
-	// return nil
+	if err := c.registSender(); err != nil {
+		return err
+	}
+	register.RegisteHandlers(e.Exchanger)
+	c.setupConnectionMgr()
+	return c.registerGateService()
 }
 
 func (c *gatewayCore) Start() error {
@@ -41,9 +50,13 @@ func (c *gatewayCore) registSender() error {
 	})
 }
 
+func (c *gatewayCore) registerGateService() error {
+	return c.e.RPCServer.RegisterService(gateway.RegisterGateServiceServer, gateservice.New())
+}
+
 func (c *gatewayCore) startWatchDog() error {
-	listenIP := viper.GetString(ListenClientAddr)
-	listenPort := viper.GetInt(ListenClientPort)
+	listenIP := viper.GetString(config.ListenClientAddr)
+	listenPort := viper.GetInt(config.ListenClientPort)
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"listen_ip":   listenIP,
@@ -53,16 +66,21 @@ func (c *gatewayCore) startWatchDog() error {
 	mo := &receiver{
 		core: c,
 	}
-	co := &connectObserver{}
-
-	// TODO  id 分配器
-	c.dog = c.e.WatchDogFactory.NewWatchDog(nil, mo, co)
+	co := global.GetConnectionManager()
+	c.dog = c.e.WatchDogFactory.NewWatchDog(&idAllocator{}, mo, co)
 	if c.dog == nil {
 		logEntry.Error("创建 watchdog 失败")
 		return fmt.Errorf("创建 watchdog 失败")
 	}
+	co.SetKicker(func(clientID uint64) {
+		c.dog.Disconnect(clientID)
+	})
 	logEntry.Info("准备监听")
 
 	addr := fmt.Sprintf("%s:%d", listenIP, listenPort)
 	return c.dog.Start(addr, net.TCP)
+}
+
+func (c *gatewayCore) setupConnectionMgr() {
+	global.SetConnectionManager(connection.NewConnectionMgr())
 }

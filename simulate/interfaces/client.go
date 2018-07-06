@@ -39,6 +39,9 @@ type Client interface {
 	// 停止
 	Stop() error
 
+	// Closed 是否已经关闭
+	Closed() bool
+
 	// SendPackage 发送数据包
 	SendPackage(header SendHead, body proto.Message) (*SendResult, error)
 

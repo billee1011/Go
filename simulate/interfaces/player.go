@@ -6,4 +6,5 @@ type ClientPlayer interface {
 	GetCoin() uint64
 	GetClient() Client
 	GetUsrName() string
+	GetAccountID() uint64
 }

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package roommgr;
+
+enum RoomError {
+    SUCCESS = 0x0;  // 成功
+    FAILED = 0x1;   // 失败
+}
+
+// 创建桌子的请求
+message CreateDeskRequest {
+    repeated uint64 player_id = 1;
+    uint32 game_id = 2;
+}
+
+// 创建桌子的回复
+message CreateDeskResponse {
+    RoomError err_code = 1; // 错误码
+}
+
+service RoomMgr {
+    rpc CreateDesk(CreateDeskRequest) returns (CreateDeskResponse) {}
+}

@@ -3,8 +3,6 @@ package tests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
@@ -19,11 +17,11 @@ func Test_Fapai(t *testing.T) {
 
 	for i := 0; i < 4; i++ {
 		// 登录玩家
-		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-		assert.NotNil(t, client)
-		player, err := utils.LoginUser(client, global.AllocUserName())
+		player, err := utils.LoginNewPlayer()
+
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
+		client := player.GetClient()
 
 		// 创建消息期望： 期望收到发牌通知消息
 		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_FAPAI_NTF)

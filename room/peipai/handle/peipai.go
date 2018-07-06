@@ -48,9 +48,11 @@ func GetPeiPai(gameID int) string {
 	key := idIntToStr(gameID)
 	for _, pp := range peiPaiInfos {
 		if pp.Key == key {
+			logrus.WithField("peipai", pp.Cards).Debugln("获取配牌")
 			return pp.Cards
 		}
 	}
+	logrus.WithField("key", key).Debugln("获取配牌为空")
 	return ""
 }
 
