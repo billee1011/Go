@@ -10,7 +10,8 @@ enum EventID {
     event_grab_request = 3;             // 叫/抢地主事件
     event_double_request = 4;           // 加倍事件
     event_chupai_request = 5;          // 出牌请求事件
-    event_timer = 6;                   // 定时事件
+    event_tuoguan_request = 6;         // 托管请求事件
+    event_timer = 7;                   // 定时事件
 }
 
 enum CardType {
@@ -53,4 +54,10 @@ message PlayCardRequestEvent{
      RequestEventHead head = 1;  // 请求头
      repeated uint32 cards = 2;  // 出的牌
      CardType card_type = 3;     // 出的牌如果有多种牌型，选择的牌型
+}
+
+// TuoGuanRequestEvent 托管请求事件
+message TuoGuanRequestEvent {
+    RequestEventHead head = 1;  // 请求头
+    bool tuoguan = 2;
 }

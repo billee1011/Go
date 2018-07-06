@@ -77,8 +77,7 @@ func (s *overState) OnEnter(m machine.Machine) {
 		roomPlayer.SetCoin(originCoin-settleScore)//实施扣费
 		billPlayer.Score = proto.Int64(int64(settleScore))
 		billPlayer.CurrentScore = proto.Int64(int64(roomPlayer.GetCoin()))
-		lord := playerId == lordId
-		billPlayer.Lord = &lord
+		billPlayer.Lord = &player.Lord
 		billPlayer.OutCards = player.OutCards
 		billPlayer.HandCards = player.HandCards
 		billPlayers = append(billPlayers, &billPlayer)
