@@ -9,7 +9,6 @@ import (
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
 )
 
@@ -45,7 +44,7 @@ func (s *initState) onStartGame(m machine.Machine) (int, error) {
 	context.FirstGrabPlayerId = 0
 	broadcast(m, msgid.MsgID_ROOM_DDZ_START_GAME_NTF, &room.DDZStartGameNtf{
 		PlayerId:  &callPlayer,
-		NextStage: &room.NextStage{Stage: room.DDZStage_DDZ_STAGE_DEAL.Enum(), Time: proto.Uint32(2)},
+		NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DEAL),
 	})
 	return int(ddz.StateID_state_deal), nil
 }

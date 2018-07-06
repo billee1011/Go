@@ -37,20 +37,17 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	isDouble := message.IsDouble
 	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble//记录该玩家加倍
 
-	var nextStage room.NextStage
+	var nextStage *room.NextStage
 	context.DoubledCount++
 	if context.DoubledCount >= 3 {
-		nextStage = room.NextStage{
-			Stage: room.DDZStage_DDZ_STAGE_PLAYING.Enum(),
-			Time: proto.Uint32(15),
-		}
+		nextStage = genNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
 	}
 	totalDouble := GetTotalDouble(context.GetPlayers())
 	broadcast(m, msgid.MsgID_ROOM_DDZ_DOUBLE_NTF, &room.DDZDoubleNtf{
 		PlayerId: &playerId,
 		IsDouble: &isDouble,
 		TotalDouble: &totalDouble,
-		NextStage: &nextStage,
+		NextStage: nextStage,
 	})
 
 	if context.DoubledCount >= 3 {
