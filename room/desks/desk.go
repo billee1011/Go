@@ -828,6 +828,7 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	}
 	deskMgr := global.GetDeskMgr()
 	deskPlayer := d.getDeskPlayer(playerID)
+	d.playerQuitEnterDeskNtf(playerID, room.QuitEnterType_QET_QUIT)
 	deskPlayer.quitDesk()
 	deskMgr.RemoveDeskPlayerByPlayerID(playerID)
 	getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
