@@ -199,6 +199,20 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	}, nil
 }
 
+// ServerCard2UtilCard pb的 Card 转 Card
+func ServerCard2UtilCard(card *majongpb.Card) Card {
+	return Card(ServerCard2Number(card))
+}
+
+// ServerCards2UtilsCards pb 的 Card 数组转 Card 数组
+func ServerCards2UtilsCards(cards []*majongpb.Card) []Card {
+	result := []Card{}
+	for _, card := range cards {
+		result = append(result, ServerCard2UtilCard(card))
+	}
+	return result
+}
+
 // ServerCard2Number 服务器的 Card 转换成数字
 func ServerCard2Number(card *majongpb.Card) int {
 	var color int

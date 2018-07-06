@@ -34,8 +34,8 @@ func minCard(values ...utils.Card) utils.Card {
 	return t
 }
 
-// NewCombines 根据 utils 的 Combine 创建 Combine 数组
-func NewCombines(combines utils.Combines) []Combine {
+// newCombines 根据 utils 的 Combine 创建 Combine 数组
+func newCombines(combines utils.Combines) []Combine {
 	result := make([]Combine, 0, len(combines))
 	for _, combine := range combines {
 		localCombine := Combine{
@@ -82,8 +82,21 @@ func (tc *typeCalculator) getOption() *mjoption.CardTypeOption {
 	return getOption(tc.mjContext)
 }
 
+func (tc *typeCalculator) makeCombines() {
+	handCards := tc.getHandCards()
+	cards := utils.ServerCards2UtilsCards(handCards)
+	huCard := tc.getHuCard()
+	if huCard != nil {
+		card := utils.ServerCard2UtilCard(huCard.GetCard())
+		cards = append(cards, card)
+	}
+	_, combines := utils.FastCheckHuV2(cards, nil, true)
+	tc.combines = newCombines(combines)
+}
+
 // typeCalculator 计算出玩家胡牌所有的番型
 func (tc *typeCalculator) calclate() (fantypes []int, gengcount int, huacount int) {
+	tc.makeCombines()
 	tc.cache = make(map[int]bool)
 
 	fantypes = []int{}
@@ -192,13 +205,12 @@ func (tc *typeCalculator) getHuCard() *majong.HuCard {
 //	fantypes 番型列表
 //	gengcount 根数量
 //  huacount 花数量
-func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCards []*majong.Card, huCard *majong.HuCard, combines []Combine) (fantypes []int, gengcount int, huacount int) {
+func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCards []*majong.Card, huCard *majong.HuCard) (fantypes []int, gengcount int, huacount int) {
 	tc := typeCalculator{
 		mjContext: mjContext,
 		playerID:  playerID,
 		handCards: handCards,
 		huCard:    huCard,
-		combines:  combines,
 	}
 	return tc.calclate()
 }

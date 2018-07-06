@@ -15,6 +15,6 @@ func TestNewCombines(t *testing.T) {
 	for card, combines := range cardCombines {
 		assert.Zero(t, card)
 
-		assert.Nil(t, NewCombines(combines))
+		assert.Nil(t, newCombines(combines))
 	}
 }
