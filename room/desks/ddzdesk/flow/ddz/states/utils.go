@@ -151,7 +151,7 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 // ContainsAll handCards是否包含所有outCards
 func ContainsAll(handCards []Poker, outCards []Poker) bool {
 	for _, outCard := range outCards {
-		if(!Contains(handCards, outCard)){
+		if !Contains(handCards, outCard) {
 			return false
 		}
 	}
@@ -178,18 +178,6 @@ func ContainsPoint(cards []Poker, point uint32) bool {
 	return false
 }
 
-// RemovePoint 删除cards中所有点数为point的牌,并分别返回
-func RemovePoint(cards []Poker, point uint32) (remain []Poker, deleted []Poker) {
-	for _, card := range cards {
-		if card.Point == point {
-			deleted = append(deleted, card)
-		} else {
-			remain = append(remain, card)
-		}
-	}
-	return
-}
-
 // RemoveAll 从cards中删除removeCards
 func RemoveAll(cards []Poker, removeCards []Poker) []Poker {
 	var result []Poker
@@ -207,17 +195,6 @@ func AppendAll(cards []Poker, addCards []Poker) []Poker {
 		cards = append(cards, card)
 	}
 	return cards
-}
-
-// Remove 从cards中删除removeCard
-func Remove(cards []Poker, removeCard Poker) []Poker {
-	var result []Poker
-	for _, card := range cards {
-		if !card.equals(removeCard) {
-			result = append(result, card)
-		}
-	}
-	return result
 }
 
 func If(judge bool, trueReturn interface{}, falseReturn interface{}) interface{} {

@@ -32,8 +32,9 @@ var (
 type Poker struct {
 	Suit   uint32 //花色 0x00,0x10,0x20,0x30,xx40
 	Point  uint32 //点数 0x01-0x0D(A-K), 0x0E(小王), 0x0F(大王)
-	Weight uint32 //带花色权重
-	PointWeight uint32 //无花色权重
+	Weight uint32 //带花色权重,用于带花色大小比较
+	PointWeight uint32 //无花色权重，用于无花色大小比较
+	SortWeight uint32 //排序权重，用于排序，同点数需要在一起
 }
 
 func (c Poker) toInt() uint32 {
@@ -57,7 +58,7 @@ func (c Poker) pointBiggerThan(other Poker) bool {
 type DDZCardSlice []Poker
 func (cs DDZCardSlice) Len() int           { return len(cs) }
 func (cs DDZCardSlice) Swap(i, j int)      { cs[i], cs[j] = cs[j], cs[i] }
-func (cs DDZCardSlice) Less(i, j int) bool { return cs[i].Weight < cs[j].Weight }
+func (cs DDZCardSlice) Less(i, j int) bool { return cs[i].SortWeight < cs[j].SortWeight }
 
 type DDZPointSlice []Poker
 func (cs DDZPointSlice) Len() int           { return len(cs) }
@@ -70,14 +71,17 @@ func toDDZCard(card uint32) Poker {
 	result.Point = card % 16
 
 	// 计算无花色权重
-	if result.Point == pA || result.Point == p2 {
-		result.PointWeight = pK + result.Point //A和2，加大权重
+	if result.Point == pA {
+		result.PointWeight = pK + pA //A为K加1
+	} else if result.Point == p2 {
+		result.PointWeight = pK + p2 + 1 //2为A加1,方便断开顺子,连对等
 	} else if result.Point == pBlackJoker || result.Point == pRedJoker {
-		result.PointWeight = sSpade + result.Point //大小王，加大权重
+		result.PointWeight = sSpade + pK + result.Point //大小王，加大权重
 	} else {
 		result.PointWeight = result.Point
 	}
-	result.Weight = result.Suit + result.PointWeight//带花色权重
+	result.Weight = result.Suit + result.PointWeight //带花色权重
+	result.SortWeight = result.PointWeight * 5 + result.Suit/16 //点数相同的放在一起
 	return result
 }
 
