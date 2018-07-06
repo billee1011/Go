@@ -575,37 +575,6 @@ func makeKeGroups(cm countMap, laiziCount int) []CardGroup {
 	return keGroups
 }
 
-// checkCombine 检测组合是否满足牌的数量，剩下的牌是否能组成顺
-func checkCombine(cm countMap, laiziCount int, groups ...CardGroup) bool {
-	used := make(countMap, len(cm))
-	for _, group := range groups {
-		for _, card := range group.Cards {
-			if card == Laizi {
-				if laiziCount > 0 {
-					laiziCount--
-				} else {
-					return false
-				}
-			} else {
-				if used[card] < cm[card] {
-					used[card]++
-				} else {
-					return false
-				}
-			}
-		}
-	}
-	if laiziCount != 0 {
-		return false
-	}
-	for card, count := range cm {
-		if count != used[card] {
-			return false
-		}
-	}
-	return true
-}
-
 func getLeft(cm countMap, laiziCount int, groups ...CardGroup) (bool, int, countMap) {
 	used := make(countMap, len(cm))
 	for _, group := range groups {
@@ -638,6 +607,8 @@ func getLeft(cm countMap, laiziCount int, groups ...CardGroup) (bool, int, count
 // cards : 所有的牌
 // laizis: 哪些牌是癞子
 // needAll: 是否需要查出所有的胡牌组合
+// TODO : 优化算法，按照不同花色分组查询
+// TODO : 查胡方法另外建一个包
 func FastCheckHuV2(cards []Card, laizis map[Card]bool, needAll bool) (bool, []Combine) {
 	combines := []Combine{}
 	cardsCount := len(cards)
@@ -693,51 +664,6 @@ func FastCheckHuV2(cards []Card, laizis map[Card]bool, needAll bool) (bool, []Co
 	}
 	return len(combines) > 0, combines
 }
-
-// // FastCheckHuV2 查胡，
-// // cards : 所有的牌
-// // laizis: 哪些牌是癞子
-// // needAll: 是否需要查出所有的胡牌组合
-// func FastCheckHuV2(cards []Card, laizis map[Card]bool, needAll bool) (bool, []Combine) {
-// 	combines := []Combine{}
-// 	cardsCount := len(cards)
-// 	if cardsCount%3 != 2 {
-// 		return false, combines
-// 	}
-// 	groupCount := cardsCount/3 + 1
-
-// 	cm, laiziCount := makeCountMap(cards, laizis)
-// 	jiangGroups := makeJiangGroups(cm, laiziCount)
-// 	keGroups := makeKeGroups(cm, laiziCount)
-// 	shunGroups := makeShunGroups(cm, laiziCount)
-// 	keshunGroups := make([]CardGroup, 0, len(keGroups)+len(shunGroups))
-// 	keshunGroups = append(keshunGroups, keGroups...)
-// 	keshunGroups = append(keshunGroups, shunGroups...)
-
-// 	for _, jGroup := range jiangGroups {
-// 		stop := false
-// 		keshunGroupCount := len(keshunGroups)
-// 		combineFuncWithStop(groupCount-1, keshunGroupCount, func(indexs []int) {
-// 			groups := make([]CardGroup, 0, groupCount)
-// 			groups = append(groups, jGroup)
-// 			for index, ok := range indexs {
-// 				if ok == 1 {
-// 					groups = append(groups, keshunGroups[index])
-// 				}
-// 			}
-// 			if checkCombine(cm, laiziCount, groups...) {
-// 				combines = append(combines, groups)
-// 				if !needAll {
-// 					stop = true
-// 				}
-// 			}
-// 		}, &stop)
-// 		if !needAll && len(combines) > 0 {
-// 			return true, combines
-// 		}
-// 	}
-// 	return len(combines) > 0, combines
-// }
 
 // 带stop变量的 combineFunc ，避免没必要的排列组合的搜索
 // 这个方法的设计是stop变量的值只会在 f 里改变，所以每次在调用 f 后才会判断一次stop

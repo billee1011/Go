@@ -259,11 +259,8 @@ func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	if !flag {
-		return false
-	}
-	return true
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 // canZiMo 检查自摸 (判断当前事件是否可行)
@@ -283,8 +280,8 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 		player.PossibleActions = []majongpb.Action{}
 		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
 			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
-			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
-			if flag {
+			result := utils.CheckHu(player.HandCards, uint32(*cardI), false)
+			if result.Can {
 				hasQGanghu = true
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 			}
@@ -510,8 +507,8 @@ func (s *ZiXunState) checkZiMo(flow interfaces.MajongFlow) bool {
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	return flag
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {

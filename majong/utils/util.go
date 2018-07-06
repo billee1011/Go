@@ -287,19 +287,31 @@ func ContainHuCards(targetHuCards []Card, HuCards []Card) bool {
 	return false
 }
 
-//CheckHu 用来辅助胡牌查胡工具 cards玩家的所有牌，huCard点炮的牌（自摸时huCard为0）
-func CheckHu(cards []*majongpb.Card, huCard uint32) bool {
+// CheckHuResult 查胡结果
+type CheckHuResult struct {
+	Can         bool
+	Combines    Combines // 推倒胡组合
+	IsQidui     bool     // 是否为七对
+	IsShisanyao bool     // 是否为十三幺
+}
+
+// CheckHu 用来辅助胡牌查胡工具 cards玩家的所有牌，huCard点炮的牌（自摸时huCard为0）
+// needCombines 是否需要返回所有组合
+func CheckHu(cards []*majongpb.Card, huCard uint32, needCombines bool) CheckHuResult {
+	result := CheckHuResult{}
 	cardsCard := CardsToUtilCards(cards)
 	if huCard > 0 {
 		cardsCard = append(cardsCard, Card(huCard))
 	}
-	// flag, _ := util.FastCheckHuV1(cardsCard) // 检测玩家能否推倒胡
 	laizi := make(map[Card]bool)
-	flag, _ := FastCheckHuV2(cardsCard, laizi, false) // 检测玩家能否推倒胡
-	if flag != true {
-		flag = FastCheckQiDuiHu(cardsCard) // 检测玩家能否七对胡
+	flag, combines := FastCheckHuV2(cardsCard, laizi, needCombines) // 检测玩家能否推倒胡
+	result.Can = result.Can || flag
+	result.Combines = combines
+	if ok := FastCheckQiDuiHu(cardsCard); ok {
+		result.Can = true
+		result.IsQidui = true
 	}
-	return flag
+	return result
 }
 
 //CheckHuUtilCardsToHandCards 将推到胡工具的util.Card转为玩家手牌的类型

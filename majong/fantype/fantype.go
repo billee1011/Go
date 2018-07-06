@@ -6,11 +6,24 @@ import (
 	"steve/server_pb/majong"
 )
 
-// combine 牌型组合
-type combine struct {
-	jiang *majong.Card   // 将牌
-	shuns []*majong.Card // 顺牌
-	kes   []*majong.Card // 刻牌
+// Combine 牌型组合
+type Combine struct {
+	jiang       *majong.Card   // 将牌
+	shuns       []*majong.Card // 顺牌
+	kes         []*majong.Card // 刻牌
+	isQidui     bool           // 是否为七对
+	isShisanyao bool           // 是否为十三幺
+}
+
+// NewCombine 创建 Combine
+func NewCombine(jiang *majong.Card, shuns []*majong.Card, kes []*majong.Card, isQidui bool, isShisanyao bool) Combine {
+	return Combine{
+		jiang:       jiang,
+		shuns:       shuns,
+		kes:         kes,
+		isQidui:     isQidui,
+		isShisanyao: isShisanyao,
+	}
 }
 
 // typeCalculator 牌型计算器
@@ -20,7 +33,7 @@ type typeCalculator struct {
 	handCards []*majong.Card // 手牌
 	huCard    *majong.HuCard // 胡的牌
 
-	combines []combine
+	combines []Combine
 	player   *majong.Player // 玩家
 	cache    map[int]bool   // 函数执行结果缓存, 函数ID->bool
 }
@@ -38,7 +51,7 @@ func (tc *typeCalculator) getOption() *mjoption.CardTypeOption {
 
 // makeCombines 计算所有组合
 func (tc *typeCalculator) makeCombines() {
-	tc.combines = []combine{}
+	tc.combines = []Combine{}
 	// TODO
 }
 
@@ -136,7 +149,7 @@ func (tc *typeCalculator) getHuCard() *majong.HuCard {
 //	fantypes 番型列表
 //	gengcount 根数量
 //  huacount 花数量
-func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCards []*majong.Card, huCard *majong.HuCard) (fantypes []int, gengcount int, huacount int) {
+func CalculateFanTypes(mjContext *majong.MajongContext, playerID uint64, handCards []*majong.Card, huCard *majong.HuCard, combines []Combine) (fantypes []int, gengcount int, huacount int) {
 	tc := typeCalculator{
 		mjContext: mjContext,
 		playerID:  playerID,

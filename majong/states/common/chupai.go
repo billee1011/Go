@@ -174,8 +174,8 @@ func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majo
 	}
 	handCard := player.GetHandCards() // 当前点炮胡玩家手牌
 	cardI, _ := utils.CardToInt(*cpCard)
-	flag := utils.CheckHu(handCard, uint32(*cardI))
-	if flag {
+	result := utils.CheckHu(handCard, uint32(*cardI), false)
+	if result.Can {
 		return true
 	}
 	return false
