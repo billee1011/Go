@@ -55,10 +55,6 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 
 	if context.DoubledCount >= 3 {
 		context.CurrentPlayerId = context.LordPlayerId
-		context.CurCardType = ddz.CardType_CT_NONE
-		context.TotalBomb = 1
-		context.Spring = true
-		context.AntiSpring = true
 		return int(ddz.StateID_state_playing), nil
 	} else {
 		return int(ddz.StateID_state_double), nil

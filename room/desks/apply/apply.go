@@ -51,7 +51,7 @@ func (jam *joinApplyManager) getApplyChannel(gameID room.GameId) chan uint64 {
 		return jam.applyChannel
 	case room.GameId_GAMEID_XUEZHAN:
 		return jam.applyXueZhan
-	case room.GameId_GAMEID_DDZ:
+	case room.GameId_GAMEID_DOUDIZHU:
 		return jam.applyDDZ
 	default:
 		return nil
