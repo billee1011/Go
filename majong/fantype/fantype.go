@@ -82,26 +82,36 @@ func (tc *typeCalculator) getOption() *mjoption.CardTypeOption {
 	return getOption(tc.mjContext)
 }
 
-// makeCombines 计算所有组合
-func (tc *typeCalculator) makeCombines() {
-	tc.combines = []Combine{}
-	// TODO
-}
-
 // typeCalculator 计算出玩家胡牌所有的番型
 func (tc *typeCalculator) calclate() (fantypes []int, gengcount int, huacount int) {
 	tc.cache = make(map[int]bool)
-	tc.makeCombines()
 
 	fantypes = []int{}
+	mutexs := map[int]struct{}{} // 当前哪些牌型被互斥了的
 
 	option := tc.getOption()
 	for ID, fantype := range option.Fantypes {
+		// 已经互斥的不检测
+		if _, ok := mutexs[ID]; ok {
+			continue
+		}
 		match := tc.callCheckFunc(fantype.FuncID)
 		if match {
 			fantypes = append(fantypes, ID)
+			for _, m := range fantype.Mutex {
+				mutexs[m] = struct{}{}
+			}
 		}
 	}
+	// 移除掉互斥的番型
+	tmpFantypes := []int{}
+	for _, ID := range fantypes {
+		if _, ok := mutexs[ID]; !ok {
+			tmpFantypes = append(tmpFantypes, ID)
+		}
+	}
+	fantypes = tmpFantypes
+
 	if option.EnableGeng {
 		gengcount = tc.calcGengCount(fantypes)
 	}
@@ -219,6 +229,9 @@ func CalculateScore(mjContext *majong.MajongContext, fantypes []int, gengcount i
 }
 
 func calcScoreByMethod(method int, sumScore *uint64, mulScore *uint64, count int, score int) {
+	if count == 0 {
+		return
+	}
 	if method == 0 {
 		*sumScore += uint64(score * count)
 	} else if method == 1 {
