@@ -37,7 +37,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	playerId := message.GetHead().GetPlayerId()
 	if context.CurrentPlayerId != playerId {
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
-			Result: &room.Result{ErrCode:proto.Uint32(1), ErrDesc: proto.String("未轮到本玩家出牌")},
+			Result: genResult(1,"未轮到本玩家出牌"),
 		})
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
@@ -49,12 +49,12 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if len(outCards) == 0 {//pass
 		if context.CurCardType == ddz.CardType_CT_NONE {//该你出牌时不出牌，报错
 			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
-				Result: &room.Result{ErrCode:proto.Uint32(6), ErrDesc: proto.String("首轮出牌玩家不能过牌")},
+				Result: genResult(6,"首轮出牌玩家不能过牌"),
 			})
 			return int(ddz.StateID_state_playing), errors.New("首轮出牌玩家不能过牌")
 		}
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{//成功pass
-			Result: &room.Result{ErrCode:proto.Uint32(0), ErrDesc: proto.String("")},
+			Result: genResult(0,""),
 		})
 
 		stage := room.DDZStage_DDZ_STAGE_PLAYING
@@ -81,7 +81,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	handCards := toDDZCards(player.HandCards)
 	if !ContainsAll(handCards, outCards ){//检查所出的牌是否在手牌中
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
-			Result: &room.Result{ErrCode:proto.Uint32(2), ErrDesc: proto.String("所出的牌不在手牌中")},
+			Result: genResult(2,"所出的牌不在手牌中"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("所出的牌不在手牌中")
 	}
@@ -89,7 +89,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	cardType, pivot := getCardType(outCards)
 	if cardType == ddz.CardType_CT_NONE {//检查所出的牌能否组成牌型
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
-			Result: &room.Result{ErrCode:proto.Uint32(3), ErrDesc: proto.String("无法组成牌型")},
+			Result: genResult(3,"无法组成牌型"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("无法组成牌型")
 	}
@@ -98,7 +98,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		(!canBiggerThan(cardType, context.CurCardType) || //牌型与上家不符(炸弹不算不符)
 			(context.CurCardType == ddz.CardType_CT_SHUNZI && cardType == ddz.CardType_CT_SHUNZI && len(outCards) != len(context.CurOutCards))) {//顺子牌数不足
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
-			Result: &room.Result{ErrCode:proto.Uint32(4), ErrDesc: proto.String("牌型与上家不符")},
+			Result: genResult(4,"牌型与上家不符"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("牌型与上家不符")
 	}
@@ -107,7 +107,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	currPivot := *pivot
 	if lastPivot.pointBiggerThan(currPivot) {
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
-			Result: &room.Result{ErrCode:proto.Uint32(5), ErrDesc: proto.String("牌比上家小")},
+			Result: genResult(5,"牌比上家小"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("牌比上家小")
 	}
@@ -136,7 +136,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{//成功出牌
-		Result: &room.Result{ErrCode:proto.Uint32(0), ErrDesc: proto.String("")},
+		Result: genResult(0,""),
 	})
 
 	var nextStage room.DDZStage
@@ -152,10 +152,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		CardType: &clientCardType,
 		TotalBomb: &context.TotalBomb,
 		NextPlayerId: &nextPlayerId,
-		NextStage: &room.NextStage{
-			Stage: &nextStage,
-			Time: proto.Uint32(15),
-		},
+		NextStage: genNextStage(nextStage),
 	})
 
 	if len(player.HandCards) == 0 {

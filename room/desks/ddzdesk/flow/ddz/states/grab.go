@@ -45,9 +45,9 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	grab := message.GetGrab()
 	GetPlayerByID(context.GetPlayers(), playerId).Grab = grab//记录该玩家已叫/弃地主
 
-	nextStage := room.DDZStage_DDZ_STAGE_CALL.Enum() //还没人叫地主，后面还是叫地主阶段
+	nextStage := room.DDZStage_DDZ_STAGE_CALL //还没人叫地主，后面还是叫地主阶段
 	if context.FirstGrabPlayerId != 0 {
-		nextStage = room.DDZStage_DDZ_STAGE_GRAB.Enum() //有人叫地主，后面是抢地主阶段
+		nextStage = room.DDZStage_DDZ_STAGE_GRAB //有人叫地主，后面是抢地主阶段
 	} else if grab {
 		context.FirstGrabPlayerId = playerId;//记录第一次叫地主玩家
 	}
@@ -62,7 +62,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			allAbandon = true
 			context.AllAbandonCount++
 			if context.AllAbandonCount < 3 {
-				nextStage = room.DDZStage_DDZ_STAGE_DEAL.Enum()
+				nextStage = room.DDZStage_DDZ_STAGE_DEAL
 			}
 			nextPlayerId = 0  //由DDZLordNtf通知下一个玩家
 		} else {
@@ -71,46 +71,31 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	totalGrab := GetTotalGrab(context.GetPlayers())
+	if context.GrabbedCount == 4 {
+		nextPlayerId = 0 //由DDZLordNtf通知下一个玩家
+	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId: &playerId,
 		Grab: &grab,
 		TotalGrab: &totalGrab,
 		NextPlayerId: &nextPlayerId,
-		NextStage: &room.NextStage{
-			Stage: nextStage,
-			Time: proto.Uint32(15),
-		},
+		NextStage: genNextStage(nextStage),
 	})
 
 	lordPlayerId := uint64(0)
 	if context.GrabbedCount == 4 {
-		nextPlayerId = 0  //由DDZLordNtf通知下一个玩家
 		if grab {//叫地主玩家抢庄
 			lordPlayerId = playerId
 			totalGrab = totalGrab * 2
-
-			broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
-				PlayerId: &lordPlayerId,
-				TotalGrab: &totalGrab,
-				Dipai: context.WallCards,
-				NextStage: &room.NextStage{
-					Stage: room.DDZStage_DDZ_STAGE_DOUBLE.Enum(),
-					Time: proto.Uint32(15),
-				},
-			})
 		} else {//叫地主玩家弃庄
 			lordPlayerId = context.LastPlayerId
-
-			broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
-				PlayerId: &lordPlayerId,
-				TotalGrab: &totalGrab,
-				Dipai: context.WallCards,
-				NextStage: &room.NextStage{
-					Stage: room.DDZStage_DDZ_STAGE_DOUBLE.Enum(),
-					Time: proto.Uint32(15),
-				},
-			})
 		}
+		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
+			PlayerId: &lordPlayerId,
+			TotalGrab: &totalGrab,
+			Dipai: context.WallCards,
+			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
+		})
 	}
 
 	if allAbandon && context.AllAbandonCount < 3 {
@@ -126,10 +111,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			PlayerId: &lordPlayerId,
 			TotalGrab: &totalGrab,
 			Dipai: context.WallCards,
-			NextStage: &room.NextStage{
-				Stage: room.DDZStage_DDZ_STAGE_DOUBLE.Enum(),
-				Time: proto.Uint32(15),
-			},
+			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
 	}
 

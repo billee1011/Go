@@ -9,7 +9,6 @@ import (
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/gogo/protobuf/proto"
 	"steve/majong/global"
 )
 
@@ -55,10 +54,7 @@ func (s *dealState) deal(m machine.Machine) {
 		players[i].OutCards = make([]uint32, 0)
 		sendToPlayer(m, players[i].PalyerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{
 			Cards:players[i].HandCards,
-			NextStage: &room.NextStage{
-				Stage: room.DDZStage_DDZ_STAGE_CALL.Enum(),
-				Time: proto.Uint32(15),
-			},
+			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_CALL),
 		})
 	}
 	context.WallCards = wallCards[51:]
