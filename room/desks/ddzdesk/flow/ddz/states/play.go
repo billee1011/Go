@@ -74,6 +74,8 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			context.CurCardType = ddz.CardType_CT_NONE
 			context.CurOutCards = []uint32{}
 			context.CardTypePivot = 0
+			context.CurrentPlayerId = nextPlayerId
+			context.LastPlayerId = playerId
 		}
 		return int(ddz.StateID_state_playing), nil
 	}
