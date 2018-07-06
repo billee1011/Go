@@ -15,7 +15,7 @@ type deskFactory struct{}
 
 func (df *deskFactory) CreateDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (interfaces.CreateDeskResult, error) {
 	switch room.GameId(gameID) {
-	case room.GameId_GAMEID_DDZ:
+	case room.GameId_GAMEID_DOUDIZHU:
 		return ddzdesk.CreateDDZDesk(players, gameID, opt, global.GetDeskIDAllocator())
 	default:
 		return mjdesk.CreateMajongDesk(players, gameID, opt, global.GetDeskIDAllocator())

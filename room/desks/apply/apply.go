@@ -85,7 +85,7 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 func (jam *joinApplyManager) checkMatch() {
 	go jam.doApply(room.GameId_GAMEID_XUELIU)
 	go jam.doApply(room.GameId_GAMEID_XUEZHAN)
-	go jam.doApply(room.GameId_GAMEID_DDZ)
+	go jam.doApply(room.GameId_GAMEID_DOUDIZHU)
 }
 
 func (jam *joinApplyManager) doApply(gameid room.GameId) {
@@ -111,7 +111,7 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 		applyPlayers = append(applyPlayers, playerID)
 		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
 
-		if gameid == room.GameId_GAMEID_DDZ && len(applyPlayers) >= 3 {
+		if gameid == room.GameId_GAMEID_DOUDIZHU && len(applyPlayers) >= 3 {
 			players := applyPlayers[:3]
 			applyPlayers = applyPlayers[3:]
 			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})
