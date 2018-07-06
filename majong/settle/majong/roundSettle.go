@@ -21,6 +21,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 		"huPlayers":       params.HuPlayers,
 		"quitPlayers":     params.QuitPlayers,
 		"notTinPlayers":   params.NotTingPlayers,
+		"giveupPlayers":   params.GiveupPlayers,
 		"tingPlayersInfo": params.TingPlayersInfo,
 	})
 	logEntry.Debugln("单局结算信息")
@@ -61,11 +62,17 @@ func (roundSettle *RoundSettle) yellSettle(params *interfaces.RoundSettleParams)
 	yellSettleInfos := make([]*majongpb.SettleInfo, 0)
 
 	for _, noTingPlayer := range params.NotTingPlayers {
+		if isGiveUpPlayer(noTingPlayer, params.GiveupPlayers) {
+			continue
+		}
 		// 关联
 		groupIds := make([]uint64, 0)
 		groupyellSettles := make([]*majongpb.SettleInfo, 0)
 		// 听玩家结算处理
 		for playerID, value := range params.TingPlayersInfo {
+			if isGiveUpPlayer(playerID, params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				playerID:     int64(value) * ante,
 				noTingPlayer: -(int64(value) * ante)}
@@ -94,12 +101,21 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		if !roundSettle.canRoundSettle(flowerPig, params.HuPlayers, params.QuitPlayers, settleOption) {
 			continue
 		}
+		if isGiveUpPlayer(flowerPig, params.GiveupPlayers) {
+			continue
+		}
+		logrus.WithFields(logrus.Fields{
+			"flowerPig": flowerPig,
+		}).Debugln("查花猪结算-------------")
 		// 关联
 		groupIds := make([]uint64, 0)
 		groupflowerSettles := make([]*majongpb.SettleInfo, 0)
 		// 胡玩家结算处理
 		for j := 0; j < len(params.HuPlayers); j++ {
 			if !roundSettle.canRoundSettle(params.HuPlayers[j], params.HuPlayers, params.QuitPlayers, settleOption) {
+				continue
+			}
+			if isGiveUpPlayer(params.HuPlayers[j], params.GiveupPlayers) {
 				continue
 			}
 			settleInfoMap := map[uint64]int64{
@@ -112,6 +128,9 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		}
 		// 不是花猪的未听玩家结算处理
 		for n := 0; n < len(params.NotTingPlayers); n++ {
+			if isGiveUpPlayer(params.NotTingPlayers[n], params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				params.NotTingPlayers[n]: ante * 16,
 				flowerPig:                -(ante * 16),
@@ -122,6 +141,9 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		}
 		// 听玩家结算处理
 		for playerID, value := range params.TingPlayersInfo {
+			if isGiveUpPlayer(playerID, params.GiveupPlayers) {
+				continue
+			}
 			settleInfoMap := map[uint64]int64{
 				playerID:  (16 + value) * ante,
 				flowerPig: 0 - ((16 + value) * ante),
@@ -140,7 +162,7 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 
 // GetTuisuiIds 退稅ID
 func (roundSettle *RoundSettle) GetTuisuiIds(params interfaces.RoundSettleParams) []uint64 {
-	tuiSuiiIds := make([]uint64, 0)
+	taxRebeatIds := make([]uint64, 0)
 	gangSettleType := map[majongpb.SettleType]bool{
 		majongpb.SettleType_settle_angang:   true,
 		majongpb.SettleType_settle_minggang: true,
@@ -153,17 +175,20 @@ func (roundSettle *RoundSettle) GetTuisuiIds(params interfaces.RoundSettleParams
 	for _, flowerPigPlayer := range params.FlowerPigPlayers {
 		tuiSuiPlayers = append(tuiSuiPlayers, flowerPigPlayer)
 	}
-	for _, tuiSuiPlayer := range tuiSuiPlayers {
-		for _, s := range params.SettleInfos {
-			if gangSettleType[s.SettleType] {
-				score := s.Scores[tuiSuiPlayer]
-				if score > 0 && !s.CallTransfer {
-					tuiSuiiIds = append(tuiSuiiIds, s.Id)
+	for _, taxRebeatPlayer := range tuiSuiPlayers {
+		if isGiveUpPlayer(taxRebeatPlayer, params.GiveupPlayers) {
+			continue
+		}
+		for _, sInfo := range params.SettleInfos {
+			if gangSettleType[sInfo.SettleType] == true {
+				score := sInfo.Scores[taxRebeatPlayer]
+				if score > 0 && !sInfo.CallTransfer {
+					taxRebeatIds = append(taxRebeatIds, sInfo.Id)
 				}
 			}
 		}
 	}
-	return tuiSuiiIds
+	return taxRebeatIds
 }
 
 // newRoundSettleInfo 初始化生成一条新的结算信息
@@ -198,4 +223,12 @@ func (roundSettle *RoundSettle) canRoundSettle(playerID uint64, hasHuPlayers, qu
 		}
 	}
 	return true
+}
+func isGiveUpPlayer(playerID uint64, giveupPlayers []uint64) bool {
+	for _, giveupPlayer := range giveupPlayers {
+		if giveupPlayer == playerID {
+			return true
+		}
+	}
+	return false
 }

@@ -109,14 +109,14 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 
 // OnEntry 进入状态，进入定缺状态，发送到客户端，进入定缺tiao jian
 func (s *DingqueState) OnEntry(flow interfaces.MajongFlow) {
-	// 定缺消息NTF被注释了 // 广播通知客户端进入定缺
-	// dingQueNtf := room.RoomDingqueNtf{}
-	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
-	// // 日志
-	// logrus.WithFields(logrus.Fields{
-	// 	"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
-	// 	"dingQueNtf": dingQueNtf,
-	// }).Info("-----定缺开始-进入定缺状态")
+	// 广播通知客户端进入定缺
+	dingQueNtf := room.RoomDingqueNtf{}
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
+	// 日志
+	logrus.WithFields(logrus.Fields{
+		"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
+		"dingQueNtf": dingQueNtf,
+	}).Info("-----定缺开始-进入定缺状态")
 }
 
 // OnExit 退出状态，定缺完成，发送定缺完成通知，进入下一个状态

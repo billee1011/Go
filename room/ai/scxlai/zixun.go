@@ -22,12 +22,13 @@ type zixunStateAI struct {
 // }
 
 // GenerateAIEvent 生成 AI 事件
+// 前端排序，定缺牌在最右侧，其他手牌按花色万条筒、以及点数大小从左到右排序
 // 首先判断玩家是否时当前可以操作的玩家
 // 是的话,判断当前玩家是否可以执行自动事件
 // 可以的话,根据玩家状态生成不同的自动事件
 // 1,玩家是碰自询:
 //	 			之前胡过,自动事件:出最右的一张牌
-//				之前没有胡过,自动事件:出最右的一张牌
+//				之前没有胡过,自动事件:出最右的一张牌(如果有定缺牌，优先出定缺牌)
 // 2,玩家是摸牌自询:
 //	 			之前胡过,自动事件:
 //								可胡,等待三秒,然后自动胡牌
@@ -52,7 +53,19 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 	switch mjContext.GetZixunType() {
 	case majong.ZixunType_ZXT_PENG:
 		{
-			aiEvent = h.chupai(player, handCards[len(handCards)-1])
+			//有定缺牌，出最大的定缺牌
+			hasChuPai := false
+			for i := len(handCards) - 1; i >= 0; i-- {
+				hc := handCards[i]
+				if hc.GetColor() == player.GetDingqueColor() {
+					aiEvent = h.chupai(player, hc)
+					hasChuPai = true
+					break
+				}
+			}
+			if !hasChuPai {
+				aiEvent = h.chupai(player, handCards[len(handCards)-1])
+			}
 		}
 	case majong.ZixunType_ZXT_NORMAL:
 		{
@@ -61,10 +74,23 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 			if len(player.GetHuCards()) > 0 && canHu && !gutils.CheckHasDingQueCard(handCards, player.GetDingqueColor()) {
 				aiEvent = h.hu(player)
 			} else {
-				if player.GetMopaiCount() == 0 {
-					aiEvent = h.chupai(player, handCards[len(handCards)-1])
-				} else {
-					aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
+				//先判断是否有定缺牌，有的话，先出定缺牌
+				//有定缺牌，出最大的定缺牌
+				hasChuPai := false
+				for i := len(handCards) - 1; i >= 0; i-- {
+					hc := handCards[i]
+					if hc.GetColor() == player.GetDingqueColor() {
+						aiEvent = h.chupai(player, hc)
+						hasChuPai = true
+						break
+					}
+				}
+				if !hasChuPai {
+					if player.GetMopaiCount() == 0 {
+						aiEvent = h.chupai(player, handCards[len(handCards)-1])
+					} else {
+						aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
+					}
 				}
 			}
 		}

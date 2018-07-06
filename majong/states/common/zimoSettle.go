@@ -1,6 +1,7 @@
 package common
 
 import (
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -66,7 +67,7 @@ func (s *ZiMoSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mopaiPlayerID := CalcMopaiPlayer(logEntry, huPlayers, huPlayers[0], players)
 	// 摸牌玩家不能是非正常状态玩家
 	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
-	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
+	if !gutils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
 		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext)
 	}
 	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
@@ -128,9 +129,16 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 		SettleID:     mjContext.CurrentSettleId,
 	}
 	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
+	totalValue := uint32(0)
+
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++
+		totalValue = settleInfo.CardValue
+	}
+	if totalValue > huPlayer.MaxCardValue {
+		huPlayer.CardsGroup = utils.GetCardsGroup(huPlayer, huCard.Card)
+		huPlayer.MaxCardValue = totalValue
 	}
 }
 

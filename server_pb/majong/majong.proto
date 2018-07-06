@@ -123,6 +123,8 @@ message Player {
     XingPaiState xp_state = 17;             // 玩家牌局状态
     bool is_quit = 18;                       // 玩家是否退出牌局
     repeated TingCardInfo ting_card_info = 19;       // 听牌信息 
+    uint32 max_card_value = 20;              // 胡最大倍数（胡牌时）
+    repeated CardsGroup cards_group = 21;             // 胡最大倍数时的牌组（胡牌时）
     map<string, bytes> properties = 256;    // 其他的一些属性
 } 
 
@@ -183,6 +185,19 @@ enum MopaiType {
 enum ZixunType {
     ZXT_NORMAL = 0; // 普通自询
     ZXT_PENG = 1;   // 碰后的自询
+}
+
+// 麻将组类型
+enum CardsGroupType{
+    CGT_HAND = 0;     // 手牌
+    CGT_CHI = 1;      // 吃牌
+    CGT_PENG = 2;     // 碰牌
+    CGT_MINGGANG = 3; // 明杠牌
+    CGT_ANGANG = 4;   // 暗杠牌
+    CGT_BUGANG = 5;   // 补杠牌
+    CGT_HU = 6;       // 胡的牌
+    CGT_HUA = 7;      // 花牌 
+	CGT_OUT = 8;      // 出去的牌 
 }
 
 // MajongContext 麻将现场
@@ -271,4 +286,12 @@ message ReplyClientMessage {
 message TimeCheckInfo {
     uint64 duration = 1;            // 多久之后作检测
     int32 type = 2;                 // 检测类型
+}
+
+// 麻将组
+message CardsGroup { 
+    repeated uint32 cards = 1;  // 牌 
+    CardsGroupType type = 2;    // 麻将组类型
+    uint64 pid = 3;             // 吃碰杠谁的牌
+    bool is_real = 4;           // 是否是实牌，仅用于胡牌
 }

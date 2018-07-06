@@ -14,6 +14,9 @@ type TuoGuanMgr interface {
 	OnPlayerTimeOut(playerID uint64)
 	// SetTuoGuan 设置玩家托管
 	SetTuoGuan(playerID uint64, set bool, notify bool)
+
+	// IsTuoGuan 是否托管中
+	IsTuoGuan(playerID uint64) bool
 }
 
 // DeskPlayer 牌桌玩家
@@ -60,6 +63,9 @@ type Desk interface {
 
 	// PlayerEnter 玩家进入
 	PlayerEnter(playerID uint64)
+
+	// ChangePlayer 换对手
+	ChangePlayer(playerID uint64) error
 
 	// GetTuoGuanMgr 获取托管管理器
 	GetTuoGuanMgr() TuoGuanMgr

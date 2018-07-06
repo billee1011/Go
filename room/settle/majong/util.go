@@ -109,3 +109,13 @@ func GenerateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, b
 		})
 	}
 }
+
+// GetSettleInfoByID 根据settleID获取对应settleInfo
+func GetSettleInfoByID(settleInfos []*majongpb.SettleInfo, ID uint64) *majongpb.SettleInfo {
+	for _, s := range settleInfos {
+		if s.Id == ID {
+			return s
+		}
+	}
+	return nil
+}

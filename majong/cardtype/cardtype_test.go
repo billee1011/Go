@@ -234,18 +234,18 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 	assert.Equal(t, gen, uint32(0))
 }
 
-// 清碰
+// 清碰 加 一根
 func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
-	handUtilCards := []utils.Card{23, 23, 23, 25, 25, 25, 27}
+	handUtilCards := []utils.Card{21, 21, 21, 21}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
 	gangUtilCards := []utils.Card{}
 	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
 	assert.Nil(t, err)
-	pengUtilCards := []utils.Card{21, 22}
+	pengUtilCards := []utils.Card{25, 24, 23}
 	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(27)
+	HuCard, err := utils.IntToCard(21)
 	assert.Nil(t, err)
 	playerParams := interfaces.CardCalcParams{
 		HandCard: handCards,
@@ -258,10 +258,10 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 	testFanTypes := []majongpb.CardType{majongpb.CardType_QingPeng}
 
 	assert.Equal(t, cardTypes, testFanTypes)
-	assert.Equal(t, genCount, uint32(0))
+	assert.Equal(t, genCount, uint32(1))
 	valuer, gen := global.GetCardTypeCalculator().CardTypeValue(gutils.SCXLGameID, cardTypes, genCount)
-	assert.Equal(t, valuer, uint32(8))
-	assert.Equal(t, gen, uint32(0))
+	assert.Equal(t, valuer, uint32(16))
+	assert.Equal(t, gen, uint32(1))
 }
 
 // 金钩钓

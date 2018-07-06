@@ -1,6 +1,7 @@
 package desks
 
 import (
+	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
@@ -312,4 +313,35 @@ func HandleRoomNeedResumeReq(clientID uint64, header *steve_proto_gaterpc.Header
 			Body:  body,
 		},
 	}
+}
+
+// HandleRoomChangePlayerReq 换对手请求
+func HandleRoomChangePlayerReq(clientID uint64, header *steve_proto_gaterpc.Header, req room.RoomChangePlayersReq) (ret []exchanger.ResponseMsg) {
+	fmt.Println("@@@@@@@@@@@@@@@@@@@@收到换对手请求@@@@@@@@@@@@@@@@")
+	playerMgr := global.GetPlayerMgr()
+	player := playerMgr.GetPlayerByClientID(clientID)
+	playerID := player.GetID()
+	msgs := []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP),
+		},
+	}
+	body := room.RoomChangePlayersRsp{
+		ErrCode: room.RoomError_SUCCESS.Enum(),
+	}
+
+	desk, exist := ExistInDesk(playerID)
+	if !exist {
+		fmt.Println("不在牌桌，换对手")
+		getJoinApplyMgr().joinPlayer(player.GetID(), req.GetGameId())
+		msgs[0].Body = &body
+		return msgs
+	}
+
+	if err := desk.ChangePlayer(playerID); err != nil {
+		body.ErrCode = room.RoomError_FAILED.Enum()
+	}
+
+	msgs[0].Body = &body
+	return msgs
 }

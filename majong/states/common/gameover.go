@@ -3,6 +3,7 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -43,7 +44,7 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 	for _, player := range mjContext.Players {
 		playerCardsGroup := &room.PlayerCardsGroup{
 			PlayerId:   proto.Uint64(player.GetPalyerId()),
-			CardsGroup: utils.GetCardsGroup(player),
+			CardsGroup: gutils.GetCardsGroup(player),
 		}
 		cardsGroups = append(cardsGroups, playerCardsGroup)
 		if len(player.HuCards) != 0 && gameflow {
@@ -76,6 +77,8 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	tingPlayersInfo := make(map[uint64]int64)
 	// 玩家状态
 	quitPlayers := make([]uint64, 0)
+	// 认输玩家
+	giveupPalyers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		playerID := player.GetPalyerId()
 		if player.IsQuit {
@@ -90,15 +93,18 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		if isNoTingPlayers(player) {
 			noTingPlayers = append(noTingPlayers, player.GetPalyerId())
 		}
+		if player.GetXpState() == majongpb.XingPaiState_give_up {
+			giveupPalyers = append(giveupPalyers, playerID)
+		}
 	}
 	tingPlayersInfo, _ = getTingPlayerInfo(mjContext)
-
 	params := interfaces.RoundSettleParams{
 		GameID:           mjContext.GetGameId(),
 		FlowerPigPlayers: flowerPigPlayers,
 		HuPlayers:        huPlayers,
 		TingPlayersInfo:  tingPlayersInfo,
 		QuitPlayers:      quitPlayers,
+		GiveupPlayers:    giveupPalyers,
 		NotTingPlayers:   noTingPlayers,
 		SettleInfos:      mjContext.SettleInfos,
 		SettleID:         mjContext.CurrentSettleId,

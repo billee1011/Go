@@ -1,6 +1,7 @@
 package common
 
 import (
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -65,7 +66,7 @@ func (s *HuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mopaiPlayerID := CalcMopaiPlayer(logEntry, huPlayers, srcPlayer, players)
 	// 摸牌玩家不能是非正常状态玩家
 	mopaiPlayer := utils.GetPlayerByID(players, mopaiPlayerID)
-	if !utils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
+	if !gutils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
 		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext)
 	}
 	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
@@ -92,6 +93,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	cardValues := make(map[uint64]uint32, 0)
 	cardTypes := make(map[uint64][]majongpb.CardType, 0)
 	genCount := make(map[uint64]uint32, 0)
+	cardsGroup := make(map[uint64][]*majongpb.CardsGroup, 0)
 
 	huPlayers := mjContext.GetLastHuPlayers()
 	gameID := int(mjContext.GetGameId())
@@ -111,6 +113,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		cardTypes[huPlayerID] = cardType
 		cardValues[huPlayerID] = cardValue
 		genCount[huPlayerID] = gen
+		cardsGroup[huPlayerID] = utils.GetCardsGroup(huPlayer, mjContext.GetLastOutCard())
 	}
 
 	huType := majongpb.HuType_hu_dianpao
@@ -143,10 +146,19 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		}
 	}
 	maxSID := uint64(0)
+	totalValue := uint32(0)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		if settleInfo.Id > maxSID {
 			maxSID = settleInfo.Id
+		}
+		totalValue = settleInfo.CardValue
+	}
+	for _, huPlayerID := range huPlayers {
+		huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
+		if totalValue > huPlayer.MaxCardValue {
+			huPlayer.CardsGroup = cardsGroup[huPlayerID]
+			huPlayer.MaxCardValue = totalValue
 		}
 	}
 	mjContext.CurrentSettleId = maxSID

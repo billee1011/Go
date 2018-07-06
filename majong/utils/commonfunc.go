@@ -1,28 +1,12 @@
 package utils
 
 import (
-	"steve/common/mjoption"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 )
-
-// IsPlayerContinue   玩家的状态在麻将不可行牌数组中包含则返回false
-func IsPlayerContinue(playerStater majongpb.XingPaiState, mjContext *majongpb.MajongContext) bool {
-	// 麻将不可行牌数组
-	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	flag := true
-	for _, state := range xpOption.PlayerStates {
-		if int(state) == int(playerStater) {
-			flag = false
-			break
-		}
-	}
-	logrus.WithFields(logrus.Fields{"playerStater": playerStater,
-		"canNotXpStates": xpOption.PlayerStates, "isCanXp": flag}).Info("判断玩家是否可以继续")
-	return flag
-}
 
 //GetNextXpPlayerByID 获取下一个行牌玩家
 func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, mjContext *majongpb.MajongContext) (nextPalyer *majongpb.Player) {
@@ -30,7 +14,7 @@ func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, mjConte
 	for i < len(mjContext.Players) {
 		nextPalyer = GetNextPlayerByID(players, curPlayerID)
 		// 当前下个玩家可以继续，退出循环
-		if IsPlayerContinue(nextPalyer.GetXpState(), mjContext) {
+		if gutils.IsPlayerContinue(nextPalyer.GetXpState(), mjContext) {
 			break
 		}
 		curPlayerID = nextPalyer.GetPalyerId()
@@ -45,7 +29,7 @@ func GetXpPlayers(players []*majongpb.Player, mjContext *majongpb.MajongContext)
 	newPlalyers := make([]*majongpb.Player, 0)
 	for _, player := range players {
 		// 不是正常行牌的玩家，不能检查胡，碰，杠，摸牌。。。
-		if !IsPlayerContinue(player.GetXpState(), mjContext) {
+		if !gutils.IsPlayerContinue(player.GetXpState(), mjContext) {
 			continue
 		}
 		newPlalyers = append(newPlalyers, player)
@@ -63,7 +47,7 @@ func GetXpPlayers(players []*majongpb.Player, mjContext *majongpb.MajongContext)
 func IsXpPlayerInsufficient(players []*majongpb.Player, mjContext *majongpb.MajongContext) bool {
 	conut := 0
 	for _, player := range players {
-		if IsPlayerContinue(player.GetXpState(), mjContext) {
+		if gutils.IsPlayerContinue(player.GetXpState(), mjContext) {
 			conut++
 		}
 	}
@@ -88,6 +72,7 @@ func SettleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent)
 		}
 		player.XpState = player.GetXpState() | majongpb.XingPaiState_give_up
 	}
+
 }
 
 // GetNextState 下一状态获取
