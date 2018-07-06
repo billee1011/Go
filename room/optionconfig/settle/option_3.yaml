@@ -13,7 +13,7 @@ need_bill_deatils: false # 单局结算详情
 hu_type_value:
   hu_ganghoupao: 2     # 杠后炮2倍
   hu_qiangganghu: 2    # 枪杠胡2倍
-  hu_dianpao: 1        # 点炮2倍
+  hu_dianpao: 1        # 点炮1倍
   hu_gangkai: 4        # 杠开4倍
   hu_haidilao: 2       # 海底捞2倍
   hu_gangshanghaidilao: 4 # 杠上海底捞4倍
