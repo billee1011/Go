@@ -132,11 +132,11 @@ func TestJiaodizhu(t *testing.T) {
 
 	// 农民1
 	farmer1 := utils.DeskPlayer{}
-	farmer1.Seat = 0
+	farmer1.Seat = -1
 
 	// 农民2
 	farmer2 := utils.DeskPlayer{}
-	farmer2.Seat = 0
+	farmer2.Seat = -1
 
 	// 第几次出牌
 	i := 0
@@ -146,12 +146,12 @@ func TestJiaodizhu(t *testing.T) {
 		// 不是地主
 		if playerID != deskData.DDZData.ResultLordID {
 
-			if farmer1.Seat == 0 {
+			if farmer1.Seat == -1 {
 				farmer1 = player
 				continue
 			}
 
-			if farmer2.Seat == 0 {
+			if farmer2.Seat == -1 {
 				farmer2 = player
 				continue
 			}
@@ -275,18 +275,16 @@ func sendPlayCardReq(player *utils.DeskPlayer, cards []uint32, cardType room.Car
 
 // 指定的deskPlayer监听出牌的消息
 func listenPlayCardNtf(player *utils.DeskPlayer, i int) error {
-	logEntry := logrus.WithFields(logrus.Fields{
+	logrus.WithFields(logrus.Fields{
 		"func_name": "listenPlayCardNtf()",
 	})
-
-	logEntry.Infof("玩家%d监听第%d次出牌广播", player.Player.GetID(), i)
 
 	ntf := room.DDZPlayCardNtf{}
 	if err := player.Expectors[msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return fmt.Errorf("%d监听第%d次出牌广播超时", player.Player.GetID(), i)
 	}
 
-	logrus.Infof("第%d次玩家%d出牌为%v，下一个出牌玩家为%v", i, ntf.GetPlayerId(), ntf.GetCards(), ntf.GetNextPlayerId())
+	logrus.Infof("玩家%d监听到第%d次玩家%d出牌为%v，下一个出牌玩家为%v", player.Player.GetID(), i, ntf.GetPlayerId(), ntf.GetCards(), ntf.GetNextPlayerId())
 
 	return nil
 }
