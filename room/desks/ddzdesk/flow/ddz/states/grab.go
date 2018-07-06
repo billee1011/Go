@@ -141,6 +141,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 		lordPlayer.HandCards = DDZSortDescend(lordPlayer.HandCards)
 		context.WallCards = []uint32{}
+		context.LordPlayerId = lordPlayerId
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil
