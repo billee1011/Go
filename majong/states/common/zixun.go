@@ -251,11 +251,8 @@ func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	if !flag {
-		return false
-	}
-	return true
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 // canZiMo 检查自摸 (判断当前事件是否可行)
@@ -275,8 +272,8 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 		player.PossibleActions = []majongpb.Action{}
 		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
 			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
-			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
-			if flag {
+			result := utils.CheckHu(player.HandCards, uint32(*cardI), false)
+			if result.Can {
 				hasQGanghu = true
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 			}
@@ -401,40 +398,25 @@ func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Ca
 
 // checkTing 查听
 func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
-	dqnum := 0
+	dingqueCards := []*majongpb.Card{}
+	checkCards := []*majongpb.Card{}
+
 	for _, card := range player.GetHandCards() {
-		if card.Color == player.DingqueColor {
-			dqnum++
+		if card.GetColor() == player.DingqueColor {
+			dingqueCards = append(dingqueCards, card)
+		} else {
+			checkCards = append(checkCards, card)
 		}
 	}
-	logrus.WithFields(logrus.Fields{
-		"手中定缺牌的个数": dqnum,
-	}).Info("查听")
-	switch dqnum {
-	//没有定缺牌的时候正常查听
-	case 0:
-		{
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-			s.addTingInfo(zixunNtf, player, context, tingInfos)
-		}
-	// 当定缺牌为1的时候,只有定缺牌才有听牌提示
-	case 1:
-		{
-			newTingInfos := map[utils.Card][]utils.Card{}
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-			for outCard, tingCard := range tingInfos {
-				card, _ := utils.IntToCard(int32(outCard))
-				if card.GetColor() == player.DingqueColor {
-					newTingInfos[outCard] = tingCard
-				}
-			}
-			//满足条件说明,打出这张定缺牌可以进入听牌状态
-			s.addTingInfo(zixunNtf, player, context, newTingInfos)
-		}
-	// 玩家的定缺牌数量超过1张的时候,不查听
-	default:
-		{
-			return
+	dqNum := len(dingqueCards)
+	if dqNum == 0 {
+		tingInfos := utils.GetPlayCardCheckTing(checkCards, nil)
+		s.addTingInfo(zixunNtf, player, context, tingInfos)
+	} else if dqNum == 1 {
+		tingInfos, err := utils.GetTingCards(checkCards, nil)
+		if err != nil && len(tingInfos) > 0 {
+			dingqueCard := utils.Card(utils.ServerCard2Number(dingqueCards[0]))
+			s.addTingInfo(zixunNtf, player, context, map[utils.Card][]utils.Card{dingqueCard: tingInfos})
 		}
 	}
 }
@@ -458,7 +440,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
-		for _, tt := range tingInfo {
+		for tt := range tingInfo {
 			huCard, _ := utils.IntToCard(int32(tt))
 			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
 				HandCard: newHand,
@@ -502,8 +484,8 @@ func (s *ZiXunState) checkZiMo(flow interfaces.MajongFlow) bool {
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	return flag
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
@@ -527,6 +509,7 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 				newCards = append(newCards, handCard...)
 				newCards, _ = utils.RemoveCards(newCards, &k, 4)
 				utilCards := utils.CardsToUtilCards(newCards)
+
 				tingCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
 				if utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
 					result = append(result, utils.ServerCard2Uint32(&k))
