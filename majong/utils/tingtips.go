@@ -50,7 +50,7 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	tingCards, _ := GetTingCards(playerCards, nil) // TODO, 目前没有包括特殊牌型
 
 	ntf := room.RoomTingInfoNtf{}
-	for utilscard := range tingCards {
+	for _, utilscard := range tingCards {
 		card, _ := IntToCard(int32(utilscard))
 		// 胡提示不能是定缺牌
 		if card.GetColor() != player.GetDingqueColor() {

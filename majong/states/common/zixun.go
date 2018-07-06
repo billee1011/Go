@@ -180,11 +180,7 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		newcardsI, _ := utils.CardsToInt(newcards)
 		cardsI := utils.IntToUtilCard(newcardsI)
 		laizi := make(map[utils.Card]bool)
-		cardCombines := utils.FastCheckTingV2(cardsI, laizi)
-		huCards := []utils.Card{}
-		for card := range cardCombines {
-			huCards = append(huCards, card)
-		}
+		huCards := utils.FastCheckTingV2(cardsI, laizi)
 		if !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 			return false, fmt.Errorf("当前的明杠操作会影响胡牌后的胡牌牌型，不允许暗杠")
 		}
@@ -235,11 +231,7 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		newcardsI, _ := utils.CardsToInt(newcards)
 		cardsI := utils.IntToUtilCard(newcardsI)
 		laizi := make(map[utils.Card]bool)
-		cardCombines := utils.FastCheckTingV2(cardsI, laizi)
-		huCards := []utils.Card{}
-		for card := range cardCombines {
-			huCards = append(huCards, card)
-		}
+		huCards := utils.FastCheckTingV2(cardsI, laizi)
 		if !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 			return false, fmt.Errorf("当前的补杠杠操作会影响胡牌后的胡牌牌型，不允许补杠")
 		}
@@ -424,13 +416,13 @@ func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Pla
 		tingInfos, err := utils.GetTingCards(checkCards, nil)
 		if err != nil && len(tingInfos) > 0 {
 			dingqueCard := utils.Card(utils.ServerCard2Number(dingqueCards[0]))
-			s.addTingInfo(zixunNtf, player, context, map[utils.Card]utils.CardCombines{dingqueCard: tingInfos})
+			s.addTingInfo(zixunNtf, player, context, map[utils.Card][]utils.Card{dingqueCard: tingInfos})
 		}
 	}
 }
 
 // addTingInfo 自询通知添加听牌信息
-func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card]utils.CardCombines) {
+func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card][]utils.Card) {
 	canTingInfos := []*room.CanTingCardInfo{}
 	recordCanTingInfos := []*majongpb.CanTingCardInfo{}
 	for outCard, tingInfo := range tingInfos {
@@ -518,11 +510,7 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 				newCards, _ = utils.RemoveCards(newCards, &k, 4)
 				utilCards := utils.CardsToUtilCards(newCards)
 
-				cardCombines := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
-				tingCards := []utils.Card{}
-				for card := range cardCombines {
-					tingCards = append(tingCards, card)
-				}
+				tingCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
 				if utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
 					result = append(result, utils.ServerCard2Uint32(&k))
 				}
@@ -581,11 +569,7 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, *removeCard)
 					utilCards := utils.IntToUtilCard(newcardsI)
 					laizi := make(map[utils.Card]bool)
-					cardCombines := utils.FastCheckTingV2(utilCards, laizi)
-					huCards := []utils.Card{}
-					for card := range cardCombines {
-						huCards = append(huCards, card)
-					}
+					huCards := utils.FastCheckTingV2(utilCards, laizi)
 					if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
 						enableBugangCards = append(enableBugangCards, uint32(*removeCard))
 					}

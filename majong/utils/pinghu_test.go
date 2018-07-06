@@ -391,11 +391,7 @@ func TestFastCheckTingV2(t *testing.T) {
 	//cards := []Card{11, 11, 11, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19}
 	laizis := map[Card]bool{21: true}
 	result := FastCheckTingV2(cards, laizis)
-	tingCars := []Card{}
-	for card := range result {
-		tingCars = append(tingCars, card)
-	}
-	assert.Nil(t, tingCars)
+	assert.Nil(t, result)
 }
 
 // TestJiulianbaodengTing 测试九莲宝灯听牌
@@ -403,12 +399,9 @@ func TestJiulianbaodengTing(t *testing.T) {
 	cards := []Card{11, 11, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19}
 	//cards := []Card{11, 11, 11, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19}
 	laizis := map[Card]bool{21: true}
-	cardCombines := FastCheckTingV2(cards, laizis)
-	assert.Len(t, cardCombines, 9)
-	for card := Card(11); card <= Card(19); card++ {
-		_, ok := cardCombines[card]
-		assert.True(t, ok, fmt.Sprintf("card %v", card))
-	}
+	tingCards := FastCheckTingV2(cards, laizis)
+	assert.Len(t, tingCards, 9)
+	assert.Contains(t, tingCards, []Card{11, 12, 13, 14, 15, 16, 17, 18, 19})
 }
 
 func TestFastCheckTingInfoV2(t *testing.T) {

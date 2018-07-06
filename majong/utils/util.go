@@ -375,12 +375,12 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 	handCardSum := len(player.HandCards)
 	//只差1张牌就能胡，并且玩家手牌不存在花牌
 	if handCardSum%3 == 1 && !gutils.CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
-		cardCombines, err := GetTingCards(player.HandCards, laizi)
+		tingCards, err := GetTingCards(player.HandCards, laizi)
 		if err != nil {
 			return false, 0, err
 		}
 		handCards := player.GetHandCards()
-		for card := range cardCombines {
+		for _, card := range tingCards {
 			pbCard, _ := IntToCard(int32(card))
 			handCards = append(handCards, pbCard)
 			// TODO 获取最大番型
@@ -395,8 +395,8 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 }
 
 //GetTingCards 获取玩家能胡的牌,必须是缺一张
-func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) (CardCombines, error) {
-	result := CardCombines{}
+func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]Card, error) {
+	result := []Card{}
 
 	if len(handCards)%3 != 1 {
 		return result, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
@@ -407,32 +407,23 @@ func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) (CardCombines
 	// 七对
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
-	for _, card := range qiCards {
-		if _, ok := result[card]; ok {
-			continue
-		}
-		result[card] = Combines{}
-	}
-	return result, nil
+	return MergeAndNoRepeat(result, qiCards), nil
 }
 
 //MergeAndNoRepeat 合并去重复UtilCard
 func MergeAndNoRepeat(srcCards1 []Card, srcCards2 []Card) []Card {
-	newCards := make([]Card, 0)
-	newCards = append(newCards, srcCards1...)
-	for _, card2 := range srcCards2 {
-		flag := true
-		for _, card1 := range srcCards1 {
-			if card2 == card1 {
-				flag = false
-				break
-			}
-		}
-		if flag {
-			newCards = append(newCards, card2)
-		}
+	resultMap := map[Card]struct{}{}
+	for _, card := range srcCards1 {
+		resultMap[card] = struct{}{}
 	}
-	return newCards
+	for _, card := range srcCards2 {
+		resultMap[card] = struct{}{}
+	}
+	result := make([]Card, 0, len(resultMap))
+	for card := range resultMap {
+		result = append(result, card)
+	}
+	return result
 }
 
 //GetFirstHuPlayerByID 获取第一个胡的玩家,winPlayers源数组， loserPlayerID输家ID
@@ -494,8 +485,8 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 
 //GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌
 // 返回可胡的牌与对应的组合
-func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card]CardCombines {
-	result := make(map[Card]CardCombines)
+func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card][]Card {
+	result := make(map[Card][]Card)
 	// 不能少一张
 	if len(handCards)%3 != 2 {
 		return result
@@ -510,15 +501,10 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[C
 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
 
 	for card, huCards := range qiStrategy {
-		cardCombines := result[card]
-		if cardCombines == nil {
-			result[card] = make(CardCombines)
-			cardCombines = result[card]
-		}
-		for _, huCard := range huCards {
-			if cardCombines[huCard] == nil {
-				cardCombines[huCard] = Combines{}
-			}
+		if result[card] != nil {
+			result[card] = MergeAndNoRepeat(result[card], huCards)
+		} else {
+			result[card] = huCards
 		}
 	}
 	return result

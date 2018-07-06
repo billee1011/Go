@@ -161,7 +161,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 			if err != nil {
 				return nil, err
 			}
-			for card := range tingCards {
+			for _, card := range tingCards {
 				pbCard, _ := utils.IntToCard(int32(card))
 				// 获取最大番型*根数
 				cardParams := interfaces.CardCalcParams{

@@ -126,11 +126,7 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 			cardsI := utils.IntToUtilCard(newcardsI)
 			laizi := make(map[utils.Card]bool)
 			// 推倒胡
-			cardCombines := utils.FastCheckTingV2(cardsI, laizi)
-			huCards := []utils.Card{}
-			for card := range cardCombines {
-				huCards = append(huCards, card)
-			}
+			huCards := utils.FastCheckTingV2(cardsI, laizi)
 			if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(player.HuCards)) {
 				return true
 			}

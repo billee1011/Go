@@ -704,74 +704,38 @@ func combineFuncWithStop(m, n int, f func([]int), stop *bool) {
 	}
 }
 
-// FastCheckTingV2Old 检查当前可以听哪些牌
-// 返回所有正在听的牌与对应的组合
-func FastCheckTingV2Old(cards []Card, laizis map[Card]bool) CardCombines {
-	checkCards := make([]Card, 0, len(cards)+1)
-	checkCards = append(checkCards, cards...)
-	checkCards = append(checkCards, Laizi) // 加一张癞子牌查胡，然后从组合中取出癞子可以替换的牌
-
-	result := CardCombines{}
-
-	ok, combines := FastCheckHuV2(checkCards, laizis, true)
-	if !ok {
-		return result
-	}
-	for _, combine := range combines {
-		tingCards := getLaiziCanReplaceCards(combine)
-		for _, card := range tingCards {
-			if result[card] == nil {
-				result[card] = Combines{combine}
-			} else {
-				result[card] = append(result[card], combine)
-			}
-		}
-	}
-	return result
-}
-
 // FastCheckTingV2 检查当前可以听哪些牌
 // 返回所有正在听的牌与对应的组合
 // TODO: 需要优化
-func FastCheckTingV2(cards []Card, laizis map[Card]bool) CardCombines {
-
-	laizicount := 0
-	for _, card := range cards {
-		if card == Laizi || (laizis != nil && laizis[card]) {
-			laizicount++
-		}
-	}
-	if laizicount >= 2 {
-		return FastCheckTingV2Old(cards, laizis)
-	}
-
+func FastCheckTingV2(cards []Card, laizis map[Card]bool) []Card {
 	checkCards := make([]Card, 0, len(cards)+1)
 	checkCards = append(checkCards, cards...)
 	checkCards = append(checkCards, Laizi) // 加一张癞子牌查胡，然后从组合中取出癞子可以替换的牌
 
-	result := CardCombines{}
+	resultMap := map[Card]struct{}{}
 
 	ok, combines := FastCheckHuV2(checkCards, laizis, true)
 	if !ok {
-		return result
+		return []Card{}
 	}
 	for _, combine := range combines {
 		tingCards := getLaiziCanReplaceCards(combine)
 		for _, card := range tingCards {
-			if result[card] != nil {
-				continue
-			}
-			checkCards := append(checkCards[:len(checkCards)-1], card)
-			_, newcombines := FastCheckHuV2(checkCards, laizis, true)
-			result[card] = newcombines
+			resultMap[card] = struct{}{}
 		}
 	}
+	result := []Card{}
+	for card := range resultMap {
+		result = append(result, card)
+	}
+
 	return result
 }
 
 // getLaiziCanReplaceCards 获取癞子可以替换的牌列表
 // 以及替换每张牌后的 Combine
 func getLaiziCanReplaceCards(combine Combine) []Card {
+	resultMap := map[Card]struct{}{}
 	result := []Card{}
 	for _, group := range combine {
 		if group.ReplaceAll {
@@ -780,7 +744,12 @@ func getLaiziCanReplaceCards(combine Combine) []Card {
 		if group.Replaces == nil {
 			continue
 		}
-		result = append(result, group.Replaces...)
+		for _, card := range group.Replaces {
+			resultMap[card] = struct{}{}
+		}
+	}
+	for card := range resultMap {
+		result = append(result, card)
 	}
 	return result
 }
@@ -799,10 +768,10 @@ func isLaizi(card Card, laizis map[Card]bool) bool {
 }
 
 // FastCheckTingInfoV2 14张牌查听,检索出分别打掉哪张牌可以听哪些牌以及对应的组合
-func FastCheckTingInfoV2(cards []Card, laizis map[Card]bool) map[Card]CardCombines {
-	result := make(map[Card]CardCombines)
+func FastCheckTingInfoV2(cards []Card, laizis map[Card]bool) map[Card][]Card {
+	result := make(map[Card][]Card)
 	// 打出癞子的听牌结果
-	var laiziCache CardCombines
+	var laiziCache []Card
 	checked := map[Card]bool{} // 已经查过的牌
 
 	for index, card := range cards {
