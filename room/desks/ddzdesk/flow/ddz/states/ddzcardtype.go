@@ -290,33 +290,33 @@ func getMaxCard(cards []Poker) *Poker{
 
 // 获取最大相同点数的牌, 如 444555533 返回 5555
 func getMaxSamePointCards(cards []Poker) []Poker {
-	point, count := getMaxSamePoint(cards)
+	pointWeight, count := getMaxSamePoint(cards)
 	maxSamePointCards := make([]Poker, count)
 	for _, card := range cards {
-		if card.Point == point {
+		if card.PointWeight == pointWeight {
 			maxSamePointCards = append(maxSamePointCards, card)
 		}
 	}
 	return maxSamePointCards
 }
 
-// 获取最大相同点数, 如 444555533 返回 5,4
-func getMaxSamePoint(cards []Poker) (maxCountPoint uint32, maxCount uint32) {
+// 获取最大相同点数, 如 444555533 返回 pointWeight(5), 4。 KKKKAAAA返回pointWeight(A), 4
+func getMaxSamePoint(cards []Poker) (maxCountPointWeight uint32, maxCount uint32) {
 	counts := make(map[uint32]uint32) //Map<Point, count>
 	for _, card := range cards {
-		point := card.Point
-		count, exists := counts[point]
+		pointWeight := card.PointWeight
+		count, exists := counts[pointWeight]
 		if !exists {
-			counts[point] = 1
+			counts[pointWeight] = 1
 		} else {
-			counts[point] = count + 1
+			counts[pointWeight] = count + 1
 		}
 	}
 
-	for point, count := range counts {
-		if count > maxCount {
+	for pointWeight, count := range counts {
+		if count > maxCount || (count == maxCount && pointWeight > maxCountPointWeight) {
 			maxCount = count
-			maxCountPoint = point
+			maxCountPointWeight = pointWeight
 		}
 	}
 	return
