@@ -84,6 +84,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	lordPlayerId := uint64(0)
 	if context.GrabbedCount == 4 {
+		nextPlayerId = 0  //由DDZLordNtf通知下一个玩家
 		if grab {//叫地主玩家抢庄
 			lordPlayerId = playerId
 			totalGrab = totalGrab * 2

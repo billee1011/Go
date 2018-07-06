@@ -219,3 +219,11 @@ func Remove(cards []Poker, removeCard Poker) []Poker {
 	}
 	return result
 }
+
+func If(judge bool, trueReturn interface{}, falseReturn interface{}) interface{} {
+	if judge {
+		return trueReturn
+	} else {
+		return falseReturn
+	}
+}
