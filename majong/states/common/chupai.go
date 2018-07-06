@@ -37,7 +37,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 			player.PossibleActions = player.PossibleActions[:0]
 			logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
 				"xpStates": player.GetXpState()}).Info("出牌：每个玩家的状态")
-			if context.GetLastChupaiPlayer() == player.GetPalyerId() || !utils.IsPlayerContinue(player.GetXpState(), context.GetOption()) {
+			if context.GetLastChupaiPlayer() == player.GetPalyerId() || !gutils.IsPlayerContinue(player.GetXpState(), context.GetOption()) {
 				continue
 			}
 			need := s.checkActions(flow, player, card)
