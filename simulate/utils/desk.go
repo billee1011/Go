@@ -35,9 +35,11 @@ type DeskData struct {
 
 // DDZData 斗地主信息
 type DDZData struct {
-	CurState     int             // 当前状态
-	NextState    *room.NextStage // 下一状态的数据
-	AssignLordID uint64          // 服务器指定的叫地主玩家的playerID
+	CurState     int                         // 当前状态
+	NextState    *room.NextStage             // 下一状态的数据
+	AssignLordID uint64                      // 服务器指定的叫地主玩家的playerID
+	ResultLordID uint64                      // 最终的地主的playerID
+	Params       structs.StartPukeGameParams // 启动参数
 }
 
 // StartGame 启动一局游戏
@@ -193,6 +195,9 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		return nil, err
 	}
 
+	// 保存参数
+	deskData.DDZData.Params = params
+
 	// 检测是否收到洗牌通知
 	//checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
 
@@ -241,6 +246,7 @@ func createDDZPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfac
 		msgid.MsgID_ROOM_DDZ_START_GAME_NTF, // 斗地主 开始游戏通知
 		msgid.MsgID_ROOM_DDZ_DEAL_NTF,       // 斗地主 发牌通知
 		msgid.MsgID_ROOM_DDZ_GRAB_LORD_RSP,  // 斗地主 叫/抢地主响应
+		msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF,  // 斗地主 叫/抢地主广播
 		msgid.MsgID_ROOM_DDZ_LORD_NTF,       // 斗地主 叫/抢地主通知
 		msgid.MsgID_ROOM_DDZ_DOUBLE_RSP,     // 斗地主 加倍响应
 		msgid.MsgID_ROOM_DDZ_DOUBLE_NTF,     // 斗地主 加倍通知
