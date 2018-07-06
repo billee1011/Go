@@ -75,3 +75,22 @@ func GetSettleInfoBySid(settleInfos []*majongpb.SettleInfo, ID uint64) int {
 	}
 	return -1
 }
+
+// GetSettleInfoByID 根据settleID获取对应settleInfo
+func GetSettleInfoByID(settleInfos []*majongpb.SettleInfo, ID uint64) *majongpb.SettleInfo {
+	for _, s := range settleInfos {
+		if s.Id == ID {
+			return s
+		}
+	}
+	return nil
+}
+
+// IsRoundSettle 是否为总结算
+func IsRoundSettle(settleType majongpb.SettleType) bool {
+	return map[majongpb.SettleType]bool{
+		majongpb.SettleType_settle_yell:      true,
+		majongpb.SettleType_settle_flowerpig: true,
+		majongpb.SettleType_settle_taxrebeat: true,
+	}[settleType]
+}
