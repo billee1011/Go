@@ -36,6 +36,7 @@ giveUpPlayer_can_settle:
  giveUpPlayer_can_round_settele: false #单局结算
 
 # 单局结算
+enable_gang: true           # 是否开启杠结算
 enable_chahuazhu: true      # 是否开启查花猪
 enable_chadajiao: true      # 是否开启查大叫
 enable_tuisui: true         # 是否开启退税
