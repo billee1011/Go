@@ -199,6 +199,20 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	}, nil
 }
 
+// ServerCard2UtilCard pb的 Card 转 Card
+func ServerCard2UtilCard(card *majongpb.Card) Card {
+	return Card(ServerCard2Number(card))
+}
+
+// ServerCards2UtilsCards pb 的 Card 数组转 Card 数组
+func ServerCards2UtilsCards(cards []*majongpb.Card) []Card {
+	result := []Card{}
+	for _, card := range cards {
+		result = append(result, ServerCard2UtilCard(card))
+	}
+	return result
+}
+
 // ServerCard2Number 服务器的 Card 转换成数字
 func ServerCard2Number(card *majongpb.Card) int {
 	var color int
@@ -289,19 +303,26 @@ func ContainHuCards(targetHuCards []Card, HuCards []Card) bool {
 	return false
 }
 
-//CheckHu 用来辅助胡牌查胡工具 cards玩家的所有牌，huCard点炮的牌（自摸时huCard为0）
-func CheckHu(cards []*majongpb.Card, huCard uint32) bool {
+// CheckHuResult 查胡结果
+type CheckHuResult struct {
+	Can      bool
+	Combines Combines // 推倒胡组合
+}
+
+// CheckHu 用来辅助胡牌查胡工具 cards玩家的所有牌，huCard点炮的牌（自摸时huCard为0）
+// needCombines 是否需要返回所有组合
+func CheckHu(cards []*majongpb.Card, huCard uint32, needCombines bool) CheckHuResult {
+	result := CheckHuResult{}
 	cardsCard := CardsToUtilCards(cards)
 	if huCard > 0 {
 		cardsCard = append(cardsCard, Card(huCard))
 	}
-	// flag, _ := util.FastCheckHuV1(cardsCard) // 检测玩家能否推倒胡
 	laizi := make(map[Card]bool)
-	flag := FastCheckHuV2(cardsCard, laizi) // 检测玩家能否推倒胡
-	if flag != true {
-		flag = FastCheckQiDuiHu(cardsCard) // 检测玩家能否七对胡
-	}
-	return flag
+	flag, combines := FastCheckHuV2(cardsCard, laizi, needCombines) // 检测玩家能否推倒胡
+	canQidui := FastCheckQiDuiHu(cardsCard)
+	result.Can = result.Can || flag || canQidui
+	result.Combines = combines
+	return result
 }
 
 //CheckHuUtilCardsToHandCards 将推到胡工具的util.Card转为玩家手牌的类型
@@ -361,8 +382,9 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 			return false, 0, err
 		}
 		handCards := player.GetHandCards()
-		for i := 0; i < len(tingCards); i++ {
-			handCards = append(handCards, tingCards[i])
+		for _, card := range tingCards {
+			pbCard, _ := IntToCard(int32(card))
+			handCards = append(handCards, pbCard)
 			// TODO 获取最大番型
 			mult := int64(2)
 			if max < mult {
@@ -375,48 +397,35 @@ func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool
 }
 
 //GetTingCards 获取玩家能胡的牌,必须是缺一张
-func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]*majongpb.Card, error) {
+func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]Card, error) {
+	result := []Card{}
+
 	if len(handCards)%3 != 1 {
-		return []*majongpb.Card{}, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
+		return result, fmt.Errorf("获取玩家能胡的牌,必须是缺一张")
 	}
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡
-	huCards := FastCheckTingV2(cardsCard, laizi)
+	result = FastCheckTingV2(cardsCard, laizi)
 	// 七对
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
-	// 合并去重复
-	tingCards := MergeAndNoRepeat(huCards, qiCards)
-	newTingCards, err := CheckHuUtilCardsToHandCards(tingCards)
-	// 特殊情况，手上只有4张相同的牌，胡这张相同的牌，但又不存在的牌，只能听，不能胡
-	if len(newTingCards) == 0 && len(handCards) == 4 {
-		for _, card := range handCards {
-			if !CardEqual(handCards[0], card) {
-				return newTingCards, err
-			}
-		}
-		newTingCards = append(newTingCards, handCards[0])
-	}
-	return newTingCards, err
+	return MergeAndNoRepeat(result, qiCards), nil
 }
 
 //MergeAndNoRepeat 合并去重复UtilCard
 func MergeAndNoRepeat(srcCards1 []Card, srcCards2 []Card) []Card {
-	newCards := make([]Card, 0)
-	newCards = append(newCards, srcCards1...)
-	for _, card2 := range srcCards2 {
-		flag := true
-		for _, card1 := range srcCards1 {
-			if card2 == card1 {
-				flag = false
-				break
-			}
-		}
-		if flag {
-			newCards = append(newCards, card2)
-		}
+	resultMap := map[Card]struct{}{}
+	for _, card := range srcCards1 {
+		resultMap[card] = struct{}{}
 	}
-	return newCards
+	for _, card := range srcCards2 {
+		resultMap[card] = struct{}{}
+	}
+	result := make([]Card, 0, len(resultMap))
+	for card := range resultMap {
+		result = append(result, card)
+	}
+	return result
 }
 
 //GetFirstHuPlayerByID 获取第一个胡的玩家,winPlayers源数组， loserPlayerID输家ID
@@ -436,36 +445,71 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 	return nil
 }
 
-//GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
+// //GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌，返回map[Card][]Card
+// func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card][]Card {
+// 	tingInfo := make(map[Card][]Card)
+// 	// 不能少一张
+// 	if len(handCards)%3 != 2 {
+// 		return tingInfo
+// 	}
+// 	// 手牌转查胡的工具牌
+// 	cardsCard := CardsToUtilCards(handCards)
+// 	// 推倒胡查胡，打那张牌可以胡那些牌
+// 	tingCombines := FastCheckTingInfoV2(cardsCard, laizi)
+// 	for card, cardCombines := range tingCombines {
+// 		tingcards := []Card{}
+// 		for card := range cardCombines {
+// 			tingcards = append(tingcards, card)
+// 		}
+// 		tingInfo[card] = tingcards
+// 	}
+
+// 	// 1-9所有牌
+// 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
+// 	// 七对查胡，打那张牌可以胡那些牌
+// 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
+// 	// 存在相同的playCard,去重复
+// 	for playCard, huCard := range tingInfo {
+// 		tInfo, exite := qiStrategy[playCard]
+// 		if exite {
+// 			tingInfo[playCard] = MergeAndNoRepeat(tInfo, huCard)
+// 		}
+// 	}
+// 	// 存在不相同的playCard,合并,把推倒胡中不存在的听，加进去
+// 	for playCard, huCards := range qiStrategy {
+// 		_, exite := tingInfo[playCard]
+// 		if !exite {
+// 			tingInfo[playCard] = huCards
+// 		}
+// 	}
+// 	return tingInfo
+// }
+
+//GetPlayCardCheckTing 出牌查听，获取可以出那些牌，和出了这张牌，可以胡那些牌
+// 返回可胡的牌与对应的组合
 func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[Card][]Card {
-	tingInfo := make(map[Card][]Card)
+	result := make(map[Card][]Card)
 	// 不能少一张
 	if len(handCards)%3 != 2 {
-		return tingInfo
+		return result
 	}
 	// 手牌转查胡的工具牌
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡查胡，打那张牌可以胡那些牌
-	tingInfo = FastCheckTingInfoV2(cardsCard, laizi)
+	result = FastCheckTingInfoV2(cardsCard, laizi)
 	// 1-9所有牌
 	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	// 七对查胡，打那张牌可以胡那些牌
 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
-	// 存在相同的playCard,去重复
-	for playCard, huCard := range tingInfo {
-		tInfo, exite := qiStrategy[playCard]
-		if exite {
-			tingInfo[playCard] = MergeAndNoRepeat(tInfo, huCard)
+
+	for card, huCards := range qiStrategy {
+		if result[card] != nil {
+			result[card] = MergeAndNoRepeat(result[card], huCards)
+		} else {
+			result[card] = huCards
 		}
 	}
-	// 存在不相同的playCard,合并,把推倒胡中不存在的听，加进去
-	for playCard, huCards := range qiStrategy {
-		_, exite := tingInfo[playCard]
-		if !exite {
-			tingInfo[playCard] = huCards
-		}
-	}
-	return tingInfo
+	return result
 }
 
 // TransPengCard 碰牌转Card

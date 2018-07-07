@@ -137,6 +137,7 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 			newcardsI, _ := utils.CardsToInt(newcards)
 			cardsI := utils.IntToUtilCard(newcardsI)
 			laizi := make(map[utils.Card]bool)
+			// 推倒胡
 			huCards := utils.FastCheckTingV2(cardsI, laizi)
 			if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(player.HuCards)) {
 				return true
@@ -181,8 +182,8 @@ func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majo
 	}
 	handCard := player.GetHandCards() // 当前点炮胡玩家手牌
 	cardI, _ := utils.CardToInt(*cpCard)
-	flag := utils.CheckHu(handCard, uint32(*cardI))
-	if flag {
+	result := utils.CheckHu(handCard, uint32(*cardI), false)
+	if result.Can {
 		return true
 	}
 	return false

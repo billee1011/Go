@@ -268,11 +268,8 @@ func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	if !flag {
-		return false
-	}
-	return true
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 // canZiMo 检查自摸 (判断当前事件是否可行)
@@ -292,8 +289,8 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 		player.PossibleActions = []majongpb.Action{}
 		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
 			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
-			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
-			if flag {
+			result := utils.CheckHu(player.HandCards, uint32(*cardI), false)
+			if result.Can {
 				hasQGanghu = true
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 			}
@@ -465,11 +462,17 @@ func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Pla
 }
 
 func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player) (dqnum int) {
+	dingqueCards := []*majongpb.Card{}
+	checkCards := []*majongpb.Card{}
+
 	for _, card := range player.GetHandCards() {
-		if card.Color == player.DingqueColor {
-			dqnum++
+		if card.GetColor() == player.DingqueColor {
+			dingqueCards = append(dingqueCards, card)
+		} else {
+			checkCards = append(checkCards, card)
 		}
 	}
+	dqnum = len(dingqueCards)
 	logrus.WithFields(logrus.Fields{
 		"手中定缺牌的个数": dqnum,
 	}).Info("查听")
@@ -495,7 +498,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
-		for _, tt := range tingInfo {
+		for tt := range tingInfo {
 			huCard, _ := utils.IntToCard(int32(tt))
 			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
 				HandCard: newHand,
@@ -539,8 +542,8 @@ func (s *ZiXunState) checkZiMo(flow interfaces.MajongFlow) bool {
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	return flag
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
@@ -564,6 +567,7 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 				newCards = append(newCards, handCard...)
 				newCards, _ = utils.RemoveCards(newCards, &k, 4)
 				utilCards := utils.CardsToUtilCards(newCards)
+
 				tingCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
 				if utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
 					result = append(result, utils.ServerCard2Uint32(&k))
