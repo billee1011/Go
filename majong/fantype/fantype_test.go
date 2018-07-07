@@ -1,6 +1,7 @@
 package fantype
 
 import (
+	"steve/client_pb/room"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 	"testing"
@@ -28,8 +29,7 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, genCount, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_PingHu}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_PINGHU))
 	assert.Equal(t, genCount, uint32(0))
 }
 
@@ -53,8 +53,7 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, genCount, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QingYiSe}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGYISE))
 	assert.Equal(t, genCount, uint32(0))
 
 }
@@ -79,8 +78,7 @@ func TestCalculateAndCardTypeValueQiDui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QiDui}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QIDUI))
 
 }
 
@@ -104,8 +102,7 @@ func TestCalculateAndCardTypeValueLongQiDui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_LongQiDui}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_LONGQIDUI))
 
 }
 
@@ -129,9 +126,7 @@ func TestCalculateAndCardTypeValueQingQiDui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QingQiDui}
-
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGQIDUI))
 }
 
 // 清龙七对
@@ -154,8 +149,7 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QingLongQiDui}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Equal(t, cardTypes, int(room.FanType_FT_QINGLONGQIDUI))
 }
 
 // 碰碰胡
@@ -178,8 +172,7 @@ func TestCalculateAndCardTypeValuePengPengHu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_PengPengHu}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_PENGPENGHU))
 
 }
 
@@ -203,9 +196,7 @@ func TestCalculateAndCardTypeValueQingPeng(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QingPeng}
-
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Equal(t, cardTypes, int(room.FanType_FT_QINGPENG))
 }
 
 // 金钩钓
@@ -228,8 +219,7 @@ func TestCalculateAndCardTypeValueJingGouDiao(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_JingGouDiao}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Equal(t, cardTypes, int(room.FanType_FT_JINGGOUDIAO))
 
 }
 
@@ -253,8 +243,7 @@ func TestCalculateAndCardTypeValueQingJingGouDiao(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QingJingGouDiao}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Equal(t, cardTypes, int(room.FanType_FT_QINGJINGGOUDIAO))
 
 }
 
@@ -295,8 +284,7 @@ func TestCalculateAndCardTypeValueShiBaLuoHan(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_ShiBaLuoHan}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Equal(t, cardTypes, int(room.FanType_FT_SHIBALUOHAN))
 }
 
 // 清十八罗汉
@@ -336,8 +324,7 @@ func TestCalculateAndCardTypeValueQingShiBaLuoHan(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	testFanTypes := []majongpb.CardType{majongpb.CardType_QingShiBaLuoHan}
-	assert.Equal(t, cardTypes, testFanTypes)
+	assert.Equal(t, cardTypes, int(room.FanType_FT_QINGSHIBALUOHAN))
 }
 
 // 根
@@ -393,7 +380,7 @@ func TestDasixi(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_DaSiXi)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_DASIXI))
 }
 
 // TestDasanyuan 大三元
@@ -425,7 +412,7 @@ func TestDasanyuan(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_DaSanYuan)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_DASANYUAN))
 }
 
 // TestJiuLianBaoDeng 九莲宝灯
@@ -448,7 +435,7 @@ func TestJiuLianBaoDeng(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_JiuLianBaoDeng)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_JIULIANBAODENG))
 }
 
 // TestDayuwu 大于五
@@ -471,12 +458,12 @@ func TestDayuwu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_DaYuWu)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_DAYUWU))
 }
 
 // TestXiaoyuwu 小于五
 func TestXiaoyuwu(t *testing.T) {
-	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 13, 11, 12, 13, 11, 12, 13, 14}
+	handUtilCards := []utils.Card{12, 13, 14, 12, 13, 14, 12, 13, 14, 12, 13, 14, 11}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
 	// gangUtilCards := []utils.Card{47}
@@ -485,7 +472,7 @@ func TestXiaoyuwu(t *testing.T) {
 	//pengUtilCards := []utils.Card{}
 	//pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(14)
+	HuCard, err := utils.IntToCard(11)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard: handCards,
@@ -494,7 +481,7 @@ func TestXiaoyuwu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_XiaoYuWu)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_XIAOYUWU))
 }
 
 // TestDaqixing 大七星
@@ -522,7 +509,7 @@ func TestDaqixing(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_DaQiXing)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_DAQIXING))
 }
 
 // TestLianqidui 连七对
@@ -545,7 +532,7 @@ func TestLianqidui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_LianQiDui)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_LIANQIDUI))
 }
 
 // TestSiGang 四杠
@@ -585,7 +572,7 @@ func TestSiGang(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiGang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SIGANG))
 }
 
 // TestXiaosixi 小四喜
@@ -617,7 +604,7 @@ func TestXiaosixi(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_XiaoSiXi)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_XIAOSIXI))
 }
 
 // TestXiaosanyuan 小三元
@@ -649,7 +636,7 @@ func TestXiaosanyuan(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_XiaoSanYuan)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_XIAOSANYUAN))
 }
 
 // TestShuanglonghui 双龙会
@@ -672,7 +659,7 @@ func TestShuanglonghui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ShuangLongHui)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SHUANGLONGHUI))
 
 }
 
@@ -696,7 +683,7 @@ func TestZiyise(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ZiYiSe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_ZIYISE))
 }
 
 // TestSianke 四暗刻
@@ -736,7 +723,7 @@ func TestSianke(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiAnKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SIANKE))
 }
 
 // TestSitongshun 四同顺
@@ -759,7 +746,7 @@ func TestSitongshun(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiTongShun)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SITONGSHUN))
 }
 
 // TestSanyuanqidui 三元七对
@@ -791,7 +778,7 @@ func TestSanyuanqidui(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SanYuanQiDui)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SANYUANQIDUI))
 }
 
 // TestSixiqidui 四喜七对
@@ -823,7 +810,7 @@ func TestSixiqidui(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiXiQiDui)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SIXIQIDUI))
 }
 
 // TestSilianke 四连刻
@@ -846,7 +833,7 @@ func TestSilianke(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiLianKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SILIANKE))
 }
 
 // TestSibugao 四步高
@@ -869,7 +856,7 @@ func TestSibugao(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiBuGao)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SIBUGAO))
 }
 
 // TestHunyaojiu 混幺九
@@ -892,7 +879,7 @@ func TestHunyaojiu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_HunYaoJiu)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_HUNYAOJIU))
 }
 
 // TestSangang 三杠
@@ -928,7 +915,7 @@ func TestSangang(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SanGang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SANGANG))
 
 }
 
@@ -965,7 +952,7 @@ func TestSizike(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiZiKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SIZIKE))
 
 }
 
@@ -1002,7 +989,7 @@ func TestDasanfeng(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_DaSanFeng)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_DASANFENG))
 }
 
 // TestSantongshun 三同顺
@@ -1033,7 +1020,7 @@ func TestSantongshun(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SanTongShun)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SANTONGSHUN))
 }
 
 // TestSanlianke 三连刻
@@ -1063,7 +1050,7 @@ func TestSanlianke(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SanLianKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SANLIANKE))
 }
 
 // TestQinglong 清龙
@@ -1091,7 +1078,7 @@ func TestQinglong(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_QingLong)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGLONG))
 }
 
 // TestSanbugao 三步高
@@ -1119,7 +1106,7 @@ func TestSanbugao(t *testing.T) {
 		HuCard: &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SanBuGao)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SANBUGAO))
 }
 
 // TestXiaosanfeng 小三风
@@ -1149,7 +1136,7 @@ func TestXiaosanfeng(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_XiaoSanFeng)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_XIAOSANFENG))
 }
 
 // TestHunyise 混一色
@@ -1179,7 +1166,7 @@ func TestHunyise(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_HunYiSe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_HUNYISE))
 }
 
 //天胡
@@ -1213,7 +1200,7 @@ func TestSananke(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SanAnKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SANANKE))
 }
 
 //妙手回春
@@ -1247,7 +1234,7 @@ func TestShuangjianke(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ShuangJianKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SHUANGJIANKE))
 }
 
 // TestShuangangang 双暗杠
@@ -1276,7 +1263,7 @@ func TestShuangangang(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ShuangAnGang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SHUANGANGANG))
 }
 
 // TestQuanqiuren 全求人
@@ -1308,7 +1295,7 @@ func TestQuanqiuren(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_QuanQiuRen)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QUANQIUREN))
 }
 
 // TestQuandaiyao 全带幺
@@ -1334,7 +1321,7 @@ func TestQuandaiyao(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_QuanDaiYao)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QUANDAIYAO))
 }
 
 // TestShuangminggang 双明杠
@@ -1369,7 +1356,7 @@ func TestShuangminggang(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ShuangMingGang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SHUANGMINGGANG))
 }
 
 // TestBuqiuren 不求人
@@ -1395,7 +1382,7 @@ func TestBuqiuren(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_BuQiuRen)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_BUQIUREN))
 }
 
 // TestJuezhang 绝张
@@ -1423,7 +1410,7 @@ func TestJuezhang(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_JueZhang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_JUEZHANG))
 }
 
 //门风刻
@@ -1454,7 +1441,7 @@ func TestJianke(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_JianKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_JIANKE))
 }
 
 // TestSiguiyi 四归一
@@ -1482,7 +1469,7 @@ func TestSiguiyi(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_SiGuiYi)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SIGUIYI))
 }
 
 // TestDuanyao 断幺
@@ -1510,7 +1497,7 @@ func TestDuanyao(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_DuanYao)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_DUANYAO))
 }
 
 // TestShuanganke 双暗刻
@@ -1538,7 +1525,7 @@ func TestShuanganke(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ShuangAnKe)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_SHUANGANKE))
 }
 
 // TestAngang 暗杠
@@ -1566,7 +1553,7 @@ func TestAngang(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_AnGang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_ANGANG))
 }
 
 // TestMenqianqing 门前清
@@ -1592,7 +1579,7 @@ func TestMenqianqing(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_MenQianQing)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_MENQIANQING))
 }
 
 //报听
@@ -1620,7 +1607,7 @@ func TestYibangao(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_YiBanGao)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_YIBANGAO))
 }
 
 // TestLianliu 连六
@@ -1646,7 +1633,7 @@ func TestLianliu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_LianLiu)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_LIANLIU))
 }
 
 // TestLaoshaofu 老少副
@@ -1672,7 +1659,7 @@ func TestLaoshaofu(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_LaoShaoFu)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_LAOSHAOFU))
 }
 
 //花牌
@@ -1702,7 +1689,7 @@ func TestMinggang(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_MingGang)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_MINGGANG))
 }
 
 //边张
@@ -1733,7 +1720,7 @@ func TestZimo(t *testing.T) {
 		HuCard:  &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Contains(t, cardTypes, majongpb.CardType_ZiMo)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_ZIMO))
 }
 
 func calculate(params CardCalcParams) ([]int, int, int) {
@@ -1746,7 +1733,10 @@ func calculate(params CardCalcParams) ([]int, int, int) {
 		HuCards:   []*majongpb.HuCard{params.HuCard},
 	}
 	mjContext := &majongpb.MajongContext{
-		Players: []*majongpb.Player{player},
+		XingpaiOptionId:  4,
+		CardtypeOptionId: 1,
+		SettleOptionId:   1,
+		Players:          []*majongpb.Player{player},
 	}
 	return CalculateFanTypes(mjContext, 1, params.HandCard, params.HuCard)
 }

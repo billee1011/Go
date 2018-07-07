@@ -50,7 +50,7 @@ func (jam *joinApplyManager) getApplyChannel(gameID room.GameId) chan uint64 {
 		return jam.applyXueLiu
 	case room.GameId_GAMEID_XUEZHAN:
 		return jam.applyXueZhan
-	case room.GameId_GAMEID_ERREN:
+	case room.GameId_GAMEID_ERRENMJ:
 		return jam.applyErRen
 	default:
 		return nil
@@ -84,7 +84,7 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 func (jam *joinApplyManager) checkMatch() {
 	go jam.doApply(room.GameId_GAMEID_XUELIU)
 	go jam.doApply(room.GameId_GAMEID_XUEZHAN)
-	go jam.doApply(room.GameId_GAMEID_ERREN)
+	go jam.doApply(room.GameId_GAMEID_ERRENMJ)
 
 }
 

@@ -986,12 +986,12 @@ func TestSangang(t *testing.T) {
 }
 
 func calculate(params CardCalcParams) ([]int, int) {
-	mjContext := &majongpb.MajongContext{}
-	player := &majongpb.Player{
-		HandCards: params.HandCard,
-		PengCards: params.PengCard,
-		GangCards: params.GangCard,
-	}
+	// mjContext := &majongpb.MajongContext{}
+	// player := &majongpb.Player{
+	// 	HandCards: params.HandCard,
+	// 	PengCards: params.PengCard,
+	// 	GangCards: params.GangCard,
+	// }
 	return []int{}, 0
 }
 

@@ -6,8 +6,10 @@ hu_gameover: false  # 胡牌之后是否结束游戏
 hnz:
   need: false
   num: 0  # 是否需要换三张
-need_dingque: false # 是否需要定缺
-need_addflower: true # 是否需要补花
-need_chi: true # 是否需要吃
+enable_dingque: false # 是否需要定缺
+enable_addflower: true # 是否需要补花
+enable_chi: true # 是否需要吃
+enable_kaiju_addflower: true # 是否需要开局补花
 player_states: 2
 player_num: 2
+fapai_type: 2 # 1：正常发牌，庄家14张，闲家13张；2：二人麻将类型的发牌，所有人都只发13张

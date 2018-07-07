@@ -35,7 +35,27 @@ var transitionCfg = `
           events: 
             - event_fapai_finish
             - event_cartoon_finish_request
-          next_state: state_huansanzhang
+          next_state: state_gamestart_buhua
+    - 
+      # 开局补花状态
+      state: state_gamestart_buhua
+      # 转换表
+      transition:
+        - 
+        # 开局补花完成事件 转移到 摸牌状态
+          events: 
+            - event_gamestart_buhua_finish
+          next_state: state_mopai  
+    - 
+      # 补花状态
+      state: state_xingpai_buhua
+      # 转换表
+      transition:
+        - 
+        # 补花完成事件 转移到 自询状态
+          events: 
+            - event_xingpai_buhua_finish
+          next_state: state_zixun  
     - 
       # 出牌状态
       state: state_chupai
@@ -63,6 +83,7 @@ var transitionCfg = `
             - event_gang_request
             - event_hu_request
             - event_qi_request
+            - event_chi_request
           next_state: state_chupaiwenxun
         - 
         # 碰弃事件 转移到 碰状态
@@ -89,6 +110,11 @@ var transitionCfg = `
           events: 
             - event_qi_request
           next_state: state_mopai
+        - 
+        # 吃事件 转移到 吃状态
+          events: 
+            - event_chi_request
+          next_state: state_chi
     - 
       # 暗杠状态
       state: state_angang
@@ -118,6 +144,16 @@ var transitionCfg = `
           # 碰完成事件 转移到 自询状态
           events: 
             - event_peng_finish
+          next_state: state_zixun 
+    - 
+      # 碰状态
+      state: state_chi
+      # 转换表
+      transition:
+        - 
+          # 碰完成事件 转移到 自询状态
+          events: 
+            - event_chi_finish
           next_state: state_zixun 
     - 
       # 杠状态
@@ -154,6 +190,11 @@ var transitionCfg = `
           events: 
             - event_mopai_finish
           next_state: state_gameover   
+        - 
+          # 摸牌完成事件 转移到 补花
+          events: 
+            - event_mopai_finish
+          next_state: state_xingpai_buhua   
     - 
       # 自询状态
       state: state_zixun 

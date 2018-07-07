@@ -278,6 +278,12 @@ func getColor(srcColor majongpb.CardColor) string {
 	if srcColor == majongpb.CardColor_ColorTong {
 		return "b"
 	}
+	if srcColor == majongpb.CardColor_ColorFeng {
+		return "z"
+	}
+	if srcColor == majongpb.CardColor_ColorHua {
+		return "h"
+	}
 	return "none"
 }
 

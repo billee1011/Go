@@ -3,6 +3,7 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
@@ -35,6 +36,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 		for _, player := range utils.GetCanXpPlayers(players, context) { // 能正常行牌的玩家才进行查动作
 			//每个玩家的possibleActions都需要清空
 			player.PossibleActions = player.PossibleActions[:0]
+			player.EnbleChiCards = player.EnbleChiCards[:0]
 			logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
 				"xpStates": player.GetXpState()}).Info("出牌：每个玩家的状态")
 			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
@@ -78,6 +80,15 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 	if canPeng {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
 	}
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	chiSlice := make([]uint32, 0)
+	if xpOption.EnableChi {
+		chiSlice = s.checkChi(context, player, card)
+		if len(chiSlice) != 0 {
+			player.EnbleChiCards = chiSlice
+			player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_chi)
+		}
+	}
 	if len(player.PossibleActions) > 0 {
 		if len(player.GetHuCards()) == 0 || !canDianPao {
 			player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_qi)
@@ -90,6 +101,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 		"canPeng":     canPeng,
 		"canMingGang": canMingGang,
 		"canDianPao":  canDianPao,
+		"chiSlice":    chiSlice,
 		"handCards":   gutils.FmtMajongpbCards(player.GetHandCards()),
 	}).Info("检测玩家是否有特殊操作")
 	return canDianPao || canMingGang || canPeng
@@ -174,6 +186,51 @@ func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majo
 		return true
 	}
 	return false
+}
+
+// checkChi 查吃
+func (s *ChupaiState) checkChi(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) []uint32 {
+	//判断当前玩家是否可以进行吃的出牌问询，二人麻将只能下家吃牌
+	chicards := make([]uint32, 0)
+	if utils.GetNextXpPlayerByID(context.GetLastChupaiPlayer(), context.GetPlayers(), context).GetPalyerId() != player.GetPalyerId() {
+		return chicards
+	}
+	//只有万条筒可以进行吃的操作
+	color := card.GetColor()
+	point := card.GetPoint()
+	if color == majongpb.CardColor_ColorFeng || card.GetColor() == majongpb.CardColor_ColorHua {
+		return chicards
+	}
+	handCards := player.GetHandCards()
+	var A, B, C, D bool
+	//将下家手牌拿出来与上家出的牌进行对比
+	for _, hc := range handCards {
+		//查三种吃的方式，左边吃，中间吃，右边吃
+		if hc.GetColor() != color {
+			continue
+		}
+		switch hc.GetPoint() {
+		case point - 2:
+			A = true
+		case point - 1:
+			B = true
+		case point + 1:
+			C = true
+		case point + 2:
+			D = true
+		}
+	}
+	cardInInt := utils.ServerCard2Uint32(card)
+	if A && B {
+		chicards = append(chicards, []uint32{cardInInt - 2, cardInInt - 1, cardInInt}...)
+	}
+	if B && C {
+		chicards = append(chicards, []uint32{cardInInt - 1, cardInInt, cardInInt + 1}...)
+	}
+	if C && D {
+		chicards = append(chicards, []uint32{cardInInt, cardInInt + 1, cardInInt + 2}...)
+	}
+	return chicards
 }
 
 //chupai 决策出牌

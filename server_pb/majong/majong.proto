@@ -195,8 +195,19 @@ message Player {
     XingPaiState xp_state = 17;             // 玩家牌局状态
     bool is_quit = 18;                       // 玩家是否退出牌局
     repeated TingCardInfo ting_card_info = 19;       // 听牌信息 
+    repeated Card hua_cards = 20;           //补的花牌
+    TingStateInfo ting_state_info = 21;     //听的状态信息
+    int32 zixun_count = 22;                 // 进入自询的次数
+    repeated uint32 enble_chi_cards = 23;   //可以吃的牌組
+    repeated Card  design_chi_cards = 24;   //玩家請求指定吃的牌組
     map<string, bytes> properties = 256;    // 其他的一些属性
-} 
+}
+
+message TingStateInfo{
+   bool is_ting = 1; //听
+   bool is_tianting = 2; //天听
+   bool is_baotingyifa = 3; //报听一发
+}
 
 // AutoEvent 自动事件
 message AutoEvent {
@@ -242,6 +253,7 @@ enum Action {
     // action_bugang       = 4;  // 补杠
     // action_minggang     = 5;  // 明杠
     // action_angang       = 6;  // 暗杠
+    action_chi = 4; //吃
     action_qi           = 7;  // 弃
 }
 
@@ -283,6 +295,7 @@ message MajongContext {
     repeated uint32 dices = 22; // 骰子
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
+    uint64 last_chi_player = 25; // 最近一次执行吃操作的玩家
 
     uint32 xingpai_option_id = 251; // 行牌选项 ID 
     uint32 cardtype_option_id = 252;    // 牌型选项 ID 

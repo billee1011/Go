@@ -6,5 +6,5 @@ const (
 	// SCXZGameID sichuanxuezhan
 	SCXZGameID = 2
 	// ERGameID errenmajiang
-	ERGameID = 3
+	ERGameID = 4
 )
