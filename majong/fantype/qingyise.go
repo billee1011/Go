@@ -28,8 +28,8 @@ func checkQingyise(tc *typeCalculator) bool {
 	}
 
 	chiCards := tc.getChiCards()
-	for _, card := range chiCards {
-		if card.GetCard().GetColor() != color {
+	for _, chiCard := range chiCards {
+		if chiCard.Card.GetColor() != color {
 			return false
 		}
 	}

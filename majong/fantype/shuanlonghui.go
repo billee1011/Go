@@ -1,8 +1,6 @@
 package fantype
 
-import (
-	majongpb "steve/server_pb/majong"
-)
+import majongpb "steve/server_pb/majong"
 
 // checkShuanLongHui 双龙会:由一种花色的 2 个老少副,5 为将牌组成的胡牌
 func checkShuanLongHui(tc *typeCalculator) bool {
@@ -12,14 +10,14 @@ func checkShuanLongHui(tc *typeCalculator) bool {
 	}
 	// 顺+吃
 	for _, combine := range tc.combines {
-		if has2LaoShaoFu(cards, combine.shuns) {
+		if isShuanLongHui(cards, intsToCards(combine.shuns)) {
 			return true
 		}
 	}
 	return false
 }
 
-func has2LaoShaoFu(cardA, cardB []*majongpb.Card) bool {
+func isShuanLongHui(cardA, cardB []*majongpb.Card) bool {
 	newCards := append(cardA, cardB...)
 	colorPointMap := make(map[majongpb.CardColor]map[int32]int)
 	for _, card := range newCards {
@@ -33,7 +31,9 @@ func has2LaoShaoFu(cardA, cardB []*majongpb.Card) bool {
 
 	for _, pointMap := range colorPointMap {
 		one, seven := int32(1), int32(7)
-		if pointMap[one] >= 2 && pointMap[seven] >= 2 {
+		oneNum, _ := pointMap[one]
+		severnNum, _ := pointMap[seven]
+		if oneNum >= 2 && severnNum >= 2 {
 			return true
 		}
 	}

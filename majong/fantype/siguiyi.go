@@ -17,8 +17,8 @@ func checkSiGuiYi(tc *typeCalculator) bool {
 	for _, pengCard := range pengCards {
 		checkCards = append(checkCards, pengCard.Card)
 	}
-	for _, chiCards := range chiCards {
-		checkCards = append(checkCards, chiCards.Card)
+	for _, chiCard := range chiCards {
+		checkCards = append(checkCards, chiCard.Card)
 	}
 	for _, handCard := range handCards {
 		checkCards = append(checkCards, handCard)

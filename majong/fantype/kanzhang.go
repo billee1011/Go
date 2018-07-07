@@ -10,8 +10,7 @@ func checkKanZhang(tc *typeCalculator) bool {
 
 	for _, combine := range tc.combines {
 		for _, shun := range combine.shuns {
-			shunValue := utils.ServerCard2Number(shun)
-			if shunValue+1 == huValue {
+			if shun+1 == huValue {
 				return true
 			}
 		}

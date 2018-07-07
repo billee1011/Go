@@ -2,7 +2,7 @@ id: 3 # 选项 ID
 
 enable_geng: false # 是否启用根
 
-enable_hua: true # 是否启用花
+enable_false: true # 是否启用花
 hua_score: 1 # 花的番数
 hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
 

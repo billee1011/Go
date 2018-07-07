@@ -1,6 +1,7 @@
 package fantype
 
 import (
+	"fmt"
 	"math"
 	"steve/common/mjoption"
 	"steve/majong/utils"
@@ -145,6 +146,7 @@ func (tc *typeCalculator) callCheckFunc(funcID int) bool {
 		tc.cache[funcID] = false
 		return false
 	}
+	fmt.Println(f(tc))
 	tc.cache[funcID] = f(tc)
 	return tc.cache[funcID]
 }
@@ -200,7 +202,7 @@ func (tc *typeCalculator) getHuCard() *majong.HuCard {
 
 // getHuaCards 获取花牌
 func (tc *typeCalculator) getHuaCards() []*majong.Card {
-	return tc.getPlayer().GetHandCards()
+	return tc.getPlayer().GetHuaCards()
 
 }
 

@@ -1,53 +1,35 @@
 package fantype
 
-import (
-	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
-)
-
 // checkSanLianKe 三连刻:胡牌时,含有一种花色 3 副依次递增一位数字的刻子
 func checkSanLianKe(tc *typeCalculator) bool {
 	pengCount := len(tc.getPengCards())
-	keCombines := make([]combine, 0)
+	keCombines := make([]Combine, 0)
 	for _, combine := range tc.combines {
 		if len(combine.kes)+pengCount >= 3 {
 			keCombines = append(keCombines, combine)
 		}
 	}
 	for _, keCombine := range keCombines {
-		colorCount, cardCount := getChiCardsDetails(tc.getChiCards())
+		colorCount, cardCount, _ := getPengCardsDetails(tc.getPengCards())
 		for _, ke := range keCombine.kes {
-			keValue := utils.ServerCard2Number(ke)
-			cardCount[keValue] = cardCount[keValue] + 1
-			colorCount[ke.Color] = colorCount[ke.Color] + 1
+			cardCount[ke] = cardCount[ke] + 1
+			kcolor := ke / 10
+			colorCount[kcolor] = colorCount[kcolor] + 1
 		}
-		hasColor := false
-		for _, count := range colorCount {
-			if count >= 3 {
-				hasColor = true
-				break
+		has3LianKe := false
+		for card := range cardCount {
+			for i := 0; i < 3; i++ {
+				if cardCount[card+i] == 0 {
+					break
+				}
+				if i == 2 {
+					has3LianKe = true
+				}
 			}
 		}
-		hasValue := false
-		for _, count := range cardCount {
-			if cardCount[count+1] != 0 && cardCount[count+2] != 0 {
-				hasValue = true
-			}
-		}
-		if !hasColor || !hasValue {
-			return false
+		if has3LianKe {
+			return true
 		}
 	}
 	return false
-}
-
-func getPengCardDetails(pengCards []*majongpb.PengCard) (colorCount map[majongpb.CardColor]int, cardCount map[int]int) {
-	colorCount = make(map[majongpb.CardColor]int, 0)
-	cardCount = make(map[int]int, 0)
-	for _, pengCard := range pengCards {
-		chiValue := utils.ServerCard2Number(pengCard.Card)
-		cardCount[chiValue] = cardCount[chiValue] + 1
-		colorCount[pengCard.Card.Color] = colorCount[pengCard.Card.Color] + 1
-	}
-	return
 }

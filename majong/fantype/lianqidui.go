@@ -14,7 +14,7 @@ func checkLianQiDui(tc *typeCalculator) bool {
 	if huCard == nil {
 		return false
 	}
-	minCard := int(0)
+	minCard := utils.ServerCard2Number(handCards[0])
 	for _, card := range handCards {
 		if card.GetColor() != cardColor {
 			return false
@@ -36,7 +36,7 @@ func checkLianQiDui(tc *typeCalculator) bool {
 	countMap[c] = countMap[c] + 1
 
 	for _, count := range countMap {
-		if count/2 != 0 {
+		if count%2 != 0 {
 			return false
 		}
 	}
