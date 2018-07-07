@@ -4,9 +4,12 @@ import (
 	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/simulate/config"
 	"steve/simulate/global"
+	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -158,27 +161,72 @@ func TestJiaodizhu(t *testing.T) {
 		}
 	}
 
-	for j := 0; j < 3; /* len(lordCards) */ j++ {
+	// 建立GameOver的消息期望
+
+	// 地主收到GameOver的期望
+	lordPlayer.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF)
+	lordPlayerOverExpect, _ := lordPlayer.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF)
+
+	// 农民1收到GameOver的期望
+	farmer1.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF)
+	farmer1OverExpect, _ := farmer1.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF)
+
+	// 地主收到GameOver的期望
+	farmer2.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF)
+	farm2OverExpect, _ := farmer2.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF)
+
+	for j := 0; j < len(lordCards); j++ {
 
 		i++
+
+		// 地主出牌回应的期望
+		lordPlayer.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP)
+		lordPlayerRspExpect, _ := lordPlayer.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP)
+
+		// 地主监听其他人出牌广播的期望
+		//lordPlayer.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF)
+		//lordPlayerNtfExpect, _ := lordPlayer.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF)
+
+		// 农民1出牌回应的期望
+		farmer1.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP)
+		farmer1RspExpect, _ := farmer1.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP)
+
+		// 农民1监听其他人出牌广播的期望
+		farmer1.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF)
+		farmer1NtfExpect, _ := farmer1.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF)
+
+		// 农民2出牌回应的期望
+		farmer2.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP)
+		farmer2RspExpect, _ := farmer2.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP)
+
+		// 农民2监听其他人出牌广播的期望
+		farmer2.Player.GetClient().RemoveMsgExpect(msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF)
+		farmer2NtfExpect, _ := farmer2.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF)
+
+		// -----------------------------  一轮出牌	-------------------------------
 
 		// 地主出牌，一次出一张牌
 		assert.Nil(t, sendPlayCardReq(&lordPlayer, []uint32{lordCards[j]}, room.CardType_CT_SINGLE))
 
+		// 若是最后一张牌，则不再关心回应，因为游戏应该结束了
+		if j == len(lordCards)-1 {
+			break
+		}
+
 		// 检测第i次地主出牌成功
 		ntf := room.DDZPlayCardRsp{}
-		if err := lordPlayer.Expectors[msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+		if err := lordPlayerRspExpect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 			logEntry.Errorf("地主第%d次出牌回应超时", i)
 			assert.NotNil(t, nil)
 			return
 		}
 
 		// 农民1检测第i次出牌广播
-		nextPlayerID, err := listenPlayCardNtf(&farmer1, i)
+		nextPlayerID, err := listenPlayCardNtf(farmer1NtfExpect, &farmer1, i)
 		assert.Nil(t, err)
 
-		// 农民2检测第1次出牌广播
-		nextPlayerID, err = listenPlayCardNtf(&farmer2, i)
+		// 农民2检测第i次出牌广播
+		nextPlayerID, err = listenPlayCardNtf(farmer2NtfExpect, &farmer2, i)
 		assert.Nil(t, err)
 
 		logEntry.Info("确定下次出牌玩家ID为", nextPlayerID)
@@ -186,53 +234,140 @@ func TestJiaodizhu(t *testing.T) {
 		// 农民1
 		if nextPlayerID == farmer1.Player.GetID() {
 
+			// 暂停
+			time.Sleep(1 * time.Second)
+
 			// 农民1放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
 
+			// 暂停
+			time.Sleep(1 * time.Second)
+
 			// 农民2放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
+
+			// 检测农民2出牌结果
+			ntf := room.DDZPlayCardRsp{}
+			if err := farmer2RspExpect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+				logEntry.Errorf("玩家%d 第%d次出牌回应超时", farmer2.Player.GetID(), i)
+				assert.NotNil(t, nil)
+				return
+			}
+
+			logEntry.Errorf("玩家%d 第%d次出牌回应结果为%s", farmer2.Player.GetID(), i, ntf.GetResult().GetErrDesc())
 		} else {
+			// 暂停
+			time.Sleep(1 * time.Second)
+
 			// 农民2放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
 
+			// 暂停
+			time.Sleep(1 * time.Second)
+
 			// 农民1放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
+
+			// 检测农民1出牌结果
+			ntf := room.DDZPlayCardRsp{}
+			if err := farmer1RspExpect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+				logEntry.Errorf("玩家%d 第%d次出牌回应超时", farmer1.Player.GetID(), i)
+				assert.NotNil(t, nil)
+				return
+			}
+
+			logEntry.Errorf("玩家%d 第%d次出牌回应结果为%s", farmer1.Player.GetID(), i, ntf.GetResult().GetErrDesc())
 		}
 
-		// 重新建立监听
-
-		assert.NotNil(t, nil)
+		// 暂停2秒
+		time.Sleep(3 * time.Second)
 	}
 
-	/* 	// ---------------------------------------------------------	第一次出牌	-----------------------------------------------------------
-	   	i++
+	// 牌已出完，期待游戏结束通知
 
-	   	// 三个5
-	   	cards1 := []uint32{
-	   		uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_5),  // 梅花5
-	   		uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_5), // 红桃5
-	   		uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_5), // 黑桃5}
-	   	}
+	// 地主应收到游戏结束的通知
+	ntf := room.DDZGameOverNtf{}
+	if err := lordPlayerOverExpect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+		logEntry.Errorf("地主玩家%d没有收到游戏结束的通知", lordPlayer.Player.GetID())
+		assert.NotNil(t, nil)
+		return
+	}
 
-	   	assert.Nil(t, sendPlayCardReq(&lordPlayer, cards1, room.CardType_CT_PAIRS))
+	// 农民1应收到游戏结束的通知
+	ntf = room.DDZGameOverNtf{}
+	if err := farmer1OverExpect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+		logEntry.Errorf("农民玩家%d没有收到游戏结束的通知", farmer1.Player.GetID())
+		assert.NotNil(t, nil)
+		return
+	}
 
-	   	// 检测第1次地主出牌成功
-	   	ntf1 := room.DDZPlayCardRsp{}
-	   	if err := lordPlayer.Expectors[msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP].Recv(global.DefaultWaitMessageTime, &ntf1); err != nil {
-	   		logEntry.Errorf("地主第%d次出牌回应超时", i)
-	   		assert.NotNil(t, nil)
-	   		return
-	   	}
+	// 农民2应收到游戏结束的通知
+	ntf = room.DDZGameOverNtf{}
+	if err := farm2OverExpect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+		logEntry.Errorf("农民玩家%d没有收到游戏结束的通知", farmer2.Player.GetID())
+		assert.NotNil(t, nil)
+		return
+	}
 
-	   	// 农民1检测第1次出牌广播
-	   	assert.Nil(t, listenPlayCardNtf(&farmer1, i))
+	// 胜利者是地主
+	if ntf.GetWinnerId() != lordPlayer.Player.GetID() {
+		logEntry.Errorf("游戏结束时，胜利者竟然不是地主！胜利者ID = ", ntf.GetWinnerId())
+		assert.NotNil(t, nil)
+		return
+	}
 
-	   	// 农民2检测第1次出牌广播
-	   	assert.Nil(t, listenPlayCardNtf(&farmer2, i))
+	// 打印游戏结束信息
+	logEntry.Infof("游戏结束，胜利者ID = %d，摊牌时间 = ", ntf.GetWinnerId(), ntf.GetShowHandTime())
 
+	for i := 0; i < len(ntf.GetBills()); i++ {
+		playrInfo := ntf.GetBills()[i]
+		logEntry.Infof("玩家:%d，名字:%s，底分:%d，输赢倍数:%d，输赢分数:%d，当前分数:%d，是否为地主:%v，已出的牌:%v，手中的牌:%v",
+			playrInfo.GetPlayerId(), playrInfo.GetPlayerName(), playrInfo.GetBase(), playrInfo.GetMultiple(),
+			playrInfo.GetScore(), playrInfo.GetCurrentScore(), playrInfo.GetLord(), playrInfo.GetOutCards(), playrInfo.GetHandCards())
+	}
 
-	   	// ---------------------------------------------------------	第二次出牌	-----------------------------------------------------------
-	   	i++ */
+	// ------------------------------------------------ 	恢复对局	  ---------------------------------------
+	// 最终地主的deskPlayer
+	lordPlayer = deskData.Players[deskData.DDZData.ResultLordID]
+
+	// 地主断开连接
+	lordPlayer.Player.GetClient().Stop()
+	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
+
+	// 重新连接
+	lordPlayer.Player.GetClient().Start(config.ServerAddr, config.ClientVersion)
+
+	// 监听恢复对局的回复消息
+	resumeRspExpect, _ := lordPlayer.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_RESUME_RSP)
+
+	// 发出恢复对局请求
+	assert.Nil(t, sendResumeGameReq(&lordPlayer))
+
+	resumeRsp := room.DDZResumeGameRsp{}
+	if err := resumeRspExpect.Recv(global.DefaultWaitMessageTime, &resumeRsp); err != nil {
+		logEntry.Errorf("玩家%d没有收到恢复对局的回复", lordPlayer.Player.GetID())
+		assert.NotNil(t, nil)
+		return
+	}
+
+	// 打印恢复对局回复的信息
+	logEntry.Infof("玩家%d收到恢复对局的回复,resultCode = %d， resultStr = %s", resumeRsp.GetResult().GetErrCode(), resumeRsp.GetResult().GetErrDesc())
+
+	// 成功时打印游戏信息
+	if resumeRsp.GetResult().GetErrCode() == 0 {
+		ddzDeskInfo := resumeRsp.GetGameInfo()
+		// 桌子里面的每一个玩家
+		for i := 0; i < len(ddzDeskInfo.GetPlayers()); i++ {
+			ddzPlayrInfo := ddzDeskInfo.GetPlayers()[i]
+			roomPlayerInfo := ddzPlayrInfo.GetPlayerInfo()
+			logEntry.Infof("玩家:%d，名字:%s，金币数:%d，座位号:%d，已打出的牌:%v，手中的牌:%v，是否为地主:%v，是否托管:%d，是否加倍:%d",
+				roomPlayerInfo.GetPlayerId(), roomPlayerInfo.GetName(), roomPlayerInfo.GetCoin(), roomPlayerInfo.GetSeat(),
+				ddzPlayrInfo.GetOutCards(), ddzPlayrInfo.GetHandCards(), ddzPlayrInfo.GetLord(), ddzPlayrInfo.GetTuoguan(), ddzPlayrInfo.GetIsDouble())
+		}
+
+		// 当前状态
+		logEntry.Infof("当前状态：%v，进入下一状态的等待时间:%d", ddzDeskInfo.GetStage().GetStage(), ddzDeskInfo.GetStage().GetTime())
+	}
 }
 
 // sendChatReq 发送叫地主请求
@@ -274,7 +409,7 @@ func sendPlayCardReq(player *utils.DeskPlayer, cards []uint32, cardType room.Car
 		"func_name": "sendPlayCardReq()",
 		"cards":     cards,
 		"cardType":  cardType,
-	}).Info("发出出牌请求，玩家 = ", player.Player.GetID())
+	}).Infof("玩家%d发出出牌请求", player.Player.GetID())
 
 	client := player.Player.GetClient()
 	_, err := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ), &room.DDZPlayCardReq{
@@ -286,17 +421,29 @@ func sendPlayCardReq(player *utils.DeskPlayer, cards []uint32, cardType room.Car
 }
 
 // 指定的deskPlayer监听出牌的消息
-func listenPlayCardNtf(player *utils.DeskPlayer, i int) (nextPlayerID uint64, err error) {
+func listenPlayCardNtf(expect interfaces.MessageExpector, player *utils.DeskPlayer, i int) (nextPlayerID uint64, err error) {
 	logrus.WithFields(logrus.Fields{
 		"func_name": "listenPlayCardNtf()",
 	})
 
 	ntf := room.DDZPlayCardNtf{}
-	if err := player.Expectors[msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+	if err := expect.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return 0, fmt.Errorf("%d监听第%d次出牌广播超时", player.Player.GetID(), i)
 	}
 
-	logrus.Infof("玩家%d监听到第%d次玩家%d出牌为%v，下一个出牌玩家为%v", player.Player.GetID(), i, ntf.GetPlayerId(), ntf.GetCards(), ntf.GetNextPlayerId())
+	logrus.Infof("玩家%d监听到玩家%d第%d次出牌为%v，下一个出牌玩家为%v", player.Player.GetID(), ntf.GetPlayerId(), i, ntf.GetCards(), ntf.GetNextPlayerId())
 
 	return ntf.GetNextPlayerId(), nil
+}
+
+// sendResumeGameReq 发送恢复对局请求
+func sendResumeGameReq(player *utils.DeskPlayer) error {
+	logrus.WithFields(logrus.Fields{
+		"func_name": "sendResumeGameReq()",
+	}).Infof("玩家%d发出恢复请求", player.Player.GetID())
+
+	client := player.Player.GetClient()
+	_, err := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_DDZ_RESUME_REQ), &room.DDZResumeGameReq{})
+
+	return err
 }

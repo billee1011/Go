@@ -40,6 +40,9 @@ func TestJiabei(t *testing.T) {
 	   	// 当前状态的时间间隔
 	   	logEntry.Infof("当前状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 
+	   	// 暂停对应的秒数
+	   	time.Sleep(time.Duration(deskData.DDZData.NextState.GetTime()) * time.Second)
+
 	   	// 发出加倍请求
 	   	assert.Nil(t, sendJiabeiReq(player))
 
