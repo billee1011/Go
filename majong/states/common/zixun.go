@@ -427,7 +427,8 @@ func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Ca
 
 // checkTing 查听
 func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
-	dqnum := s.getDingqueCardNum(player)
+	dingqueCards, checkCards := s.getDingqueCardNum(player)
+	dqnum := len(dingqueCards)
 	if player.GetTingStateInfo().GetIsTing() || player.GetTingStateInfo().GetIsTianting() {
 		// 当玩家已经是听牌状态，只有摸上来的牌才有听牌提示
 		moCard := context.GetLastMopaiCard()
@@ -446,25 +447,18 @@ func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Pla
 		tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
 		s.addTingInfo(zixunNtf, player, context, tingInfos)
 	} else if dqnum == 1 {
-		// 当定缺牌为1的时候,只有定缺牌才有听牌提示
-		newTingInfos := map[utils.Card][]utils.Card{}
-		tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-		for outCard, tingCard := range tingInfos {
-			card, _ := utils.IntToCard(int32(outCard))
-			if card.GetColor() == player.DingqueColor {
-				newTingInfos[outCard] = tingCard
-			}
+		tingInfos, err := utils.GetTingCards(checkCards, nil)
+		if err == nil && len(tingInfos) > 0 {
+			dingqueCard := utils.Card(utils.ServerCard2Number(dingqueCards[0]))
+			s.addTingInfo(zixunNtf, player, context, map[utils.Card][]utils.Card{dingqueCard: tingInfos})
 		}
-		//满足条件说明,打出这张定缺牌可以进入听牌状态
-		s.addTingInfo(zixunNtf, player, context, newTingInfos)
 	}
 	// 玩家的定缺牌数量超过1张的时候,不查听
 }
 
-func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player) (dqnum int) {
-	dingqueCards := []*majongpb.Card{}
-	checkCards := []*majongpb.Card{}
-
+func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player) (dingqueCards []*majongpb.Card, checkCards []*majongpb.Card) {
+	dingqueCards = []*majongpb.Card{}
+	checkCards = []*majongpb.Card{}
 	for _, card := range player.GetHandCards() {
 		if card.GetColor() == player.DingqueColor {
 			dingqueCards = append(dingqueCards, card)
@@ -472,10 +466,6 @@ func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player) (dqnum int) {
 			checkCards = append(checkCards, card)
 		}
 	}
-	dqnum = len(dingqueCards)
-	logrus.WithFields(logrus.Fields{
-		"手中定缺牌的个数": dqnum,
-	}).Info("查听")
 	return
 }
 
