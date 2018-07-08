@@ -133,6 +133,11 @@ func TestJiaodizhu(t *testing.T) {
 	// 最终地主手里的牌
 	lordCards := deskData.DDZData.Params.Cards[lordseatID]
 
+	// 加上三张底牌
+	lordCards = append(lordCards, uint32(room.PokerSuit_PS_SPADE)+uint32(room.PokerValue_PV_K))          // 红桃K)
+	lordCards = append(lordCards, uint32(room.PokerSuit_PS_NONE)+uint32(room.PokerValue_PV_BLACK_JOKER)) // 小王)
+	lordCards = append(lordCards, uint32(room.PokerSuit_PS_NONE)+uint32(room.PokerValue_PV_RED_JOKER))   // 大王)
+
 	// 农民1
 	farmer1 := utils.DeskPlayer{}
 	farmer1.Seat = -1

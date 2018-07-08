@@ -1,9 +1,12 @@
 package procedure
 
 import (
+	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/states"
 	"steve/room/desks/ddzdesk/flow/machine"
+	"steve/room/interfaces/global"
 	"steve/server_pb/ddz"
 	"time"
 
@@ -44,6 +47,68 @@ func HandleEvent(params Params) (result Result) {
 		HasAutoEvent: false,
 	}
 	m := ddzmachine.CreateDDZMachine(&cloneContext, states.NewFactory(), params.Sender)
+
+	// 处理恢复对局的请求
+	if params.EventID == int(ddz.EventID_event_resume_request) {
+		message := &ddz.ResumeRequestEvent{}
+		err := proto.Unmarshal(params.EventContext, message)
+		if err != nil {
+			logEntry.WithError(err).Errorln("处理恢复对局事件失败")
+			return
+		}
+
+		// 请求的玩家ID
+		reqPlayerID := message.GetHead().GetPlayerId()
+
+		bExist := false
+
+		// 找到这个玩家
+		for _, player := range cloneContext.GetPlayers() {
+			if player.GetPalyerId() == reqPlayerID {
+				bExist = true
+			}
+		}
+
+		// 存在的话则发送游戏信息
+		if bExist {
+			playersInfo := []*room.DDZPlayerInfo{}
+
+			for _, player := range cloneContext.GetPlayers() {
+
+				// Player转为RoomPlayer
+				roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
+				lord := player.GetLord()
+				double := player.GetIsDouble()
+				tuoguan := false // TODO
+
+				ddzPlayerInfo := room.DDZPlayerInfo{}
+				ddzPlayerInfo.PlayerInfo = &roomPlayerInfo
+				ddzPlayerInfo.OutCards = player.GetOutCards()
+				ddzPlayerInfo.HandCards = player.GetHandCards()
+				ddzPlayerInfo.Lord = &lord
+				ddzPlayerInfo.IsDouble = &double
+				ddzPlayerInfo.Tuoguan = &tuoguan
+
+				playersInfo = append(playersInfo, &ddzPlayerInfo)
+			}
+
+			var errCode uint32 = 0
+			errDesc := ""
+			//stage := room.DDZStage_DDZ_STAGE_PLAYING
+
+			// 发送游戏信息
+			m.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_REQ, &room.DDZResumeGameRsp{
+				Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
+				GameInfo: &room.DDZDeskInfo{
+					Players: playersInfo,
+					//Stage: , TODO
+				},
+			})
+		}
+
+		return
+	}
+
 	err := m.ProcessEvent(machine.Event{
 		EventID:   params.EventID,
 		EventData: params.EventContext,
@@ -64,4 +129,22 @@ func HandleEvent(params Params) (result Result) {
 	}
 	result.Succeed = true
 	return
+}
+
+// TranslateDDZPlayerToRoomPlayer 将 ddzPlayer 转换成 RoomPlayerInfo
+func TranslateDDZPlayerToRoomPlayer(ddzPlayer ddz.Player) room.RoomPlayerInfo {
+	playerMgr := global.GetPlayerMgr()
+	playerID := ddzPlayer.GetPalyerId()
+	player := playerMgr.GetPlayer(playerID)
+	var coin uint64
+	if player != nil {
+		coin = player.GetCoin()
+	}
+	return room.RoomPlayerInfo{
+		PlayerId: proto.Uint64(playerID),
+		Name:     proto.String(""), // TODO
+		Coin:     proto.Uint64(coin),
+		Seat:     proto.Uint32(0), // TODO
+		// Location: TODO 没地方拿
+	}
 }

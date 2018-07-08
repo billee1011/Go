@@ -12,6 +12,7 @@ enum EventID {
     event_chupai_request = 5;          // 出牌请求事件
     event_tuoguan_request = 6;         // 托管请求事件
     event_timer = 7;                   // 定时事件
+    event_resume_request = 8;          // 恢复对局请求事件
 }
 
 enum CardType {
@@ -60,4 +61,9 @@ message PlayCardRequestEvent{
 message TuoGuanRequestEvent {
     RequestEventHead head = 1;  // 请求头
     bool tuoguan = 2;
+}
+
+// ResumeRequestEvent 恢复对局请求事件
+message ResumeRequestEvent {
+    RequestEventHead head = 1;  // 请求头
 }

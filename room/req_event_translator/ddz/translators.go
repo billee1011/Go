@@ -34,7 +34,7 @@ func TranslateDoubleRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.DoubleRequestEvent{
-		Head: &head,
+		Head:     &head,
 		IsDouble: *req.IsDouble,
 	}
 	eventID = int(ddz.EventID_event_double_request)
@@ -47,8 +47,8 @@ func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Heade
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.PlayCardRequestEvent{
-		Head: &head,
-		Cards: req.Cards,
+		Head:     &head,
+		Cards:    req.Cards,
 		CardType: ddz.CardType(int32(*req.CardType)),
 	}
 	eventID = int(ddz.EventID_event_chupai_request)
@@ -61,9 +61,21 @@ func TranslateTuoGuanRequest(playerID uint64, header *steve_proto_gaterpc.Header
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.TuoGuanRequestEvent{
-		Head: &head,
-		Tuoguan:*req.Tuoguan,
+		Head:    &head,
+		Tuoguan: *req.Tuoguan,
 	}
 	eventID = int(ddz.EventID_event_tuoguan_request)
+	return
+}
+
+// TranslateResumeRequest 转换恢复对局请求
+func TranslateResumeRequest(playerID uint64, header *steve_proto_gaterpc.Header,
+	req room.DDZResumeGameReq) (eventID int, eventContext proto.Message, err error) {
+
+	head := translateHeader(playerID, header, &req)
+	eventContext = &ddz.ResumeRequestEvent{
+		Head: &head,
+	}
+	eventID = int(ddz.EventID_event_resume_request)
 	return
 }
