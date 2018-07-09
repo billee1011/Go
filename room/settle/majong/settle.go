@@ -124,13 +124,18 @@ func (majongSettle *majongSettle) RoundSettle(desk interfaces.Desk, mjContext ma
 				BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
 			}
 			// 记录该玩家单局结算总倍数
-			cardValue := int32(0)
+			totalValue := int32(0)
 			// 遍历牌局所有结算信息，获取所有与该玩家有关的结算，获取结算详情列表
 			for _, sInfo := range contextSInfos {
 				if sInfo.Scores[pid] != 0 {
 					bd := majongSettle.getBillDetail(pid, sInfo)
-					cardValue = cardValue + bd.GetFanValue()*int32(len(bd.GetRelatedPid()))
 					balanceRsp.BillDetail = append(balanceRsp.BillDetail, bd)
+					if bd.GetScore() > 0 {
+						bdValue := bd.GetFanValue() * int32(len(bd.RelatedPid))
+						totalValue = totalValue + bdValue
+					} else if bd.GetScore() < 0 {
+						totalValue = totalValue + bd.GetFanValue()
+					}
 				}
 
 			}
@@ -144,7 +149,7 @@ func (majongSettle *majongSettle) RoundSettle(desk interfaces.Desk, mjContext ma
 				}
 			}
 			// 获取玩家单局结算详情
-			balanceRsp.BillPlayersInfo = majongSettle.getRoundBillPlayerInfo(pid, cardValue, mjContext)
+			balanceRsp.BillPlayersInfo = majongSettle.getRoundBillPlayerInfo(pid, totalValue, mjContext)
 			// 通知该玩家单局结算信息
 			NotifyPlayersMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 		}
