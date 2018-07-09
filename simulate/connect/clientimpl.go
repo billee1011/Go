@@ -209,9 +209,10 @@ func (c *client) ExpectMessage(msgID msgid.MsgID) (interfaces.MessageExpector, e
 		},
 		ch: make(chan []byte, 256),
 	}
-	_, loaded := c.expectInfos.LoadOrStore(msgID, me)
+	old, loaded := c.expectInfos.LoadOrStore(msgID, me)
 	if loaded {
-		return nil, errors.New("已经存在该消息的期望")
+		meOld := old.(messageExpector)
+		return &meOld, errors.New("已经存在该消息的期望")
 	}
 	return &me, nil
 }
