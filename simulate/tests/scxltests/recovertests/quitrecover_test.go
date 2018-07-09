@@ -50,5 +50,12 @@ func Test_QuitRecover(t *testing.T) {
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf3))
 	assert.Equal(t, room.RoomError_SUCCESS, ntf3.GetResumeRes())
 	assert.Equal(t, room.GameStage_GAMESTAGE_PLAYCARD, ntf3.GetGameInfo().GetGameStage())
-
+	var player *room.GamePlayerInfo
+	for _, player = range ntf3.GetGameInfo().GetPlayers() {
+		if player.GetPlayerInfo().GetSeat() == uint32(quitSeat) {
+			break
+		}
+	}
+	assert.True(t, player.GetIsTuoguan())
+	assert.Equal(t, room.XingPaiState_XP_STATE_NORMAL, player.GetXpState())
 }
