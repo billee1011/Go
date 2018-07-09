@@ -9,7 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/room"
 	"steve/client_pb/msgId"
-	"github.com/pkg/errors"
+	"errors"
 )
 
 type playState struct{}
