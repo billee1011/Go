@@ -3,8 +3,6 @@ package recovertests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -21,8 +19,6 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	var Int1B uint32 = 31
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
-	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	zimoSeat := 1
 	quitSeat := zimoSeat
@@ -61,24 +57,32 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	// 其他玩家收到该玩家退出通知
 	utils.RecvQuitNtf(t, deskData, []int{0, 2, 3})
 	assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
+
+	// 需要恢复对局
 	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
 	rsp1 := room.RoomDeskNeedReusmeRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
-	assert.False(t, rsp1.GetIsNeed())
-	utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUELIU)
-	// 再加入3个玩家凑够4人开局避免影响其他测试用例
-	for i := 0; i < 3; i++ {
-		// 创建客户端连接
-		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-		assert.NotNil(t, client)
-		// 登录用户
-		player, err := utils.LoginUser(client, global.AllocUserName())
-		assert.Nil(t, err)
-		assert.NotNil(t, player)
-		_, err = utils.ApplyJoinDesk(player, room.GameId_GAMEID_XUELIU)
-		assert.Nil(t, err)
+	assert.True(t, rsp1.GetIsNeed())
+
+	// 请求加入失败
+	rsp2, err := utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUEZHAN)
+	assert.Nil(t, err)
+	assert.Equal(t, room.RoomError_DESK_GAME_PLAYING, rsp2.GetErrCode())
+
+	// 请求恢复对局
+	assert.Nil(t, utils.SendRecoverGameReq(quitSeat, deskData))
+	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_RESUME_GAME_RSP]
+	rsp3 := &room.RoomResumeGameRsp{}
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, rsp3))
+	assert.Equal(t, room.RoomError_SUCCESS, rsp3.GetResumeRes())
+	assert.Equal(t, room.GameStage_GAMESTAGE_PLAYCARD, rsp3.GetGameInfo().GetGameStage())
+
+	var player *room.GamePlayerInfo
+	for _, player = range rsp3.GetGameInfo().GetPlayers() {
+		if player.GetPlayerInfo().GetSeat() == uint32(zimoSeat) {
+			break
+		}
 	}
-	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_CREATED_NTF]
-	ntf1 := room.RoomDeskCreatedNtf{}
-	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf1))
+	assert.False(t, player.GetIsTuoguan())
+	assert.Equal(t, room.XingPaiState_XP_STATE_HU, player.GetXpState())
 }

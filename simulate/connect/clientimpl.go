@@ -307,9 +307,13 @@ func (c *client) recvLoop() {
 }
 
 func (c *client) checkExpects(header *steve_proto_base.Header, bodyData []byte) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"fun_name": "client.checkExpects",
+	})
 	msgID := header.GetMsgId()
 	iExpector, ok := c.expectInfos.Load(msgid.MsgID(msgID))
 	if iExpector == nil || !ok {
+		logEntry.WithField("msgID", msgID).Infoln("没有对应的Expector，需要添加")
 		return
 	}
 	me := iExpector.(messageExpector)
