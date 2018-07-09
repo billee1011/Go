@@ -20,7 +20,7 @@ func checkSiLianKe(tc *typeCalculator) bool {
 			cardCount[ke] = cardCount[ke] + 1
 			kcolor := ke / 10
 			colorCount[kcolor] = colorCount[kcolor] + 1
-			if ke < minValue {
+			if minValue == 0 || ke < minValue {
 				minValue = ke
 			}
 		}
@@ -39,7 +39,9 @@ func checkSiLianKe(tc *typeCalculator) bool {
 func getPengCardsDetails(pengCards []*majongpb.PengCard) (colorCount map[int]int, cardCount map[int]int, minValue int) {
 	colorCount = make(map[int]int, 0)
 	cardCount = make(map[int]int, 0)
-	minValue = utils.ServerCard2Number(pengCards[0].Card)
+	if len(pengCards) != 0 {
+		minValue = utils.ServerCard2Number(pengCards[0].Card)
+	}
 	for _, pengCard := range pengCards {
 		pengValue := utils.ServerCard2Number(pengCard.Card)
 		pengColor := pengValue / 10

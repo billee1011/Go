@@ -34,8 +34,8 @@ func checkSanTongShun(tc *typeCalculator) bool {
 				hasValue = true
 			}
 		}
-		if !hasColor || !hasValue {
-			return false
+		if hasColor && hasValue {
+			return true
 		}
 	}
 	return false

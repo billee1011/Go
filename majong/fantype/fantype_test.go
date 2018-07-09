@@ -1,6 +1,7 @@
 package fantype
 
 import (
+	"os"
 	"steve/client_pb/room"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -8,6 +9,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	workDir, _ := os.Getwd()
+	os.Chdir(workDir + "/../../room/")
+}
 
 // 平胡
 func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
