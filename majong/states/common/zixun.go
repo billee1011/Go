@@ -345,7 +345,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	s.checkTing(zixunNtf, player, context)
 	if zixunNtf.GetEnableZimo() == true {
 		// 查番型
-		s.checkFanType(record, context, playerID, player.GetHandCards(), context.LastMopaiCard)
+		s.checkFanType(record, context, playerID, player.GetHandCards(), context.GetLastMopaiCard())
 		zixunNtf.HuType = room.HuType(record.HuType).Enum()
 	}
 	//TODO:检查是否需要发送听按钮，以及听按钮的类型
@@ -390,20 +390,15 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 }
 
 func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
-	calcHandCard := make([]*majongpb.Card, 0)
-	for index, handCard := range handCards {
-		if utils.ServerCard2Number(handCard) == utils.ServerCard2Number(huCard) {
-			calcHandCard = append(handCards[0:index], handCards[index+1:]...)
-			break
-		}
-	}
+	calcHandCard, _ := utils.RemoveCards(handCards, huCard, 1)
+
 	calcHuCard := &majongpb.HuCard{
 		Card:      huCard,
 		SrcPlayer: huPlayerID,
 		Type:      majongpb.HuType_hu_zimo,
 	}
 	fanTypes, genCount, huaCount := fantype.CalculateFanTypes(context, huPlayerID, calcHandCard, calcHuCard)
-
+	record.HuFanType = new(majongpb.HuFanType)
 	record.HuFanType.GenCount = uint64(genCount)
 	record.HuFanType.HuaCount = uint64(huaCount)
 	HfanTypes := make([]int64, 0)
@@ -411,7 +406,7 @@ func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.Maj
 		HfanTypes = append(HfanTypes, int64(fanType))
 	}
 	record.HuFanType.FanTypes = HfanTypes
-	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
+	//record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
 
 }
 
