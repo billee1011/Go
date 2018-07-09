@@ -1,9 +1,5 @@
 package fantype
 
-import (
-	majongpb "steve/server_pb/majong"
-)
-
 // checkDaQiXing 大七星:胡牌为七对,并且由“东南西北中发白”其中的字牌构成
 func checkDaQiXing(tc *typeCalculator) bool {
 	if !tc.callCheckFunc(qiduiFuncID) {
@@ -18,11 +14,11 @@ func checkDaQiXing(tc *typeCalculator) bool {
 		return false
 	}
 	for _, card := range handCards {
-		if card.GetColor() != majongpb.CardColor_ColorFeng {
+		if !IsNotFlowerCard(card) {
 			return false
 		}
 	}
-	if huCard.GetCard().GetColor() != majongpb.CardColor_ColorFeng {
+	if !IsNotFlowerCard(huCard.GetCard()) {
 		return false
 	}
 	return true

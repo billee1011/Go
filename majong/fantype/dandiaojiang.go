@@ -14,8 +14,7 @@ func checkDanDiaoJiang(tc *typeCalculator) bool {
 	huCardN := gutils.ServerCard2Number(huCard.Card)
 	isJiang := false
 	for _, combine := range tc.combines {
-		jiang := gutils.ServerCard2Number(combine.jiang)
-		if jiang == huCardN {
+		if uint32(combine.jiang) == huCardN {
 			isJiang = true
 			break
 		}
@@ -23,7 +22,7 @@ func checkDanDiaoJiang(tc *typeCalculator) bool {
 	if !isJiang {
 		return false
 	}
-	if isZiMo(huCard) {
+	if huCard.GetType() == majongpb.HuType_hu_zimo {
 		canTingCardInfos := player.GetZixunRecord().CanTingCardInfo
 		for _, canTingCardInfo := range canTingCardInfos {
 			if canTingCardInfo.OutCard == huCardN && len(canTingCardInfo.TingCardInfo) == 1 {
@@ -37,13 +36,13 @@ func checkDanDiaoJiang(tc *typeCalculator) bool {
 	return false
 }
 
-func isZiMo(huCard *majongpb.HuCard) bool {
-	return map[majongpb.HuType]bool{
-		majongpb.HuType_hu_dihu:              true,
-		majongpb.HuType_hu_gangkai:           true,
-		majongpb.HuType_hu_gangshanghaidilao: true,
-		majongpb.HuType_hu_haidilao:          true,
-		majongpb.HuType_hu_tianhu:            true,
-		majongpb.HuType_hu_zimo:              true,
-	}[huCard.GetType()]
-}
+// func isZiMo(huCard *majongpb.HuCard) bool {
+// 	return map[majongpb.HuType]bool{
+// 		majongpb.HuType_hu_dihu:              true,
+// 		majongpb.HuType_hu_gangkai:           true,
+// 		majongpb.HuType_hu_gangshanghaidilao: true,
+// 		majongpb.HuType_hu_haidilao:          true,
+// 		majongpb.HuType_hu_tianhu:            true,
+// 		majongpb.HuType_hu_zimo:              true,
+// 	}[huCard.GetType()]
+// }

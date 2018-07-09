@@ -1,12 +1,11 @@
 package fantype
 
-import (
-	majongpb "steve/server_pb/majong"
-)
+import majongpb "steve/server_pb/majong"
 
-// checkZiMo 自摸
+// checkZiMo 检测自摸胡 当前玩家摸牌后胡
 func checkZiMo(tc *typeCalculator) bool {
-	if tc.huCard.Type == majongpb.HuType_hu_zimo {
+	huCard := tc.getHuCard()
+	if huCard != nil && huCard.GetType() == majongpb.HuType_hu_zimo {
 		return true
 	}
 	return false
