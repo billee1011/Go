@@ -6,7 +6,6 @@ import (
 	"runtime/debug"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/common/mjoption"
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
@@ -832,17 +831,15 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	mjContext := &d.dContext.mjContext
 	player := gutils.GetMajongPlayer(playerID, mjContext)
 
-	option := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	xpState := int32(player.GetXpState())
-	if xpState&option.PlayerNoNormalStates == 0 {
-		deskMgr := global.GetDeskMgr()
-		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
-		getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
-		return nil
+	if gutils.IsPlayerContinue(player.GetXpState(), mjContext) {
+		logEntry.WithFields(logrus.Fields{
+			"XpState": player.GetXpState(),
+		}).WithError(errPlayerNeedXingPai).Errorln("不能换对手")
+		return errPlayerNeedXingPai
 	}
-	logEntry.WithFields(logrus.Fields{
-		"XpState":               xpState,
-		"option.NoNormalStates": option.PlayerNoNormalStates,
-	}).WithError(errPlayerNeedXingPai).Errorln("不能换对手")
-	return errPlayerNeedXingPai
+	logEntry.Infoln("玩家换对手")
+	deskMgr := global.GetDeskMgr()
+	deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+	getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
+	return nil
 }

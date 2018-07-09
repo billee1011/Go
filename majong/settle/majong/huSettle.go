@@ -52,7 +52,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		// 自摸全赔
 		for _, playerID := range params.AllPlayers {
 			huPlayerID := params.HuPlayers[0]
-			if playerID != huPlayerID && huSettle.canHuSettle(playerID, huPlayerID, params.HasHuPlayers, params.QuitPlayers, settleOption) {
+			if playerID != huPlayerID && huSettle.canHuSettle(playerID, params.GiveupPlayers, params.HasHuPlayers, params.QuitPlayers, settleOption) {
 				scoreInfo[playerID] = -total
 				win = win + total
 			}
@@ -119,7 +119,7 @@ func (huSettle *HuSettle) newCallTransferSettleInfo(params *interfaces.HuSettleP
 			if len(params.HasHuPlayers) <= 1 {
 				gangScore = gangScore * int64(len(params.AllPlayers)-1)
 			} else {
-				if settleOption.HuPlayerCanSettle["huPlayer_can_gang_settle"] {
+				if settleOption.HuPlayerSettle.HuPlayerGangSettle {
 					gangScore = gangScore * int64(len(params.AllPlayers)-1)
 				} else {
 					gangScore = gangScore * int64(len(params.AllPlayers)-len(params.HasHuPlayers))
@@ -178,8 +178,28 @@ func newHuSettleInfo(params *interfaces.HuSettleParams, scoreInfo map[uint64]int
 }
 
 func (huSettle *HuSettle) getHuValue(settleOption *mjoption.SettleOption, huType majongpb.HuType) uint32 {
-	huTypeName := majongpb.HuType_name[int32(huType)]
-	return settleOption.HuValue[huTypeName]
+	switch huType {
+	case 0:
+		return settleOption.HuValue.HuGanghoupao
+	case 1:
+		return settleOption.HuValue.HuQiangGangHu
+	case 2:
+		return settleOption.HuValue.HuDianPao
+	case 3:
+		return settleOption.HuValue.HuGangKai
+	case 4:
+		return settleOption.HuValue.HuHaidDiLao
+	case 5:
+		return settleOption.HuValue.HuGangShangHaiDiLao
+	case 6:
+		return settleOption.HuValue.HuZiMo
+	case 7:
+		return settleOption.HuValue.HuTianHu
+	case 8:
+		return settleOption.HuValue.HuDiHu
+	default:
+		return 1
+	}
 }
 
 func (huSettle *HuSettle) calcTotalValue(cardValue, huValue uint32) uint32 {
@@ -209,25 +229,24 @@ func (huSettle *HuSettle) divideScore(gangScore, winSum int64, params *interface
 }
 
 // canHuSettle 玩家能否参与胡结算
-func (huSettle *HuSettle) canHuSettle(playerID, huPlayerID uint64, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
-	for _, hasHupalyer := range hasHuPlayers {
-		if hasHupalyer == huPlayerID {
+func (huSettle *HuSettle) canHuSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
+	for _, giveupPlayer := range givePlayers {
+		if giveupPlayer != playerID {
 			break
 		}
-		if hasHupalyer == playerID {
-			for _, quitPlayer := range quitPlayers {
-				if quitPlayer == playerID {
-					if _, ok := settleOption.HuQuitPlayerCanSettle["huQuitPlayer_can_hu_settle"]; !ok {
-						return true
-					}
-					return settleOption.HuQuitPlayerCanSettle["huQuitPlayer_can_hu_settle"]
-				}
-			}
-			if _, ok := settleOption.HuQuitPlayerCanSettle["huPlayer_can_hu_settle"]; !ok {
-				return true
-			}
-			return settleOption.HuPlayerCanSettle["huPlayer_can_hu_settle"]
+		return settleOption.GiveUpPlayerSettle.GiveUpPlayerHuSettle
+	}
+	for _, hasHupalyer := range hasHuPlayers {
+		if hasHupalyer != playerID {
+			break
 		}
+		for _, quitPlayer := range quitPlayers {
+			if quitPlayer != playerID {
+				break
+			}
+			return settleOption.HuQuitPlayerSettle.HuQuitPlayeHuSettle
+		}
+		return settleOption.HuPlayerSettle.HuPlayeHuSettle
 	}
 	return true
 }
