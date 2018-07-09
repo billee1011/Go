@@ -120,9 +120,11 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	//更新玩家手牌和已出的牌
 	handCards = RemoveAll(handCards, outCards)
 	player.HandCards = toInts(handCards)
-	lastOutCards := toDDZCards(player.OutCards)
-	lastOutCards = AppendAll(lastOutCards, outCards)
-	player.OutCards = toInts(lastOutCards)
+	player.OutCards = message.GetCards()
+
+	//lastOutCards := toDDZCards(player.OutCards)
+	//lastOutCards = AppendAll(lastOutCards, outCards)
+	//player.AllOutCards = toInts(lastOutCards) // for 记牌器
 
 	//更新context
 	context.CurrentPlayerId = nextPlayerId
