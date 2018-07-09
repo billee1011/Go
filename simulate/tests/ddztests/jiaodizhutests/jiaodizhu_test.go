@@ -4,7 +4,6 @@ import (
 	"fmt"
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
@@ -240,13 +239,13 @@ func TestJiaodizhu(t *testing.T) {
 		if nextPlayerID == farmer1.Player.GetID() {
 
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民1放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
 
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民2放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
@@ -262,13 +261,13 @@ func TestJiaodizhu(t *testing.T) {
 			logEntry.Errorf("玩家%d 第%d次出牌回应结果为%s", farmer2.Player.GetID(), i, ntf.GetResult().GetErrDesc())
 		} else {
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民2放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
 
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民1放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
@@ -285,7 +284,7 @@ func TestJiaodizhu(t *testing.T) {
 		}
 
 		// 暂停2秒
-		time.Sleep(3 * time.Second)
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	// 牌已出完，期待游戏结束通知
@@ -332,47 +331,54 @@ func TestJiaodizhu(t *testing.T) {
 	}
 
 	// ------------------------------------------------ 	恢复对局	  ---------------------------------------
-	// 最终地主的deskPlayer
-	lordPlayer = deskData.Players[deskData.DDZData.ResultLordID]
+	/* 	// 最终地主的deskPlayer
+	   	lordPlayer = deskData.Players[deskData.DDZData.ResultLordID]
 
-	// 地主断开连接
-	lordPlayer.Player.GetClient().Stop()
-	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
+	   	// 地主断开连接
+	   	assert.Nil(t, lordPlayer.Player.GetClient().Stop())
+	   	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
 
-	// 重新连接
-	lordPlayer.Player.GetClient().Start(config.ServerAddr, config.ClientVersion)
+	   	// 再新建一个连接
+	   	client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
+	   	assert.NotNil(t, client)
+	   	player, err := utils.LoginUser(client, lordPlayer.Player.GetUsrName())
+	   	assert.Nil(t, err)
+	   	assert.NotNil(t, player)
+	   	assert.Equal(t, lordPlayer.Player.GetID(), player.GetID())
 
-	// 监听恢复对局的回复消息
-	resumeRspExpect, _ := lordPlayer.Player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_RESUME_RSP)
+	   	// 步骤4
+	   	utils.UpdatePlayerClientInfo(client, player, deskData)
+	   	// 监听恢复对局的回复消息
+	   	resumeRspExpect, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DDZ_RESUME_RSP)
 
-	// 发出恢复对局请求
-	assert.Nil(t, sendResumeGameReq(&lordPlayer))
+	   	// 发出恢复对局请求
+	   	assert.Nil(t, SendDDZRecoverGameReq(lordPlayer.GetSeat(), deskData))
 
-	resumeRsp := room.DDZResumeGameRsp{}
-	if err := resumeRspExpect.Recv(global.DefaultWaitMessageTime, &resumeRsp); err != nil {
-		logEntry.Errorf("玩家%d没有收到恢复对局的回复", lordPlayer.Player.GetID())
-		assert.NotNil(t, nil)
-		return
-	}
+	   	resumeRsp := room.DDZResumeGameRsp{}
+	   	if err := resumeRspExpect.Recv(global.DefaultWaitMessageTime, &resumeRsp); err != nil {
+	   		logEntry.Errorf("玩家%d没有收到恢复对局的回复", lordPlayer.Player.GetID())
+	   		assert.NotNil(t, nil)
+	   		return
+	   	}
 
-	// 打印恢复对局回复的信息
-	logEntry.Infof("玩家%d收到恢复对局的回复,resultCode = %d， resultStr = %s", resumeRsp.GetResult().GetErrCode(), resumeRsp.GetResult().GetErrDesc())
+	   	// 打印恢复对局回复的信息
+	   	logEntry.Infof("玩家%d收到恢复对局的回复,resultCode = %d， resultStr = %s", resumeRsp.GetResult().GetErrCode(), resumeRsp.GetResult().GetErrDesc())
 
-	// 成功时打印游戏信息
-	if resumeRsp.GetResult().GetErrCode() == 0 {
-		ddzDeskInfo := resumeRsp.GetGameInfo()
-		// 桌子里面的每一个玩家
-		for i := 0; i < len(ddzDeskInfo.GetPlayers()); i++ {
-			ddzPlayrInfo := ddzDeskInfo.GetPlayers()[i]
-			roomPlayerInfo := ddzPlayrInfo.GetPlayerInfo()
-			logEntry.Infof("玩家:%d，名字:%s，金币数:%d，座位号:%d，已打出的牌:%v，手中的牌:%v，是否为地主:%v，是否托管:%d，是否加倍:%d",
-				roomPlayerInfo.GetPlayerId(), roomPlayerInfo.GetName(), roomPlayerInfo.GetCoin(), roomPlayerInfo.GetSeat(),
-				ddzPlayrInfo.GetOutCards(), ddzPlayrInfo.GetHandCards(), ddzPlayrInfo.GetLord(), ddzPlayrInfo.GetTuoguan(), ddzPlayrInfo.GetIsDouble())
-		}
+	   	// 成功时打印游戏信息
+	   	if resumeRsp.GetResult().GetErrCode() == 0 {
+	   		ddzDeskInfo := resumeRsp.GetGameInfo()
+	   		// 桌子里面的每一个玩家
+	   		for i := 0; i < len(ddzDeskInfo.GetPlayers()); i++ {
+	   			ddzPlayrInfo := ddzDeskInfo.GetPlayers()[i]
+	   			roomPlayerInfo := ddzPlayrInfo.GetPlayerInfo()
+	   			logEntry.Infof("玩家:%d，名字:%s，金币数:%d，座位号:%d，已打出的牌:%v，手中的牌:%v，是否为地主:%v，是否托管:%d，是否加倍:%d",
+	   				roomPlayerInfo.GetPlayerId(), roomPlayerInfo.GetName(), roomPlayerInfo.GetCoin(), roomPlayerInfo.GetSeat(),
+	   				ddzPlayrInfo.GetOutCards(), ddzPlayrInfo.GetHandCards(), ddzPlayrInfo.GetLord(), ddzPlayrInfo.GetTuoguan(), ddzPlayrInfo.GetIsDouble())
+	   		}
 
-		// 当前状态
-		logEntry.Infof("当前状态：%v，进入下一状态的等待时间:%d", ddzDeskInfo.GetStage().GetStage(), ddzDeskInfo.GetStage().GetTime())
-	}
+	   		// 当前状态
+	   		logEntry.Infof("当前状态：%v，进入下一状态的等待时间:%d", ddzDeskInfo.GetStage().GetStage(), ddzDeskInfo.GetStage().GetTime())
+	   	} */
 }
 
 // sendChatReq 发送叫地主请求
