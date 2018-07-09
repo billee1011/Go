@@ -284,7 +284,7 @@ func TestJiaodizhu(t *testing.T) {
 		}
 
 		// 暂停2秒
-		time.Sleep(3 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 
 	// 牌已出完，期待游戏结束通知
