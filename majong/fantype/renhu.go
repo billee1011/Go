@@ -11,7 +11,7 @@ func checkRenHu(tc *typeCalculator) bool {
 		currPlayer := tc.getPlayer()
 		// 不是庄家
 		if zjPlayer.GetPalyerId() != currPlayer.GetPalyerId() {
-			if zjPlayer.GetZixunCount() == 1 && tc.getPlayer().GetMopaiCount() == 0 {
+			if zjPlayer.GetZixunCount() == 1 && tc.getPlayer().GetZixunCount() == 0 {
 				return true
 			}
 		}

@@ -44,14 +44,14 @@ enable_fan_types:
     mutex: [0,2]  # 和平胡,七对互斥
     method: 1   # 计算方式：相乘
     score: 8   # 番数 8
-    subgeng: -1  # 扣除的根数量
+    subgeng: 1  # 扣除的根数量
   5: # 清龙七对
     id: 5 # 清龙七对
     func_id: 5  # 计算函数 ID: 5
     mutex: [0,1,2,3,4]  # 和平胡,清一色,七对,清七对,龙七对互斥
     method: 1   # 计算方式：相乘
     score: 32   # 番数 32
-    subgeng: -1  # 扣除的根数量
+    subgeng: 1  # 扣除的根数量
   6: # 碰碰胡
     id: 6 # 碰碰胡
     func_id: 6  # 计算函数 ID: 6
@@ -86,14 +86,14 @@ enable_fan_types:
     mutex: [0,6,8]  # 和平胡,碰碰胡,金钩钓互斥
     method: 1   # 计算方式：相乘
     score: 64   # 番数 64
-    subgeng: -4  # 扣除的根数量
+    subgeng: 4  # 扣除的根数量
   11: # 清十八罗汉
     id: 11 # 清十八罗汉
     func_id: 11  # 计算函数 ID: 11
     mutex: [0,1,6,7,8,9,10]  # 和平胡,清一色,碰碰胡，金钩钓,清碰，清金钩钓,十八罗汉互斥
     method: 1   # 计算方式：相乘
     score: 256   # 番数 256
-    subgeng: -4  # 扣除的根数量
+    subgeng: 4  # 扣除的根数量
   68: # 天胡
     id: 68 # 天胡
     func_id: 78  # 计算函数 ID: 78
