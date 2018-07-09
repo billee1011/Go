@@ -32,3 +32,13 @@ func GetRPCAddr() string {
 func GetRPCPort() int {
 	return viper.GetInt("rpc_port")
 }
+
+// GetListenClientAddr 获取客户端监听地址
+func GetListenClientAddr() string {
+	return viper.GetString(ListenClientAddr)
+}
+
+// GetListenClientPort 获取监听客户端端口
+func GetListenClientPort() int {
+	return viper.GetInt(ListenClientPort)
+}

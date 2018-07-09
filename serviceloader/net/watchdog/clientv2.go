@@ -1,6 +1,7 @@
 package watchdog
 
 import (
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"steve/structs/proto/base"
@@ -57,17 +58,16 @@ func newClientV2(e exchanger, callback clientCallback) *clientV2 {
 
 func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err error) {
 	defer func() {
+		// 通道被关闭了
 		if x := recover(); x != nil {
 			err = fmt.Errorf("client closed")
-			fmt.Println(x)
-			debug.PrintStack()
 		}
 	}()
 	if body == nil {
 		body = []byte{}
 	}
 	if body == nil || head == nil {
-		panic("发送数据为空")
+		return errors.New("发送数据为空")
 	}
 
 	// 为了保证消息有序，不能使用 goroutine， 而要使用带缓冲区的通道
@@ -110,7 +110,6 @@ func (c *clientV2) run(onFinish func()) error {
 	done := make(chan struct{})
 	defer close(done)
 
-	defer close(c.csend)
 	// 接收数据 goroutine
 	rfinish := c.recvLoop(done)
 
@@ -128,6 +127,9 @@ func (c *clientV2) run(onFinish func()) error {
 	case <-sfinish:
 		return nil
 	case <-c.finish:
+		// 等待数据发送完成
+		close(c.csend)
+		<-sfinish
 		return nil
 	}
 }

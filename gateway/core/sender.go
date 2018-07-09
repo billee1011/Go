@@ -3,7 +3,8 @@ package core
 import (
 	"context"
 	"steve/client_pb/msgId"
-	"steve/gateway/global"
+	"steve/gateway/connection"
+	"steve/gateway/watchdog"
 	"steve/structs/proto/base"
 	"steve/structs/proto/gate_rpc"
 
@@ -35,7 +36,8 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 	logEntry = logEntry.WithField("client_ids", clientIDs)
 
 	if len(clientIDs) != 0 {
-		err := mss.core.dog.BroadPackage(clientIDs, &header, req.GetData())
+		dog := watchdog.Get()
+		err := dog.BroadPackage(clientIDs, &header, req.GetData())
 		if err != nil {
 			logEntry.WithError(err).Warningln("广播消息失败")
 			result.Ok = false
@@ -50,9 +52,9 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 func (mss *sender) fetchConnectionIDs(playerIDs []uint64) []uint64 {
 	result := make([]uint64, 0, len(playerIDs))
 
-	playerMgr := global.GetPlayerManager()
+	connMgr := connection.GetConnectionMgr()
 	for _, playerID := range playerIDs {
-		cid := playerMgr.GetPlayerConnectionID(playerID)
+		cid := connMgr.GetPlayerConnectionID(playerID)
 		if cid != 0 {
 			result = append(result, cid)
 		}

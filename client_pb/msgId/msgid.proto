@@ -23,6 +23,8 @@ enum MsgID {
 	GATE_HEART_BEAT_REQ = 0x1003;	// 心跳检测请求
 	GATE_HEART_BEAT_RSP = 0x1004;	// 心跳检测应答
 
+	GATE_ANOTHER_LOGIN_NTF = 0x1005;	// 顶号通知
+
 	// GATE_END 0x1FFF
 	/////////////////////////////////////////////////////////////	
 

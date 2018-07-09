@@ -2,15 +2,42 @@ package gateservice
 
 import (
 	"context"
+	"steve/client_pb/gate"
+	"steve/client_pb/msgId"
 	"steve/gateway/config"
+	"steve/gateway/connection"
+	"steve/gateway/watchdog"
 	"steve/server_pb/gateway"
+	"steve/structs/net"
+	"steve/structs/proto/base"
 
+	"github.com/Sirupsen/logrus"
+
+	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
 )
 
-type gateService struct{}
+// GateService 网关服务
+// 实现 gateway.GateServiceServer
+type GateService struct {
+	watchDog net.WatchDog
+}
 
-func (gs *gateService) GetGatewayAddress(ctx context.Context, request *gateway.GetGatewayAddressRequest) (*gateway.GetGatewayAddressResponse, error) {
+var defaultObject = new(GateService)
+var _ gateway.GateServiceServer = Default()
+
+// Default 默认对象
+func Default() *GateService {
+	return defaultObject
+}
+
+// SetWatchDog 设置 watch dog
+func (gs *GateService) SetWatchDog(dog net.WatchDog) {
+	gs.watchDog = dog
+}
+
+// GetGatewayAddress 获取客户端连接地址
+func (gs *GateService) GetGatewayAddress(ctx context.Context, request *gateway.GetGatewayAddressRequest) (*gateway.GetGatewayAddressResponse, error) {
 	response := &gateway.GetGatewayAddressResponse{
 		Addr: &gateway.GatewayAddress{
 			Ip:   viper.GetString(config.ListenClientAddrInquire),
@@ -20,7 +47,37 @@ func (gs *gateService) GetGatewayAddress(ctx context.Context, request *gateway.G
 	return response, nil
 }
 
-// New 创建服务
-func New() gateway.GateServiceServer {
-	return &gateService{}
+// AnotherLogin 顶号
+func (gs *GateService) AnotherLogin(ctx context.Context, request *gateway.AnotherLoginRequest) (response *gateway.AnotherLoginResponse, err error) {
+	response = &gateway.AnotherLoginResponse{}
+	playerID := request.GetPlayerId()
+	AnotherLogin(playerID)
+	return
+}
+
+// AnotherLogin 顶号
+func AnotherLogin(playerID uint64) {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "AnotherLogin",
+		"player_id": playerID,
+	})
+	connMgr := connection.GetConnectionMgr()
+	connectionID := connMgr.GetPlayerConnectionID(playerID)
+	if connectionID == 0 {
+		return
+	}
+	connMgr.SetPlayerConnectionID(playerID, 0)
+
+	notify := gate.GateAnotherLoginNtf{}
+	data, err := proto.Marshal(&notify)
+	if err != nil {
+		entry.WithError(err).Errorln("消息序列化失败")
+		return
+	}
+	dog := watchdog.Get()
+	dog.SendPackage(connectionID, &steve_proto_base.Header{
+		MsgId:   proto.Uint32(uint32(msgid.MsgID_GATE_ANOTHER_LOGIN_NTF)),
+		Version: proto.String("1.0"),
+	}, data)
+	dog.Disconnect(connectionID)
 }

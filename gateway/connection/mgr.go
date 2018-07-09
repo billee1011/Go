@@ -3,9 +3,10 @@ package connection
 import (
 	"context"
 	"fmt"
-	"steve/gateway/interfaces"
+	"steve/gateway/watchdog"
 	"steve/gutils/topics"
 	"steve/structs"
+	"steve/structs/net"
 	"steve/structs/pubsub"
 	"sync"
 
@@ -17,27 +18,35 @@ import (
 )
 
 type connectionWithCancelFunc struct {
-	connection *connection
+	connection *Connection
 	cancel     context.CancelFunc
 }
 
-type connectionMgr struct {
-	kicker      func(clientID uint64)
+// ConnMgr 连接管理
+type ConnMgr struct {
+	*PlayerMgr
 	connections sync.Map // clientID: *connectionWithContext
 }
 
-// NewConnectionMgr 创建 ConnectionManager
-func NewConnectionMgr() interfaces.ConnectionManager {
-	return &connectionMgr{}
+var defaultConnectionMgr = &ConnMgr{
+	PlayerMgr: new(PlayerMgr),
+}
+var _ net.ConnectObserver = defaultConnectionMgr
+
+// GetConnectionMgr 获取连接管理
+func GetConnectionMgr() *ConnMgr {
+	return defaultConnectionMgr
 }
 
-func (cm *connectionMgr) SetKicker(kicker func(clientID uint64)) {
-	cm.kicker = kicker
+func (cm *ConnMgr) kickClient(clientID uint64) {
+	dog := watchdog.Get()
+	dog.Disconnect(clientID)
 }
 
-func (cm *connectionMgr) OnClientConnect(clientID uint64) {
+// OnClientConnect 客户端断开连接
+func (cm *ConnMgr) OnClientConnect(clientID uint64) {
 	logrus.WithField("client_id", clientID).Info("client connected")
-	connection := newConnection(clientID)
+	connection := newConnection(clientID, cm)
 	ctx, cancel := context.WithCancel(context.Background())
 	cm.connections.Store(clientID, &connectionWithCancelFunc{
 		connection: connection,
@@ -45,11 +54,12 @@ func (cm *connectionMgr) OnClientConnect(clientID uint64) {
 	})
 	connection.run(ctx, func() {
 		cm.removeConnection(clientID)
-		cm.kicker(clientID)
+		cm.kickClient(clientID)
 	})
 }
 
-func (cm *connectionMgr) GetConnection(clientID uint64) interfaces.Connection {
+// GetConnection 获取连接
+func (cm *ConnMgr) GetConnection(clientID uint64) *Connection {
 	_connection, ok := cm.connections.Load(clientID)
 	if !ok || _connection == nil {
 		return nil
@@ -58,9 +68,10 @@ func (cm *connectionMgr) GetConnection(clientID uint64) interfaces.Connection {
 	return connection.connection
 }
 
-func (cm *connectionMgr) OnClientDisconnect(clientID uint64) {
+// OnClientDisconnect 连接断开
+func (cm *ConnMgr) OnClientDisconnect(clientID uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "connectionMgr.OnClientDisconnect",
+		"func_name": "ConnMgr.OnClientDisconnect",
 		"client_id": clientID,
 	})
 	logEntry.Info("client disconnected")
@@ -75,9 +86,9 @@ func (cm *connectionMgr) OnClientDisconnect(clientID uint64) {
 	cm.pubDisconnect(clientID)
 }
 
-func (cm *connectionMgr) pubDisconnect(clientID uint64) {
+func (cm *ConnMgr) pubDisconnect(clientID uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "connectionMgr.pubDisconnect",
+		"func_name": "ConnMgr.pubDisconnect",
 		"client_id": clientID,
 	})
 	pub := cm.getPublisher()
@@ -95,15 +106,15 @@ func (cm *connectionMgr) pubDisconnect(clientID uint64) {
 	}
 }
 
-func (cm *connectionMgr) getPublisher() pubsub.Publisher {
+func (cm *ConnMgr) getPublisher() pubsub.Publisher {
 	exposer := structs.GetGlobalExposer()
 	return exposer.Publisher
 }
 
-func (cm *connectionMgr) getRPCAddr() string {
+func (cm *ConnMgr) getRPCAddr() string {
 	return fmt.Sprintf("%s:%d", viper.GetString("rpc_addr"), viper.GetInt("rpc_port"))
 }
 
-func (cm *connectionMgr) removeConnection(clientID uint64) {
+func (cm *ConnMgr) removeConnection(clientID uint64) {
 	cm.connections.Delete(clientID)
 }

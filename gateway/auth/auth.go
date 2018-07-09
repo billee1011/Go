@@ -1,11 +1,18 @@
 package auth
 
 import (
+	"context"
+	"fmt"
 	"steve/client_pb/gate"
 	msgid "steve/client_pb/msgId"
 	"steve/common/auth"
+	"steve/common/data/player"
 	"steve/gateway/config"
-	"steve/gateway/global"
+	"steve/gateway/connection"
+	"steve/gateway/gateservice"
+	"steve/server_pb/gateway"
+	"steve/structs"
+	"steve/structs/common"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 	"time"
@@ -28,6 +35,7 @@ func HandleAuthReq(clientID uint64, header *steve_proto_gaterpc.Header, req gate
 	if !checkRequest(clientID, header, &req, response) {
 		return
 	}
+	checkAnother(req.GetPlayerId())
 	if !saveConnectPlayerMap(clientID, header, &req, response) {
 		return
 	}
@@ -69,7 +77,7 @@ func checkRequest(clientID uint64, header *steve_proto_gaterpc.Header, req *gate
 
 func saveConnectPlayerMap(clientID uint64, header *steve_proto_gaterpc.Header, req *gate.GateAuthReq, response *gate.GateAuthRsp) bool {
 	playerID := req.GetPlayerId()
-	cm := global.GetConnectionManager()
+	cm := connection.GetConnectionMgr()
 	connection := cm.GetConnection(clientID)
 	if connection == nil {
 		// TODO : 妥善处理这种情况
@@ -82,4 +90,35 @@ func saveConnectPlayerMap(clientID uint64, header *steve_proto_gaterpc.Header, r
 		return false
 	}
 	return true
+}
+
+// checkAnother 顶号检查
+func checkAnother(playerID uint64) {
+	gateAddr := player.GetPlayerGateAddr(playerID)
+	if gateAddr == "" {
+		return
+	}
+	localGateAddr := fmt.Sprintf("%s:%d", config.GetRPCAddr(), config.GetRPCPort())
+
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name":       "checkAnother",
+		"player_id":       playerID,
+		"gate_addr":       gateAddr,
+		"local_gate_addr": localGateAddr,
+	})
+	entry.Infoln("顶号登录")
+	if gateAddr == localGateAddr {
+		// 玩家原本在此网关登录
+		gateservice.AnotherLogin(playerID)
+	} else {
+		// 玩家原本在其他网关服登录
+		exposer := structs.GetGlobalExposer()
+		cc, err := exposer.RPCClient.GetConnectByServerName(common.GateServiceName)
+		if err != nil || cc == nil {
+			entry.WithError(err).Warningln("发起顶号通知失败")
+			return
+		}
+		client := gateway.NewGateServiceClient(cc)
+		client.AnotherLogin(context.Background(), &gateway.AnotherLoginRequest{PlayerId: playerID})
+	}
 }

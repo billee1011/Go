@@ -54,12 +54,13 @@ func (p *clientPlayer) GetExpector(msgID msgid.MsgID) interfaces.MessageExpector
 	return p.expectors[msgID]
 }
 
-func createPlayer(playerID uint64, coin uint64, client interfaces.Client, userName string) *clientPlayer {
+func createPlayer(playerID uint64, coin uint64, client interfaces.Client, accountID uint64, userName string) *clientPlayer {
 	return &clientPlayer{
 		playerID:  playerID,
 		coin:      coin,
 		client:    client,
 		usrName:   userName,
+		accountID: accountID,
 		expectors: make(map[msgid.MsgID]interfaces.MessageExpector),
 	}
 }
@@ -101,14 +102,7 @@ func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer,
 	if err != nil {
 		return nil, fmt.Errorf("网关认证失败: %v", err)
 	}
-	return &clientPlayer{
-		playerID:  playerID,
-		coin:      0, // TODO, 从服务器加载数据
-		client:    gateClient,
-		usrName:   "", // TODO: delete
-		accountID: accountID,
-	}, nil
-
+	return createPlayer(playerID, 0, gateClient, accountID, ""), nil
 }
 
 func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPlayer, deskData *DeskData) {

@@ -5,8 +5,9 @@ import (
 	"errors"
 	msgid "steve/client_pb/msgId"
 	"steve/common/data/player"
-	"steve/gateway/global"
+	"steve/gateway/connection"
 	"steve/gateway/msgrange"
+	"steve/gateway/watchdog"
 	"steve/structs"
 	"steve/structs/common"
 	"steve/structs/exchanger"
@@ -56,7 +57,7 @@ func (o *receiver) getConnection(serverName string, playerID uint64) (*grpc.Clie
 }
 
 func (o *receiver) getPlayerID(clientID uint64) uint64 {
-	cm := global.GetConnectionManager()
+	cm := connection.GetConnectionMgr()
 	connection := cm.GetConnection(clientID)
 	if connection == nil {
 		return 0
@@ -124,7 +125,7 @@ func (o *receiver) response(clientID uint64, reqHeader *steve_proto_base.Header,
 		RspSeq: proto.Uint64(reqHeader.GetSendSeq()),
 		MsgId:  proto.Uint32(rspMsgID),
 	}
-	dog := o.core.dog
+	dog := watchdog.Get()
 	if err := dog.SendPackage(clientID, header, body); err != nil {
 		entry.WithError(err).Errorln("发送消息失败")
 	}

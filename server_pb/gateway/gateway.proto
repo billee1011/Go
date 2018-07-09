@@ -15,6 +15,14 @@ message GetGatewayAddressResponse {
     GatewayAddress addr = 1;
 }
 
+// AnotherLoginRequest 顶号请求
+message AnotherLoginRequest {
+    uint64 player_id = 1;
+}
+// AnotherLoginResponse 顶号应答
+message AnotherLoginResponse {}
+
 service GateService {
     rpc GetGatewayAddress(GetGatewayAddressRequest) returns (GetGatewayAddressResponse) {}
+    rpc AnotherLogin(AnotherLoginRequest) returns (AnotherLoginResponse) {}
 }

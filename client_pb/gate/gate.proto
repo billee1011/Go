@@ -34,3 +34,8 @@ message GateHeartBeatReq {
 message GateHeartBeatRsp {
     optional uint32 reserve = 2;    // 保留
 }
+
+// GateAnotherLoginNtf 顶号通知
+message GateAnotherLoginNtf {
+    optional uint32 reserve = 1;    // 保留
+}

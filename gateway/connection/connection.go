@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"steve/common/data/player"
 	"steve/gateway/config"
-	"steve/gateway/global"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -18,20 +17,23 @@ const (
 	attachInterval time.Duration = time.Minute
 )
 
-type connection struct {
+// Connection 连接
+type Connection struct {
 	playerID       uint64
 	clientID       uint64
 	heartBeatTimer *time.Timer
 	attachTimer    *time.Timer
+	connMgr        *ConnMgr
 }
 
-func newConnection(clientID uint64) *connection {
-	return &connection{
+func newConnection(clientID uint64, connMgr *ConnMgr) *Connection {
+	return &Connection{
 		clientID: clientID,
+		connMgr:  connMgr,
 	}
 }
 
-func (c *connection) run(ctx context.Context, finish func()) {
+func (c *Connection) run(ctx context.Context, finish func()) {
 	c.heartBeatTimer = time.NewTimer(heartBeatInterval)
 	c.attachTimer = time.NewTimer(attachInterval)
 
@@ -56,14 +58,14 @@ func (c *connection) run(ctx context.Context, finish func()) {
 	}()
 }
 
-func (c *connection) detachPlayerConnect() {
+func (c *Connection) detachPlayerConnect() {
 	if c.playerID != 0 {
 		player.SetPlayerGateAddr(c.playerID, "")
-		global.GetPlayerManager().SetPlayerConnectionID(c.playerID, 0)
+		c.connMgr.SetPlayerConnectionID(c.playerID, 0)
 	}
 }
 
-func (c *connection) kick(reason string, finish func()) {
+func (c *Connection) kick(reason string, finish func()) {
 	entry := logrus.WithFields(logrus.Fields{
 		"player_id": c.playerID,
 		"client_id": c.clientID,
@@ -74,11 +76,13 @@ func (c *connection) kick(reason string, finish func()) {
 	finish()
 }
 
-func (c *connection) GetPlayerID() uint64 {
+// GetPlayerID 获取绑定的玩家 ID
+func (c *Connection) GetPlayerID() uint64 {
 	return c.playerID
 }
 
-func (c *connection) AttachPlayer(playerID uint64) bool {
+// AttachPlayer 绑定玩家 ID
+func (c *Connection) AttachPlayer(playerID uint64) bool {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name":        "connection.AttachPlayer",
 		"player_id":        c.playerID,
@@ -91,20 +95,23 @@ func (c *connection) AttachPlayer(playerID uint64) bool {
 	}
 	c.playerID = playerID
 	c.attachTimer.Stop()
+
 	player.SetPlayerGateAddr(playerID, c.getGatewayAddr())
-	global.GetPlayerManager().SetPlayerConnectionID(c.playerID, c.clientID)
+	c.connMgr.SetPlayerConnectionID(c.playerID, c.clientID)
 	entry.Infoln("绑定成功")
 	return true
 }
 
-func (c *connection) GetClientID() uint64 {
+// GetClientID 获取连接 ID
+func (c *Connection) GetClientID() uint64 {
 	return c.clientID
 }
 
-func (c *connection) HeartBeat() {
+// HeartBeat 心跳
+func (c *Connection) HeartBeat() {
 	c.heartBeatTimer.Reset(heartBeatInterval)
 }
 
-func (c *connection) getGatewayAddr() string {
+func (c *Connection) getGatewayAddr() string {
 	return fmt.Sprintf("%s:%d", config.GetRPCAddr(), config.GetRPCPort())
 }
