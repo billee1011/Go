@@ -167,7 +167,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 				cardParams := interfaces.CardCalcParams{
 					HandCard: players[i].HandCards,
 					PengCard: utils.TransPengCard(players[i].PengCards),
-					GangCard: utils.TransGangCard(players[i].GangCards),
+					GangCard: players[i].GangCards,
 					HuCard:   pbCard,
 					GameID:   int(context.GetGameId()),
 				}

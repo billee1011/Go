@@ -10,6 +10,7 @@ import (
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
+	"steve/room/config"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"github.com/spf13/viper"
 
 	_ "steve/room/ai" // 加载 AI 包
 )
@@ -321,8 +323,8 @@ func (d *desk) initMajongContext() error {
 		GameId:  int32(d.gameID),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
-			MaxFapaiCartoonTime:        10 * 1000,
-			MaxHuansanzhangCartoonTime: 10 * 1000,
+			MaxFapaiCartoonTime:        uint32(viper.GetInt(config.MaxFapaiCartoonTime)),
+			MaxHuansanzhangCartoonTime: uint32(viper.GetInt(config.MaxHuansanzhangCartoonTime)),
 			HasHuansanzhang:            handle.GetHsz(d.GetGameID()),                     //设置玩家是否开启换三张
 			Cards:                      handle.GetPeiPai(d.GetGameID()),                  //设置是否配置墙牌
 			WallcardsLength:            uint32(handle.GetLensOfWallCards(d.GetGameID())), //设置墙牌长度

@@ -1,8 +1,8 @@
-id: 3 # 选项 ID
+id: 4 # 选项 ID
 
 enable_geng: false # 是否启用根
 
-enable_false: true # 是否启用花
+enable_hua: true # 是否启用花
 hua_score: 1 # 花的番数
 hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
 
@@ -17,22 +17,22 @@ enable_fan_types:
   1:  # 大四喜
     id: 1 # 大四喜
     func_id: 12  # 计算函数 ID : 12
-    mutex: [0,6,59,58,34,45,33]  # 和平胡互斥
+    mutex: [0,41,50,49,26,43,25]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88
   2:  # 大三元
     id: 2 # 大三元
     func_id: 13  # 计算函数 ID : 13
-    mutex: [0,46,60]  # 和平胡互斥
+    mutex: [0,39,51]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88    
-   3:  # 九莲宝灯
+  3:  # 九莲宝灯
     id: 3 # 九莲宝灯
     func_id: 14  # 计算函数 ID : 14
-    mutex: [0]  # 和平胡互斥
+    mutex: [0,34,56,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88  
-   4:  # 大于五
+  4:  # 大于五
     id: 4 # 大于五
     func_id: 15  # 计算函数 ID : 15
     mutex: [0]  # 和平胡互斥
@@ -44,28 +44,28 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88    
-   6:  # 大七星
+  6:  # 大七星
     id: 6 # 大七星
     func_id: 17  # 计算函数 ID : 17
-    mutex: [0,2,26,27,50,74,66,75,23]  # 和平胡互斥
+    mutex: [0,28,18,19,45,64,56,65,14]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88      
   7:  # 连七对
     id: 7 # 连七对
     func_id: 18  # 计算函数 ID : 18
-    mutex: [0,2,74,66,1,75]  # 和平胡互斥
+    mutex: [28,64,56,34,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88     
-   8:  # 四杠
+  8:  # 四杠
     id: 8 # 四杠
     func_id: 19  # 计算函数 ID : 19
-    mutex: [0,31,51,70,74]  # 和平胡互斥
+    mutex: [0,23,46,61,64]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88        
   9:  # 天胡
     id: 9 # 天胡
     func_id: 78  # 计算函数 ID : 78
-    mutex: [0,71,72,74,73,52,75]  # 和平胡互斥
+    mutex: [0,62,63,64,47,48,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88        
   10:  # 地胡
@@ -74,35 +74,34 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88   
-
   11:  # 小四喜
     id: 11 # 小四喜
     func_id: 20  # 计算函数 ID : 20
-    mutex: [0,34,45,59,58]  # 和平胡互斥
+    mutex: [0,26,43,50,49]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 64    # 番数 64       
-   12:  # 小三元
+  12:  # 小三元
     id: 12 # 小三元
     func_id: 21  # 计算函数 ID : 21
-    mutex: [0,46,60]  # 和平胡互斥
+    mutex: [0,39,51]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 64    # 番数 64     
   13:  # 双龙会
     id: 13 # 双龙会
     func_id: 22  # 计算函数 ID : 22
-    mutex: [0,67,2,1,69]  # 和平胡互斥
+    mutex: [0,58,28,34,60]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 64    # 番数 64  
   14:  # 字一色
     id: 14 # 字一色
     func_id: 23  # 计算函数 ID : 23
-    mutex: [0,6,50,30,33]  # 和平胡互斥
+    mutex: [0,41,45,22,25]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 64    # 番数 64       
-   15:  # 四暗刻
+  15:  # 四暗刻
     id: 15 # 四暗刻
     func_id: 24  # 计算函数 ID : 24
-    mutex: [0,40,64,6,66,75]  # 和平胡互斥
+    mutex: [0,31,54,41,56,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 64    # 番数 64 
   16:  # 人胡
@@ -111,48 +110,46 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 64    # 番数 64 
-
   17:  # 四同顺
     id: 17 # 四同顺
     func_id: 25  # 计算函数 ID : 25
-    mutex: [0,36,35,2,62,67]  # 和平胡互斥
+    mutex: [0,29,27,28,52,58]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 48    # 番数 48 
   18:  # 三元七对
     id: 18 # 三元七对
     func_id: 26  # 计算函数 ID : 26
-    mutex: [0,2,66,74,75]  # 和平胡互斥
+    mutex: [0,28,56,64,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 48    # 番数 48 
   19:  # 四喜七对
     id: 19 # 四喜七对
     func_id: 27  # 计算函数 ID : 27
-    mutex: [0,2,66,74,75]  # 和平胡互斥
+    mutex: [0,28,56,64,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 48    # 番数 48  
   20:  # 四连刻
     id: 20 # 四连刻
     func_id: 28  # 计算函数 ID : 28
-    mutex: [0,36,35,6,67]  # 和平胡互斥
+    mutex: [0,29,27,41,58]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 48    # 番数 48                     
-
   21:  # 四步高
     id: 21 # 四步高
     func_id: 29  # 计算函数 ID : 29
-    mutex: [0,38,68,69]  # 和平胡互斥
+    mutex: [0,33,59,60]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 32    # 番数 32 
   22:  # 混幺九
     id: 22 # 混幺九
     func_id: 30  # 计算函数 ID : 30
-    mutex: [0,6,50]  # 和平胡互斥
+    mutex: [0,41,45]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 32    # 番数 32
   23:  # 三杠
     id: 23 # 三杠
     func_id: 31  # 计算函数 ID : 31
-    mutex: [0,51,70]  # 和平胡互斥
+    mutex: [0,46,61]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 32    # 番数 32
   24:  # 天听
@@ -161,54 +158,52 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 32    # 番数 32 
-    
   25:  # 四字刻
     id: 25 # 四字刻
     func_id: 33  # 计算函数 ID : 33
-    mutex: [0,6]  # 和平胡互斥
+    mutex: [0,41]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 24    # 番数 24
   26:  # 大三风
     id: 26 # 大三风
     func_id: 34  # 计算函数 ID : 34
-    mutex: [0,45]  # 和平胡互斥
+    mutex: [0,43]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 24    # 番数 24 
   27:  # 三同顺
     id: 27 # 三同顺
     func_id: 35  # 计算函数 ID : 35
-    mutex: [0,36,67]  # 和平胡互斥
+    mutex: [0,29,58]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 24    # 番数 24 
   28:  # 七对
     id: 28 # 七对
     func_id: 2  # 计算函数 ID : 2
-    mutex: [0,66,74,75]  # 和平胡互斥
+    mutex: [0,56,64,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 24    # 番数 24  
   29:  # 三连刻
     id: 29 # 三连刻
     func_id: 36  # 计算函数 ID : 36
-    mutex: [0,35,67]  # 和平胡互斥
+    mutex: [0,27,58]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 24    # 番数 24 
-  
   30:  # 全花
     id: 30 # 全花
     func_id: 39  # 计算函数 ID : 39
-    mutex: [0,55,56]  # 和平胡互斥
+    mutex: [0,67,68]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 16    # 番数 16  
   31:  # 三暗刻
     id: 31 # 三暗刻
     func_id: 40  # 计算函数 ID : 40
-    mutex: [0,64]  # 和平胡互斥
+    mutex: [0,54]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 16    # 番数 16 
   32:  # 清龙
     id: 32 # 清龙
     func_id: 37  # 计算函数 ID : 37
-    mutex: [0,68,69]  # 和平胡互斥
+    mutex: [0,59,60]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 16    # 番数 16  
   33:  # 三步高
@@ -223,11 +218,10 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 16    # 番数 16  
-    
   35:  # 妙手回春
     id: 35 # 妙手回春
     func_id: 41  # 计算函数 ID : 41
-    mutex: [0,75]  # 和平胡互斥
+    mutex: [0,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 8    # 番数 8 
   36:  # 海底捞月
@@ -239,26 +233,25 @@ enable_fan_types:
   37:  # 杠上开花
     id: 37 # 杠上开花
     func_id: 44  # 计算函数 ID : 44
-    mutex: [0,75]  # 和平胡互斥
-    method: 0   # 计算方式：相加
-    score: 8    # 番数 8   
+    mutex: [0,65]  # 和平胡互斥
+    method: 1   # 计算方式：相乘
+    score: 2    # 番数 2   
   38:  # 抢杠胡
     id: 38 # 抢杠胡
     func_id: 43  # 计算函数 ID : 43
-    mutex: [0,52]  # 和平胡互斥
+    mutex: [0,48]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 8    # 番数 8
-    
   39:  # 双箭刻
     id: 39 # 双箭刻
     func_id: 46  # 计算函数 ID : 46
-    mutex: [0,60]  # 和平胡互斥
+    mutex: [0,51]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 6    # 番数 6 
   40:  # 双暗杠
     id: 40 # 双暗杠
     func_id: 47  # 计算函数 ID : 47
-    mutex: [0,64,65]  # 和平胡互斥
+    mutex: [0,54,55]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 6    # 番数 6
   41:  # 碰碰和
@@ -270,7 +263,7 @@ enable_fan_types:
   42:  # 全求人
     id: 42 # 全求人
     func_id: 49  # 计算函数 ID : 49
-    mutex: [0,74]  # 和平胡互斥
+    mutex: [0,64]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 6    # 番数 6 
   43:  # 小三风
@@ -285,7 +278,6 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 6    # 番数 6  
-   
   45:  # 全带幺
     id: 45 # 全带幺
     func_id: 50  # 计算函数 ID : 50
@@ -295,13 +287,13 @@ enable_fan_types:
   46:  # 双明杠
     id: 46 # 双明杠
     func_id: 51  # 计算函数 ID : 51
-    mutex: [0,70]  # 和平胡互斥
+    mutex: [0,61]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 4    # 番数 4
   47:  # 不求人
     id: 47 # 不求人
     func_id: 73  # 计算函数 ID : 73
-    mutex: [0,75,66]  # 和平胡互斥
+    mutex: [0,65,56]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 4    # 番数 4 
   48:  # 和绝张
@@ -310,7 +302,6 @@ enable_fan_types:
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 4    # 番数 4   
-  
   49:  # 门风刻
     id: 49 # 门风刻
     func_id: 58  # 计算函数 ID : 58
@@ -364,8 +355,7 @@ enable_fan_types:
     func_id: 53  # 计算函数 ID : 53
     mutex: [0]  # 和平胡互斥
     method: 0   # 计算方式：相加
-    score: 2    # 番数 2  
-    
+    score: 4    # 番数 4  
   58:  # 一般高
     id: 58 # 一般高
     func_id: 67  # 计算函数 ID : 67
@@ -420,24 +410,47 @@ enable_fan_types:
     mutex: []   # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 0    # 番数 0     
-
-# 番型对应的胡类型
+  67:  #春夏秋冬
+    id: 67 # 春夏秋冬
+    func_id: 55  # 计算函数 ID : 55
+    mutex: []   # 
+    method: 0   # 计算方式：相加
+    score: 4    # 番数 4 
+  68:  #梅兰竹菊
+    id: 67 # 梅兰竹菊
+    func_id: 56  # 计算函数 ID : 56
+    mutex: []   # 
+    method: 0   # 计算方式：相加
+    score: 4    # 番数 4       
+  69: #报听一发
+    id: 69 # 报听一发
+    func_id: 54  # 计算函数 ID : 54
+    mutex: []   # 
+    method: 0   # 计算方式：相加
+    score: 4    # 番数 4    
+  70: #无花牌
+    id: 70 # 无花牌
+    func_id: 57  # 计算函数 ID : 57
+    mutex: []   # 
+    method: 0   # 计算方式：相加
+    score: 4    # 番数 4        
+#番型对应的胡类型
 fanType2HuType:     
-  fanType: 9
+  9:
+    huType: 7
+  10:
+    huType: 8  
+  16:
     huType: 9
-  fanType: 10
-    huType: 10  
-  fanType: 16
-    huType: 16
-  fanType: 36
-    huType: 36
-  fanType: 37
-    huType: 37
-  fanType: 65
-    huType: 65
-  fanType: 38
-    huType: 38
-  fanType: 66
+  36:
+    huType: 4
+  37:
+    huType: 3
+  65:
+    huType: 6
+  38:
+    huType: 1
+  66:
     huType: 66    
 
 

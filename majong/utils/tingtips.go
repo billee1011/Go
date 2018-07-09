@@ -16,12 +16,12 @@ import (
 func calcHuTimes(card Card, player *majongpb.Player, gameID int) uint32 {
 	calcor := global.GetCardTypeCalculator()
 	pengCards := []*majongpb.Card{}
-	gangCards := []*majongpb.Card{}
+	gangCards := []*majongpb.GangCard{}
 	for _, pcard := range player.GetPengCards() {
 		pengCards = append(pengCards, pcard.GetCard())
 	}
 	for _, gcard := range player.GetGangCards() {
-		gangCards = append(gangCards, gcard.GetCard())
+		gangCards = append(gangCards, gcard)
 	}
 	huCard, _ := IntToCard(int32(card))
 

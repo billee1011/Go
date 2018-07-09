@@ -224,6 +224,8 @@ func ServerCard2Number(card *majongpb.Card) int {
 		color = 3
 	} else if card.Color == majongpb.CardColor_ColorFeng {
 		color = 4
+	} else if card.Color == majongpb.CardColor_ColorHua {
+		color = 5
 	}
 	value := color*10 + int(card.Point)
 	return value

@@ -78,6 +78,9 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 		back = true
 	}
 	s.notifyMopai(flow, context.GetMopaiPlayer(), back, card)
+	if card.GetColor() == majongpb.CardColor_ColorHua {
+		return majongpb.StateID_state_xingpai_buhua, nil
+	}
 	return majongpb.StateID_state_zixun, nil
 }
 

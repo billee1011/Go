@@ -38,6 +38,95 @@ enum HuType {
     hu_zimo = 6;               // 自摸
     hu_tianhu = 7;             // 天胡
     hu_dihu = 8;               // 地胡
+    hu_renhu = 9;              // 人胡
+    hu_miaoshouhuichun = 10;   // 妙手回春
+    hu_quanqiuren = 11;        // 全求人
+    hu_buqiuren = 12;          // 不求人
+    hu_juezhang = 13;          // 胡绝张
+}
+
+// 牌组类型
+enum CardType{
+    PingHu  = 0;            //平胡
+    QingYiSe  = 1;          //清一色
+    QiDui  = 2;             //七对
+    QingQiDui  = 3;         //清七对
+    LongQiDui  = 4;         //龙七对
+    QingLongQiDui  = 5;     //清龙七对   
+    PengPengHu  = 6;        //碰碰胡
+    QingPeng  = 7;          //清碰
+    JingGouDiao  = 8;       //金钩钓
+    QingJingGouDiao  = 9;   //清金钩钓
+    ShiBaLuoHan   = 10;     //十八罗汉
+    QingShiBaLuoHan  = 11;  //清十八罗汉
+
+    DaSiXi = 12;            //大四喜
+    DaSanYuan = 13;         //大三元
+    JiuLianBaoDeng = 14;    //九莲宝灯
+    DaYuWu = 15;            //大于五
+    XiaoYuWu = 16;          //小于五
+    DaQiXing = 17;          //大七星
+    LianQiDui = 18;         //连七对   
+    SiGang = 19;            //四杠
+
+    XiaoSiXi = 20;          //小四喜
+    XiaoSanYuan = 21;       //小三元
+    ShuangLongHui = 22;     //双龙会
+    ZiYiSe = 23;            //字一色
+    SiAnKe = 24;            //四暗刻
+
+    SiTongShun = 25;        //四同顺
+    SanYuanQiDui = 26;      //三元七对
+    SiXiQiDui = 27;         //四喜七对
+    SiLianKe = 28;          //四连刻
+
+    SiBuGao = 29;           //四步高
+    HunYaoJiu = 30;         //混幺九
+    SanGang = 31;           //三杠
+    TianTing = 32;          //天听
+
+    SiZiKe = 33;            //四字刻
+    DaSanFeng = 34;         //大三风
+    SanTongShun = 35;       //三同顺
+    SanLianKe = 36;         //三连刻
+
+    QuanHua = 37;           //全花
+    SanAnKe = 38;           //三暗刻
+    QingLong = 39;          //清龙
+    SanBuGao = 40;          //三步高
+
+    ShuangJianKe = 41;      //双箭刻
+    ShuangAnGang = 42;      //双暗杠
+    XiaoSanFeng = 43;       //小三风
+    HunYiSe = 44;           //混一色
+
+    QuanDaiYao = 45;        //全带幺
+    ShuangMingGang = 46;    //双明杠
+    BaoTing = 47;           //报听
+    BaoTingYiFa = 48;       //报听一发
+    ChunXiaQiuDong = 49;    //春夏秋冬
+    MeiLanZhuJu = 50;       //梅兰竹菊
+    WuHua = 51;             //无花
+
+    MenFengKe = 52;         //门风刻
+    QuanFengKe = 53;        //圈风刻
+    JianKe = 54;            //箭刻
+    SiGuiYi = 55;           //四归一
+    DuanYao = 56;           //断幺
+    ShuangAnKe = 57;        //双暗刻
+    AnGang = 58;            //暗杠
+    MenQianQing = 59;       //门前清
+
+    YiBanGao = 60;          //一般高
+    LianLiu = 61;           //连六
+    LaoShaoFu = 62;         //老少副
+    HuaPai = 63;            //花牌
+    MingGang = 64;          //明杠
+    BianZhang = 65;         //边张
+    KanZhang = 66;          //坎张
+    DanDiaoJiang = 67;      //单吊将
+
+
 }
 
 // 玩家行牌状态
@@ -104,21 +193,31 @@ message Player {
     repeated PengCard peng_cards = 5;       // 玩家碰的牌
     repeated HuCard hu_cards = 6;           // 玩家胡的牌
     repeated GangCard gang_cards = 7;       // 玩家杠的牌
-    repeated Card hua_cards = 8;         // 玩家补的花牌
-    repeated Action possible_actions = 9;   // 可选操作
-    bool has_selected = 10;                  // 是否已经选择了某个操作
-    Action selected_action = 11;            // 玩家选择的操作
-    bool has_dingque = 12;                  // 是否已经定缺
-    CardColor dingque_color = 13;           // 定缺花色
-    bool huansanzhang_sure = 14;            // 换三张是否已确认
-    repeated Card huansanzhang_cards = 15;  // 换三张的牌
-    int32 mopai_count = 16;                 // 已经摸牌的次数
-    Record record = 17;          // 自询记录
-    XingPaiState xp_state = 18;             // 玩家牌局状态
-    bool is_quit = 19;                       // 玩家是否退出牌局
-    repeated TingCardInfo ting_card_info = 20;       // 听牌信息 
+    repeated Action possible_actions = 8;   // 可选操作
+    bool has_selected = 9;                  // 是否已经选择了某个操作
+    Action selected_action = 10;            // 玩家选择的操作
+    bool has_dingque = 11;                  // 是否已经定缺
+    CardColor dingque_color = 12;           // 定缺花色
+    bool huansanzhang_sure = 13;            // 换三张是否已确认
+    repeated Card huansanzhang_cards = 14;  // 换三张的牌
+    int32 mopai_count = 15;                 // 已经摸牌的次数
+    Record record = 16;          // 自询记录
+    XingPaiState xp_state = 17;             // 玩家牌局状态
+    bool is_quit = 18;                       // 玩家是否退出牌局
+    repeated TingCardInfo ting_card_info = 19;       // 听牌信息 
+    repeated Card hua_cards = 20;           //补的花牌
+    TingStateInfo ting_state_info = 21;     //听的状态信息
+    int32 zixun_count = 22;                 // 进入自询的次数
+    repeated uint32 enble_chi_cards = 23;   //可以吃的牌組
+    repeated Card  design_chi_cards = 24;   //玩家請求指定吃的牌組
     map<string, bytes> properties = 256;    // 其他的一些属性
-} 
+}
+
+message TingStateInfo{
+   bool is_ting = 1; //听
+   bool is_tianting = 2; //天听
+   bool is_baotingyifa = 3; //报听一发
+}
 
 // AutoEvent 自动事件
 message AutoEvent {
@@ -165,6 +264,7 @@ enum Action {
     // action_bugang       = 4;  // 补杠
     // action_minggang     = 5;  // 明杠
     // action_angang       = 6;  // 暗杠
+    action_chi = 4; //吃
     action_qi           = 7;  // 弃
 }
 
@@ -206,6 +306,7 @@ message MajongContext {
     repeated uint32 dices = 22; // 骰子
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
+    uint64 last_chi_player = 25; // 最近一次执行吃操作的玩家
 
     uint32 xingpai_option_id = 251; // 行牌选项 ID 
     uint32 cardtype_option_id = 252;    // 牌型选项 ID 

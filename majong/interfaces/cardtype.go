@@ -15,7 +15,7 @@ type CardTypeCalculator interface {
 type CardCalcParams struct {
 	HandCard []*majongpb.Card
 	PengCard []*majongpb.Card
-	GangCard []*majongpb.Card
+	GangCard []*majongpb.GangCard
 	HuCard   *majongpb.Card
 	GameID   int
 }

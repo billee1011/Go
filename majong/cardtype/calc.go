@@ -4,7 +4,6 @@ import (
 	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -13,7 +12,7 @@ type cardTypeCalculator struct {
 	calcs map[int]interfaces.CardTypeCalculator
 }
 
-func (ctc *cardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []majongpb.CardType, gengCount uint32) {
+func (ctc *cardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []int64, gengCount uint32) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "cardTypeCalculator.Calculate",
 		"params":    params,
@@ -21,11 +20,11 @@ func (ctc *cardTypeCalculator) Calculate(params interfaces.CardCalcParams) (card
 	calc, exists := ctc.calcs[params.GameID]
 	if !exists {
 		logEntry.Errorln("game not found")
-		return []majongpb.CardType{}, 0
+		return []int64{}, 0
 	}
 	return calc.Calculate(params)
 }
-func (ctc *cardTypeCalculator) CardTypeValue(gameID int, cardTypes []majongpb.CardType, gengCount uint32) (uint32, uint32) {
+func (ctc *cardTypeCalculator) CardTypeValue(gameID int, cardTypes []int64, gengCount uint32) (uint32, uint32) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "cardTypeCalculator.CardTypeValue",
 		"game_id":   gameID,

@@ -14,7 +14,7 @@ func checkBianZhang(tc *typeCalculator) bool {
 
 	cards := make([]int, 0)
 
-	canTingCardInfos := player.GetRecord().CanTingCardInfo
+	canTingCardInfos := player.GetRecord().GetCanTingCardInfo()
 	for _, canTingCardInfo := range canTingCardInfos {
 		if canTingCardInfo.OutCard == uint32(huValue) && len(canTingCardInfo.TingCardInfo) != 1 {
 			return false
