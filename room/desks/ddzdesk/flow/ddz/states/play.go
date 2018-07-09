@@ -35,6 +35,8 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	context := getDDZContext(m);
 	playerId := message.GetHead().GetPlayerId()
+	outCards := toDDZCards(message.GetCards())
+	logrus.WithField("playerId", playerId).WithField("outCards", outCards).Debug("玩家出牌")
 	if context.CurrentPlayerId != playerId {
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(1,"未轮到本玩家出牌"),
@@ -42,10 +44,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
 
-	player := GetPlayerByID(context.GetPlayers(), playerId)
-	outCards := toDDZCards(message.GetCards())
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PalyerId
-
 	if len(outCards) == 0 {//pass
 		if context.CurCardType == ddz.CardType_CT_NONE {//该你出牌时不出牌，报错
 			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
@@ -69,17 +68,21 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 				Time: proto.Uint32(15),
 			},
 		})
+
+		context.CurrentPlayerId = nextPlayerId
+		context.LastPlayerId = playerId
+
 		context.PassCount++
 		if context.PassCount >= 2 {//两个玩家都过，清空当前牌型
 			context.CurCardType = ddz.CardType_CT_NONE
 			context.CurOutCards = []uint32{}
 			context.CardTypePivot = 0
-			context.CurrentPlayerId = nextPlayerId
-			context.LastPlayerId = playerId
+			context.PassCount = 0
 		}
 		return int(ddz.StateID_state_playing), nil
 	}
 
+	player := GetPlayerByID(context.GetPlayers(), playerId)
 	handCards := toDDZCards(player.HandCards)
 	if !ContainsAll(handCards, outCards ){//检查所出的牌是否在手牌中
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
@@ -158,6 +161,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	})
 
 	if len(player.HandCards) == 0 {
+		context.WinnerId = playerId
 		return int(ddz.StateID_state_over), nil
 	} else {
 		return int(ddz.StateID_state_playing), nil
