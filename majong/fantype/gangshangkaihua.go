@@ -4,7 +4,14 @@ import (
 	majongpb "steve/server_pb/majong"
 )
 
-// checkGangShangKaiHua 杠上开花
+// checkGangShangKaiHua 检测杠开（杠上开花），杠后摸牌自摸
 func checkGangShangKaiHua(tc *typeCalculator) bool {
-	return tc.huCard.Type == majongpb.HuType_hu_gangkai
+	huCard := tc.getHuCard()
+	if huCard != nil && huCard.GetType() == majongpb.HuType_hu_zimo {
+		mjContext := tc.mjContext
+		if mjContext.GetMopaiType() == majongpb.MopaiType_MT_GANG {
+			return true
+		}
+	}
+	return false
 }

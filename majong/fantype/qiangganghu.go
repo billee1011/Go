@@ -1,10 +1,12 @@
 package fantype
 
-import (
-	majongpb "steve/server_pb/majong"
-)
+import majongpb "steve/server_pb/majong"
 
-// checkQiangGangHu 枪杠胡
+// checkQiangGangHu 检测抢杠胡 其他玩家补杠，当前玩家抢补杠胡
 func checkQiangGangHu(tc *typeCalculator) bool {
-	return tc.huCard.Type == majongpb.HuType_hu_qiangganghu
+	huCard := tc.getHuCard()
+	if huCard != nil && huCard.GetType() == majongpb.HuType_hu_qiangganghu {
+		return true
+	}
+	return false
 }

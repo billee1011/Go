@@ -1,34 +1,20 @@
 package fantype
 
-import "steve/majong/utils"
+import majongpb "steve/server_pb/majong"
 
-// checkRenHu 人胡
+// checkRenHu 检测人胡,庄家打出的第一张牌闲家就胡牌，此为人胡，若庄家出牌前有暗杠，那么不算人胡；
 func checkRenHu(tc *typeCalculator) bool {
-	mjContext := tc.mjContext
-	zhuangJia := mjContext.Players[mjContext.ZhuangjiaIndex]
-
-	if len(zhuangJia.GangCards) != 0 {
-		return false
-	}
-
-	if len(zhuangJia.OutCards) != 1 {
-		return false
-	}
-
-	for _, player := range mjContext.Players {
-		if player.PalyerId == tc.playerID || player.PalyerId == zhuangJia.PalyerId {
-			continue
-		}
-		if len(player.OutCards) != 0 {
-			return false
+	huCard := tc.getHuCard()
+	if huCard != nil && huCard.GetType() == majongpb.HuType_hu_dianpao {
+		mjContext := tc.mjContext
+		zjPlayer := mjContext.Players[mjContext.ZhuangjiaIndex]
+		currPlayer := tc.getPlayer()
+		// 不是庄家
+		if zjPlayer.GetPalyerId() != currPlayer.GetPalyerId() {
+			if zjPlayer.GetZixunCount() == 1 && tc.getPlayer().GetMopaiCount() == 0 {
+				return true
+			}
 		}
 	}
-	outValue := utils.ServerCard2Number(zhuangJia.OutCards[0])
-	huValue := utils.ServerCard2Number(tc.getHuCard().Card)
-
-	if outValue != huValue {
-		return false
-	}
-
-	return true
+	return false
 }

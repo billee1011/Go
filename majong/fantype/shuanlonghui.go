@@ -10,15 +10,19 @@ func checkShuanLongHui(tc *typeCalculator) bool {
 	}
 	// 顺+吃
 	for _, combine := range tc.combines {
-		if isShuanLongHui(cards, intsToCards(combine.shuns)) {
+		// 有2对同花色老少副
+		newCards := append(cards, intsToCards(combine.shuns)...)
+		flag, color := has2LaoShaoFu(newCards)
+		jiangCard := intToCard(combine.jiang)
+		// 和同花色5做将
+		if flag && jiangCard.GetColor() == color && jiangCard.GetPoint() == 5 {
 			return true
 		}
 	}
 	return false
 }
 
-func isShuanLongHui(cardA, cardB []*majongpb.Card) bool {
-	newCards := append(cardA, cardB...)
+func has2LaoShaoFu(newCards []*majongpb.Card) (bool, majongpb.CardColor) {
 	colorPointMap := make(map[majongpb.CardColor]map[int32]int)
 	for _, card := range newCards {
 		if cardMap, isExist := colorPointMap[card.GetColor()]; isExist {
@@ -29,13 +33,11 @@ func isShuanLongHui(cardA, cardB []*majongpb.Card) bool {
 		}
 	}
 
-	for _, pointMap := range colorPointMap {
+	for color, pointMap := range colorPointMap {
 		one, seven := int32(1), int32(7)
-		oneNum, _ := pointMap[one]
-		severnNum, _ := pointMap[seven]
-		if oneNum >= 2 && severnNum >= 2 {
-			return true
+		if pointMap[one] >= 2 && pointMap[seven] >= 2 {
+			return true, color
 		}
 	}
-	return false
+	return false, 0
 }
