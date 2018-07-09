@@ -252,24 +252,23 @@ func (majongSettle *majongSettle) apartSettle(groupSettleInfos []*majongpb.Settl
 		sID := sInfo.Id
 		cost := int64(0)
 		majongSettle.settleMap[sID] = make(map[uint64]int64)
+		losePid := uint64(0)
 		for pid, score := range sInfo.Scores {
 			if score == 0 {
 				continue
 			} else if score > 0 {
 				cost = allScores[pid]
 				majongSettle.settleMap[sID][pid] = allScores[pid]
-			} else {
-				if cost != 0 {
-					majongSettle.settleMap[sID][pid] = 0 - cost
-				} else {
-					for _, allScore := range allScores {
-						if allScore > 0 {
-							majongSettle.settleMap[sID][pid] = 0 - allScore
-						}
-					}
-				}
+			} else if score < 0 {
+				losePid = pid
 			}
 		}
+		if cost != 0 {
+			majongSettle.settleMap[sID][losePid] = 0 - cost
+		}
+		logrus.WithFields(logrus.Fields{
+			"sInfo": sInfo,
+		}).Debugln("将score分配到各自settleInfo中")
 		majongSettle.handleSettle[sID] = true
 	}
 }
