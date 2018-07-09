@@ -4,11 +4,11 @@ import (
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/Sirupsen/logrus"
 	"steve/majong/global"
 	"steve/client_pb/room"
 	"steve/client_pb/msgId"
-	"github.com/gogo/protobuf/proto"
 	"math/rand"
 )
 

@@ -3,6 +3,7 @@ package states
 import (
 	"sort"
 	"github.com/Sirupsen/logrus"
+	"strconv"
 )
 
 var (
@@ -35,6 +36,38 @@ type Poker struct {
 	Weight uint32 //带花色权重,用于带花色大小比较
 	PointWeight uint32 //无花色权重，用于无花色大小比较
 	SortWeight uint32 //排序权重，用于排序，同点数需要在一起
+}
+
+func (c Poker) String() string {
+	if c.Suit == sDiamond {
+		return "♦" + c.getPointString()
+	} else if c.Suit == sClub {
+		return "♣" + c.getPointString()
+	} else if c.Suit == sHeart {
+		return "♥" + c.getPointString()
+	} else if c.Suit == sSpade {
+		return "♠" + c.getPointString()
+	} else {
+		return c.getPointString()
+	}
+}
+
+func (c Poker) getPointString() string {
+	if c.Point == pA {
+		return "A"
+	} else if c.Point == pJ {
+		return "J"
+	} else if c.Point == pQ {
+		return "Q"
+	} else if c.Point == pK {
+		return "K"
+	} else if c.Point == pBlackJoker {
+		return "小王"
+	} else if c.Point == pRedJoker {
+		return "大王"
+	} else {
+		return strconv.Itoa(int(c.Point))
+	}
 }
 
 func (c Poker) toInt() uint32 {

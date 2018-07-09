@@ -6,7 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"steve/majong/global"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 )
