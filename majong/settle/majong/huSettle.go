@@ -43,8 +43,8 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		huPlayerID := params.HuPlayers[0]
 		// 赢分
 		win := int64(0)
-		// 倍数 (番型倍数*胡牌倍数)
-		toalValue := huSettle.calcTotalValue(params.CardValues[huPlayerID], huSettle.getHuValue(settleOption, params.HuType))
+		// 倍数
+		toalValue := uint32(params.CardValues[huPlayerID])
 		// 总分 (底分*倍数)
 		total := int64(toalValue) * ante
 		// 玩家输赢分
@@ -67,7 +67,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 			scoreInfo := make(map[uint64]int64)
 			huSettleInfo := new(majongpb.SettleInfo)
 			// 倍数(番型倍数*胡牌倍数)
-			toalValue := huSettle.calcTotalValue(params.CardValues[huPlayerID], huSettle.getHuValue(settleOption, params.HuType))
+			toalValue := uint32(params.CardValues[huPlayerID])
 			// 总分 (底分*倍数)
 			total := int64(toalValue) * ante
 			// 点炮一家给
@@ -172,33 +172,9 @@ func newHuSettleInfo(params *interfaces.HuSettleParams, scoreInfo map[uint64]int
 		SettleType: params.SettleType,
 		HuType:     params.HuType,
 		CardType:   params.CardTypes[huPlayerID],
-		GenCount:   params.GenCount[huPlayerID],
+		GenCount:   uint32(params.GenCount[huPlayerID]),
+		HuaCount:   uint32(params.HuaCount[huPlayerID]),
 		CardValue:  cardValue,
-	}
-}
-
-func (huSettle *HuSettle) getHuValue(settleOption *mjoption.SettleOption, huType majongpb.HuType) uint32 {
-	switch huType {
-	case 0:
-		return settleOption.HuValue.HuGanghoupao
-	case 1:
-		return settleOption.HuValue.HuQiangGangHu
-	case 2:
-		return settleOption.HuValue.HuDianPao
-	case 3:
-		return settleOption.HuValue.HuGangKai
-	case 4:
-		return settleOption.HuValue.HuHaidDiLao
-	case 5:
-		return settleOption.HuValue.HuGangShangHaiDiLao
-	case 6:
-		return settleOption.HuValue.HuZiMo
-	case 7:
-		return settleOption.HuValue.HuTianHu
-	case 8:
-		return settleOption.HuValue.HuDiHu
-	default:
-		return 1
 	}
 }
 

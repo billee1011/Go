@@ -56,7 +56,7 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 		}
 	case majong.ZixunType_ZXT_NORMAL:
 		{
-			zxRecord := player.GetZixunRecord()
+			zxRecord := player.GetRecord()
 			canHu := zxRecord.GetEnableZimo()
 			if len(player.GetHuCards()) > 0 && canHu && !gutils.CheckHasDingQueCard(handCards, player.GetDingqueColor()) {
 				aiEvent = h.hu(player)

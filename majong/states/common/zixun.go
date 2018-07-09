@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/gutils"
+	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -299,8 +300,8 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
-	player.ZixunRecord = &majongpb.ZixunRecord{}
-	record := player.GetZixunRecord()
+	player.Record = &majongpb.Record{}
+	record := player.GetRecord()
 	if !isPengZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
@@ -326,9 +327,9 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	//查听,打什么,听什么
 	s.checkTing(zixunNtf, player, context)
 	if zixunNtf.GetEnableZimo() == true {
-		roomHuType, majongHuType := s.getHuType(playerID, context)
-		zixunNtf.HuType = &roomHuType
-		record.HuType = majongHuType
+		// 查番型
+		s.checkFanType(record, context, playerID, player.GetHandCards(), context.LastMopaiCard)
+		zixunNtf.HuType = room.HuType(record.HuType).Enum()
 	}
 	s.recordZixunMsg(record, zixunNtf)
 	logrus.WithFields(logrus.Fields{
@@ -339,6 +340,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		"EnableChupaiCards": record.GetEnableChupaiCards(),
 		"HuType":            record.GetHuType(),
 		"CanTingCardInfo":   record.GetCanTingCardInfo(),
+		"HuFanType":         record.GetHuFanType(),
 	}).Infoln("自询记录")
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
@@ -358,7 +360,33 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
-func (s *ZiXunState) recordZixunMsg(record *majongpb.ZixunRecord, ntf *room.RoomZixunNtf) {
+func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
+	calcHandCard := make([]*majongpb.Card, 0)
+	for index, handCard := range handCards {
+		if utils.ServerCard2Number(handCard) == utils.ServerCard2Number(huCard) {
+			calcHandCard = append(handCards[0:index], handCards[index+1:]...)
+			break
+		}
+	}
+	calcHuCard := &majongpb.HuCard{
+		Card:      huCard,
+		SrcPlayer: huPlayerID,
+		Type:      majongpb.HuType_hu_zimo,
+	}
+	fanTypes, genCount, huaCount := fantype.CalculateFanTypes(context, huPlayerID, calcHandCard, calcHuCard)
+
+	record.HuFanType.GenCount = uint64(genCount)
+	record.HuFanType.HuaCount = uint64(huaCount)
+	HfanTypes := make([]int64, 0)
+	for _, fanType := range fanTypes {
+		HfanTypes = append(HfanTypes, int64(fanType))
+	}
+	record.HuFanType.FanTypes = HfanTypes
+	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
+
+}
+
+func (s *ZiXunState) recordZixunMsg(record *majongpb.Record, ntf *room.RoomZixunNtf) {
 	record.EnableAngangCards = ntf.GetEnableAngangCards()
 	record.EnableBugangCards = ntf.GetEnableBugangCards()
 	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
@@ -468,7 +496,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		})
 	}
 	zixunNtf.CanTingCardInfo = canTingInfos
-	player.ZixunRecord.CanTingCardInfo = recordCanTingInfos
+	player.Record.CanTingCardInfo = recordCanTingInfos
 }
 
 // checkZiMo 查自摸

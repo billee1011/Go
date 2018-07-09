@@ -3,6 +3,7 @@ package gutils
 import (
 	"fmt"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -135,6 +136,17 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 		}
 	}
 	return room.CardColor(-1)
+}
+
+// ServerFanType2ClientHuType fanType获取hutype
+func ServerFanType2ClientHuType(gameID int, fanTypes []int) int32 {
+	cardTypeOption := mjoption.GetCardTypeOption(gameID)
+	for _, fanType := range fanTypes {
+		if huType, ok := cardTypeOption.FanType2HuType[fanType]; !ok {
+			return int32(huType.ID)
+		}
+	}
+	return -1
 }
 
 // MakeRoomCards 构造牌切片

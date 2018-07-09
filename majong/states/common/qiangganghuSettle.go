@@ -2,6 +2,7 @@ package common
 
 import (
 	"steve/gutils"
+	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -62,28 +63,27 @@ func (s *QiangGangHuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 // doQiangGangHuSettle 抢杠胡结算
 func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
-	cardValues := make(map[uint64]uint32, 0)
-	cardTypes := make(map[uint64][]majongpb.CardType, 0)
-	genCount := make(map[uint64]uint32, 0)
-	gameID := int(mjContext.GetGameId())
+	cardValues := make(map[uint64]uint64, 0)
+	cardTypes := make(map[uint64][]int64, 0)
+	genCount := make(map[uint64]uint64, 0)
+	huaCount := make(map[uint64]uint64, 0)
 
 	huPlayers := mjContext.GetLastHuPlayers()
 	for _, huPlayerID := range huPlayers {
 		huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
-		cardParams := interfaces.CardCalcParams{
-			HandCard: huPlayer.HandCards,
-			PengCard: utils.TransPengCard(huPlayer.PengCards),
-			GangCard: utils.TransGangCard(huPlayer.GangCards),
-			HuCard:   mjContext.GetGangCard(),
-			GameID:   gameID,
-		}
-		calculator := global.GetCardTypeCalculator()
-		cardType, gen := calculator.Calculate(cardParams)
-		cardValue, _ := calculator.CardTypeValue(gameID, cardType, gen)
+		huCard := huPlayer.GetHuCards()[len(huPlayer.GetHuCards())-1]
 
-		cardTypes[huPlayerID] = cardType
-		cardValues[huPlayerID] = cardValue
-		genCount[huPlayerID] = gen
+		fanTypes, genSum, huaSum := fantype.CalculateFanTypes(mjContext, huPlayerID, huPlayer.GetHandCards(), huCard)
+		totalValue := fantype.CalculateScore(mjContext, fanTypes, genSum, huaSum)
+
+		HfanTypes := make([]int64, 0)
+		for _, fanType := range fanTypes {
+			HfanTypes = append(HfanTypes, int64(fanType))
+		}
+		cardTypes[huPlayerID] = HfanTypes
+		cardValues[huPlayerID] = totalValue
+		genCount[huPlayerID] = uint64(genSum)
+		huaCount[huPlayerID] = uint64(huaSum)
 	}
 
 	params := interfaces.HuSettleParams{
@@ -99,6 +99,7 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 		CardTypes:     cardTypes,
 		CardValues:    cardValues,
 		GenCount:      genCount,
+		HuaCount:      huaCount,
 		SettleID:      mjContext.CurrentSettleId,
 	}
 	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)

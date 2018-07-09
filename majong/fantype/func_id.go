@@ -165,6 +165,8 @@ const (
 	dihuFuncID int = 79
 	// 人胡
 	renhuFuncID int = 80
+	// 点炮
+	dianpaoFuncID int = 81
 )
 
 // checkFunc 检测函数
@@ -255,5 +257,6 @@ func init() {
 		kanzhangFuncID:        checkKanZhang,
 		dangdiaojiangFuncID:   checkDanDiaoJiang,
 		zimoFuncID:            checkZiMo,
+		dianpaoFuncID:         checkDianPao,
 	}
 }

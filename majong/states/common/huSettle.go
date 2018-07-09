@@ -2,6 +2,7 @@ package common
 
 import (
 	"steve/gutils"
+	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -77,34 +78,30 @@ func (s *HuSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 
-	cardValues := make(map[uint64]uint32, 0)
-	cardTypes := make(map[uint64][]majongpb.CardType, 0)
-	genCount := make(map[uint64]uint32, 0)
-
+	cardValues := make(map[uint64]uint64, 0)
+	cardTypes := make(map[uint64][]int64, 0)
+	genCount := make(map[uint64]uint64, 0)
+	huaCount := make(map[uint64]uint64, 0)
 	huPlayers := mjContext.GetLastHuPlayers()
-	gameID := int(mjContext.GetGameId())
 	for _, huPlayerID := range huPlayers {
 		huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
-		cardParams := interfaces.CardCalcParams{
-			HandCard: huPlayer.HandCards,
-			PengCard: utils.TransPengCard(huPlayer.PengCards),
-			GangCard: utils.TransGangCard(huPlayer.GangCards),
-			HuCard:   mjContext.GetLastOutCard(),
-			GameID:   gameID,
-		}
-		calculator := global.GetCardTypeCalculator()
-		cardType, gen := calculator.Calculate(cardParams)
-		cardValue, _ := calculator.CardTypeValue(gameID, cardType, gen)
+		huCard := huPlayer.GetHuCards()[len(huPlayer.GetHuCards())-1]
 
-		cardTypes[huPlayerID] = cardType
-		cardValues[huPlayerID] = cardValue
-		genCount[huPlayerID] = gen
+		fanTypes, genSum, huaSum := fantype.CalculateFanTypes(mjContext, huPlayerID, huPlayer.GetHandCards(), huCard)
+		totalValue := fantype.CalculateScore(mjContext, fanTypes, genSum, huaSum)
+
+		HfanTypes := make([]int64, 0)
+		for _, fanType := range fanTypes {
+			HfanTypes = append(HfanTypes, int64(fanType))
+		}
+		cardTypes[huPlayerID] = HfanTypes
+		cardValues[huPlayerID] = totalValue
+		genCount[huPlayerID] = uint64(genSum)
+		huaCount[huPlayerID] = uint64(huaSum)
 	}
 
-	huType := majongpb.HuType_hu_dianpao
-
 	params := interfaces.HuSettleParams{
-		GameID:        mjContext.GetGameId(),
+		GameID:        int32(mjContext.GetGameId()),
 		HuPlayers:     huPlayers,
 		SrcPlayer:     mjContext.GetLastChupaiPlayer(),
 		AllPlayers:    utils.GetAllPlayers(mjContext),
@@ -112,16 +109,16 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		QuitPlayers:   utils.GetQuitPlayers(mjContext),
 		GiveupPlayers: utils.GetGiveupPlayers(mjContext),
 		SettleType:    majongpb.SettleType_settle_dianpao,
-		HuType:        huType,
+		HuType:        majongpb.HuType_hu_dianpao,
 		CardTypes:     cardTypes,
 		CardValues:    cardValues,
 		GenCount:      genCount,
+		HuaCount:      huaCount,
 		SettleID:      mjContext.CurrentSettleId,
 	}
 	if s.isAfterGang(mjContext) {
-		huType = majongpb.HuType_hu_ganghoupao
 		GangCards := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext).GangCards
-		params.HuType = huType
+		params.HuType = majongpb.HuType_hu_ganghoupao
 		params.GangCard = *GangCards[len(GangCards)-1]
 	}
 	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
