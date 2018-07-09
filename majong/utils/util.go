@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
@@ -535,6 +536,7 @@ func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
 	count := 0
 	for _, player := range mjContext.GetPlayers() {
 		count += int(player.GetMopaiCount())
+		count += len(player.GetHuaCards())
 	}
 	return count
 }
@@ -547,7 +549,13 @@ func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
 	}
 	// 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
 	length := context.GetOption().GetWallcardsLength()
-	if GetAllMopaiCount(context) == int(length)-53 {
+	maxCount := 0
+	if mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId())).EnableKaijuAddflower {
+		maxCount = int(length) - (len(context.GetPlayers()) * 13)
+	} else {
+		maxCount = int(length) - (len(context.GetPlayers())*13 + 1)
+	}
+	if GetAllMopaiCount(context) == maxCount {
 		return false
 	}
 	return true

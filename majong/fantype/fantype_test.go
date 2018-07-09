@@ -1,6 +1,7 @@
 package fantype
 
 import (
+	"os"
 	"steve/client_pb/room"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
@@ -8,6 +9,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	workDir, _ := os.Getwd()
+	os.Chdir(workDir + "/../../room/")
+}
 
 // 平胡
 func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
@@ -1750,14 +1756,14 @@ type CardCalcParams struct {
 	HuCard   *majongpb.HuCard
 }
 
-func TestNewCombines(t *testing.T) {
-	cards := []utils.Card{11, 11, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19}
-	//cards := []Card{11, 11, 11, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19}
-	cardCombines := utils.FastCheckTingV2(cards, nil)
+// func TestNewCombines(t *testing.T) {
+// 	cards := []utils.Card{11, 11, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19}
+// 	//cards := []Card{11, 11, 11, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19}
+// 	cardCombines := utils.FastCheckTingV2(cards, nil)
 
-	for card, combines := range cardCombines {
-		assert.Zero(t, card)
+// 	for card, combines := range cardCombines {
+// 		assert.Zero(t, card)
 
-		assert.Nil(t, newCombines(combines))
-	}
-}
+// 		assert.Nil(t, newCombines(combines))
+// 	}
+// }

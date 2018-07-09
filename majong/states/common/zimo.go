@@ -76,8 +76,7 @@ func (s *ZimoState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) majongpb.HuType {
 	mjContext := flow.GetMajongContext()
 	afterGang := s.isAfterGang(mjContext)
-	// isLast := (len(mjContext.WallCards) == 0)
-	isLast := s.noCardsToTake(flow)
+	isLast := !utils.HasAvailableWallCards(flow)
 	if afterGang && isLast {
 		return majongpb.HuType_hu_gangshanghaidilao
 	} else if afterGang {
@@ -95,18 +94,6 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) ma
 		}
 	}
 	return majongpb.HuType_hu_zimo
-}
-
-func (s *ZimoState) noCardsToTake(flow interfaces.MajongFlow) bool {
-	context := flow.GetMajongContext()
-	length := context.GetOption().GetWallcardsLength()
-	if utils.GetAllMopaiCount(context) == int(length)-53 {
-		return true
-	}
-	if len(context.WallCards) == 0 {
-		return true
-	}
-	return false
 }
 
 // notifyHu 广播胡

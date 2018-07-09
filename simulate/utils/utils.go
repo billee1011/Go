@@ -79,7 +79,7 @@ func CheckPengNotify(t *testing.T, deskData *DeskData, seat int, card uint32) {
 	assert.Equal(t, GetDeskPlayerBySeat(deskData.BankerSeat, deskData).Player.GetID(), ntf.GetFromPlayerId())
 }
 
-//CheckZixunNotify 检查碰广播
+//CheckZixunNotify 检查自询广播
 func CheckZixunNotify(t *testing.T, deskData *DeskData, seat int) {
 	xjPlayer := GetDeskPlayerBySeat(seat, deskData)
 	zxMessageExpector := xjPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
