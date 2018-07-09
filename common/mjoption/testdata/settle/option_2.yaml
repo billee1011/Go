@@ -1,15 +1,16 @@
 id: 2 # 选项 ID
 
 # 杠结算
-gang_angang_value: 2            # 暗杠倍数2
-gang_minggang_value: 2          # 明杠倍数2
-gang_bugang_value: 1            # 补杠倍数1
+gang_value:
+  angang_value: 2            # 暗杠倍数2
+  minggang_value: 2          # 明杠倍数2
+  bugang_value: 1            # 补杠倍数1
 
 # 胡牌倍数
-hu_value:
+hu_type_value:
  hu_ganghoupao: 2     # 杠后炮2倍
  hu_qiangganghu: 2    # 枪杠胡2倍
- hu_dianpao: 1        # 点炮2倍
+ hu_dianpao: 1        # 点炮1倍
  hu_gangkai: 4        # 杠开4倍
  hu_haidilao: 2       # 海底捞2倍
  hu_gangshanghaidilao: 4 # 杠上海底捞4倍
@@ -36,6 +37,7 @@ giveUpPlayer_can_settle:
  giveUpPlayer_can_round_settele: false #单局结算
 
 # 单局结算
+enable_gang: true           # 是否开启杠结算
 enable_chahuazhu: true      # 是否开启查花猪
 enable_chadajiao: true      # 是否开启查大叫
 enable_tuisui: true         # 是否开启退税

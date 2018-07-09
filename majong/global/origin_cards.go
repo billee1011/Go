@@ -93,7 +93,7 @@ var (
 	// Card7H 竹
 	Card7H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 7}
 	// Card8H 菊
-	Card8H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 7}
+	Card8H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 8}
 )
 
 func getMjCard(v int) majongpb.Card {

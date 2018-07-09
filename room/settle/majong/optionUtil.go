@@ -50,10 +50,7 @@ func CanInstantSettle(settleType majongpb.SettleType, settleOption *mjoption.Set
 // CanRoundSettle 玩家是否可以单局结算
 func CanRoundSettle(playerID uint64, huQuitPlayers map[uint64]bool, settleOption *mjoption.SettleOption) bool {
 	if huQuitPlayers[playerID] {
-		if _, ok := settleOption.HuQuitPlayerCanSettle["huPlayer_can_round_settele"]; !ok {
-			return true
-		}
-		return settleOption.HuQuitPlayerCanSettle["huPlayer_can_round_settele"]
+		return settleOption.HuQuitPlayerSettle.HuQuitPlayerRoundSettle
 	}
 	return true
 }

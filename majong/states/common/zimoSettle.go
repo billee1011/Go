@@ -80,19 +80,6 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 
 	huPlayerID := mjContext.GetLastMopaiPlayer()
 
-	allPlayers := make([]uint64, 0)
-	hasHuPlayers := make([]uint64, 0)
-	quitPalyers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-		if len(player.HuCards) != 0 {
-			hasHuPlayers = append(hasHuPlayers, player.GetPalyerId())
-		}
-		if player.IsQuit {
-			quitPalyers = append(quitPalyers, player.GetPalyerId())
-		}
-	}
-
 	cardValues := make(map[uint64]uint32, 0)
 	cardTypes := make(map[uint64][]majongpb.CardType, 0)
 	genCount := make(map[uint64]uint32, 0)
@@ -102,7 +89,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	cardParams := interfaces.CardCalcParams{
 		HandCard: append(huPlayer.HandCards, huCard.GetCard()),
 		PengCard: utils.TransPengCard(huPlayer.PengCards),
-		GangCard: utils.TransGangCard(huPlayer.GangCards),
+		GangCard: huPlayer.GangCards,
 		HuCard:   nil,
 		GameID:   gameID,
 	}
@@ -115,18 +102,19 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	genCount[huPlayerID] = gen
 
 	params := interfaces.HuSettleParams{
-		GameID:       mjContext.GetGameId(),
-		HuPlayers:    []uint64{huPlayerID},
-		SrcPlayer:    huPlayerID,
-		AllPlayers:   allPlayers,
-		HasHuPlayers: hasHuPlayers,
-		QuitPlayers:  quitPalyers,
-		SettleType:   majongpb.SettleType_settle_zimo,
-		HuType:       huCard.GetType(),
-		CardTypes:    cardTypes,
-		CardValues:   cardValues,
-		GenCount:     genCount,
-		SettleID:     mjContext.CurrentSettleId,
+		GameID:        mjContext.GetGameId(),
+		HuPlayers:     []uint64{huPlayerID},
+		SrcPlayer:     huPlayerID,
+		AllPlayers:    utils.GetAllPlayers(mjContext),
+		HasHuPlayers:  utils.GetHuPlayers(mjContext),
+		QuitPlayers:   utils.GetQuitPlayers(mjContext),
+		GiveupPlayers: utils.GetGiveupPlayers(mjContext),
+		SettleType:    majongpb.SettleType_settle_zimo,
+		HuType:        huCard.GetType(),
+		CardTypes:     cardTypes,
+		CardValues:    cardValues,
+		GenCount:      genCount,
+		SettleID:      mjContext.CurrentSettleId,
 	}
 	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
 	for _, settleInfo := range settleInfos {

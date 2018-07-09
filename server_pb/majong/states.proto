@@ -26,4 +26,7 @@ enum StateID {
     state_zimo_settle = 19;          // 自摸结算状态
     state_hu_settle = 20;            // 点炮结算状态
     state_qiangganghu_settle = 21;  // 枪杠胡结算状态
+    state_gamestart_buhua = 22;     // 开局补花状态
+    state_xingpai_buhua = 23;       // 行牌补花状态
+    state_chi = 24;                 //吃状态
 }

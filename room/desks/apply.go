@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
@@ -15,8 +16,9 @@ import (
 )
 
 type joinApplyManager struct {
-	applyChannel chan uint64
+	applyXueLiu  chan uint64
 	applyXueZhan chan uint64
+	applyErRen   chan uint64
 }
 
 var gJoinApplyMgr *joinApplyManager
@@ -33,8 +35,9 @@ func initApplyMgr() {
 
 func newApplyMgr(runChecker bool) *joinApplyManager {
 	mgr := &joinApplyManager{
-		applyChannel: make(chan uint64, 1024),
+		applyXueLiu:  make(chan uint64, 1024),
 		applyXueZhan: make(chan uint64, 1024),
+		applyErRen:   make(chan uint64, 1024),
 	}
 	if runChecker {
 		go mgr.checkMatch()
@@ -45,9 +48,11 @@ func newApplyMgr(runChecker bool) *joinApplyManager {
 func (jam *joinApplyManager) getApplyChannel(gameID room.GameId) chan uint64 {
 	switch gameID {
 	case room.GameId_GAMEID_XUELIU:
-		return jam.applyChannel
+		return jam.applyXueLiu
 	case room.GameId_GAMEID_XUEZHAN:
 		return jam.applyXueZhan
+	case room.GameId_GAMEID_ERRENMJ:
+		return jam.applyErRen
 	default:
 		return nil
 	}
@@ -80,6 +85,7 @@ func (jam *joinApplyManager) removeOfflinePlayer(playerIDs []uint64) []uint64 {
 func (jam *joinApplyManager) checkMatch() {
 	go jam.doApply(room.GameId_GAMEID_XUELIU)
 	go jam.doApply(room.GameId_GAMEID_XUEZHAN)
+	go jam.doApply(room.GameId_GAMEID_ERRENMJ)
 
 }
 
@@ -105,10 +111,11 @@ func (jam *joinApplyManager) doApply(gameid room.GameId) {
 		}
 		applyPlayers = append(applyPlayers, playerID)
 		applyPlayers = jam.removeOfflinePlayer(applyPlayers)
-
-		for len(applyPlayers) >= 4 {
-			players := applyPlayers[:4]
-			applyPlayers = applyPlayers[4:]
+		xpOption := mjoption.GetXingpaiOption(mjoption.GetGameOptions(int(gameid)).XingPaiOptionID)
+		num := xpOption.PlayerNum
+		for len(applyPlayers) >= num {
+			players := applyPlayers[:num]
+			applyPlayers = applyPlayers[num:]
 			result, err := deskFactory.CreateDesk(players, int(gameid), interfaces.CreateDeskOptions{})
 			if err != nil {
 				logEntry.WithFields(

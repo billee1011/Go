@@ -10,7 +10,7 @@ func GetTingCardNum(mjContext *majongpb.MajongContext, playerID uint64, leftCard
 	c2nMap map[int]uint32, laizis map[Card]bool) (num uint32) {
 	tingCards, _ := GetTingCards(leftCards, laizis)
 	for _, card := range tingCards {
-		num += c2nMap[ServerCard2Number(card)]
+		num += c2nMap[int(card)]
 	}
 	return
 }

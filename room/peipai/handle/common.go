@@ -18,4 +18,6 @@ const (
 	SCXL = "scxl"
 	//SCXZ 四川血战
 	SCXZ = "scxz"
+	//ERMJ 二人麻将
+	ERMJ = "ermj"
 )

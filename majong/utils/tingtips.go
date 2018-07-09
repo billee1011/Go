@@ -16,12 +16,12 @@ import (
 func calcHuTimes(card Card, player *majongpb.Player, gameID int) uint32 {
 	calcor := global.GetCardTypeCalculator()
 	pengCards := []*majongpb.Card{}
-	gangCards := []*majongpb.Card{}
+	gangCards := []*majongpb.GangCard{}
 	for _, pcard := range player.GetPengCards() {
 		pengCards = append(pengCards, pcard.GetCard())
 	}
 	for _, gcard := range player.GetGangCards() {
-		gangCards = append(gangCards, gcard.GetCard())
+		gangCards = append(gangCards, gcard)
 	}
 	huCard, _ := IntToCard(int32(card))
 
@@ -50,7 +50,8 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	tingCards, _ := GetTingCards(playerCards, nil) // TODO, 目前没有包括特殊牌型
 
 	ntf := room.RoomTingInfoNtf{}
-	for _, card := range tingCards {
+	for _, utilscard := range tingCards {
+		card, _ := IntToCard(int32(utilscard))
 		// 胡提示不能是定缺牌
 		if card.GetColor() != player.GetDingqueColor() {
 			newCard, _ := CardToInt(*card)

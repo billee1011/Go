@@ -23,6 +23,7 @@ func (s *ChupaiwenxunState) ProcessEvent(eventID majongpb.EventID, eventContext 
 	case majongpb.EventID_event_hu_request,
 		majongpb.EventID_event_gang_request,
 		majongpb.EventID_event_peng_request,
+		majongpb.EventID_event_chi_request,
 		majongpb.EventID_event_qi_request:
 		{
 			return s.onActionRequestEvent(eventID, eventContext, flow)
@@ -74,6 +75,12 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 			case majongpb.Action_action_qi:
 				{
 					ntf.EnableQi = proto.Bool(true)
+				}
+			case majongpb.Action_action_chi:
+				{
+					ntf.ChiInfo = &room.RoomChiInfo{
+						Cards: player.GetEnbleChiCards(),
+					}
 				}
 			}
 		}
@@ -127,6 +134,25 @@ func (s *ChupaiwenxunState) getHuRequestPlayer(eventContext []byte) (uint64, err
 	return huRequest.GetHead().GetPlayerId(), nil
 }
 
+// getChiRequestPlayer 获取吃请求的玩家
+func (s *ChupaiwenxunState) getChiRequestPlayer(eventContext []byte) (uint64, error) {
+	chiRequest := majongpb.ChiRequestEvent{}
+	if err := proto.Unmarshal(eventContext, &chiRequest); err != nil {
+		return 0, fmt.Errorf("反序列化失败: %v", err)
+	}
+	return chiRequest.GetHead().GetPlayerId(), nil
+}
+
+func (s *ChupaiwenxunState) getChiRequestInfo(eventContext []byte, player *majongpb.Player) error {
+	chiRequest := majongpb.ChiRequestEvent{}
+	if err := proto.Unmarshal(eventContext, &chiRequest); err != nil {
+		return fmt.Errorf("反序列化失败: %v", err)
+	}
+	reqChiCards := chiRequest.GetCards()
+	player.DesignChiCards = reqChiCards
+	return nil
+}
+
 // getQiRequestPlayer 获取弃请求的玩家
 func (s *ChupaiwenxunState) getQiRequestPlayer(eventContext []byte) (uint64, error) {
 	qiRequest := majongpb.QiRequestEvent{}
@@ -145,6 +171,7 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 		majongpb.EventID_event_gang_request: majongpb.Action_action_gang,
 		majongpb.EventID_event_hu_request:   majongpb.Action_action_hu,
 		majongpb.EventID_event_qi_request:   majongpb.Action_action_qi,
+		majongpb.EventID_event_chi_request:  majongpb.Action_action_chi,
 	}[eventID]
 	if !ok {
 		err = global.ErrInvalidEvent
@@ -157,7 +184,8 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 		majongpb.EventID_event_peng_request: s.getPengRequestPlayer,
 		majongpb.EventID_event_gang_request: s.getGangRequestPlayer,
 		majongpb.EventID_event_hu_request:   s.getHuRequestPlayer,
-		majongpb.EventID_event_qi_request:   s.getHuRequestPlayer,
+		majongpb.EventID_event_qi_request:   s.getQiRequestPlayer,
+		majongpb.EventID_event_chi_request:  s.getChiRequestPlayer,
 	}[eventID]
 	if !ok {
 		err = global.ErrInvalidEvent
@@ -171,6 +199,12 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 	if player == nil {
 		err = global.ErrInvalidRequestPlayer
 		return
+	}
+	if eventID == majongpb.EventID_event_chi_request {
+		err = s.getChiRequestInfo(eventContext, player)
+		if err != nil {
+			return
+		}
 	}
 	return
 }
@@ -220,6 +254,7 @@ func (s *ChupaiwenxunState) getActionPriority(action majongpb.Action) int {
 		majongpb.Action_action_hu:   100,
 		majongpb.Action_action_gang: 90,
 		majongpb.Action_action_peng: 80,
+		majongpb.Action_action_chi:  70,
 	}
 	if p, ok := priorityMap[action]; ok {
 		return p
@@ -324,6 +359,7 @@ func (s *ChupaiwenxunState) doAction(flow interfaces.MajongFlow, action majongpb
 		majongpb.Action_action_gang: s.doGang,
 		majongpb.Action_action_hu:   s.doHu,
 		majongpb.Action_action_qi:   s.doQi,
+		majongpb.Action_action_chi:  s.doChi,
 	}[action]
 
 	if !ok {
@@ -419,11 +455,33 @@ func (s *ChupaiwenxunState) doQi(flow interfaces.MajongFlow, playerIDs []uint64)
 	return
 }
 
+// doQi 执行吃操作。 切换到吃状态
+func (s *ChupaiwenxunState) doChi(flow interfaces.MajongFlow, playerIDs []uint64) (newState majongpb.StateID, err error) {
+	newState, err = majongpb.StateID_state_chi, nil
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "ChupaiwenxunState.doChi",
+	})
+	mjContext := flow.GetMajongContext()
+	logEntry = utils.WithMajongContext(logEntry, mjContext)
+
+	if len(playerIDs) != 1 {
+		err := errors.New("执行吃的玩家数不为 1")
+		logEntry.Errorln(err)
+		return majongpb.StateID_state_chupaiwenxun, err
+	}
+	playerID := playerIDs[0]
+
+	mjContext.LastChiPlayer = playerID
+	return
+}
+
 func (s *ChupaiwenxunState) clearActionRec(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	for _, player := range mjContext.GetPlayers() {
 		player.PossibleActions = []majongpb.Action{}
 		player.HasSelected = false
+		player.EnbleChiCards = []uint32{}
 		player.SelectedAction = majongpb.Action(-1)
 	}
 }

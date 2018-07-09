@@ -27,6 +27,15 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majong
 	logEntry.Debugln("杠结算信息")
 	// 游戏结算玩法
 	settleOption := GetSettleOption(int(params.GameID))
+	logEntry2 := logrus.WithFields(logrus.Fields{
+		"params.GameID":           params.GameID,
+		"settleOption":            settleOption,
+		"settleOption.EnableGang": settleOption.EnableGang,
+	})
+	logEntry2.Debugln("杠结算信息")
+	if !settleOption.EnableGang {
+		return nil
+	}
 	// 底数
 	ante := GetDi()
 	// 杠倍数
@@ -41,7 +50,7 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majong
 	} else if params.GangType == majongpb.GangType_gang_bugang || params.GangType == majongpb.GangType_gang_angang {
 		win := 0
 		for _, playerID := range params.AllPlayers {
-			if playerID != params.GangPlayer && CanGangSettle(playerID, params.HasHuPlayers, params.QuitPlayers, settleOption) {
+			if playerID != params.GangPlayer && CanGangSettle(playerID, params.GiveupPlayers, params.HasHuPlayers, params.QuitPlayers, settleOption) {
 				gangSettleInfo.Scores[playerID] = 0 - int64(total)
 				win = win + total
 			}
@@ -54,11 +63,11 @@ func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majong
 // GetGangValue 获取杠对应倍数
 func GetGangValue(settleOption *mjoption.SettleOption, gangType majongpb.GangType) uint32 {
 	if gangType == majongpb.GangType_gang_bugang {
-		return settleOption.BuGangValue
+		return settleOption.GangValue.BuGangValue
 	} else if gangType == majongpb.GangType_gang_angang {
-		return settleOption.AnGangValue
+		return settleOption.GangValue.AnGangValue
 	} else if gangType == majongpb.GangType_gang_minggang {
-		return settleOption.MingGangValue
+		return settleOption.GangValue.MingGangValue
 	}
 	return 1
 }
@@ -85,22 +94,24 @@ func (gangSettle *GangSettle) gangType2SettleType(gangType majongpb.GangType) ma
 }
 
 // CanGangSettle 玩家能否参与杠结算
-func CanGangSettle(playerID uint64, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
-	for _, hasHupalyer := range hasHuPlayers {
-		if hasHupalyer == playerID {
-			for _, quitPlayer := range quitPlayers {
-				if quitPlayer == playerID {
-					if _, ok := settleOption.HuQuitPlayerCanSettle["huQuitPlayer_can_gang_settle"]; !ok {
-						return true
-					}
-					return settleOption.HuQuitPlayerCanSettle["huQuitPlayer_can_gang_settle"]
-				}
-			}
-			if _, ok := settleOption.HuQuitPlayerCanSettle["huPlayer_can_gang_settle"]; !ok {
-				return true
-			}
-			return settleOption.HuPlayerCanSettle["huPlayer_can_gang_settle"]
+func CanGangSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
+	for _, giveupPlayer := range givePlayers {
+		if giveupPlayer != playerID {
+			break
 		}
+		return settleOption.GiveUpPlayerSettle.GiveUpPlayerGangSettle
+	}
+	for _, hasHupalyer := range hasHuPlayers {
+		if hasHupalyer != playerID {
+			break
+		}
+		for _, quitPlayer := range quitPlayers {
+			if quitPlayer != playerID {
+				break
+			}
+			return settleOption.HuQuitPlayerSettle.HuQuitPlayerGangSettle
+		}
+		return settleOption.HuPlayerSettle.HuPlayerGangSettle
 	}
 	return true
 }

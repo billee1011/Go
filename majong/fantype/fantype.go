@@ -3,14 +3,60 @@ package fantype
 import (
 	"math"
 	"steve/common/mjoption"
+	"steve/majong/utils"
 	"steve/server_pb/majong"
 )
 
-// combine 牌型组合
-type combine struct {
-	jiang *majong.Card   // 将牌
-	shuns []*majong.Card // 顺牌
-	kes   []*majong.Card // 刻牌
+// Combine 牌型组合
+type Combine struct {
+	jiang int   // 将牌
+	shuns []int // 顺牌
+	kes   []int // 刻牌
+}
+
+func min(values ...int) int {
+	t := values[0]
+	for _, v := range values {
+		if t > v {
+			t = v
+		}
+	}
+	return t
+}
+
+func minCard(values ...utils.Card) utils.Card {
+	t := values[0]
+	for _, v := range values {
+		if t > v {
+			t = v
+		}
+	}
+	return t
+}
+
+// newCombines 根据 utils 的 Combine 创建 Combine 数组
+func newCombines(combines utils.Combines) []Combine {
+	result := make([]Combine, 0, len(combines))
+	for _, combine := range combines {
+		localCombine := Combine{
+			shuns: []int{},
+			kes:   []int{},
+		}
+		// TODO 先作一个能暂时满足需求的， 目前牌中没有癞子
+		for _, group := range combine {
+			if group.GroupType == utils.TypeJiang {
+				localCombine.jiang = int(group.Cards[1])
+			}
+			if group.GroupType == utils.TypeShun {
+				localCombine.shuns = append(localCombine.shuns, int(minCard(group.Cards...)))
+			}
+			if group.GroupType == utils.TypeKe {
+				localCombine.kes = append(localCombine.kes, int(group.Cards[0]))
+			}
+		}
+		result = append(result, localCombine)
+	}
+	return result
 }
 
 // typeCalculator 牌型计算器
@@ -20,7 +66,7 @@ type typeCalculator struct {
 	handCards []*majong.Card // 手牌
 	huCard    *majong.HuCard // 胡的牌
 
-	combines []combine
+	combines []Combine
 	player   *majong.Player // 玩家
 	cache    map[int]bool   // 函数执行结果缓存, 函数ID->bool
 }
@@ -36,26 +82,49 @@ func (tc *typeCalculator) getOption() *mjoption.CardTypeOption {
 	return getOption(tc.mjContext)
 }
 
-// makeCombines 计算所有组合
 func (tc *typeCalculator) makeCombines() {
-	tc.combines = []combine{}
-	// TODO
+	handCards := tc.getHandCards()
+	cards := utils.ServerCards2UtilsCards(handCards)
+	huCard := tc.getHuCard()
+	if huCard != nil {
+		card := utils.ServerCard2UtilCard(huCard.GetCard())
+		cards = append(cards, card)
+	}
+	_, combines := utils.FastCheckHuV2(cards, nil, true)
+	tc.combines = newCombines(combines)
 }
 
 // typeCalculator 计算出玩家胡牌所有的番型
 func (tc *typeCalculator) calclate() (fantypes []int, gengcount int, huacount int) {
-	tc.cache = make(map[int]bool)
 	tc.makeCombines()
+	tc.cache = make(map[int]bool)
 
 	fantypes = []int{}
+	mutexs := map[int]struct{}{} // 当前哪些牌型被互斥了的
 
 	option := tc.getOption()
 	for ID, fantype := range option.Fantypes {
+		// 已经互斥的不检测
+		if _, ok := mutexs[ID]; ok {
+			continue
+		}
 		match := tc.callCheckFunc(fantype.FuncID)
 		if match {
 			fantypes = append(fantypes, ID)
+			for _, m := range fantype.Mutex {
+				mutexs[m] = struct{}{}
+			}
 		}
 	}
+	// 移除掉互斥的番型
+	tmpFantypes := []int{}
+	for _, ID := range fantypes {
+		if _, ok := mutexs[ID]; !ok {
+			tmpFantypes = append(tmpFantypes, ID)
+		}
+	}
+	fantypes = tmpFantypes
+
 	if option.EnableGeng {
 		gengcount = tc.calcGengCount(fantypes)
 	}
@@ -129,6 +198,12 @@ func (tc *typeCalculator) getHuCard() *majong.HuCard {
 	return tc.huCard
 }
 
+// getHuaCards 获取花牌
+func (tc *typeCalculator) getHuaCards() []*majong.Card {
+	return tc.getPlayer().GetHandCards()
+
+}
+
 // CalculateFanTypes 计算番型
 // handCards 手牌，如果为nil，则使用玩家自己的手牌
 // huCard : 胡的牌，如果为 nil ，则使用玩家最后一次胡的牌
@@ -172,6 +247,9 @@ func CalculateScore(mjContext *majong.MajongContext, fantypes []int, gengcount i
 }
 
 func calcScoreByMethod(method int, sumScore *uint64, mulScore *uint64, count int, score int) {
+	if count == 0 {
+		return
+	}
 	if method == 0 {
 		*sumScore += uint64(score * count)
 	} else if method == 1 {

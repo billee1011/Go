@@ -18,4 +18,6 @@ type StartGameParams struct {
 
 	PlayerSeatGold map[int]uint64 //玩家座位对应的金币
 	PeiPaiGame     string         // 配牌游戏名
+	PlayerNum      int            //参与游戏的玩家人数
+	IsDq           bool           //是否定缺
 }
