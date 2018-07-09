@@ -29,7 +29,7 @@ func checkZiYiSe(tc *typeCalculator) bool {
 	checkCards = append(checkCards, huCard.Card)
 
 	for _, checkCard := range checkCards {
-		if checkCard.GetColor() != majongpb.CardColor_ColorFeng {
+		if !IsNotFlowerCard(checkCard) {
 			return false
 		}
 	}

@@ -8,7 +8,7 @@ import (
 // checkSanLianKe 三连刻:胡牌时,含有一种花色 3 副依次递增一位数字的刻子
 func checkSanLianKe(tc *typeCalculator) bool {
 	pengCount := len(tc.getPengCards())
-	keCombines := make([]combine, 0)
+	keCombines := make([]Combine, 0)
 	for _, combine := range tc.combines {
 		if len(combine.kes)+pengCount >= 3 {
 			keCombines = append(keCombines, combine)
@@ -17,9 +17,9 @@ func checkSanLianKe(tc *typeCalculator) bool {
 	for _, keCombine := range keCombines {
 		colorCount, cardCount := getChiCardsDetails(tc.getChiCards())
 		for _, ke := range keCombine.kes {
-			keValue := utils.ServerCard2Number(ke)
-			cardCount[keValue] = cardCount[keValue] + 1
-			colorCount[ke.Color] = colorCount[ke.Color] + 1
+			keCard := intToCard(ke)
+			cardCount[ke] = cardCount[ke] + 1
+			colorCount[keCard.Color] = colorCount[keCard.Color] + 1
 		}
 		hasColor := false
 		for _, count := range colorCount {

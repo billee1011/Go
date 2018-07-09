@@ -12,8 +12,7 @@ func checkBianZhang(tc *typeCalculator) bool {
 	for _, combine := range tc.combines {
 		contain := 0
 		for _, shun := range combine.shuns {
-			shunValue := utils.ServerCard2Number(shun)
-			if shunValue == huValue || shunValue+1 == huValue || shunValue+2 == huValue {
+			if shun == huValue || shun+1 == huValue || shun+2 == huValue {
 				contain = contain + 1
 			}
 			if contain > 1 || contain < 1 {

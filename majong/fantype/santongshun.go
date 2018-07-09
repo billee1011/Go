@@ -7,7 +7,7 @@ import (
 
 // checkSanTongShun 三同顺:胡牌时,含有一种花色 3 副序数相同的顺子
 func checkSanTongShun(tc *typeCalculator) bool {
-	shunCombines := make([]combine, 0)
+	shunCombines := make([]Combine, 0)
 	chiCount := len(tc.getChiCards())
 	for _, combine := range tc.combines {
 		if len(combine.shuns)+chiCount >= 3 {
@@ -17,9 +17,9 @@ func checkSanTongShun(tc *typeCalculator) bool {
 	for _, shunCombine := range shunCombines {
 		colorCount, cardCount := getChiCardsDetails(tc.getChiCards())
 		for _, shun := range shunCombine.shuns {
-			shunValue := utils.ServerCard2Number(shun)
-			cardCount[shunValue] = cardCount[shunValue] + 1
-			colorCount[shun.Color] = colorCount[shun.Color] + 1
+			shunCard := intToCard(shun)
+			cardCount[shun] = cardCount[shun] + 1
+			colorCount[shunCard.Color] = colorCount[shunCard.Color] + 1
 		}
 		hasColor := false
 		for _, count := range colorCount {
