@@ -47,7 +47,6 @@ enum HuType{
     HT_DIHU = 8;               // 地胡
     
 }
-
 // 麻将组类型
 enum CardsGroupType{
     CGT_HAND = 0;     // 手牌

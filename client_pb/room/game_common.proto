@@ -12,6 +12,13 @@ message Card {
     optional int32 point = 2;       // 卡牌点数
 }
 
+// Fan 番型
+message Fan {
+    optional FanType name = 1; // 番名
+    optional int32  value =2;  // 番数
+    optional uint32 type = 3; // 0:番/1:倍
+}
+
 // RoomStartGameNtf 游戏开始通知。
 message RoomStartGameNtf {
     // TODO 
@@ -158,6 +165,8 @@ message RoomZixunNtf {
     repeated CanTingCardInfo can_ting_card_info = 5; // 每张牌对应的听的牌和倍数
     optional bool enable_qi = 6; //是否可弃牌
     optional HuType hu_type = 7;  // 胡牌类型
+    optional bool enable_ting = 8;  //是否可聽
+    optional TingType ting_type = 9;    //听的类型
 }
 
 // TingAction 听牌动作
@@ -248,6 +257,7 @@ message BillPlayerInfo
     optional int32  card_value = 4;        // 输赢倍数
     repeated CardsGroup cards_group = 5;   // 玩家牌型
     optional BillType bill_type = 6;       // 结算类型
+    repeated Fan fan =7;                   // 番详情
 }
 
 // RoomBalanceInfoRsp 单局结算

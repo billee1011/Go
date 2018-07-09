@@ -23,6 +23,7 @@ type clientPlayer struct {
 	client    interfaces.Client
 	usrName   string
 	accountID uint64
+	expectors map[msgid.MsgID]interfaces.MessageExpector
 }
 
 func (p *clientPlayer) GetID() uint64 {
@@ -42,6 +43,25 @@ func (p *clientPlayer) GetUsrName() string {
 
 func (p *clientPlayer) GetAccountID() uint64 {
 	return p.accountID
+}
+func (p *clientPlayer) AddExpectors(msgIDs ...msgid.MsgID) {
+	for _, msgID := range msgIDs {
+		p.expectors[msgID], _ = p.client.ExpectMessage(msgID)
+	}
+}
+
+func (p *clientPlayer) GetExpector(msgID msgid.MsgID) interfaces.MessageExpector {
+	return p.expectors[msgID]
+}
+
+func createPlayer(playerID uint64, coin uint64, client interfaces.Client, userName string) *clientPlayer {
+	return &clientPlayer{
+		playerID:  playerID,
+		coin:      coin,
+		client:    client,
+		usrName:   userName,
+		expectors: make(map[msgid.MsgID]interfaces.MessageExpector),
+	}
 }
 
 // LoginNewPlayer 自动分配账号 ID， 生成账号名称，然后登录

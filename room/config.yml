@@ -7,7 +7,7 @@ rpc_addr: 127.0.0.1
 rpc_port: 36100
 rpc_server_name: room
 
-peipai_addr: 127.0.0.1:36102
+peipai_addr: 0.0.0.0:36102
 
 redis_addr: 127.0.0.1:6379
 redis_passwd: 

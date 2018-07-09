@@ -11,48 +11,58 @@ const (
 	playersOneDesk int = 4 // 一个桌子需要的人数
 )
 
+type matchData struct {
+	gameID      int
+	queue       chan uint64
+	playerCount int
+}
+
+// Manager 匹配管理器
 type Manager struct {
-	queue  chan uint64
-	queues map[int](chan uint64)
+	queues map[int]matchData
 }
 
 var defaultManager = NewManager()
 
-// makeQueues 创建所有游戏的队列
-func makeQueues() map[int](chan uint64) {
-	// TODO: 从配置加载
-	queues := make(map[int](chan uint64))
-	queues[int(room.GameId_GAMEID_XUELIU)] = make(chan uint64)
-	queues[int(room.GameId_GAMEID_XUEZHAN)] = make(chan uint64)
-	return queues
+func createMatchData(gameID room.GameId, playerCount int) matchData {
+	return matchData{
+		gameID:      int(gameID),
+		queue:       make(chan uint64),
+		playerCount: playerCount,
+	}
 }
 
 // NewManager 创建 Manager
 func NewManager() *Manager {
+	// TODO: 从配置加载
+	queues := make(map[int]matchData)
+	queues[int(room.GameId_GAMEID_XUELIU)] = createMatchData(room.GameId_GAMEID_XUELIU, 4)
+	queues[int(room.GameId_GAMEID_XUEZHAN)] = createMatchData(room.GameId_GAMEID_XUEZHAN, 4)
+	queues[int(room.GameId_GAMEID_DOUDIZHU)] = createMatchData(room.GameId_GAMEID_DOUDIZHU, 3)
 
 	m := &Manager{
-		queue:  make(chan uint64),
-		queues: makeQueues(),
+		queues: queues,
 	}
 	m.runMatchs()
 	return m
 }
 
 func (m *Manager) runMatchs() {
-	for gameID, ch := range m.queues {
-		go m.match(gameID, ch)
+	for gameID, md := range m.queues {
+		go m.match(gameID, md.playerCount, md.queue)
 	}
 }
 
 func (m *Manager) addPlayer(playerID uint64, gameID int) {
-	if m.queues[gameID] == nil {
+	md, ok := m.queues[gameID]
+	if !ok {
 		return
 	}
-	m.queues[gameID] <- playerID
+	md.queue <- playerID
 }
 
 // 具体的匹配操作
-func (m *Manager) match(gameID int, ch chan uint64) {
+func (m *Manager) match(gameID int, playerCount int, ch chan uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "Manager::match()",
 	})
@@ -70,7 +80,7 @@ func (m *Manager) match(gameID int, ch chan uint64) {
 			}
 			players = append(players, playerID)
 
-			if len(players) == playersOneDesk {
+			if len(players) == playerCount {
 				if _, err := s.createDesk(players, gameID); err != nil {
 					logEntry.Debug(err.Error())
 				}

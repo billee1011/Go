@@ -55,4 +55,7 @@ type Client interface {
 
 	// ExpectMessage 创建消息期望
 	ExpectMessage(msgID msgid.MsgID) (MessageExpector, error)
+
+	// RemoveMsgExpect 移除消息期望
+	RemoveMsgExpect(msgID msgid.MsgID)
 }

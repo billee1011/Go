@@ -216,6 +216,11 @@ func (c *client) ExpectMessage(msgID msgid.MsgID) (interfaces.MessageExpector, e
 	return &me, nil
 }
 
+// RemoveMsgExpect 移除消息期望
+func (c *client) RemoveMsgExpect(msgID msgid.MsgID) {
+	c.expectInfos.Delete(msgID)
+}
+
 // allocSeq 分配发送序号
 func (c *client) allocSeq() uint64 {
 	return atomic.AddUint64(&c.maxSeq, 1)

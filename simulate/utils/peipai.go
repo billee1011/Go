@@ -14,12 +14,22 @@ import (
 // step 2. 将换三张方向转换成接口可识别的字符串 ， hszfx=dui, shun, ni
 // step 3. 庄家位置   zhuang= number
 func peipai(game string, seatCards [][]uint32, wallCards []uint32, hszDir room.Direction, bankerSeat int) error {
+
+	// url 基本字符串 + 牌数据
 	url := fmt.Sprintf("%s?game=%s&%s", config.GetPeipaiURL(), game, translatePeipaiCards(seatCards, wallCards))
+
+	// 换三张方向
 	hszfx := translateHszDir(hszDir)
 	if hszfx != "" {
 		url = fmt.Sprintf("%s&%s", url, hszfx)
 	}
+
+	// 庄家座位号
 	url = fmt.Sprintf("%s&zhuang=%d", url, bankerSeat)
+
+	fmt.Println("utils.peipai() url = ", url)
+
+	// 发出url请求
 	return requestPeipai(url)
 }
 
@@ -59,6 +69,7 @@ func translatePeipaiCard(card uint32) string {
 	return fmt.Sprint(card)
 }
 
+// 格式化换三张的字符串
 func translateHszDir(dir room.Direction) string {
 	switch dir {
 	case room.Direction_AntiClockWise:

@@ -7,8 +7,10 @@ import (
 	"strconv"
 )
 
-// SetGoldHandle set player gold
+// SetGoldHandle 设置玩家金币
 func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
+
+	// 玩家ID
 	playerID, err := strconv.ParseUint(req.FormValue(PlayerIDKey), 10, 64)
 	response := "OK"
 	defer resp.Write([]byte(response))
@@ -17,6 +19,8 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 		response = "player_id 数据错误"
 		return
 	}
+
+	// 金币数
 	gold, err := strconv.ParseUint(req.FormValue(GoldKey), 10, 64)
 	if err != nil {
 		response = "gold 数据错误"

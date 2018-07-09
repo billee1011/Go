@@ -15,6 +15,11 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 		msgid.MsgID_ROOM_DINGQUE_REQ,
 		msgid.MsgID_ROOM_CHUPAI_REQ,
 		msgid.MsgID_ROOM_CARTOON_FINISH_REQ,
+		//斗地主请求
+		msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ,
+		msgid.MsgID_ROOM_DDZ_DOUBLE_REQ,
+		msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ,
+		msgid.MsgID_ROOM_DDZ_TUOGUAN_REQ,
 	}
 
 	for _, msg := range roomReqs {

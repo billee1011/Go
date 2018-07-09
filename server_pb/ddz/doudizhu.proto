@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package ddz;
+
+import "states.proto";
+import "events.proto";
+
+
+// Player 玩家数据
+message Player {
+    uint64 palyer_id = 1;                   // 玩家 ID
+    bool lord = 2;                          // 是否是庄家
+    bool grab = 3;                          // 是否抢庄
+    bool is_double = 4;                     // 是否加倍
+    repeated uint32 hand_cards = 5;         // 玩家手牌
+    repeated uint32 out_cards = 6;          // 打出的牌
+} 
+
+// DDZContext 麻将现场
+message DDZContext {
+    int32 game_id = 1;              // 游戏 ID 
+    StateID cur_state = 2;          // 当前状态
+    repeated Player players = 3;    // 玩家列表
+    repeated uint32 wall_cards = 4; // 墙牌(开局发好牌后，只剩3张)
+    uint64 current_player_id = 5;   // 当前操作玩家
+    uint64 last_player_id = 6;      // 上一个操作玩家
+    //叫地主阶段
+    uint64 first_grab_player_id = 7;// 第一个实际叫地主玩家
+    uint32 grabbed_count = 8;        // 已抢/弃地主玩家人数
+    uint64 lord_player_id = 9;      // 地主id
+    uint32 all_abandon_count = 10;  // 全部玩家弃地主的次数,3次随机确定地主
+    //加倍阶段
+    uint32 doubled_count = 11;       //加倍/弃加倍玩家人数
+    //出牌阶段
+    repeated uint32 cur_out_cards = 12; //当前出牌
+    CardType cur_card_type = 13;    //当前出牌牌型
+    uint32 card_type_pivot = 14;    //当前牌型用来比较的pivot
+    uint32 pass_count = 15;         //过牌人数
+    uint32 total_bomb = 16;         //炸弹总倍数 2的n次方
+    //结算阶段
+    uint64 winner_id = 17;          //胜利玩家id
+    bool spring = 18;               //春天(农民没有出过牌)
+    bool anti_spring = 19;          //反春天(地主只出了一次牌)
+    //配牌
+    string peipai = 20;             //测试配牌
+}
+
+// AutoEvent 自动事件
+message AutoEvent {
+    EventID event_id = 1;       // 事件 ID
+    bytes event_context = 2;    // 事件现场
+    uint32 wait_time = 3;       // 多长时间（ms）后产生该事件
+}
+
+// ReplyClientMessage 回复给客户端的消息
+message ReplyClientMessage {
+    repeated uint64 players = 1;    // 玩家列表
+    int32 msg_id = 2;               // 消息 ID
+    bytes msg = 3;    // 消息体
+}
+
+// TimeCheckInfo 时间检测信息
+message TimeCheckInfo {
+    uint64 duration = 1;            // 多久之后作检测
+    int32 type = 2;                 // 检测类型
+}

@@ -58,8 +58,9 @@ message DDZGrabLordReq {
 message DDZGrabLordNtf {
     optional uint64 player_id = 1;//叫/抢地主玩家id
     optional bool grab = 2;//叫还是弃
-    optional uint64 next_player_id = 3;//下一个抢地主玩家，0表示已确定地主
-    optional NextStage next_stage = 4; //根据玩家选择返回DDZ_STAGE_CALL或DDZ_STAGE_GRAB
+    optional uint32 total_grab = 3;//当前抢庄总倍数
+    optional uint64 next_player_id = 4;//下一个抢地主玩家，0表示已确定地主
+    optional NextStage next_stage = 5; //根据玩家选择返回DDZ_STAGE_CALL或DDZ_STAGE_GRAB
 }
 
 // DDZLordNtf 地主广播
@@ -138,8 +139,10 @@ message DDZPlayCardNtf {
 // CMD: 0x1500C
 message DDZGameOverNtf {
     optional uint64 winner_id = 1; // 胜利者id
-    optional uint32 show_hand_time = 2; //摊牌时间,不显示倒计时,内部倒计时完成后显示结算页面(玩家账单)
-    repeated DDZBillPlayerInfo bills = 3;//玩家手牌和结算账单
+    optional bool spring = 2; //春天(农民没有出过牌)
+    optional bool anti_spring = 3;//反春天(地主只出了一次牌)
+    optional uint32 show_hand_time = 4; //摊牌时间,不显示倒计时,内部倒计时完成后显示结算页面(玩家账单)
+    repeated DDZBillPlayerInfo bills = 5;//玩家手牌和结算账单
 }
 
 // BillPlayersInfo 结算玩家账单

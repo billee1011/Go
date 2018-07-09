@@ -17,3 +17,17 @@ type StartGameParams struct {
 	PlayerSeatGold map[int]uint64 //玩家座位对应的金币
 	PeiPaiGame     string         // 配牌游戏名
 }
+
+// StartPukeGameParams 启动扑克游戏的参数
+type StartPukeGameParams struct {
+	GameID     room.GameId    // 游戏ID
+	Cards      [][]uint32     // 从地主位置开始算起，每个位置的固定卡牌
+	WallCards  []uint32       // 已废弃
+	HszDir     room.Direction // 已废弃
+	BankerSeat int            // 地主座位号
+	ServerAddr string         // 服务器地址
+	ClientVer  string         // 客户端版本号
+
+	PlayerSeatGold map[int]uint64 //玩家座位对应的金币
+	PeiPaiGame     string         // 配牌游戏名
+}

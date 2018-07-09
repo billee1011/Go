@@ -20,7 +20,9 @@ import (
 	"github.com/spf13/viper"
 
 	_ "steve/room/autoevent" // 引入 autoevent 包，设置工厂
-	_ "steve/room/desks"
+	"steve/room/desks/deskbase"
+	_ "steve/room/desks/factory"
+	_ "steve/room/desks/mgr"
 	_ "steve/room/playermgr"
 	_ "steve/room/req_event_translator"
 	_ "steve/room/settle"
@@ -41,14 +43,16 @@ type RoomService struct {
 }
 
 func notifyDeskCreate(desk interfaces.Desk) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "notifyDeskCreate",
-	})
+	players := []*room.RoomPlayerInfo{}
+	deskPlayers := desk.GetDeskPlayers()
+	for _, player := range deskPlayers {
+		roomPlayer := deskbase.TranslateToRoomPlayer(player)
+		players = append(players, &roomPlayer)
+	}
 	ntf := room.RoomDeskCreatedNtf{
-		Players: desk.GetPlayers(),
+		Players: players,
 	}
 	facade.BroadCastDeskMessage(desk, nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
-	logEntry.WithField("ntf_context", ntf).Debugln("广播创建房间")
 }
 
 // CreateDesk 创建牌桌
@@ -68,15 +72,7 @@ func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 
 	// 请求的玩家ID数组
 	playersID := req.GetPlayerId()
-
-	// 个数须为4
-	if len(playersID) < 4 {
-		logEntry.WithField("len(playersID):", len(playersID)).Errorln("players数组长度不为4")
-		return
-	}
-
 	deskFactory := global.GetDeskFactory()
-
 	deskMgr := global.GetDeskMgr()
 
 	//playerMgr := global.GetPlayerMgr()

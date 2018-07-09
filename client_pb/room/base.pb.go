@@ -41,6 +41,7 @@ It has these top-level messages:
 	RoomPlayerLocationReq
 	RoomPlayerLocationRsp
 	Card
+	Fan
 	RoomStartGameNtf
 	RoomXipaiNtf
 	PlayerCardCount
