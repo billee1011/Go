@@ -6,7 +6,7 @@ import (
 	"steve/server_pb/ddz"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"steve/room/interfaces/global"
 )
 

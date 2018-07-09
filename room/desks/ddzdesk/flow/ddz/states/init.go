@@ -9,7 +9,7 @@ import (
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/pkg/errors"
+	"errors"
 )
 
 type initState struct{}
