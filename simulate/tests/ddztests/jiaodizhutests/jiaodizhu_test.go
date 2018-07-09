@@ -239,13 +239,13 @@ func TestJiaodizhu(t *testing.T) {
 		if nextPlayerID == farmer1.Player.GetID() {
 
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民1放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
 
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民2放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
@@ -261,13 +261,13 @@ func TestJiaodizhu(t *testing.T) {
 			logEntry.Errorf("玩家%d 第%d次出牌回应结果为%s", farmer2.Player.GetID(), i, ntf.GetResult().GetErrDesc())
 		} else {
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民2放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer2, []uint32{}, room.CardType_CT_NONE))
 
 			// 暂停
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 
 			// 农民1放弃出牌
 			assert.Nil(t, sendPlayCardReq(&farmer1, []uint32{}, room.CardType_CT_NONE))
@@ -284,7 +284,7 @@ func TestJiaodizhu(t *testing.T) {
 		}
 
 		// 暂停2秒
-		time.Sleep(1 * time.Second)
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	// 牌已出完，期待游戏结束通知
