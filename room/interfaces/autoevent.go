@@ -21,5 +21,5 @@ type AutoEventGenerateResult struct {
 // DeskAutoEventGenerator 牌桌自动事件产生器
 type DeskAutoEventGenerator interface {
 	GenerateV2(params *AutoEventGenerateParams) AutoEventGenerateResult
-	RegisterAI(gameID int, stateID majong.StateID, AI MajongAI) // 注册 AI
+	RegisterAI(gameID int, stateID int32, AI CommonAI) // 注册 AI
 }

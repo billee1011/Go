@@ -88,7 +88,7 @@ func (h *waitQiangganghuStateAI) qi(player *majong.Player) interfaces.AIEvent {
 		}).Errorln("事件序列化失败")
 	}
 	return interfaces.AIEvent{
-		ID:      majong.EventID_event_qi_request,
+		ID:      int32(majong.EventID_event_qi_request),
 		Context: data,
 	}
 }
@@ -107,7 +107,7 @@ func (h *waitQiangganghuStateAI) hu(player *majong.Player) interfaces.AIEvent {
 		}).Errorln("事件序列化失败")
 	}
 	return interfaces.AIEvent{
-		ID:      majong.EventID_event_hu_request,
+		ID:      int32(majong.EventID_event_hu_request),
 		Context: data,
 	}
 }

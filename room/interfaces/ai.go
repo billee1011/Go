@@ -32,7 +32,7 @@ type AIEventGenerateParams struct {
 
 // AIEvent AI 事件
 type AIEvent struct {
-	ID      majong.EventID
+	ID      int32
 	Context []byte
 }
 
@@ -41,7 +41,7 @@ type AIEventGenerateResult struct {
 	Events []AIEvent
 }
 
-// MajongAI 麻将 AI
-type MajongAI interface {
+// CommonAI 麻将 AI
+type CommonAI interface {
 	GenerateAIEvent(params AIEventGenerateParams) (AIEventGenerateResult, error)
 }

@@ -11,24 +11,24 @@ import (
 )
 
 type autoEventGenerator struct {
-	majongAIs map[int](map[majong.StateID]interfaces.MajongAI)
+	majongAIs map[int](map[int32]interfaces.CommonAI)
 }
 
 func init() {
 	global.SetDeskAutoEventGenerator(&autoEventGenerator{
-		majongAIs: map[int](map[majong.StateID]interfaces.MajongAI){},
+		majongAIs: map[int](map[int32]interfaces.CommonAI){},
 	})
 }
 
 // getAI 根据状态和游戏 ID 获取 AI 对象
-func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces.MajongAI {
+func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces.CommonAI {
 	gameID := mjContext.GetGameId()
 	gameAIs, ok := aeg.majongAIs[int(gameID)]
 	if !ok {
 		return nil
 	}
 	state := mjContext.GetCurState()
-	AI, ok := gameAIs[state]
+	AI, ok := gameAIs[int32(state)]
 	if !ok {
 		return nil
 	}
@@ -36,7 +36,7 @@ func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces
 }
 
 // handlePlayerAI 处理玩家 AI
-func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenerateResult, AI interfaces.MajongAI,
+func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenerateResult, AI interfaces.CommonAI,
 	playerID uint64, mjContext *majong.MajongContext, aiType interfaces.AIType, robotLv int) {
 	aiResult, err := AI.GenerateAIEvent(interfaces.AIEventGenerateParams{
 		MajongContext: mjContext,
@@ -57,7 +57,7 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenera
 }
 
 // handleOverTime 处理超时
-func (aeg *autoEventGenerator) handleOverTime(AI interfaces.MajongAI, stateTime time.Time, mjContext *majong.MajongContext) (
+func (aeg *autoEventGenerator) handleOverTime(AI interfaces.CommonAI, stateTime time.Time, mjContext *majong.MajongContext) (
 	finish bool, result interfaces.AutoEventGenerateResult) {
 
 	finish, result = false, interfaces.AutoEventGenerateResult{
@@ -75,18 +75,8 @@ func (aeg *autoEventGenerator) handleOverTime(AI interfaces.MajongAI, stateTime 
 	return
 }
 
-// isTuoGuan 玩家是否托管
-func (aeg *autoEventGenerator) isTuoGuan(playerID uint64, tuoGuanPlayers []uint64) bool {
-	for _, player := range tuoGuanPlayers {
-		if playerID == player {
-			return true
-		}
-	}
-	return false
-}
-
 // handleTuoGuan 执行所有玩家的托管
-func (aeg *autoEventGenerator) handleTuoGuan(desk interfaces.Desk, AI interfaces.MajongAI, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
+func (aeg *autoEventGenerator) handleTuoGuan(desk interfaces.Desk, AI interfaces.CommonAI, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
 	result := interfaces.AutoEventGenerateResult{
 		Events: []interfaces.Event{},
 	}
@@ -127,9 +117,9 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	return result
 }
 
-func (aeg *autoEventGenerator) RegisterAI(gameID int, stateID majong.StateID, AI interfaces.MajongAI) {
+func (aeg *autoEventGenerator) RegisterAI(gameID int, stateID int32, AI interfaces.CommonAI) {
 	if _, exist := aeg.majongAIs[gameID]; !exist {
-		aeg.majongAIs[gameID] = make(map[majong.StateID]interfaces.MajongAI)
+		aeg.majongAIs[gameID] = make(map[int32]interfaces.CommonAI)
 	}
 	aeg.majongAIs[gameID][stateID] = AI
 }
