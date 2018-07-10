@@ -22,5 +22,3 @@ rpc_addr: 127.0.0.1
 rpc_port: 36201
 rpc_server_name: login
 
-# 认证秘钥
-auth_key: stevegame.cn
