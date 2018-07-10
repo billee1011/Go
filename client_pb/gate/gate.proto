@@ -27,12 +27,12 @@ message GateAuthRsp {
 
 // GateHeartBeatReq 心跳检测请求
 message GateHeartBeatReq {
-    optional uint32 reserve = 1;    // 保留
+    optional uint64 time_stamp = 1;    // 时间
 }
 
 // GateHeartBeatRsp 心跳检测应答
 message GateHeartBeatRsp {
-    optional uint32 reserve = 2;    // 保留
+    optional uint64 time_stamp = 1;    // 时间
 }
 
 // GateAnotherLoginNtf 顶号通知
