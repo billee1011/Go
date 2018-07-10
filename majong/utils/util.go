@@ -36,8 +36,8 @@ func GetNextPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 func CardsToUtilCards(cards []*majongpb.Card) []Card {
 	cardsCard := make([]Card, 0)
 	for _, v := range cards {
-		cardInt, _ := CardToInt(*v)
-		cardsCard = append(cardsCard, Card(*cardInt))
+		cardInt := ServerCard2Number(v)
+		cardsCard = append(cardsCard, Card(cardInt))
 	}
 	return cardsCard
 }

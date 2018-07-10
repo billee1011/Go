@@ -356,7 +356,6 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	tingStateInfo := player.GetTingStateInfo()
 	if len(zixunNtf.GetCanTingCardInfo()) != 0 && (!tingStateInfo.GetIsTing() || !tingStateInfo.GetIsTianting()) {
 		zixunNtf.EnableTing = proto.Bool(true)
-		record.EnableTing = true
 		if *zixunNtf.EnableTing {
 			if player.GetZixunCount() == int32(1) {
 				zixunNtf.TingType = room.TingType_TT_TIAN_TING.Enum()
@@ -403,6 +402,7 @@ func (s *ZiXunState) recordZixunMsg(record *majongpb.ZixunRecord, ntf *room.Room
 	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
 	record.EnableQi = ntf.GetEnableQi()
 	record.EnableZimo = ntf.GetEnableZimo()
+	record.EnableTing = ntf.GetEnableTing()
 }
 
 // getHuType 计算胡牌类型

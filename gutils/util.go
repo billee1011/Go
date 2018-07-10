@@ -187,6 +187,18 @@ func HuTypeSvr2Client(recordHuType majongpb.HuType) *room.HuType {
 	return &huType
 }
 
+// TingTypeSvr2Client 听类型转换，server_pb-->client_pb
+func TingTypeSvr2Client(recordTingType majongpb.TingType) *room.TingType {
+	var tingType room.TingType
+	switch recordTingType {
+	case majongpb.TingType_TT_NORMAL_TING:
+		tingType = room.TingType_TT_NORMAL_TING
+	case majongpb.TingType_TT_TIAN_TING:
+		tingType = room.TingType_TT_TIAN_TING
+	}
+	return &tingType
+}
+
 // CanTingCardInfoSvr2Client 玩家停牌信息转换，server_pb-->client_pb
 func CanTingCardInfoSvr2Client(minfos []*majongpb.CanTingCardInfo) []*room.CanTingCardInfo {
 	rinfos := []*room.CanTingCardInfo{}

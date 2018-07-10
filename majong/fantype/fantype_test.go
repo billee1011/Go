@@ -37,6 +37,7 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	cardTypes, genCount, _ := calculate(playerParams)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_PINGHU))
 	assert.Equal(t, genCount, uint32(0))
+
 }
 
 // 清一色
@@ -155,7 +156,7 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	assert.Equal(t, cardTypes, int(room.FanType_FT_QINGLONGQIDUI))
+	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGLONGQIDUI))
 }
 
 // 碰碰胡
@@ -492,27 +493,17 @@ func TestXiaoyuwu(t *testing.T) {
 
 // TestDaqixing 大七星
 func TestDaqixing(t *testing.T) {
-	handUtilCards := []utils.Card{41, 41, 46, 45, 45, 45, 45, 43, 43}
+	handUtilCards := []utils.Card{41, 41, 46, 45, 45, 45, 45, 43, 43, 47, 47, 47, 47}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	gangUtilCards := []utils.Card{47}
-	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
-	assert.Nil(t, err)
-	//pengUtilCards := []utils.Card{}
-	//pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
 	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(46)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard: handCards,
 		PengCard: []*majongpb.PengCard{},
-		GangCard: []*majongpb.GangCard{
-			&majongpb.GangCard{
-				Card: gangCards[0],
-				Type: majongpb.GangType_gang_angang,
-			},
-		},
-		HuCard: &majongpb.HuCard{Card: HuCard},
+		GangCard: []*majongpb.GangCard{},
+		HuCard:   &majongpb.HuCard{Card: HuCard},
 	}
 	cardTypes, _, _ := calculate(playerParams)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_DAQIXING))
