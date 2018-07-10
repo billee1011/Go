@@ -1,9 +1,10 @@
-package scxlai
+package ddz
 
 import (
 	"steve/room/interfaces"
 	"github.com/golang/protobuf/proto"
 	"steve/server_pb/ddz"
+	"github.com/Sirupsen/logrus"
 )
 
 type doubleStateAI struct {
@@ -30,6 +31,8 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 		}
 		result.Events = append(result.Events, event)
 	}
+	logrus.WithField("players", context.CountDownPlayers).WithField("result", result).Debug("double timeout event")
 
+	context.Duration = 0//清除倒计时
 	return
 }

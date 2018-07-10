@@ -112,7 +112,7 @@ func (aeg *autoEventGenerator) handleTuoGuan(desk interfaces.Desk, AI interfaces
 	if time.Now().Sub(stateTime) < tuoguanOprTime {
 		return result
 	}
-	//players := mjContext.GetPlayers()
+
 	players := desk.GetDeskPlayers()
 	for _, player := range players {
 		playerID := player.GetPlayerID()
@@ -131,7 +131,7 @@ func (aeg *autoEventGenerator) handleDDZTuoGuan(desk interfaces.Desk, AI interfa
 	if time.Now().Sub(stateTime) < tuoguanOprTime {
 		return result
 	}
-	//players := ddzContext.GetPlayers()
+
 	players := desk.GetDeskPlayers()
 	for _, player := range players {
 		playerID := player.GetPlayerID()
@@ -148,6 +148,7 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	gameID := desk.GetGameID()
 	gameAIs, ok := aeg.commonAIs[int(gameID)]
 	if !ok {
+		//logrus.WithField("gameId", gameID).Debug("Can't find game AI")
 		return
 	}
 	var state int32
@@ -158,6 +159,7 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	}
 	AI, ok := gameAIs[int32(state)]
 	if !ok {
+		//logrus.WithField("gameId", gameID).WithField("state", state).Debug("Can't find state AI")
 		return
 	}
 
@@ -184,6 +186,7 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 }
 
 func (aeg *autoEventGenerator) RegisterAI(gameID int, stateID int32, AI interfaces.CommonAI) {
+	//logrus.WithField("gameID", gameID).WithField("stateID", stateID).Debug("Register AI")
 	if _, exist := aeg.commonAIs[gameID]; !exist {
 		aeg.commonAIs[gameID] = make(map[int32]interfaces.CommonAI)
 	}
