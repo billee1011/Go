@@ -3,8 +3,6 @@ package tests
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"steve/simulate/config"
-	"steve/simulate/connect"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -71,11 +69,8 @@ func Test_Change_Player(t *testing.T) {
 
 	// 再加入3个玩家凑够4人开局避免影响其他测试用例
 	for i := 0; i < 3; i++ {
-		// 创建客户端连接
-		client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
-		assert.NotNil(t, client)
 		// 登录用户
-		player, err := utils.LoginUser(client, global.AllocUserName())
+		player, err := utils.LoginNewPlayer()
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 		_, err = utils.ApplyJoinDesk(player, params.GameID)

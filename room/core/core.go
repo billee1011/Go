@@ -1,12 +1,7 @@
 package core
 
 import (
-	"context"
-	msgid "steve/client_pb/msgId"
-	"steve/client_pb/room"
 	"steve/room/config"
-	"steve/room/interfaces"
-	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/room/loader_balancer"
 	"steve/room/peipai"
@@ -20,7 +15,6 @@ import (
 	"github.com/spf13/viper"
 
 	_ "steve/room/autoevent" // 引入 autoevent 包，设置工厂
-	"steve/room/desks/deskbase"
 	_ "steve/room/desks/factory"
 	_ "steve/room/desks/mgr"
 	_ "steve/room/playermgr"
@@ -36,75 +30,6 @@ type roomCore struct {
 // NewService 创建服务
 func NewService() service.Service {
 	return new(roomCore)
-}
-
-// RoomService room房间RPC服务
-type RoomService struct {
-}
-
-func notifyDeskCreate(desk interfaces.Desk) {
-	players := []*room.RoomPlayerInfo{}
-	deskPlayers := desk.GetDeskPlayers()
-	for _, player := range deskPlayers {
-		roomPlayer := deskbase.TranslateToRoomPlayer(player)
-		players = append(players, &roomPlayer)
-	}
-	ntf := room.RoomDeskCreatedNtf{
-		Players: players,
-	}
-	facade.BroadCastDeskMessage(desk, nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
-}
-
-// CreateDesk 创建牌桌
-func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
-
-	// 日志
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "RoomService::CreateDesk",
-	})
-
-	logEntry.WithField("players", req.GetPlayerId()).Debugln("RoomService::CreateDesk()")
-
-	// 回复match服的消息
-	rsp = &roommgr.CreateDeskResponse{
-		ErrCode: roommgr.RoomError_FAILED, // 默认是失败的
-	}
-
-	// 请求的玩家ID数组
-	playersID := req.GetPlayerId()
-	deskFactory := global.GetDeskFactory()
-	deskMgr := global.GetDeskMgr()
-
-	//playerMgr := global.GetPlayerMgr()
-
-	// 创建桌子
-	result, err := deskFactory.CreateDesk(playersID, int(req.GetGameId()), interfaces.CreateDeskOptions{})
-	if err != nil {
-		logEntry.WithFields(
-			logrus.Fields{
-				"players": playersID,
-				"result":  result,
-			},
-		).WithError(err).Errorln("创建桌子失败")
-
-		return
-	}
-
-	logEntry.WithField("players", req.GetPlayerId()).Debugln("创建桌子成功")
-
-	// 回复match：创建桌子成功
-	rsp.ErrCode = roommgr.RoomError_SUCCESS
-
-	// 通知该桌子的所有人
-	notifyDeskCreate(result.Desk)
-
-	// 桌子开始运行
-	deskMgr.RunDesk(result.Desk)
-
-	// 添加进playerManager
-	// todo
-
-	return
 }
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
