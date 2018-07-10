@@ -106,7 +106,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
 			PlayerId: &lordPlayerId,
-			TotalGrab: &totalGrab,
+			TotalGrab: &context.TotalGrab,
 			Dipai: context.WallCards,
 			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
@@ -123,7 +123,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
 			PlayerId: &lordPlayerId,
-			TotalGrab: &totalGrab,
+			TotalGrab: &context.TotalGrab,
 			Dipai: context.WallCards,
 			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})

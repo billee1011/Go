@@ -17,8 +17,8 @@ func (s *overState) OnEnter(m machine.Machine) {
 
 	context := getDDZContext(m)
 
-	totalGrab := GetTotalGrab(context.GetPlayers())
-	totalDouble := GetTotalDouble(context.GetPlayers())
+	totalGrab := context.TotalGrab
+	totalDouble := context.TotalDouble
 	base := uint32(1) // TODO:待确定底分从哪获取
 	multiple := uint32(totalGrab * totalDouble * context.TotalBomb)
 	if context.Spring || context.AntiSpring {
