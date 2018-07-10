@@ -1,13 +1,13 @@
 package autoevent
 
 import (
-	"steve/room/config"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/server_pb/majong"
 	"time"
 
 	"github.com/spf13/viper"
+	"steve/room/config"
 )
 
 type autoEventGenerator struct {
@@ -35,23 +35,6 @@ func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces
 	return AI
 }
 
-// getStateDuration 获取状态超时时间，通过config配置，随进程持续
-func (aeg *autoEventGenerator) getStateDuration() time.Duration {
-	return time.Second * time.Duration(viper.GetInt(config.XingPaiTimeOut))
-}
-
-// addAIEvents 将 AI 产生的事件添加到结果中
-func (aeg *autoEventGenerator) addAIEvents(result *interfaces.AutoEventGenerateResult, aiResult *interfaces.AIEventGenerateResult, playerID uint64, eventType interfaces.EventType) {
-	for _, aiEvent := range aiResult.Events {
-		result.Events = append(result.Events, interfaces.Event{
-			ID:        aiEvent.ID,
-			Context:   aiEvent.Context,
-			PlayerID:  playerID,
-			EventType: eventType,
-		})
-	}
-}
-
 // handlePlayerAI 处理玩家 AI
 func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenerateResult, AI interfaces.MajongAI,
 	player *majong.Player, mjContext *majong.MajongContext, aiType interfaces.AIType, robotLv int) {
@@ -63,20 +46,15 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenera
 		RobotLv:       robotLv,
 	})
 	if err == nil {
-		aeg.addAIEvents(result, &aiResult, playerID, interfaces.OverTimeEvent)
+		for _, aiEvent := range aiResult.Events {
+			result.Events = append(result.Events, interfaces.Event{
+				ID:        aiEvent.ID,
+				Context:   aiEvent.Context,
+				PlayerID:  playerID,
+				EventType: interfaces.OverTimeEvent,
+			})
+		}
 	}
-}
-
-// handlePlayerTuoGuan 处理玩家托管
-func (aeg *autoEventGenerator) handlePlayerTuoGuan(result *interfaces.AutoEventGenerateResult, AI interfaces.MajongAI,
-	player *majong.Player, mjContext *majong.MajongContext) {
-	aeg.handlePlayerAI(result, AI, player, mjContext, interfaces.TuoGuangAI, 0)
-}
-
-// handlePlayerOverTime 处理玩家超时
-func (aeg *autoEventGenerator) handlePlayerOverTime(result *interfaces.AutoEventGenerateResult, AI interfaces.MajongAI,
-	player *majong.Player, mjContext *majong.MajongContext) {
-	aeg.handlePlayerAI(result, AI, player, mjContext, interfaces.OverTimeAI, 0)
 }
 
 // handleOverTime 处理超时
@@ -86,13 +64,13 @@ func (aeg *autoEventGenerator) handleOverTime(AI interfaces.MajongAI, stateTime 
 	finish, result = false, interfaces.AutoEventGenerateResult{
 		Events: []interfaces.Event{},
 	}
-	duration := aeg.getStateDuration()
+	duration := time.Second * time.Duration(viper.GetInt(config.XingPaiTimeOut))
 	if duration == 0 || time.Now().Sub(stateTime) < duration {
 		return
 	}
 	players := mjContext.GetPlayers()
 	for _, player := range players {
-		aeg.handlePlayerOverTime(&result, AI, player, mjContext)
+		aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.OverTimeAI, 0)
 	}
 	finish = true
 	return
@@ -121,7 +99,7 @@ func (aeg *autoEventGenerator) handleTuoGuan(tuoGuanPlayers []uint64, AI interfa
 	for _, player := range players {
 		playerID := player.GetPalyerId()
 		if aeg.isTuoGuan(playerID, tuoGuanPlayers) {
-			aeg.handlePlayerTuoGuan(&result, AI, player, mjContext)
+			aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.TuoGuangAI, 0)
 		}
 	}
 	return result
