@@ -54,9 +54,10 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	nextStage := room.DDZStage_DDZ_STAGE_CALL //还没人叫地主，后面还是叫地主阶段
 	if context.FirstGrabPlayerId != 0 {
-		nextStage = room.DDZStage_DDZ_STAGE_GRAB //有人叫地主，后面是抢地主阶段
+		nextStage = room.DDZStage_DDZ_STAGE_GRAB //有人叫过地主，后面是抢地主阶段
 	} else if grab {
 		context.FirstGrabPlayerId = playerId;//记录第一次叫地主玩家
+		nextStage = room.DDZStage_DDZ_STAGE_GRAB //当前玩家叫地主，后面是抢地主阶段
 	}
 
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PalyerId
@@ -82,14 +83,16 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 	}
 
-	totalGrab := GetTotalGrab(context.GetPlayers())
+	if grab && context.FirstGrabPlayerId != 0 {
+		context.TotalGrab = context.TotalGrab * 2
+	}
 	if context.GrabbedCount == 4 {
 		nextPlayerId = 0 //由DDZLordNtf通知下一个玩家
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId: &playerId,
 		Grab: &grab,
-		TotalGrab: &totalGrab,
+		TotalGrab: &context.TotalGrab,
 		NextPlayerId: &nextPlayerId,
 		NextStage: genNextStage(nextStage),
 	})

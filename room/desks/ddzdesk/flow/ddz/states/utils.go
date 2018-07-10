@@ -77,28 +77,6 @@ func IsAllAbandon(players []*ddz.Player) bool {
 	return true
 }
 
-// GetTotalGrab 获取抢庄总倍数
-func GetTotalGrab(players []*ddz.Player) (totalGrab uint32) {
-	totalGrab = 1
-	for _, player := range players {
-		if player.Grab {
-			totalGrab = totalGrab * 2
-		}
-	}
-	return
-}
-
-// GetTotalDouble 获取加倍总倍数
-func GetTotalDouble(players []*ddz.Player) (totalGrab uint32) {
-	totalGrab = 1
-	for _, player := range players {
-		if player.IsDouble {
-			totalGrab = totalGrab * 2
-		}
-	}
-	return
-}
-
 //GetPlayerByID 根据玩家id获取玩家
 func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 	for _, player := range players {

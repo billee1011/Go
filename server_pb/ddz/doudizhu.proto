@@ -30,23 +30,25 @@ message DDZContext {
     uint32 grabbed_count = 8;        // 已抢/弃地主玩家人数
     uint64 lord_player_id = 9;      // 地主id
     uint32 all_abandon_count = 10;  // 全部玩家弃地主的次数,3次随机确定地主
+    uint32 total_grab = 11;         // 抢庄总倍数
     //加倍阶段
-    uint32 doubled_count = 11;       //加倍/弃加倍玩家人数
+    uint32 doubled_count = 12;       //加倍/弃加倍玩家人数
+    uint32 total_double = 13;        //加倍总倍数
     //出牌阶段
-    repeated uint32 cur_out_cards = 12; //当前出牌
-    CardType cur_card_type = 13;    //当前出牌牌型
-    uint32 card_type_pivot = 14;    //当前牌型用来比较的pivot
-    uint32 pass_count = 15;         //过牌人数
-    uint32 total_bomb = 16;         //炸弹总倍数 2的n次方
+    repeated uint32 cur_out_cards = 14; //当前出牌
+    CardType cur_card_type = 15;    //当前出牌牌型
+    uint32 card_type_pivot = 16;    //当前牌型用来比较的pivot
+    uint32 pass_count = 17;         //过牌人数
+    uint32 total_bomb = 18;         //炸弹总倍数 2的n次方
     //结算阶段
-    uint64 winner_id = 17;          //胜利玩家id
-    bool spring = 18;               //春天(农民没有出过牌)
-    bool anti_spring = 19;          //反春天(地主只出了一次牌)
+    uint64 winner_id = 19;          //胜利玩家id
+    bool spring = 20;               //春天(农民没有出过牌)
+    bool anti_spring = 21;          //反春天(地主只出了一次牌)
     //配牌
-    string peipai = 20;             //测试配牌
-    repeated uint64 count_down_players = 21;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
-    bytes startTime = 22;           //开始倒计时时间
-    uint32 duration = 23;           //倒计时时间
+    string peipai = 22;             //测试配牌
+    repeated uint64 count_down_players = 23;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
+    bytes startTime = 24;           //开始倒计时时间
+    uint32 duration = 25;           //倒计时时间
 }
 
 // AutoEvent 自动事件
