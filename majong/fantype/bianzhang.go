@@ -1,25 +1,32 @@
 package fantype
 
-import "steve/majong/utils"
+import (
+	"sort"
+	"steve/majong/utils"
+)
 
 // checkBianZhang 单胡 123 的 3 及 789 的 7 或 1233 胡 3、77879 胡 7 都为张;手中有 12345胡 3,56789 胡 6 不算边张
 func checkBianZhang(tc *typeCalculator) bool {
-	// 胡牌只在一个顺子里
 	huCard := tc.getHuCard()
 
 	huValue := utils.ServerCard2Number(huCard.Card)
+	player := tc.getPlayer()
+
+	cards := make([]int, 0)
+
+	canTingCardInfos := player.GetRecord().GetCanTingCardInfo()
+	for _, canTingCardInfo := range canTingCardInfos {
+		if canTingCardInfo.OutCard == uint32(huValue) && len(canTingCardInfo.TingCardInfo) != 1 {
+			return false
+		}
+	}
 
 	for _, combine := range tc.combines {
-		contain := 0
-		for _, shun := range combine.shuns {
-			if shun == huValue || shun+1 == huValue || shun+2 == huValue {
-				contain = contain + 1
-			}
-			if contain > 1 || contain < 1 {
-				return false
-			}
-		}
-		if contain == 1 {
+		cards = append(cards, combine.shuns...)
+		cards = append(cards, combine.kes...)
+		cards = append(cards, combine.jiang)
+		sort.Ints(cards)
+		if huValue == cards[0] || huValue == cards[len(cards)-1] {
 			return true
 		}
 	}

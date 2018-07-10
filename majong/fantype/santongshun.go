@@ -17,9 +17,9 @@ func checkSanTongShun(tc *typeCalculator) bool {
 	for _, shunCombine := range shunCombines {
 		colorCount, cardCount := getChiCardsDetails(tc.getChiCards())
 		for _, shun := range shunCombine.shuns {
-			shunCard := intToCard(shun)
 			cardCount[shun] = cardCount[shun] + 1
-			colorCount[shunCard.Color] = colorCount[shunCard.Color] + 1
+			sColor := shun / 10
+			colorCount[sColor] = colorCount[sColor] + 1
 		}
 		hasColor := false
 		for _, count := range colorCount {
@@ -30,24 +30,25 @@ func checkSanTongShun(tc *typeCalculator) bool {
 		}
 		hasValue := false
 		for _, count := range cardCount {
-			if cardCount[count+1] != 0 && cardCount[count+2] != 0 {
+			if count >= 3 {
 				hasValue = true
 			}
 		}
-		if !hasColor || !hasValue {
-			return false
+		if hasColor && hasValue {
+			return true
 		}
 	}
 	return false
 }
 
-func getChiCardsDetails(chiCards []*majongpb.ChiCard) (colorCount map[majongpb.CardColor]int, cardCount map[int]int) {
-	colorCount = make(map[majongpb.CardColor]int, 0)
+func getChiCardsDetails(chiCards []*majongpb.ChiCard) (colorCount map[int]int, cardCount map[int]int) {
+	colorCount = make(map[int]int, 0)
 	cardCount = make(map[int]int, 0)
 	for _, chiCard := range chiCards {
 		chiValue := utils.ServerCard2Number(chiCard.Card)
+		chiColor := chiValue / 10
 		cardCount[chiValue] = cardCount[chiValue] + 1
-		colorCount[chiCard.Card.Color] = colorCount[chiCard.Card.Color] + 1
+		colorCount[chiColor] = colorCount[chiColor] + 1
 	}
 	return
 }

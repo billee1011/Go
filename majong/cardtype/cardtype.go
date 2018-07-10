@@ -16,7 +16,7 @@ func init() {
 }
 
 //Calculate 获取能胡所有番型，及根，最小平胡
-func (ctc *scxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []majongpb.CardType, gengCount uint32) {
+func (ctc *scxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (cardTypes []int64, gengCount uint32) {
 	fanCardTypes := make([]majongpb.CardType, 0)
 	// 遍历可行番型
 	for i := 0; i < len(fan.ScxlFan); i++ {
@@ -37,7 +37,7 @@ func (ctc *scxlCardTypeCalculator) Calculate(params interfaces.CardCalcParams) (
 }
 
 //CardTypeValue 获取总倍数及根数	（注：总倍数已包括根的倍数了）
-func (ctc *scxlCardTypeCalculator) CardTypeValue(gameID int, cardTypes []majongpb.CardType, gengCount uint32) (uint32, uint32) {
+func (ctc *scxlCardTypeCalculator) CardTypeValue(gameID int, cardTypes []int64, gengCount uint32) (uint32, uint32) {
 	total := uint32(1)
 	// 叠乘番型
 	for _, cardType := range cardTypes {

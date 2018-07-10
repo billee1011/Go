@@ -321,8 +321,8 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
-	player.ZixunRecord = &majongpb.ZixunRecord{}
-	record := player.GetZixunRecord()
+	player.Record = &majongpb.Record{}
+	record := player.GetRecord()
 	if !isPengZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
@@ -396,7 +396,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
-func (s *ZiXunState) recordZixunMsg(record *majongpb.ZixunRecord, ntf *room.RoomZixunNtf) {
+func (s *ZiXunState) recordZixunMsg(record *majongpb.Record, ntf *room.RoomZixunNtf) {
 	record.EnableAngangCards = ntf.GetEnableAngangCards()
 	record.EnableBugangCards = ntf.GetEnableBugangCards()
 	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
@@ -534,7 +534,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		})
 	}
 	zixunNtf.CanTingCardInfo = canTingInfos
-	player.ZixunRecord.CanTingCardInfo = recordCanTingInfos
+	player.Record.CanTingCardInfo = recordCanTingInfos
 }
 
 // checkZiMo 查自摸

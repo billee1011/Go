@@ -2,7 +2,6 @@ package fantype
 
 import (
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 )
 
 // checkSiGuiYi 4 张相同的牌归于一家的顺、刻子、对、将牌中(不包括杠牌)
@@ -12,24 +11,26 @@ func checkSiGuiYi(tc *typeCalculator) bool {
 	handCards := tc.getHandCards()
 	huCard := tc.getHuCard()
 
-	checkCards := make([]*majongpb.Card, 0)
-
+	cardCount := make(map[int]int)
+	cardValue := 0
 	for _, pengCard := range pengCards {
-		checkCards = append(checkCards, pengCard.Card)
+		cardValue = utils.ServerCard2Number(pengCard.Card)
+		cardCount[cardValue] = cardCount[cardValue] + 3
 	}
-	for _, chiCards := range chiCards {
-		checkCards = append(checkCards, chiCards.Card)
+	for _, chiCard := range chiCards {
+		cardValue = utils.ServerCard2Number(chiCard.Card)
+		cardCount[cardValue] = cardCount[cardValue] + 1
+		cardCount[cardValue+1] = cardCount[cardValue+1] + 1
+		cardCount[cardValue+2] = cardCount[cardValue+2] + 13
 	}
 	for _, handCard := range handCards {
-		checkCards = append(checkCards, handCard)
-	}
-	checkCards = append(checkCards, huCard.Card)
-
-	cardCount := make(map[int]int)
-	for _, card := range checkCards {
-		cardValue := utils.ServerCard2Number(card)
+		cardValue = utils.ServerCard2Number(handCard)
 		cardCount[cardValue] = cardCount[cardValue] + 1
-		if cardCount[cardValue] == 4 {
+	}
+	cardValue = utils.ServerCard2Number(huCard.Card)
+	cardCount[cardValue] = cardCount[cardValue] + 1
+	for _, count := range cardCount {
+		if count == 4 {
 			return true
 		}
 	}

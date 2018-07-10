@@ -1,4 +1,4 @@
-id: 3 # 选项 ID
+id: 4 # 选项 ID
 
 # 单局结算
 enable_gang: false           # 是否开启杠结算

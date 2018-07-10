@@ -79,7 +79,8 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 			case majongpb.Action_action_chi:
 				{
 					ntf.ChiInfo = &room.RoomChiInfo{
-						Cards: player.GetEnbleChiCards(),
+						Cards:   player.GetEnbleChiCards(),
+						ChiCard: proto.Uint32(utils.ServerCard2Uint32(mjContext.GetLastOutCard())),
 					}
 				}
 			}

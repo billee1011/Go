@@ -45,7 +45,7 @@ func (tc *typeCalculator) calcTotalGengCount() int {
 
 	chiCards := tc.getChiCards()
 	for _, chiCard := range chiCards {
-		c := utils.ServerCard2Number(chiCard.GetCard())
+		c := utils.ServerCard2Number(chiCard.Card)
 		countMap[c]++
 		countMap[c+1]++
 		countMap[c+2]++

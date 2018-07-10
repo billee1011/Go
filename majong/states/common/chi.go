@@ -91,7 +91,7 @@ func (s *ChiState) doChi(flow interfaces.MajongFlow) {
 		}
 	}
 	chiPlayer.HandCards = newCards
-	s.notifyChi(flow, chiPlayer.DesignChiCards, srcPlayerID, chiPlayerID)
+	s.notifyChi(flow, chiPlayer.DesignChiCards, card, srcPlayerID, chiPlayerID)
 	s.addChiCard(chiPlayer.DesignChiCards[0], card, chiPlayer, srcPlayerID)
 	logEntry = logEntry.WithFields(logrus.Fields{
 		"chi_cards": checkCards,
@@ -111,9 +111,10 @@ func (s *ChiState) addChiCard(card *majongpb.Card, oprCard *majongpb.Card, playe
 	})
 }
 
-func (s *ChiState) notifyChi(flow interfaces.MajongFlow, cards []*majongpb.Card, from uint64, to uint64) {
+func (s *ChiState) notifyChi(flow interfaces.MajongFlow, cards []*majongpb.Card, chiCard *majongpb.Card, from uint64, to uint64) {
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHI_NTF, &room.RoomChiNtf{
 		Cards:        utils.ServerCards2Uint32(cards),
+		ChiCard:      proto.Uint32(utils.ServerCard2Uint32(chiCard)),
 		FromPlayerId: proto.Uint64(from),
 		ToPlayerId:   proto.Uint64(to),
 	})

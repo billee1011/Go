@@ -36,7 +36,7 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	}
 	cardTypes, genCount, _ := calculate(playerParams)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_PINGHU))
-	assert.Equal(t, genCount, uint32(0))
+	assert.Equal(t, genCount, 0)
 
 }
 
@@ -61,7 +61,7 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	}
 	cardTypes, genCount, _ := calculate(playerParams)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGYISE))
-	assert.Equal(t, genCount, uint32(0))
+	assert.Equal(t, genCount, 0)
 
 }
 
@@ -1731,9 +1731,11 @@ func calculate(params CardCalcParams) ([]int, int, int) {
 	}
 	mjContext := &majongpb.MajongContext{
 		XingpaiOptionId:  4,
-		CardtypeOptionId: 1,
-		SettleOptionId:   1,
-		Players:          []*majongpb.Player{player},
+		CardtypeOptionId: 4,
+		SettleOptionId:   4,
+		Players: []*majongpb.Player{player, &majongpb.Player{
+			PalyerId: 2,
+		}},
 	}
 	return CalculateFanTypes(mjContext, 1, params.HandCard, params.HuCard)
 }

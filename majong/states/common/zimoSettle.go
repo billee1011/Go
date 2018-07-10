@@ -2,6 +2,7 @@ package common
 
 import (
 	"steve/gutils"
+	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -79,30 +80,22 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 
 	huPlayerID := mjContext.GetLastMopaiPlayer()
-
-	cardValues := make(map[uint64]uint32, 0)
-	cardTypes := make(map[uint64][]majongpb.CardType, 0)
-	genCount := make(map[uint64]uint32, 0)
-	gameID := int(mjContext.GetGameId())
 	huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
 	huCard := huPlayer.HuCards[len(huPlayer.HuCards)-1]
-	cardParams := interfaces.CardCalcParams{
-		HandCard: append(huPlayer.HandCards, huCard.GetCard()),
-		PengCard: utils.TransPengCard(huPlayer.PengCards),
-		GangCard: huPlayer.GangCards,
-		HuCard:   nil,
-		GameID:   gameID,
-	}
-	calculator := global.GetCardTypeCalculator()
-	cardType, gen := calculator.Calculate(cardParams)
-	cardValue, _ := calculator.CardTypeValue(gameID, cardType, gen)
 
-	cardTypes[huPlayerID] = cardType
-	cardValues[huPlayerID] = cardValue
-	genCount[huPlayerID] = gen
+	cardValues := make(map[uint64]uint64, 0)
+	cardTypes := make(map[uint64][]int64, 0)
+	genCount := make(map[uint64]uint64, 0)
+	huaCount := make(map[uint64]uint64, 0)
+
+	record := huPlayer.GetRecord()
+	cardTypes[huPlayerID] = record.GetHuFanType().GetFanTypes()
+	cardValues[huPlayerID] = s.calculateScore(mjContext, record)
+	genCount[huPlayerID] = record.GetHuFanType().GetGenCount()
+	huaCount[huPlayerID] = record.GetHuFanType().GetHuaCount()
 
 	params := interfaces.HuSettleParams{
-		GameID:        mjContext.GetGameId(),
+		GameID:        int32(mjContext.GetGameId()),
 		HuPlayers:     []uint64{huPlayerID},
 		SrcPlayer:     huPlayerID,
 		AllPlayers:    utils.GetAllPlayers(mjContext),
@@ -114,6 +107,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 		CardTypes:     cardTypes,
 		CardValues:    cardValues,
 		GenCount:      genCount,
+		HuaCount:      huaCount,
 		SettleID:      mjContext.CurrentSettleId,
 	}
 	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
@@ -121,6 +115,15 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++
 	}
+}
+
+func (s *ZiMoSettleState) calculateScore(mjcontext *majongpb.MajongContext, record *majongpb.Record) uint64 {
+	hufanType := record.GetHuFanType()
+	fanTypes := make([]int, 0)
+	for _, fType := range hufanType.GetFanTypes() {
+		fanTypes = append(fanTypes, int(fType))
+	}
+	return fantype.CalculateScore(mjcontext, fanTypes, int(hufanType.GetGenCount()), int(hufanType.GetHuaCount()))
 }
 
 // nextState 下个状态

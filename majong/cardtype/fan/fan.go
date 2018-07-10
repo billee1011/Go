@@ -53,10 +53,10 @@ func init() {
 }
 
 //ScxlFanMutex 番型和根处理
-func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]majongpb.CardType, uint32) {
+func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]int64, uint32) {
 	// 翻型只有1个，并且根为0,直接返回
 	if len(fans) == 1 && gen == 0 {
-		return []majongpb.CardType{majongpb.CardType(fans[0])}, 0
+		return []int64{int64(fans[0])}, 0
 	}
 	fansMap := make(map[majongpb.CardType]majongpb.CardType)
 	for _, fanCardType := range fans {
@@ -112,9 +112,9 @@ func ScxlFanMutex(fans []majongpb.CardType, gen uint32) ([]majongpb.CardType, ui
 		gen--                                                              // 根减1
 	}
 	// fan的cardType，转为卡牌的cardType
-	cardTypes := make([]majongpb.CardType, 0)
+	cardTypes := make([]int64, 0)
 	for _, cardType := range fansMap {
-		cardTypes = append(cardTypes, cardType)
+		cardTypes = append(cardTypes, int64(cardType))
 	}
 	return cardTypes, gen
 }

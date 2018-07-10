@@ -65,7 +65,7 @@ const (
 	B8 = 38
 	//B9 9筒
 	B9 = 39
-	
+
 	//Dong 东风
 	Dong = 41
 	//Nan 南风
