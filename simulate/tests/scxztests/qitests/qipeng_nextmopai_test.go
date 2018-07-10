@@ -25,7 +25,7 @@ func Test_qi_peng(t *testing.T) {
 	assert.Nil(t, err)
 	utils.CheckZixunNotify(t, data, 0)
 	assert.Nil(t, utils.SendHuReq(data, 0))
-	utils.CheckHuNotify(t, data, []int{0}, 0, 11, room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, data, []int{0}, 0, 14, room.HuType_HT_TIANHU)
 	utils.CheckMoPaiNotify(t, data, 1, 31)
 	utils.SendChupaiReq(data, 1, 31)
 	utils.CheckMoPaiNotify(t, data, 2, 31)

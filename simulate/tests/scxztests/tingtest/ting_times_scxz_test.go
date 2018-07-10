@@ -82,7 +82,7 @@ func Test_SCXZ_ChuPaiwenxun_Actions(t *testing.T) {
 	zixunNtf := room.RoomZixunNtf{}
 	zixunExpectors.Recv(2*time.Second, &zixunNtf)
 	utils.SendHuReq(deskData, deskData.BankerSeat)
-	utils.CheckHuNotify(t, deskData, []int{deskData.BankerSeat}, deskData.BankerSeat, uint32(12), room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, deskData, []int{deskData.BankerSeat}, deskData.BankerSeat, uint32(17), room.HuType_HT_TIANHU)
 	xjSeat := (deskData.BankerSeat + 1) % len(deskData.Players)
 	utils.CheckMoPaiNotify(t, deskData, xjSeat, uint32(35))
 	utils.SendChupaiReq(deskData, xjSeat, uint32(12))

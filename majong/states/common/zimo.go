@@ -3,6 +3,7 @@ package common
 import (
 	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -116,8 +117,16 @@ func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majo
 	player = utils.GetPlayerByID(players, playerID)
 
 	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
-	if player.GetMopaiCount() == 0 {
-		_, card = utils.CalcTianHuCardNum(mjContext, playerID)
+	if player.GetZixunCount() == 1 && player.GetPalyerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId() {
+		xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+		switch xpOption.TianhuCardType {
+		case mjoption.MostTingsCard:
+			_, card = utils.CalcTianHuCardNum(mjContext, playerID)
+		case mjoption.RightCard:
+			card = player.HandCards[len(player.GetHandCards())-1]
+		case mjoption.MoCard:
+			card = mjContext.GetLastMopaiCard()
+		}
 	} else {
 		card = mjContext.GetLastMopaiCard()
 	}

@@ -34,8 +34,8 @@ func Test_SCXZ_TianHu(t *testing.T) {
 	// 庄家自摸
 	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	assert.Nil(t, utils.SendHuReq(deskData, banker))
-	var Int1W uint32 = 11
+	var Int4W uint32 = 14
 	// 检测所有玩家收到天胡通知
-	utils.CheckHuNotify(t, deskData, []int{banker}, banker, Int1W, room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, deskData, []int{banker}, banker, Int4W, room.HuType_HT_TIANHU)
 
 }

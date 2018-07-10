@@ -13,3 +13,4 @@ enable_kaiju_addflower: false # 是否需要开局补花
 player_no_normal_states: 3 #玩家不参与游戏的不正常状态 XingPaiState_hu | XingPaiState_give_up
 player_num: 4
 fapai_type: 1 # 1：正常发牌，庄家14张，闲家13张；2：二人麻将类型的发牌，所有人都只发13张
+tianhu_card_type: 2 # 1:血流方式的天胡牌，听牌数量最多的牌 2：血战方式的,手牌中最右边的牌 3：二人方式的，摸上来的那张牌
