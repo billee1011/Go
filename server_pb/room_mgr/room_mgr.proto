@@ -7,10 +7,16 @@ enum RoomError {
     FAILED = 0x1;   // 失败
 }
 
+// 牌桌玩家
+message DeskPlayer {
+    uint64 player_id = 1;   // 玩家 ID 
+    int32 robot_level = 2;  // 机器人等级， 为0时则为普通玩家
+}
+
 // 创建桌子的请求
 message CreateDeskRequest {
-    repeated uint64 player_id = 1;
-    uint32 game_id = 2;
+    uint32 game_id = 1;
+    repeated DeskPlayer players = 2;
 }
 
 // 创建桌子的回复

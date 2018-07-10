@@ -26,11 +26,18 @@ func (s *Sender) createDesk(playersID []uint64, gameID int) (resp *roommgr.Creat
 	if err != nil {
 		logEntry.WithError(err).Errorln("get 'room' service failed!!!")
 	}
+	players := []*roommgr.DeskPlayer{}
+	for _, playerID := range playersID {
+		players = append(players, &roommgr.DeskPlayer{
+			PlayerId:   playerID,
+			RobotLevel: 0,
+		})
+	}
 
 	roomMgrClient := roommgr.NewRoomMgrClient(rs)
 	resp, err = roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
-		PlayerId: playersID,
-		GameId:   uint32(gameID),
+		Players: players,
+		GameId:  uint32(gameID),
 	})
 
 	if err != nil {

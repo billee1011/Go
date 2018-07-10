@@ -50,6 +50,9 @@ func (me *messageExpector) Recv(timeOut time.Duration, body proto.Message) error
 			if !ok {
 				return errors.New("已经被关闭")
 			}
+			if body == nil {
+				return nil
+			}
 			if err := proto.Unmarshal(bodyData, body); err != nil {
 				return fmt.Errorf("消息反序列化失败： %v", err)
 			}
