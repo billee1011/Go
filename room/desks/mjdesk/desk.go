@@ -215,10 +215,10 @@ func (d *desk) genTimerEvent() {
 		"tuoguan_players": tuoGuanPlayers,
 	})
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
+		Desk: d,
 		MajongContext:  &dContext.mjContext,
 		StateTime:      dContext.stateTime,
 		RobotLv:        map[uint64]int{},
-		TuoGuanPlayers: tuoGuanPlayers,
 	})
 	for _, event := range result.Events {
 		logEntry.WithFields(logrus.Fields{

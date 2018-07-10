@@ -37,8 +37,7 @@ func (aeg *autoEventGenerator) getAI(mjContext *majong.MajongContext) interfaces
 
 // handlePlayerAI 处理玩家 AI
 func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenerateResult, AI interfaces.MajongAI,
-	player *majong.Player, mjContext *majong.MajongContext, aiType interfaces.AIType, robotLv int) {
-	playerID := player.GetPalyerId()
+	playerID uint64, mjContext *majong.MajongContext, aiType interfaces.AIType, robotLv int) {
 	aiResult, err := AI.GenerateAIEvent(interfaces.AIEventGenerateParams{
 		MajongContext: mjContext,
 		PlayerID:      playerID,
@@ -70,7 +69,7 @@ func (aeg *autoEventGenerator) handleOverTime(AI interfaces.MajongAI, stateTime 
 	}
 	players := mjContext.GetPlayers()
 	for _, player := range players {
-		aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.OverTimeAI, 0)
+		aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), mjContext, interfaces.OverTimeAI, 0)
 	}
 	finish = true
 	return
@@ -87,7 +86,7 @@ func (aeg *autoEventGenerator) isTuoGuan(playerID uint64, tuoGuanPlayers []uint6
 }
 
 // handleTuoGuan 执行所有玩家的托管
-func (aeg *autoEventGenerator) handleTuoGuan(tuoGuanPlayers []uint64, AI interfaces.MajongAI, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
+func (aeg *autoEventGenerator) handleTuoGuan(desk interfaces.Desk, AI interfaces.MajongAI, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
 	result := interfaces.AutoEventGenerateResult{
 		Events: []interfaces.Event{},
 	}
@@ -95,11 +94,12 @@ func (aeg *autoEventGenerator) handleTuoGuan(tuoGuanPlayers []uint64, AI interfa
 	if time.Now().Sub(stateTime) < tuoguanOprTime {
 		return result
 	}
-	players := mjContext.GetPlayers()
+	//players := mjContext.GetPlayers()
+	players := desk.GetDeskPlayers()
 	for _, player := range players {
-		playerID := player.GetPalyerId()
-		if aeg.isTuoGuan(playerID, tuoGuanPlayers) {
-			aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.TuoGuangAI, 0)
+		playerID := player.GetPlayerID()
+		if player.IsTuoguan() {
+			aeg.handlePlayerAI(&result, AI, playerID, mjContext, interfaces.TuoGuangAI, 0)
 		}
 	}
 	return result
@@ -115,13 +115,13 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	if overTime, result := aeg.handleOverTime(AI, params.StateTime, mjContext); overTime {
 		return result
 	}
-	result = aeg.handleTuoGuan(params.TuoGuanPlayers, AI, params.StateTime, mjContext)
+	result = aeg.handleTuoGuan(params.Desk, AI, params.StateTime, mjContext)
 
 	players := mjContext.GetPlayers()
 	for _, player := range players {
 		playerID := player.GetPalyerId()
 		if lv, exist := params.RobotLv[playerID]; exist {
-			aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.RobotAI, lv)
+			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), mjContext, interfaces.RobotAI, lv)
 		}
 	}
 	return result

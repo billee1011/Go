@@ -7,10 +7,10 @@ import (
 
 // AutoEventGenerateParams 生成自动事件的参数
 type AutoEventGenerateParams struct {
+	Desk Desk
 	MajongContext  *majong.MajongContext
 	StateTime      time.Time
 	RobotLv        map[uint64]int
-	TuoGuanPlayers []uint64
 }
 
 // AutoEventGenerateResult 自动事件生成结果
