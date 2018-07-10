@@ -44,6 +44,16 @@ func getDDZContext(m machine.Machine) *ddz.DDZContext {
 	return dm.GetDDZContext()
 }
 
+func remove(playerIds []uint64, removeId uint64) []uint64 {
+	var result []uint64
+	for _, playerId := range playerIds {
+		if playerId != removeId {
+			result = append(result, playerId)
+		}
+	}
+	return result
+}
+
 func getPlayerIds(m machine.Machine) []uint64 {
 	dm, ok := m.(*ddzmachine.DDZMachine)
 	if !ok {

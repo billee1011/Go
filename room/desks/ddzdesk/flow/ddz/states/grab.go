@@ -10,12 +10,19 @@ import (
 	"steve/client_pb/room"
 	"steve/client_pb/msgId"
 	"math/rand"
+	"time"
 )
 
 type grabState struct{}
 
 func (s *grabState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入叫/抢地主状态")
+	context := getDDZContext(m)
+	//产生超时事件
+	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
+	context.StartTime, _ = time.Now().MarshalBinary()
+	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
+
+	logrus.WithField("context", context).Debugln("进入叫/抢地主状态")
 }
 
 func (s *grabState) OnExit(m machine.Machine) {
@@ -56,6 +63,11 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.GrabbedCount++
 	context.LastPlayerId = playerId
 	context.CurrentPlayerId = nextPlayerId
+	//产生超时事件
+	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
+	context.StartTime, _ = time.Now().MarshalBinary()
+	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
+
 	allAbandon := false;
 	if context.GrabbedCount == 3 {//第三个人叫/弃地主时
 		if IsAllAbandon(context.GetPlayers()){

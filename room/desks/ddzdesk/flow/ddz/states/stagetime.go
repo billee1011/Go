@@ -1,6 +1,8 @@
 package states
 
-import "steve/client_pb/room"
+import (
+	"steve/client_pb/room"
+)
 
 var StageTime = map[room.DDZStage]uint32 {
 	room.DDZStage_DDZ_STAGE_DEAL    :2,

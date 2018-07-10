@@ -9,12 +9,17 @@ import (
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"time"
 )
 
 type doubleState struct{}
 
 func (s *doubleState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入加倍状态")
+	context := getDDZContext(m)
+	context.CountDownPlayers = getPlayerIds(m)
+	context.StartTime, _ = time.Now().MarshalBinary()
+	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_DOUBLE]
+	logrus.WithField("context", context).Debugln("进入加倍状态")
 }
 
 func (s *doubleState) OnExit(m machine.Machine) {
@@ -36,6 +41,9 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	playerId := message.GetHead().GetPlayerId()
 	isDouble := message.IsDouble
 	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble//记录该玩家加倍
+
+	//删除该玩家倒计时
+	context.CountDownPlayers = remove(context.CountDownPlayers, playerId)
 
 	var nextStage *room.NextStage
 	context.DoubledCount++

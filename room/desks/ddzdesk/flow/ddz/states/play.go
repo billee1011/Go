@@ -10,12 +10,19 @@ import (
 	"steve/client_pb/room"
 	"steve/client_pb/msgId"
 	"errors"
+	"time"
 )
 
 type playState struct{}
 
 func (s *playState) OnEnter(m machine.Machine) {
-	logrus.WithField("context", getDDZContext(m)).Debugln("进入出牌状态")
+	context := getDDZContext(m)
+	//产生超时事件
+	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
+	context.StartTime, _ = time.Now().MarshalBinary()
+	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_PLAYING]
+
+	logrus.WithField("context", context).Debugln("进入出牌状态")
 }
 
 func (s *playState) OnExit(m machine.Machine) {
@@ -71,6 +78,10 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 		context.CurrentPlayerId = nextPlayerId
 		context.LastPlayerId = playerId
+		//产生超时事件
+		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
+		context.StartTime, _ = time.Now().MarshalBinary()
+		context.Duration = StageTime[room.DDZStage_DDZ_STAGE_PLAYING]
 
 		context.PassCount++
 		if context.PassCount >= 2 {//两个玩家都过，清空当前牌型
@@ -129,6 +140,11 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	//更新context
 	context.CurrentPlayerId = nextPlayerId
 	context.LastPlayerId = playerId
+	//产生超时事件
+	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
+	context.StartTime, _ = time.Now().MarshalBinary()
+	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_PLAYING]
+
 	context.CurOutCards = message.GetCards()
 	context.CurCardType = cardType
 	context.CardTypePivot = (*pivot).toInt()
