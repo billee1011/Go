@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package hall;
+
+// HallGetPlayerInfoReq 获取玩家信息请求
+message HallGetPlayerInfoReq {
+    optional int32 reserve = 1; // 保留
+}
+
+// HallGetPlayerInfoRsp 获取玩家信息应答
+message HallGetPlayerInfoRsp {
+    optional uint32 err_code = 1; // 错误码
+    optional string err_desc = 2;   // 错误描述
+    optional string nick_name = 3;    // 玩家昵称
+    optional uint64 coin = 4;       // 玩家金币数
+}

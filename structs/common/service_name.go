@@ -13,4 +13,7 @@ const (
 
 	// MateServiceName  Match 服务名称
 	MatchServiceName = "match"
+
+	// LoginServiceName Login 服务名称
+	LoginServiceName = "login"
 )

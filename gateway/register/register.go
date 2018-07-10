@@ -2,7 +2,6 @@ package register
 
 import (
 	"steve/client_pb/msgId"
-	"steve/gateway/auth"
 	"steve/gateway/connection"
 	"steve/structs/exchanger"
 )
@@ -15,7 +14,7 @@ func RegisteHandlers(e exchanger.Exchanger) {
 			panic(err)
 		}
 	}
-
-	registe(msgid.MsgID_GATE_AUTH_REQ, auth.HandleAuthReq)
 	registe(msgid.MsgID_GATE_HEART_BEAT_REQ, connection.HandleHeartBeat)
+
+	// registe(msgid.MsgID_GATE_AUTH_REQ, auth.HandleAuthReq)
 }

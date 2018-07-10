@@ -74,34 +74,19 @@ func LoginNewPlayer() (interfaces.ClientPlayer, error) {
 
 // LoginPlayer 登录玩家
 func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer, error) {
-	loginClient := connect.NewTestClient(config.GetLoginServerAddr(), config.GetClientVersion())
-	if loginClient == nil {
-		return nil, errors.New("连接登录服失败")
-	}
-	loginResponse, err := RequestAuth(loginClient, accountID, accountName, time.Minute*5)
-	if err != nil {
-		return nil, fmt.Errorf("发起登录服认证请求失败：%v", err)
-	}
-	if loginResponse.GetErrCode() != login.ErrorCode_SUCCESS {
-		return nil, fmt.Errorf("登录服认证失败， 错误码： %v", loginResponse.GetErrCode())
-	}
-
-	playerID := loginResponse.GetPlayerId()
-	expire := loginResponse.GetExpire()
-	token := loginResponse.GetGateToken()
-
-	gateIP := loginResponse.GetGateIp()
-	gatePort := loginResponse.GetGatePort()
-	gateAddr := fmt.Sprintf("%s:%d", gateIP, gatePort)
-
-	gateClient := connect.NewTestClient(gateAddr, config.GetClientVersion())
+	gateClient := connect.NewTestClient(config.GetGatewayServerAddr(), config.GetClientVersion())
 	if gateClient == nil {
-		return nil, fmt.Errorf("连接网关服失败，网关地址：%v", gateAddr)
+		return nil, fmt.Errorf("连接网关服失败")
 	}
-	err = RequestGateAuth(gateClient, playerID, expire, token)
+	loginResponse, err := RequestAuth(gateClient, accountID, accountName, time.Minute*5)
 	if err != nil {
-		return nil, fmt.Errorf("网关认证失败: %v", err)
+		return nil, fmt.Errorf("登录失败: %v", err)
 	}
+	errCode := loginResponse.GetErrCode()
+	if errCode != login.ErrorCode_SUCCESS {
+		return nil, fmt.Errorf("登录失败： %v", errCode)
+	}
+	playerID := loginResponse.GetPlayerId()
 	return createPlayer(playerID, 0, gateClient, accountID, ""), nil
 }
 
@@ -127,11 +112,8 @@ func GenerateAccountName(accountID uint64) string {
 
 // RequestAuth 请求认证
 func RequestAuth(client interfaces.Client, accountID uint64, accountName string, expireDuration time.Duration) (*login.LoginAuthRsp, error) {
-	expire := time.Now().Add(expireDuration)
 	request := &login.LoginAuthReq{
-		AccountId:   proto.Uint64(accountID),
-		AccountName: proto.String(accountName),
-		Expire:      proto.Int64(expire.Unix()),
+		AccountId: proto.Uint64(accountID),
 	}
 	response := &login.LoginAuthRsp{}
 	err := facade.Request(client, msgid.MsgID_LOGIN_AUTH_REQ, request, global.DefaultWaitMessageTime, msgid.MsgID_LOGIN_AUTH_RSP, response)

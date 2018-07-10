@@ -5,6 +5,7 @@ import (
 	"errors"
 	msgid "steve/client_pb/msgId"
 	"steve/common/data/player"
+	"steve/gateway/auth"
 	"steve/gateway/connection"
 	"steve/gateway/msgrange"
 	"steve/gateway/watchdog"
@@ -166,8 +167,16 @@ func (o *receiver) callRemoteHandler(clientID uint64, playerID uint64, reqHeader
 		"player_id": playerID,
 		"msg_id":    msgid.MsgID(msgID),
 	})
+	// 未绑定玩家，处理登录消息
 	if playerID == 0 {
-		entry.Warningln("未绑定玩家，不能调用远程处理器")
+		if msgID == uint32(msgid.MsgID_LOGIN_AUTH_REQ) {
+			responses := auth.HandleLoginRequest(clientID, reqHeader, body)
+			if responses != nil {
+				o.responseRPCMessage(clientID, reqHeader, responses)
+			}
+		} else {
+			entry.Warningln("未绑定玩家，不能调用远程处理器")
+		}
 		return
 	}
 	cc, err := o.getConnection(serverName, playerID)
