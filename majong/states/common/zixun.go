@@ -406,7 +406,7 @@ func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.Maj
 		HfanTypes = append(HfanTypes, int64(fanType))
 	}
 	record.HuFanType.FanTypes = HfanTypes
-	//record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
+	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
 
 }
 

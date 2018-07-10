@@ -149,6 +149,4 @@ enable_fan_types:
     mutex: []    # 不跟任何牌互斥
     method: 1    # 计算方式：相乘
     score: 2     # 番数 2
-    subgeng: 0   # 扣除的根数量
-    
-fanType2HuType:    
+    subgeng: 0   # 扣除的根数量   

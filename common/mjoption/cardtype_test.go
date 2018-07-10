@@ -19,7 +19,6 @@ func checkFanType(t *testing.T, fantype FanType, opt *CardTypeOption) {
 func TestCardTypeOptionManager_loadOption(t *testing.T) {
 	com := NewCardTypeOptionManager("testdata/cardtype")
 	opt1 := com.GetCardTypeOption(4)
-
 	checkFanType(t, FanType{
 		ID:     0,
 		FuncID: 0,
