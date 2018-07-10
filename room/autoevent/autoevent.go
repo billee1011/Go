@@ -80,14 +80,14 @@ func (aeg *autoEventGenerator) handlePlayerOverTime(result *interfaces.AutoEvent
 }
 
 // handleOverTime 处理超时
-func (aeg *autoEventGenerator) handleOverTime(AI interfaces.MajongAI, curTime time.Time, stateTime time.Time, mjContext *majong.MajongContext) (
+func (aeg *autoEventGenerator) handleOverTime(AI interfaces.MajongAI, stateTime time.Time, mjContext *majong.MajongContext) (
 	finish bool, result interfaces.AutoEventGenerateResult) {
 
 	finish, result = false, interfaces.AutoEventGenerateResult{
 		Events: []interfaces.Event{},
 	}
 	duration := aeg.getStateDuration()
-	if duration == 0 || curTime.Sub(stateTime) < duration {
+	if duration == 0 || time.Now().Sub(stateTime) < duration {
 		return
 	}
 	players := mjContext.GetPlayers()
@@ -109,12 +109,12 @@ func (aeg *autoEventGenerator) isTuoGuan(playerID uint64, tuoGuanPlayers []uint6
 }
 
 // handleTuoGuan 执行所有玩家的托管
-func (aeg *autoEventGenerator) handleTuoGuan(tuoGuanPlayers []uint64, AI interfaces.MajongAI, curTime time.Time, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
+func (aeg *autoEventGenerator) handleTuoGuan(tuoGuanPlayers []uint64, AI interfaces.MajongAI, stateTime time.Time, mjContext *majong.MajongContext) interfaces.AutoEventGenerateResult {
 	result := interfaces.AutoEventGenerateResult{
 		Events: []interfaces.Event{},
 	}
 	tuoguanOprTime := 1 * time.Second
-	if curTime.Sub(stateTime) < tuoguanOprTime {
+	if time.Now().Sub(stateTime) < tuoguanOprTime {
 		return result
 	}
 	players := mjContext.GetPlayers()
@@ -134,10 +134,10 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	if AI == nil {
 		return
 	}
-	if overTime, result := aeg.handleOverTime(AI, params.CurTime, params.StateTime, mjContext); overTime {
+	if overTime, result := aeg.handleOverTime(AI, params.StateTime, mjContext); overTime {
 		return result
 	}
-	result = aeg.handleTuoGuan(params.TuoGuanPlayers, AI, params.CurTime, params.StateTime, mjContext)
+	result = aeg.handleTuoGuan(params.TuoGuanPlayers, AI, params.StateTime, mjContext)
 
 	players := mjContext.GetPlayers()
 	for _, player := range players {

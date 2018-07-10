@@ -216,7 +216,6 @@ func (d *desk) genTimerEvent() {
 	})
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
 		MajongContext:  &dContext.mjContext,
-		CurTime:        time.Now(),
 		StateTime:      dContext.stateTime,
 		RobotLv:        map[uint64]int{},
 		TuoGuanPlayers: tuoGuanPlayers,

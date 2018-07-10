@@ -8,7 +8,6 @@ import (
 // AutoEventGenerateParams 生成自动事件的参数
 type AutoEventGenerateParams struct {
 	MajongContext  *majong.MajongContext
-	CurTime        time.Time
 	StateTime      time.Time
 	RobotLv        map[uint64]int
 	TuoGuanPlayers []uint64
