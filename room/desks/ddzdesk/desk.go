@@ -14,6 +14,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"runtime/debug"
+	"context"
 )
 
 // deskEvent 牌桌事件
@@ -28,6 +30,7 @@ type desk struct {
 	eventChannel   chan deskEvent
 	closingChannel chan struct{}
 	ddzContext     *ddz.DDZContext
+	cancel  context.CancelFunc     // 取消事件处理
 }
 
 // initDDZContext 初始化斗地主现场
@@ -46,14 +49,78 @@ func (d *desk) Start(finish func()) error {
 		d.run()
 		finish()
 	}()
+
+	var ctx context.Context
+	ctx, d.cancel = context.WithCancel(context.Background())
+	go func() {
+		d.timerTask(ctx)
+	}()
 	d.pushEvent(&deskEvent{
 		eventID: int(ddz.EventID_event_start_game),
 	})
 	return nil
 }
 
+// timerTask 定时任务，产生自动事件
+func (d *desk) timerTask(ctx context.Context) {
+	defer func() {
+		if x := recover(); x != nil {
+			debug.PrintStack()
+		}
+	}()
+
+	t := time.NewTicker(time.Millisecond * 200)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			{
+				d.genTimerEvent()
+			}
+		case <-ctx.Done():
+			{
+				return
+			}
+		}
+	}
+}
+
+// genTimerEvent 生成计时事件
+func (d *desk) genTimerEvent() {
+	g := global.GetDeskAutoEventGenerator()
+	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
+	dContext := d.ddzContext
+	tuoGuanPlayers := facade.GetTuoguanPlayers(d)
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":       "desk.genTimerEvent",
+		"tuoguan_players": tuoGuanPlayers,
+	})
+	startTime := time.Time{}
+	startTime.UnmarshalBinary(dContext.StartTime)
+	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
+		Desk:       d,
+		DDZContext: dContext,
+		PlayerIds:  dContext.CountDownPlayers,
+		StartTime:  startTime,
+		Duration:   dContext.Duration,
+		RobotLv:    map[uint64]int{},
+	})
+	for _, event := range result.Events {
+		logEntry.WithFields(logrus.Fields{
+			"event_id":     event.ID,
+			"event_player": event.PlayerID,
+			"event_type":   event.EventType,
+		}).Debugln("注入计时事件")
+		d.eventChannel <- deskEvent{
+			eventID:       int(event.ID),
+			eventContext: event.Context,
+		}
+	}
+}
+
 // Stop 停止牌桌
 func (d *desk) Stop() error {
+	d.cancel()
 	d.closingChannel <- struct{}{}
 	return nil
 }
@@ -195,7 +262,7 @@ func (d *desk) processEvent(e *deskEvent) {
 	d.ddzContext = &result.Context
 	// 游戏结束
 	if d.ddzContext.GetCurState() == ddz.StateID_state_over {
-		go func() { d.closingChannel <- struct{}{} }()
+		go func() { d.Stop() }()
 		return
 	}
 	if result.HasAutoEvent {

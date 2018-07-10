@@ -102,7 +102,7 @@ func GenerateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, b
 			EventContext: eventContext,
 		}
 		desk.PushEvent(interfaces.Event{
-			ID:        event.GetEventId(),
+			ID:        int32(event.GetEventId()),
 			Context:   event.GetEventContext(),
 			EventType: interfaces.NormalEvent,
 			PlayerID:  0,

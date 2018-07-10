@@ -44,6 +44,9 @@ message DDZContext {
     bool anti_spring = 19;          //反春天(地主只出了一次牌)
     //配牌
     string peipai = 20;             //测试配牌
+    repeated uint64 count_down_players = 21;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
+    bytes startTime = 22;           //开始倒计时时间
+    uint32 duration = 23;           //倒计时时间
 }
 
 // AutoEvent 自动事件

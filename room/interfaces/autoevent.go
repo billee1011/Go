@@ -3,14 +3,18 @@ package interfaces
 import (
 	"steve/server_pb/majong"
 	"time"
+	"steve/server_pb/ddz"
 )
 
 // AutoEventGenerateParams 生成自动事件的参数
 type AutoEventGenerateParams struct {
-	Desk Desk
-	MajongContext  *majong.MajongContext
-	StateTime      time.Time
-	RobotLv        map[uint64]int
+	Desk          Desk
+	MajongContext *majong.MajongContext
+	DDZContext    *ddz.DDZContext
+	PlayerIds     []uint64
+	StartTime     time.Time
+	Duration      uint32
+	RobotLv       map[uint64]int
 }
 
 // AutoEventGenerateResult 自动事件生成结果

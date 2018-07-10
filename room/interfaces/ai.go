@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"steve/server_pb/majong"
+	"steve/server_pb/ddz"
 )
 
 // AIType AI 类型
@@ -25,6 +26,7 @@ type PlayerAIInfo struct {
 // AIEventGenerateParams 生成 AI 事件需要的参数
 type AIEventGenerateParams struct {
 	MajongContext *majong.MajongContext
+	DDZContext *ddz.DDZContext
 	PlayerID      uint64
 	AIType        AIType
 	RobotLv       int
