@@ -22,6 +22,8 @@ import (
 type deskEvent struct {
 	eventID      int
 	eventContext []byte
+	eventType interfaces.EventType
+	playerID uint64
 }
 
 // desk 斗地主牌桌
@@ -114,6 +116,8 @@ func (d *desk) genTimerEvent() {
 		d.eventChannel <- deskEvent{
 			eventID:       int(event.ID),
 			eventContext: event.Context,
+			eventType: event.EventType,
+			playerID: event.PlayerID,
 		}
 	}
 }
@@ -177,12 +181,28 @@ forstart:
 		case event := <-d.eventChannel:
 			{
 				d.processEvent(&event)
+				d.recordTuoguanOverTimeCount(event)
 			}
 		case <-d.closingChannel:
 			{
 				break forstart
 			}
 		}
+	}
+}
+
+// recordTuoguanOverTimeCount 记录托管超时计数
+func (d *desk) recordTuoguanOverTimeCount(event deskEvent) {
+	if event.eventType != interfaces.OverTimeEvent {
+		return
+	}
+	playerID := event.playerID
+	if playerID == 0 {
+		return
+	}
+	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
+	if deskPlayer != nil {
+		deskPlayer.OnPlayerOverTime()
 	}
 }
 
