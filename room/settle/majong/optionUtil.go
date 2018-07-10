@@ -10,6 +10,11 @@ func GetSettleOption(gameID int) *mjoption.SettleOption {
 	return mjoption.GetSettleOption(mjoption.GetGameOptions(gameID).SettleOptionID)
 }
 
+// GetCardTypeOption 获取游戏的番型配置
+func GetCardTypeOption(gameID int) *mjoption.CardTypeOption {
+	return mjoption.GetCardTypeOption(mjoption.GetGameOptions(gameID).CardTypeOptionID)
+}
+
 // IsGangSettle 是否是杠结算方式
 func IsGangSettle(settleType majongpb.SettleType) bool {
 	return map[majongpb.SettleType]bool{
@@ -53,4 +58,10 @@ func CanRoundSettle(playerID uint64, huQuitPlayers map[uint64]bool, settleOption
 		return settleOption.HuQuitPlayerSettle.HuQuitPlayerRoundSettle
 	}
 	return true
+}
+
+// NeedBillDetails 是否需要单局结算详情
+func NeedBillDetails(gameID int) bool {
+	settleOptionID := mjoption.GetGameOptions(gameID).SettleOptionID
+	return mjoption.GetSettleOption(settleOptionID).NeedBillDetails
 }

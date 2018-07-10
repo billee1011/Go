@@ -140,7 +140,8 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 
 // ServerFanType2ClientHuType fanType获取hutype
 func ServerFanType2ClientHuType(gameID int, fanTypes []int) int32 {
-	cardTypeOption := mjoption.GetCardTypeOption(gameID)
+	cardTypeOptionID := mjoption.GetGameOptions(gameID).CardTypeOptionID
+	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
 	if len(cardTypeOption.FanType2HuType) != 0 {
 		for _, fanType := range fanTypes {
 			if _, ok := cardTypeOption.FanType2HuType[fanType]; ok {

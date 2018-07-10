@@ -1,60 +1,14 @@
 package majong
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/room/interfaces"
-	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
-	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
-
-// NotifyMessage 将消息广播给牌桌所有玩家
-func NotifyMessage(desk interfaces.Desk, msgid msgid.MsgID, message proto.Message) {
-	players := desk.GetDeskPlayers()
-	clientIDs := []uint64{}
-
-	playerMgr := global.GetPlayerMgr()
-	for _, player := range players {
-		playerID := player.GetPlayerID()
-		p := playerMgr.GetPlayer(playerID)
-		if p != nil && !player.IsQuit() {
-			clientIDs = append(clientIDs, p.GetClientID())
-		}
-	}
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid)}
-	ms := global.GetMessageSender()
-
-	logrus.WithFields(logrus.Fields{
-		"msg": message.String(),
-	}).Debugln("room消息通知desk")
-
-	ms.BroadcastPackage(clientIDs, head, message)
-}
-
-// NotifyPlayersMessage 将消息广播给牌桌指定playerIds[]中的玩家
-func NotifyPlayersMessage(desk interfaces.Desk, playerIds []uint64, msgid msgid.MsgID, message proto.Message) {
-
-	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgid)}
-	ms := global.GetMessageSender()
-
-	clientIds := make([]uint64, 0)
-	for _, playerID := range playerIds {
-		clientID := global.GetPlayerMgr().GetPlayer(playerID).GetClientID()
-		clientIds = append(clientIds, clientID)
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"msg":       message.String(),
-		"playerIds": playerIds,
-	}).Debugln("room消息通知Player")
-
-	ms.BroadcastPackage(clientIds, head, message)
-}
 
 // GetDeskPlayer 获取指定id的room Player
 func GetDeskPlayer(deskPlayers []interfaces.DeskPlayer, pid uint64) interfaces.DeskPlayer {
@@ -108,4 +62,53 @@ func GenerateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, b
 			PlayerID:  0,
 		})
 	}
+}
+
+// mergeSettle 合并一组SettleInfo
+// 返回参数:	[]*majongpb.SettleInfo(该组settleInfo) / *majongpb.SettleInfo(合并后的settleInfo)
+func mergeSettle(contextSInfo []*majongpb.SettleInfo, settleInfo *majongpb.SettleInfo) ([]*majongpb.SettleInfo, *majongpb.SettleInfo) {
+	sumSInfo := &majongpb.SettleInfo{
+		Scores: make(map[uint64]int64, 0),
+	}
+	groupSInfos := make([]*majongpb.SettleInfo, 0)
+	for _, id := range settleInfo.GroupId {
+		sIndex := GetSettleInfoBySid(contextSInfo, id)
+		groupSInfos = append(groupSInfos, contextSInfo[sIndex])
+		sumSInfo.SettleType = contextSInfo[sIndex].SettleType
+	}
+	for _, singleSInfo := range groupSInfos {
+		for pid, score := range singleSInfo.Scores {
+			sumSInfo.Scores[pid] = sumSInfo.Scores[pid] + score
+		}
+	}
+	return groupSInfos, sumSInfo
+}
+
+func settleType2BillType(settleType majongpb.SettleType) room.BillType {
+	return map[majongpb.SettleType]room.BillType{
+		majongpb.SettleType_settle_angang:    room.BillType_BILL_GANG,
+		majongpb.SettleType_settle_bugang:    room.BillType_BILL_GANG,
+		majongpb.SettleType_settle_minggang:  room.BillType_BILL_GANG,
+		majongpb.SettleType_settle_dianpao:   room.BillType_BILL_DIANPAO,
+		majongpb.SettleType_settle_zimo:      room.BillType_BILL_ZIMO,
+		majongpb.SettleType_settle_yell:      room.BillType_BILL_CHECKSHOUT,
+		majongpb.SettleType_settle_flowerpig: room.BillType_BILL_CHECKPIG,
+		majongpb.SettleType_settle_calldiver: room.BillType_BILL_TRANSFER,
+		majongpb.SettleType_settle_taxrebeat: room.BillType_BILL_REFUND,
+	}[settleType]
+}
+
+func makeFanType(fanTypes []int64, cardOption *mjoption.CardTypeOption) (fan []*room.Fan, totalValue int32) {
+	fan = make([]*room.Fan, 0)
+	totalValue = int32(0)
+	for _, fanType := range fanTypes {
+		rfan := &room.Fan{
+			Name:  room.FanType(int32(fanType)).Enum(),
+			Value: proto.Int32(int32(cardOption.Fantypes[int(fanType)].Score)),
+			Type:  proto.Uint32(uint32(cardOption.Fantypes[int(fanType)].Type)),
+		}
+		totalValue = totalValue + int32(cardOption.Fantypes[int(fanType)].Score)
+		fan = append(fan, rfan)
+	}
+	return
 }

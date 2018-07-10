@@ -242,6 +242,7 @@ enable_fan_types:
     mutex: [0,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 2    # 番数 2   
+    type: 1     # 倍数
   80:  # 抢杠胡
     id: 80 # 抢杠胡
     func_id: 43  # 计算函数 ID : 43
@@ -460,9 +461,4 @@ fan_type_2_hu_type:
   38:
     huType: 1
   66:
-    huType: 66    
-
-
-  
-  
-  
+    huType: 66   

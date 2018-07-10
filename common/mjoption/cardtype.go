@@ -16,6 +16,7 @@ type FanType struct {
 	Mutex   []int `yaml:"mutex"`   // 互斥番型列表
 	Method  int   `yaml:"method"`  // 分数计算方式，0为相加，1为相乘
 	Score   int   `yaml:"score"`   // 番数
+	Type    int   `yaml:"type"`    // 番/倍
 	SubGeng int   `yaml:"subgeng"` // 扣除的根数量
 }
 
