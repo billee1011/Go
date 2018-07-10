@@ -39,23 +39,18 @@ func checkSiBuGao(tc *typeCalculator) bool {
 }
 
 func diff(cardPoints []int32) (int, int) {
-	one, two := 0, 0
+	cardPoints = sortRemoveDuplicate(cardPoints)
+	one, two := 1, 1
 	// 每次的差值1的次数
-	for i := len(cardPoints) - 1; i >= 0; i-- {
+	for i := len(cardPoints) - 1; i > 0; i-- {
 		if cardPoints[i]-cardPoints[i-1] == 1 {
 			one++
 		}
-		if i-1 == 0 {
-			break
-		}
 	}
 	// 每次的差值2的次数
-	for i := len(cardPoints) - 1; i >= 0; i-- {
+	for i := len(cardPoints) - 1; i > 0; i-- {
 		if cardPoints[i]-cardPoints[i-1] == 2 {
 			two++
-		}
-		if i-1 == 0 {
-			break
 		}
 	}
 	return one, two

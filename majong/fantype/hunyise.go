@@ -19,7 +19,7 @@ func checkHunYiSe(tc *typeCalculator) bool {
 		checkCards = append(checkCards, pengCard.Card)
 	}
 	for _, chiCards := range chiCards {
-		checkCards = append(checkCards, chiCards.Card)
+		checkCards = append(checkCards, chiCards.OprCard)
 	}
 	for _, handCard := range handCards {
 		checkCards = append(checkCards, handCard)

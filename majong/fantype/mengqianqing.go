@@ -1,24 +1,22 @@
 package fantype
 
-import (
-	majongpb "steve/server_pb/majong"
-)
+import majongpb "steve/server_pb/majong"
 
-// checkMengQianQing 检测门前清
+// checkMengQianQing 检测门前清 ：没有吃、碰、杠(暗杠可以)，不能是自摸
 func checkMengQianQing(tc *typeCalculator) bool {
-	gangCards := tc.getGangCards()
-	pengCards := tc.getPengCards()
-	chiCards := tc.getChiCards()
 	huCard := tc.getHuCard()
-
-	if len(gangCards) != 0 || len(pengCards) != 0 || len(chiCards) != 0 {
+	if huCard.GetType() == majongpb.HuType_hu_zimo {
 		return false
 	}
-
-	dianPaoHu := map[majongpb.HuType]bool{
-		majongpb.HuType_hu_dianpao:     true,
-		majongpb.HuType_hu_ganghoupao:  true,
-		majongpb.HuType_hu_qiangganghu: true,
+	pengCards := tc.getPengCards()
+	chiCards := tc.getChiCards()
+	if len(pengCards) != 0 || len(chiCards) != 0 {
+		return false
 	}
-	return dianPaoHu[huCard.GetType()]
+	for _, gang := range tc.getGangCards() {
+		if gang.GetType() != majongpb.GangType_gang_angang {
+			return false
+		}
+	}
+	return true
 }

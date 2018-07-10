@@ -151,4 +151,21 @@ enable_fan_types:
     score: 2     # 番数 2
     subgeng: 0   # 扣除的根数量
     
-fanType2HuType:    
+#番型对应的胡类型
+fanType2HuType:     
+  68: # 天胡
+    huType: 7
+  69: # 地胡
+    huType: 8  
+  79: # 海底捞月
+    huType: 4
+  77: # 杠上海底捞
+    huType: 5
+  76: # 杠上开花
+    huType: 3
+  75: # 自摸
+    huType: 6
+  80: # 抢杠胡
+    huType: 1
+  2: # 点炮
+    huType: 66

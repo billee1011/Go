@@ -82,11 +82,11 @@ func gangToCards(gangs []*majongpb.GangCard) []*majongpb.Card {
 // getPlayerCardAll 获取玩家所有牌,手，胡,碰，杠，吃牌
 func getPlayerCardAll(tc *typeCalculator) []*majongpb.Card {
 	// 所有牌
-	cardAll := make([]*majongpb.Card, 0, 13)
-	// 胡牌
-	cardAll = append(cardAll, tc.getHuCard().GetCard())
+	cardAll := make([]*majongpb.Card, 0, len(tc.getHandCards()))
 	// 手
 	cardAll = append(cardAll, tc.getHandCards()...)
+	// 胡牌
+	cardAll = append(cardAll, tc.getHuCard().GetCard())
 	// 吃
 	cardAll = append(cardAll, chiToCards(tc.getChiCards())...)
 	// 碰

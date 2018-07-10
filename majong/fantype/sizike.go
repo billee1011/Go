@@ -11,7 +11,7 @@ func checkSiZiKe(tc *typeCalculator) bool {
 	pointCountMap := make(map[int32]int)
 	for _, card := range cardAll {
 		// 字牌
-		if !IsNotFlowerCard(card) {
+		if IsNotFlowerCard(card) {
 			pointCountMap[card.GetPoint()] = pointCountMap[card.GetPoint()] + 1
 		}
 	}

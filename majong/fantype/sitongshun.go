@@ -24,10 +24,10 @@ func checkSiTongShun(tc *typeCalculator) bool {
 				shunValue := uint32(shun)
 				cardMap[shunValue] = cardMap[shunValue] + 1
 			}
-			if len(cardMap) != 1 {
-				return false
+			if len(cardMap) == 1 {
+				return true
 			}
 		}
 	}
-	return true
+	return false
 }
