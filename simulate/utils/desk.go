@@ -188,7 +188,7 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	}
 
 	// 暂停对应的秒数
-	time.Sleep(time.Duration(deskData.DDZData.NextState.GetTime()) * time.Second)
+	//time.Sleep(time.Duration(deskData.DDZData.NextState.GetTime()) * time.Second)
 
 	// 检测收到的发牌消息是否符合预期
 	if err := checkDDZFapaiNtf(fapaiNtfExpectors, &deskData, params.Cards); err != nil {
@@ -198,23 +198,121 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	// 保存参数
 	deskData.DDZData.Params = params
 
-	// 检测是否收到洗牌通知
-	//checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
+	// ---------------------------------------------------------	叫地主状态	-----------------------------------------------------------
+	// 叫地主的玩家
+	jiaoPlayer := deskData.Players[deskData.DDZData.AssignLordID]
 
-	// 是否执行换三张
-	//if params.IsHsz {
-	//	// 执行换三张
-	//	if err := executeHSZ(&dd, params.HszCards); err != nil {
-	//		return nil, err
-	//	}
-	//}
+	// 执行四次，A叫一次，B抢一次，C抢一次，A再抢一次
+	for i := 1; i <= 4; i++ {
 
-	//// 是否执行定缺
-	//if err := executeDingque(&dd, params.DingqueColor); err != nil {
-	//	return nil, err
-	//}
+		// 发出第i次叫地主请求
+		sendJiaodizhuReq(&jiaoPlayer)
+
+		// 期望收到叫地主广播通知，且叫地主的是前面请求的玩家
+		for playerID, player := range deskData.Players {
+
+			// 叫地主的广播
+			ntf := room.DDZGrabLordNtf{}
+
+			if err := player.Expectors[msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+				return nil, fmt.Errorf("接收第%v次的叫地主广播消息超时", i)
+			}
+
+			logEntry.Infof("%v收到了第%v次叫地主的广播，叫地主的玩家是%v，下一个操作的玩家是%v", playerID, i, ntf.GetPlayerId(), ntf.GetNextPlayerId())
+
+			// 下一次抢地主的玩家
+			jiaoPlayer = deskData.Players[ntf.GetNextPlayerId()]
+		}
+	}
+
+	// 期望收到最终的地主广播通知
+	for playerID, player := range deskData.Players {
+		// 最终的地主广播
+		ntf := room.DDZLordNtf{}
+
+		// 等久一些，一直等待到抢地主状态结束
+		if err := player.Expectors[msgid.MsgID_ROOM_DDZ_LORD_NTF].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+			return nil, fmt.Errorf("接收最终地主广播消息超时")
+		}
+
+		logEntry.Infof("%v收到了最终的地主广播，最终地主的玩家是%v", playerID, ntf.GetPlayerId())
+
+		// 记录状态
+		deskData.DDZData.NextState = ntf.GetNextStage()
+
+		// 记录最终的地主
+		deskData.DDZData.ResultLordID = ntf.GetPlayerId()
+
+		logEntry.Infof("最新状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
+	}
+
+	// ---------------------------------------------------------	加倍状态	-----------------------------------------------------------
+
+	// 执行三次加倍(0号玩家不加倍，1号，2号玩家加倍)
+	for i := 1; i <= 3; i++ {
+
+		// 玩家
+		operaPlayer := GetDeskPlayerBySeat(i-1, &deskData)
+
+		double := true
+
+		// 第1次：不加倍
+		if i == 1 {
+			double = false
+		}
+		sendDoubleReq(operaPlayer, double)
+
+		// 期望收到加倍广播通知，且加倍的是前面请求的玩家
+		for playerID, player := range deskData.Players {
+
+			// 加倍的广播
+			ntf := room.DDZDoubleNtf{}
+
+			if err := player.Expectors[msgid.MsgID_ROOM_DDZ_DOUBLE_NTF].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
+				return nil, fmt.Errorf("接收第%d次的加倍广播消息超时", i)
+			}
+
+			logEntry.Infof("%v收到了第%v次加倍操作的广播，操作玩家是%v，加倍：%v， 当前加倍总倍数%v，下一状态：%v， 进入下一状态时间：%v",
+				playerID, i, ntf.GetPlayerId(), ntf.GetIsDouble(), ntf.GetTotalDouble(), ntf.GetNextStage().GetStage(), ntf.GetNextStage().GetTime())
+
+			// 记录状态
+			deskData.DDZData.NextState = ntf.GetNextStage()
+		}
+	}
 
 	return &deskData, nil
+}
+
+// sendChatReq 发送叫地主请求
+func sendJiaodizhuReq(player *DeskPlayer) error {
+	logrus.WithFields(logrus.Fields{
+		"func_name": "TestJiaodizhu()",
+	}).Info("发出叫地主请求，玩家 = ", player.Player.GetID())
+
+	// 叫地主为true
+	jiao := true
+
+	client := player.Player.GetClient()
+	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ), &room.DDZGrabLordReq{
+		Grab: &jiao,
+	})
+
+	return err
+}
+
+// sendDoubleReq 发送加倍请求
+// double : 是否加倍
+func sendDoubleReq(player *DeskPlayer, double bool) error {
+	logrus.WithFields(logrus.Fields{
+		"func_name": "sendJiabeiReq()",
+	}).Info("发出加倍请求，玩家 = ", player.Player.GetID())
+
+	client := player.Player.GetClient()
+	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_DDZ_DOUBLE_REQ), &room.DDZDoubleReq{
+		IsDouble: &double, // 加倍为true，不加倍为false
+	})
+
+	return err
 }
 
 // createPlayerExpectors 创建玩家的麻将逻辑消息期望
@@ -225,7 +323,7 @@ func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.
 		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
 		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
 		msgid.MsgID_ROOM_CHAT_NTF, msgid.MsgID_ROOM_RESUME_GAME_RSP, msgid.MsgID_ROOM_DESK_QUIT_RSP,
-		msgid.MsgID_ROOM_GAMEOVER_NTF,
+		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
 	}
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
 	for _, msg := range msgs {
@@ -255,7 +353,7 @@ func createDDZPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfac
 		msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF, // 斗地主 结束通知
 		msgid.MsgID_ROOM_DDZ_TUOGUAN_RSP,   // 斗地主 托管响应
 		msgid.MsgID_ROOM_DDZ_TUOGUAN_NTF,   // 斗地主 托管通知
-		msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
+		//msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
 	}
 
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
@@ -344,7 +442,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]ui
 
 		// 申请加入牌桌
 		if _, err := ApplyJoinDesk(player, gameID); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("请求加入房间失败: %v", err)
 		}
 
 		expectors = append(expectors, e)
@@ -394,7 +492,7 @@ func DDZjoinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int
 	// 等待接收桌子创建消息
 	ntf := room.RoomDeskCreatedNtf{}
 	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("没有收到创建房间通知: %v", err)
 	}
 
 	logEntry.Info("收到了桌子创建的通知")
