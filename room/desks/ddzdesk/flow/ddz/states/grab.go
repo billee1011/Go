@@ -90,6 +90,13 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.GrabbedCount == 4 {
 		nextPlayerId = 0 //由DDZLordNtf通知下一个玩家
 	}
+
+	lordPlayerId := uint64(0)
+	if context.GrabbedCount == 3 && context.TotalGrab == 1 { //只有一个人叫，其他两个人弃时，地主为叫地主的人
+		lordPlayerId = context.FirstGrabPlayerId
+		nextPlayerId = 0
+	}
+
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId:     &playerId,
 		Grab:         &grab,
@@ -98,25 +105,13 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		NextStage:    genNextStage(nextStage),
 	})
 
-	lordPlayerId := uint64(0)
-	if context.GrabbedCount == 3 && context.TotalGrab == 1 { //只有一个人叫，其他两个人弃时，地主为叫地主的人
-		lordPlayerId = context.FirstGrabPlayerId
-	}
 	if context.GrabbedCount == 4 {
 		if grab { //叫地主玩家抢庄
 			lordPlayerId = playerId
 		} else { //叫地主玩家弃庄
 			lordPlayerId = context.LastPlayerId
 		}
-		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
-			PlayerId:  &lordPlayerId,
-			TotalGrab: &context.TotalGrab,
-			Dipai:     context.WallCards,
-			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
-		})
-	}
-
-	if allAbandon && context.AllAbandonCount < 3 {
+	} else if allAbandon && context.AllAbandonCount < 3 {
 		return int(ddz.StateID_state_deal), nil //重新发牌
 	}
 	context.AllAbandonCount = 0
@@ -124,13 +119,6 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if allAbandon { //三轮没人叫地主，随机确定庄家
 		i := rand.Intn(3)
 		lordPlayerId = context.GetPlayers()[i+1].PalyerId
-
-		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
-			PlayerId:  &lordPlayerId,
-			TotalGrab: &context.TotalGrab,
-			Dipai:     context.WallCards,
-			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
-		})
 	}
 
 	if lordPlayerId != 0 {
@@ -143,6 +131,12 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.WallCards = []uint32{}
 		context.LordPlayerId = lordPlayerId
 		context.Duration = 0 //清除倒计时
+		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
+			PlayerId:  &lordPlayerId,
+			TotalGrab: &context.TotalGrab,
+			Dipai:     context.WallCards,
+			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
+		})
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil

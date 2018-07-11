@@ -12,18 +12,18 @@ import (
 	"steve/structs/proto/gate_rpc"
 	"time"
 
+	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"runtime/debug"
-	"context"
 )
 
 // deskEvent 牌桌事件
 type deskEvent struct {
 	eventID      int
 	eventContext []byte
-	eventType interfaces.EventType
-	playerID uint64
+	eventType    interfaces.EventType
+	playerID     uint64
 }
 
 // desk 斗地主牌桌
@@ -32,7 +32,7 @@ type desk struct {
 	eventChannel   chan deskEvent
 	closingChannel chan struct{}
 	ddzContext     *ddz.DDZContext
-	cancel  context.CancelFunc     // 取消事件处理
+	cancel         context.CancelFunc // 取消事件处理
 }
 
 // initDDZContext 初始化斗地主现场
@@ -48,6 +48,12 @@ func (d *desk) Start(finish func()) error {
 
 	d.initDDZContext()
 	go func() {
+		defer func() {
+			if x := recover(); x != nil {
+				logrus.Errorln(x)
+				debug.PrintStack()
+			}
+		}()
 		d.run()
 		finish()
 	}()
@@ -55,6 +61,12 @@ func (d *desk) Start(finish func()) error {
 	var ctx context.Context
 	ctx, d.cancel = context.WithCancel(context.Background())
 	go func() {
+		defer func() {
+			if x := recover(); x != nil {
+				logrus.Errorln(x)
+				debug.PrintStack()
+			}
+		}()
 		d.timerTask(ctx)
 	}()
 	d.pushEvent(&deskEvent{
@@ -114,10 +126,10 @@ func (d *desk) genTimerEvent() {
 			"event_type":   event.EventType,
 		}).Debugln("注入计时事件")
 		d.eventChannel <- deskEvent{
-			eventID:       int(event.ID),
+			eventID:      int(event.ID),
 			eventContext: event.Context,
-			eventType: event.EventType,
-			playerID: event.PlayerID,
+			eventType:    event.EventType,
+			playerID:     event.PlayerID,
 		}
 	}
 }

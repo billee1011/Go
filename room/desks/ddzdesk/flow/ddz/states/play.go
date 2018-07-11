@@ -124,7 +124,22 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	lastPivot := toDDZCard(context.CardTypePivot)
 	currPivot := *pivot
-	if lastPivot.pointBiggerThan(currPivot) {
+	bigger := false
+	if cardType == ddz.CardType_CT_KINGBOMB {
+		bigger = true
+	} else if context.CurCardType == ddz.CardType_CT_KINGBOMB {
+		bigger = false
+	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
+		bigger = currPivot.pointBiggerThan(lastPivot)
+	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
+		bigger = true
+	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
+		bigger = false
+	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
+		bigger = currPivot.pointBiggerThan(lastPivot)
+	}
+
+	if !bigger {
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(5, "牌比上家小"),
 		})

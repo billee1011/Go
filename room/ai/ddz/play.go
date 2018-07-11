@@ -24,6 +24,7 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 	}, nil
 
 	ddzContext := params.DDZContext
+	ddzContext.Duration = 0 //清除倒计时
 
 	// 当前玩家
 	var curPlayer *ddz.Player
@@ -58,7 +59,6 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 			result.Events = append(result.Events, *event)
 		}
 	}
-
 	return
 }
 
