@@ -13,21 +13,12 @@ enum ErrorCode {
 // LoginAuthReq 认证请求
 message LoginAuthReq {
     optional uint64 account_id = 1;     // 账号 ID 
-    optional string account_name = 2;   // 账号名
     // ...
-    optional int64 expire = 14;          // 认证到期时间戳
     optional string token = 15;         // token 
 }
 
 // LoginAuthRsp 认证应答
 message LoginAuthRsp {
     optional ErrorCode err_code = 1;     // 错误码
-    // ...
-    optional uint64 player_id = 3;      // 游戏用户 ID 
-    
-    optional string gate_ip = 4;        // 网关 IP 
-    optional int32 gate_port = 5;       // 网关端口
-
-    optional int64 expire = 14;         // 认证到期时间
-    optional string gate_token = 15;    // 网关认证 token
+    optional uint64 player_id = 2;      // 游戏用户 ID 
 }

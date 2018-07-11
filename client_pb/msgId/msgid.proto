@@ -35,6 +35,15 @@ enum MsgID {
 	MATCH_RSP = 0x2002;	// 匹配应答
 
 	// MATCH_END 0x2FFF
+
+	// HALL_BEGIN 0x3001
+
+	HALL_GET_PLAYER_INFO_REQ = 0x3001; // 获取玩家信息请求
+	HALL_GET_PLAYER_INFO_RSP = 0x3FFF; // 获取玩家信息应答
+
+	// HALL_END 0x3FFF
+
+
 	/////////////////////////////////////////////////////////////	
 
 

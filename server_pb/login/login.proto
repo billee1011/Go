@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package login; 
+
+// LoginRequest 登录请求
+message LoginRequest {
+    uint64 account_id = 1;   // 账号 ID
+}
+
+// LoginResponse 登录应答
+message LoginResponse {
+    uint32 err_code = 1;    // 错误码
+    uint64 player_id = 2;   // 玩家 ID
+}
+
+// LoginService 登录服务
+service LoginService {
+    rpc Login(LoginRequest) returns(LoginResponse) {}
+}

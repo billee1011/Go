@@ -1,10 +1,8 @@
 package connecttests
 
 import (
-	"fmt"
 	"steve/simulate/config"
 	"steve/simulate/connect"
-	"steve/simulate/global"
 	"steve/simulate/utils"
 	"sync"
 	"testing"
@@ -61,16 +59,6 @@ func Test_HeartBeat2(t *testing.T) {
 // 期望：
 // 	连接已关闭
 func Test_NotAuth(t *testing.T) {
-	loginClient := connect.NewTestClient(config.GetLoginServerAddr(), config.GetClientVersion())
-	assert.NotNil(t, loginClient)
-	accountID := global.AllocAccountID()
-	accountName := utils.GenerateAccountName(accountID)
-	loginResp, err := utils.RequestAuth(loginClient, accountID, accountName, global.DefaultWaitMessageTime)
-	assert.Nil(t, err)
-
-	gateIP := loginResp.GetGateIp()
-	gatePort := loginResp.GetGatePort()
-	gateAddr := fmt.Sprintf("%s:%d", gateIP, gatePort)
 	gateClient := connect.NewTestClient(gateAddr, config.GetClientVersion())
 	assert.NotNil(t, gateClient)
 	assert.False(t, gateClient.Closed())

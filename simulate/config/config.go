@@ -16,15 +16,21 @@ import (
 // )
 
 var (
-	clientVersion  = flag.String("client_version", "1.0", "客户端版本号")
-	loinServerAddr = flag.String("login_server_addr", "127.0.0.1:36201", "登录服地址")
-	peiPaiURL      = flag.String("peipai_url", "http://127.0.0.1:36102", "配牌服务地址")
-	dbPath         *string
+	clientVersion     = flag.String("client_version", "1.0", "客户端版本号")
+	loinServerAddr    = flag.String("login_server_addr", "127.0.0.1:36201", "登录服地址")
+	gatewayServerAddr = flag.String("gateway_server_addr", "127.0.0.1:36001", "网关服地址")
+	peiPaiURL         = flag.String("peipai_url", "http://127.0.0.1:36102", "配牌服务地址")
+	dbPath            *string
 )
 
 // GetLoginServerAddr 获取登录服地址
 func GetLoginServerAddr() string {
 	return *loinServerAddr
+}
+
+// GetGatewayServerAddr 获取网关服地址
+func GetGatewayServerAddr() string {
+	return *gatewayServerAddr
 }
 
 // GetPeipaiURL 获取配牌 URL
