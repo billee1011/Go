@@ -1,10 +1,10 @@
 package ddz
 
 import (
-	"steve/room/interfaces"
-	"github.com/golang/protobuf/proto"
-	"steve/server_pb/ddz"
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
+	"steve/room/interfaces"
+	"steve/server_pb/ddz"
 )
 
 type doubleStateAI struct {
@@ -19,10 +19,9 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 
 	playerId := params.PlayerID
 
-	request := ddz.DoubleRequestEvent{Head:
-		&ddz.RequestEventHead{
-			PlayerId: playerId,
-		}, IsDouble:false,
+	request := ddz.DoubleRequestEvent{Head: &ddz.RequestEventHead{
+		PlayerId: playerId,
+	}, IsDouble: false,
 	}
 	data, _ := proto.Marshal(&request)
 	event := interfaces.AIEvent{
@@ -32,6 +31,6 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 	result.Events = append(result.Events, event)
 
 	logrus.WithField("player", playerId).WithField("result", result).Debug("double timeout event")
-
+	params.DDZContext.Duration = 0
 	return
 }

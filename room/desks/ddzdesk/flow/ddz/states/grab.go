@@ -4,12 +4,12 @@ import (
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/Sirupsen/logrus"
-	"steve/majong/global"
-	"steve/client_pb/room"
-	"steve/client_pb/msgId"
+	"github.com/golang/protobuf/proto"
 	"math/rand"
+	"steve/client_pb/msgId"
+	"steve/client_pb/room"
+	"steve/majong/global"
 	"time"
 )
 
@@ -42,7 +42,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_grab), global.ErrUnmarshalEvent
 	}
 
-	context := getDDZContext(m);
+	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
 	if context.CurrentPlayerId != playerId {
 		logrus.WithField("expected player:", context.CurrentPlayerId).WithField("fact player", playerId).Error("未到本玩家抢地主")
@@ -50,7 +50,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	grab := message.GetGrab()
-	GetPlayerByID(context.GetPlayers(), playerId).Grab = grab//记录该玩家已叫/弃地主
+	GetPlayerByID(context.GetPlayers(), playerId).Grab = grab //记录该玩家已叫/弃地主
 
 	if grab && context.FirstGrabPlayerId != 0 {
 		context.TotalGrab = context.TotalGrab * 2
@@ -59,7 +59,8 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.FirstGrabPlayerId != 0 {
 		nextStage = room.DDZStage_DDZ_STAGE_GRAB //有人叫过地主，后面是抢地主阶段
 	} else if grab {
-		context.FirstGrabPlayerId = playerId;//记录第一次叫地主玩家
+		context.FirstGrabPlayerId = playerId //记录第一次叫地主玩家
+		context.TotalGrab = 1
 		nextStage = room.DDZStage_DDZ_STAGE_GRAB //当前玩家叫地主，后面是抢地主阶段
 	}
 
@@ -72,15 +73,15 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.StartTime, _ = time.Now().MarshalBinary()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
 
-	allAbandon := false;
-	if context.GrabbedCount == 3 {//第三个人叫/弃地主时
-		if IsAllAbandon(context.GetPlayers()){
+	allAbandon := false
+	if context.GrabbedCount == 3 { //第三个人叫/弃地主时
+		if IsAllAbandon(context.GetPlayers()) {
 			allAbandon = true
 			context.AllAbandonCount++
 			if context.AllAbandonCount < 3 {
 				nextStage = room.DDZStage_DDZ_STAGE_DEAL
 			}
-			nextPlayerId = 0  //由DDZLordNtf通知下一个玩家
+			nextPlayerId = 0 //由DDZLordNtf通知下一个玩家
 		} else {
 			nextPlayerId = context.FirstGrabPlayerId //三个人都叫地主时，由第一个叫地主玩家最后决定
 		}
@@ -90,24 +91,24 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		nextPlayerId = 0 //由DDZLordNtf通知下一个玩家
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
-		PlayerId: &playerId,
-		Grab: &grab,
-		TotalGrab: &context.TotalGrab,
+		PlayerId:     &playerId,
+		Grab:         &grab,
+		TotalGrab:    &context.TotalGrab,
 		NextPlayerId: &nextPlayerId,
-		NextStage: genNextStage(nextStage),
+		NextStage:    genNextStage(nextStage),
 	})
 
 	lordPlayerId := uint64(0)
 	if context.GrabbedCount == 4 {
-		if grab {//叫地主玩家抢庄
+		if grab { //叫地主玩家抢庄
 			lordPlayerId = playerId
-		} else {//叫地主玩家弃庄
+		} else { //叫地主玩家弃庄
 			lordPlayerId = context.LastPlayerId
 		}
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
-			PlayerId: &lordPlayerId,
+			PlayerId:  &lordPlayerId,
 			TotalGrab: &context.TotalGrab,
-			Dipai: context.WallCards,
+			Dipai:     context.WallCards,
 			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
 	}
@@ -117,14 +118,14 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 	context.AllAbandonCount = 0
 
-	if allAbandon {//三轮没人叫地主，随机确定庄家
+	if allAbandon { //三轮没人叫地主，随机确定庄家
 		i := rand.Intn(3)
 		lordPlayerId = context.GetPlayers()[i+1].PalyerId
 
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
-			PlayerId: &lordPlayerId,
+			PlayerId:  &lordPlayerId,
 			TotalGrab: &context.TotalGrab,
-			Dipai: context.WallCards,
+			Dipai:     context.WallCards,
 			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
 	}
