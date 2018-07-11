@@ -18,8 +18,8 @@ func RegisterHandlers(e exchanger.Exchanger) {
 	}
 
 	// registe(msgid.MsgID_ROOM_JOIN_DESK_REQ, deskapply.HandleRoomJoinDeskReq)          // 加入牌桌请求
-	registe(msgid.MsgID_ROOM_DESK_QUIT_REQ, deskapply.HandleRoomDeskQuitReq)          // 退出牌桌请求
-	registe(msgid.MsgID_ROOM_DESK_CONTINUE_REQ, deskapply.HandleRoomContinueReq)      // 续局请求
+	registe(msgid.MsgID_ROOM_DESK_QUIT_REQ, deskbase.HandleRoomDeskQuitReq) // 退出牌桌请求
+	// registe(msgid.MsgID_ROOM_DESK_CONTINUE_REQ, deskapply.HandleRoomContinueReq)      // 续局请求
 	registe(msgid.MsgID_ROOM_CANCEL_TUOGUAN_REQ, deskbase.HandleCancelTuoGuanReq)     // 取消托管请求
 	registe(msgid.MsgID_ROOM_RESUME_GAME_REQ, deskapply.HandleResumeGameReq)          // 恢复对局请求
 	registe(msgid.MsgID_ROOM_CHAT_REQ, chat.RoomChatMsgReq)                           // 房间玩家聊天请求
