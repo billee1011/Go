@@ -47,7 +47,7 @@ func idIntToStr(gameID int) string {
 		return SCXL
 	case gutils.SCXZGameID:
 		return SCXZ
-	case gutils.ERGameID:
+	case gutils.ERMJGameID:
 		return ERMJ
 	}
 	return ""
