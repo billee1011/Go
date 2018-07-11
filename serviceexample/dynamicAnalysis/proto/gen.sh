@@ -1,0 +1,1 @@
+protoc -I. ./msg.proto --go_out=plugins=grpc:.

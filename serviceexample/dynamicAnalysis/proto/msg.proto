@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+message msg {
+    uint64 id = 1;
+    uint32 len = 2;
+}
+
+message msgplus {
+    uint64 id = 1;
+    uint32 len = 2;
+    uint32 plus = 3;
+}
