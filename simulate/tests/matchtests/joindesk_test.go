@@ -7,6 +7,7 @@ import (
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -42,4 +43,26 @@ func TestApplyJoinDesk(t *testing.T) {
 		ntf := &room.RoomStartGameNtf{}
 		assert.Nil(t, e.Recv(global.DefaultWaitMessageTime, ntf))
 	}
+}
+
+// TestRobotMatch 测试机器人匹配
+// 步骤：
+//  1. 登录 1 个玩家，申请匹配四川血流
+//  2. 等待 5s
+// 期望：
+//  1. 玩家收到创建房间通知和开始游戏通知
+func TestRobotMatch(t *testing.T) {
+	player, err := utils.LoginNewPlayer()
+	assert.Nil(t, err)
+	assert.NotNil(t, player)
+	player.AddExpectors(msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_START_GAME_NTF)
+
+	utils.ApplyJoinDesk(player, room.GameId_GAMEID_XUELIU)
+	time.Sleep(time.Second * 5)
+
+	createExpector := player.GetExpector(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+	assert.Nil(t, createExpector.Recv(global.DefaultWaitMessageTime, nil))
+
+	startExpector := player.GetExpector(msgid.MsgID_ROOM_START_GAME_NTF)
+	assert.Nil(t, startExpector.Recv(global.DefaultWaitMessageTime, nil))
 }

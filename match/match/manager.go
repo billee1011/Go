@@ -129,7 +129,9 @@ func (m *Manager) addRobots(gameID int) {
 		lastAddTime := desk.GetLastAddPlayerTime()
 		if now.Sub(lastAddTime) >= time.Second*5 {
 			playerCount := len(desk.GetPlayers())
-			for i := 0; i < playerCount; i++ {
+			addCount := md.playerCount - playerCount
+			logrus.WithField("count", addCount).Debugln("添加机器人")
+			for i := 0; i < addCount; i++ {
 				desk.AddPlayer(GetIdleRobot(1), 1)
 			}
 		}
