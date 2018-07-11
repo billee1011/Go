@@ -3,6 +3,7 @@ package match
 import (
 	"steve/client_pb/room"
 	"steve/common/data/player"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -15,11 +16,13 @@ type matchData struct {
 	gameID      int
 	queue       chan uint64
 	playerCount int
+	desks       map[uint64]*Desk // 当前正在匹配中的牌桌
+	maxDeskID   uint64
 }
 
 // Manager 匹配管理器
 type Manager struct {
-	queues map[int]matchData
+	matchDataMap map[int]matchData
 }
 
 var defaultManager = NewManager()
@@ -29,6 +32,7 @@ func createMatchData(gameID room.GameId, playerCount int) matchData {
 		gameID:      int(gameID),
 		queue:       make(chan uint64),
 		playerCount: playerCount,
+		desks:       make(map[uint64]*Desk, 16),
 	}
 }
 
@@ -41,20 +45,20 @@ func NewManager() *Manager {
 	queues[int(room.GameId_GAMEID_DOUDIZHU)] = createMatchData(room.GameId_GAMEID_DOUDIZHU, 3)
 
 	m := &Manager{
-		queues: queues,
+		matchDataMap: queues,
 	}
 	m.runMatchs()
 	return m
 }
 
 func (m *Manager) runMatchs() {
-	for gameID, md := range m.queues {
+	for gameID, md := range m.matchDataMap {
 		go m.match(gameID, md.playerCount, md.queue)
 	}
 }
 
 func (m *Manager) addPlayer(playerID uint64, gameID int) {
-	md, ok := m.queues[gameID]
+	md, ok := m.matchDataMap[gameID]
 	if !ok {
 		return
 	}
@@ -68,26 +72,66 @@ func (m *Manager) match(gameID int, playerCount int, ch chan uint64) {
 	})
 
 	logEntry.Debugln("Manager::Match() start ...")
-	var players []uint64
-	s := NewSender()
-
+	robotTicker := time.NewTicker(time.Second)
 	for {
 		select {
 		case playerID := <-ch:
 			online := player.GetPlayerGateAddr(playerID)
 			if online == "" {
 				logEntry.Debugln("player is not online, remove the player[%d]", playerID)
+				continue
 			}
-			players = append(players, playerID)
+			m.receivePlayer(gameID, playerID, 0)
+		case <-robotTicker.C:
+			{
+				m.addRobots(gameID)
+			}
+		}
 
-			if len(players) == playerCount {
-				if _, err := s.createDesk(players, gameID); err != nil {
-					logEntry.Debug(err.Error())
-				}
-				players = players[len(players):]
+	}
+}
+
+func (m *Manager) onDeskMatchFinish(desk *Desk) {
+	gameID := desk.GetGameID()
+	md := m.matchDataMap[gameID]
+	deskID := desk.GetID()
+
+	delete(md.desks, deskID)
+
+	players := desk.GetPlayers()
+	sender := Sender{}
+	sender.createDesk(players, gameID)
+	return
+}
+
+func (m *Manager) receivePlayer(gameID int, playerID uint64, robotLv int) {
+	md := m.matchDataMap[gameID]
+	var desk *Desk
+	if len(md.desks) == 0 {
+		md.maxDeskID++
+		deskID := md.maxDeskID
+		desk = CreateMatchDesk(deskID, gameID, md.playerCount, m.onDeskMatchFinish)
+		md.desks[deskID] = desk
+	} else {
+		// TODO: 选一个合适的 Desk
+		for _, desk = range md.desks {
+			break
+		}
+	}
+	desk.AddPlayer(playerID, robotLv)
+}
+
+// addRobots 添加机器人
+func (m *Manager) addRobots(gameID int) {
+	md := m.matchDataMap[gameID]
+	now := time.Now()
+	for _, desk := range md.desks {
+		lastAddTime := desk.GetLastAddPlayerTime()
+		if now.Sub(lastAddTime) >= time.Second*5 {
+			playerCount := len(desk.GetPlayers())
+			for i := 0; i < playerCount; i++ {
+				desk.AddPlayer(GetIdleRobot(1), 1)
 			}
 		}
 	}
-
-	logEntry.Debugln("Manager::Match() end ...")
 }
