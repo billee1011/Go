@@ -158,6 +158,7 @@ enable_fan_types:
     mutex: []  # 不互斥
     method: 0   # 计算方式：相加
     score: 32    # 番数 32 
+    
   33:  # 四字刻
     id: 33 # 四字刻
     func_id: 33  # 计算函数 ID : 33
@@ -188,6 +189,7 @@ enable_fan_types:
     mutex: [35,60]  # 不计三同顺、一般高
     method: 0   # 计算方式：相加
     score: 24    # 番数 24 
+  
   37:  # 全花
     id: 37 # 全花
     func_id: 39  # 计算函数 ID : 39
@@ -218,6 +220,7 @@ enable_fan_types:
     mutex: []  # 不互斥
     method: 0   # 计算方式：相加
     score: 16    # 番数 16  
+    
   71:  # 妙手回春
     id: 71 # 妙手回春
     func_id: 41  # 计算函数 ID : 41
@@ -236,6 +239,7 @@ enable_fan_types:
     mutex: [75]  # 不计自摸，杠开*2（先算本局所有番数然后*2）
     method: 1   # 计算方式：相乘
     score: 2    # 番数 2   
+    type: 1     # 倍数
   80:  # 抢杠胡
     id: 80 # 抢杠胡
     func_id: 43  # 计算函数 ID : 43
@@ -302,6 +306,7 @@ enable_fan_types:
     mutex: []  # 
     method: 0   # 计算方式：相加
     score: 4    # 番数 4   
+  
   52:  # 门风刻
     id: 52 # 门风刻
     func_id: 58  # 计算函数 ID : 58
@@ -407,7 +412,7 @@ enable_fan_types:
   81:  # 点炮
     id: 81 # 点炮
     func_id: 81  # 计算函数 ID : 81
-    mutex: []   # 和平胡互斥
+    mutex: []   # 不互斥
     method: 0   # 计算方式：相加
     score: 0    # 番数 0     
   49:  #春夏秋冬
@@ -435,8 +440,8 @@ enable_fan_types:
     method: 0   # 计算方式：相加
     score: 4    # 番数 4        
 #番型对应的胡类型
-fanType2HuType:     
-  68:  # 天胡
+fan_type_2_hu_type:     
+  68: # 天胡
     huType: 7
   69: # 地胡
     huType: 8  
@@ -450,10 +455,5 @@ fanType2HuType:
     huType: 6
   80: # 抢杠胡
     huType: 1
-  2: # 点炮
-    huType: 66    
-
-
-  
-  
-  
+  81: # 点炮
+    huType: 2   

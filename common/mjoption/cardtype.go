@@ -16,6 +16,7 @@ type FanType struct {
 	Mutex   []int `yaml:"mutex"`   // 互斥番型列表
 	Method  int   `yaml:"method"`  // 分数计算方式，0为相加，1为相乘
 	Score   int   `yaml:"score"`   // 番数
+	Type    int   `yaml:"type"`    // 番/倍
 	SubGeng int   `yaml:"subgeng"` // 扣除的根数量
 }
 
@@ -26,15 +27,15 @@ type HuType struct {
 
 // CardTypeOption 牌型选项
 type CardTypeOption struct {
-	ID             int             `yaml:"id"`               // 选项 ID
-	Fantypes       map[int]FanType `yaml:"enable_fan_types"` // 支持的番型
-	FanType2HuType map[int]HuType  `yaml:"fanType2HuType"`   // 番型转胡类型
-	EnableGeng     bool            `yaml:"enable_geng"`      // 是否启用根
-	GengScore      int             `yaml:"geng_score"`       // 根的番数
-	GengMethod     int             `yaml:"geng_method"`      // 根的计算方式，0为相加，1为相乘，2幂乘
-	EnableHua      bool            `yaml:"enable_hua"`       // 是否启用花
-	HuaScore       int             `yaml:"hua_score"`        // 花的番数
-	HuaMethod      int             `yaml:"hua_method"`       // 花的计算方式，0为相加，1为相乘，2幂乘
+	ID             int             `yaml:"id"`                 // 选项 ID
+	Fantypes       map[int]FanType `yaml:"enable_fan_types"`   // 支持的番型
+	FanType2HuType map[int]HuType  `yaml:"fan_type_2_hu_type"` // 番型转胡类型
+	EnableGeng     bool            `yaml:"enable_geng"`        // 是否启用根
+	GengScore      int             `yaml:"geng_score"`         // 根的番数
+	GengMethod     int             `yaml:"geng_method"`        // 根的计算方式，0为相加，1为相乘，2幂乘
+	EnableHua      bool            `yaml:"enable_hua"`         // 是否启用花
+	HuaScore       int             `yaml:"hua_score"`          // 花的番数
+	HuaMethod      int             `yaml:"hua_method"`         // 花的计算方式，0为相加，1为相乘，2幂乘
 }
 
 // CardTypeOptionManager 选项管理器

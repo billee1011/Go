@@ -32,7 +32,7 @@ enable_fan_types:
     mutex: [0,34,56,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 88    # 番数 88  
-   15:  # 大于五
+  15:  # 大于五
     id: 15 # 大于五
     func_id: 15  # 计算函数 ID : 15
     mutex: [0]  # 和平胡互斥
@@ -242,6 +242,7 @@ enable_fan_types:
     mutex: [0,65]  # 和平胡互斥
     method: 0   # 计算方式：相加
     score: 2    # 番数 2   
+    type: 1     # 倍数
   80:  # 抢杠胡
     id: 80 # 抢杠胡
     func_id: 43  # 计算函数 ID : 43
@@ -444,7 +445,7 @@ enable_fan_types:
     method: 0   # 计算方式：相加
     score: 4    # 番数 4        
 #番型对应的胡类型
-fanType2HuType:     
+fan_type_2_hu_type:     
   9:
     huType: 7
   10:
@@ -461,8 +462,3 @@ fanType2HuType:
     huType: 1
   66:
     huType: 66    
-
-
-  
-  
-  

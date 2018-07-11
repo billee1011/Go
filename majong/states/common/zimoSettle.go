@@ -88,7 +88,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	genCount := make(map[uint64]uint64, 0)
 	huaCount := make(map[uint64]uint64, 0)
 
-	record := huPlayer.GetRecord()
+	record := huPlayer.GetZixunRecord()
 	cardTypes[huPlayerID] = record.GetHuFanType().GetFanTypes()
 	cardValues[huPlayerID] = s.calculateScore(mjContext, record)
 	genCount[huPlayerID] = record.GetHuFanType().GetGenCount()
@@ -117,7 +117,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	}
 }
 
-func (s *ZiMoSettleState) calculateScore(mjcontext *majongpb.MajongContext, record *majongpb.Record) uint64 {
+func (s *ZiMoSettleState) calculateScore(mjcontext *majongpb.MajongContext, record *majongpb.ZiXunRecord) uint64 {
 	hufanType := record.GetHuFanType()
 	fanTypes := make([]int, 0)
 	for _, fType := range hufanType.GetFanTypes() {

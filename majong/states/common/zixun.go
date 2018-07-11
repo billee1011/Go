@@ -317,8 +317,8 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
-	player.Record = &majongpb.Record{}
-	record := player.GetRecord()
+	player.ZixunRecord = &majongpb.ZiXunRecord{}
+	record := player.GetZixunRecord()
 	if !isPengZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
@@ -389,7 +389,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
-func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
+func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
 	calcHandCard, _ := utils.RemoveCards(handCards, huCard, 1)
 
 	calcHuCard := &majongpb.HuCard{
@@ -406,11 +406,11 @@ func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.Maj
 		HfanTypes = append(HfanTypes, int64(fanType))
 	}
 	record.HuFanType.FanTypes = HfanTypes
-	//record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
+	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
 
 }
 
-func (s *ZiXunState) recordZixunMsg(record *majongpb.Record, ntf *room.RoomZixunNtf) {
+func (s *ZiXunState) recordZixunMsg(record *majongpb.ZiXunRecord, ntf *room.RoomZixunNtf) {
 	record.EnableAngangCards = ntf.GetEnableAngangCards()
 	record.EnableBugangCards = ntf.GetEnableBugangCards()
 	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
@@ -511,22 +511,26 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
-		for tt := range tingInfo {
-			huCard, _ := utils.IntToCard(int32(tt))
-			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
-				HandCard: newHand,
-				PengCard: s.getPengCards(player.GetPengCards()),
-				GangCard: player.GetGangCards(),
-				HuCard:   huCard,
-				GameID:   int(context.GetGameId()),
+		for _, tt := range tingInfo {
+			hCard, _ := utils.IntToCard(int32(tt))
+			times, _, _ := facade.CalculateCardValue(global.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+				PlayerID:  player.GetPalyerId(),
+				MjContext: context,
+				HandCard:  newHand,
+				PengCard:  s.getPengCards(player.GetPengCards()),
+				GangCard:  player.GetGangCards(),
+				HuCard: &majongpb.HuCard{
+					Card: hCard,
+					Type: majongpb.HuType_hu_dianpao,
+				},
 			})
 			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
 				TingCard: proto.Uint32(uint32(tt)),
-				Times:    proto.Uint32(times),
+				Times:    proto.Uint32(uint32(times)),
 			})
 			recordTingCardInfo = append(recordTingCardInfo, &majongpb.TingCardInfo{
 				TingCard: uint32(tt),
-				Times:    times,
+				Times:    uint32(times),
 			})
 		}
 		canTingInfos = append(canTingInfos, &room.CanTingCardInfo{
@@ -539,7 +543,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		})
 	}
 	zixunNtf.CanTingCardInfo = canTingInfos
-	player.Record.CanTingCardInfo = recordCanTingInfos
+	player.GetZixunRecord().CanTingCardInfo = recordCanTingInfos
 }
 
 // checkZiMo 查自摸

@@ -167,7 +167,7 @@ func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *
 		return proto.Bool(false), nil
 	}
 	player := gutils.GetMajongPlayer(playerID, mjContext)
-	return proto.Bool(true), zixunTransform(player.GetRecord())
+	return proto.Bool(true), zixunTransform(player.GetZixunRecord())
 }
 
 func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomChupaiWenxunNtf) {
@@ -221,7 +221,7 @@ func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *ro
 	return proto.Bool(true), qghInfo
 }
 
-func zixunTransform(record *server_pb.Record) *room.RoomZixunNtf {
+func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 	zixunNtf := &room.RoomZixunNtf{}
 	zixunNtf.EnableAngangCards = record.GetEnableAngangCards()
 	zixunNtf.EnableBugangCards = record.GetEnableBugangCards()

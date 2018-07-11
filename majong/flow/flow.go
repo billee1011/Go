@@ -9,11 +9,11 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/Sirupsen/logrus"
-
-	_ "steve/majong/cardtype"       // init cardtype
+	_ "steve/majong/fantype"        // init fantype
 	_ "steve/majong/settle"         // init settles
 	_ "steve/majong/states/factory" // init state facotry
+
+	"github.com/Sirupsen/logrus"
 )
 
 type flow struct {

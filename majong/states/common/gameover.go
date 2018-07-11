@@ -162,17 +162,22 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 				return nil, err
 			}
 			for _, card := range tingCards {
-				pbCard, _ := utils.IntToCard(int32(card))
-				// 获取最大番型*根数
-				cardParams := interfaces.CardCalcParams{
-					HandCard: players[i].HandCards,
-					PengCard: utils.TransPengCard(players[i].PengCards),
-					GangCard: players[i].GangCards,
-					HuCard:   pbCard,
-					GameID:   int(context.GetGameId()),
+				hCard, _ := utils.IntToCard(int32(card))
+				//获取最大番型 * 根数
+				cardParams := interfaces.FantypeParams{
+					PlayerID:  players[i].GetPalyerId(),
+					MjContext: context,
+					HandCard:  players[i].HandCards,
+					PengCard:  utils.TransPengCard(players[i].PengCards),
+					GangCard:  players[i].GangCards,
+					HuCard: &majongpb.HuCard{
+						Card: hCard,
+						Type: majongpb.HuType_hu_dianpao,
+					},
+					GameID: int(context.GetGameId()),
 				}
-				calculator := global.GetCardTypeCalculator()
-				total, _ := facade.CalculateCardValue(calculator, cardParams)
+				calculator := global.GetFanTypeCalculator()
+				total, _, _ := facade.CalculateCardValue(calculator, context, cardParams)
 				if maxMulti < int64(total) {
 					maxMulti = int64(total)
 				}
