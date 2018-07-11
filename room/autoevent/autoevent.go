@@ -95,9 +95,9 @@ func (aeg *autoEventGenerator) handleDDZOverTime(AI interfaces.CommonAI, params 
 	if duration == 0 || time.Now().Sub(startTime) < duration {
 		return
 	}
-	players := ddzContext.GetPlayers()
+	players := ddzContext.CountDownPlayers
 	for _, player := range players {
-		aeg.handleDDZPlayerAI(&result, AI, player.GetPalyerId(), ddzContext, interfaces.OverTimeAI, 0)
+		aeg.handleDDZPlayerAI(&result, AI, player, ddzContext, interfaces.OverTimeAI, 0)
 	}
 	finish = true
 	return

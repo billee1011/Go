@@ -17,22 +17,21 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 		Events: []interfaces.AIEvent{},
 	}, nil
 
-	context := params.DDZContext
-	for _, playerId := range context.CountDownPlayers {
-		request := ddz.DoubleRequestEvent{Head:
-			&ddz.RequestEventHead{
-				PlayerId: playerId,
-			}, IsDouble:false,
-		}
-		data, _ := proto.Marshal(&request)
-		event := interfaces.AIEvent{
-			ID:      int32(ddz.EventID_event_double_request),
-			Context: data,
-		}
-		result.Events = append(result.Events, event)
-	}
-	logrus.WithField("players", context.CountDownPlayers).WithField("result", result).Debug("double timeout event")
+	playerId := params.PlayerID
 
-	context.Duration = 0//清除倒计时
+	request := ddz.DoubleRequestEvent{Head:
+		&ddz.RequestEventHead{
+			PlayerId: playerId,
+		}, IsDouble:false,
+	}
+	data, _ := proto.Marshal(&request)
+	event := interfaces.AIEvent{
+		ID:      int32(ddz.EventID_event_double_request),
+		Context: data,
+	}
+	result.Events = append(result.Events, event)
+
+	logrus.WithField("player", playerId).WithField("result", result).Debug("double timeout event")
+
 	return
 }

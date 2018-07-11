@@ -26,22 +26,18 @@ func (h *grabStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (
 		Events: []interfaces.AIEvent{},
 	}, nil
 
-	context := params.DDZContext
-	for _, playerId := range context.CountDownPlayers {
-		request := ddz.GrabRequestEvent{Head:
-			&ddz.RequestEventHead{
-				PlayerId: playerId,
-			}, Grab:false,
-		}
-		data, _ := proto.Marshal(&request)
-		event := interfaces.AIEvent{
-			ID:      int32(ddz.EventID_event_grab_request),
-			Context: data,
-		}
-		result.Events = append(result.Events, event)
+	playerId := params.PlayerID
+	request := ddz.GrabRequestEvent{Head:
+		&ddz.RequestEventHead{
+			PlayerId: playerId,
+		}, Grab:false,
 	}
-	logrus.WithField("players", context.CountDownPlayers).WithField("result", result).Debug("grab timeout event")
-
-	context.Duration = 0//清除倒计时
+	data, _ := proto.Marshal(&request)
+	event := interfaces.AIEvent{
+		ID:      int32(ddz.EventID_event_grab_request),
+		Context: data,
+	}
+	result.Events = append(result.Events, event)
+	logrus.WithField("player", playerId).WithField("result", result).Debug("grab timeout event")
 	return
 }
