@@ -23,8 +23,9 @@ func (s *Sender) createDesk(players []DeskPlayer, gameID int) (resp *roommgr.Cre
 	e := structs.GetGlobalExposer()
 
 	rs, err := e.RPCClient.GetConnectByServerName("room")
-	if err != nil {
+	if err != nil || rs == nil {
 		logEntry.WithError(err).Errorln("get 'room' service failed!!!")
+		return
 	}
 	createPlayers := []*roommgr.DeskPlayer{}
 	for _, player := range players {
