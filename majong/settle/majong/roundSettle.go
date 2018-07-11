@@ -104,9 +104,6 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		if isGiveUpPlayer(flowerPig, params.GiveupPlayers) {
 			continue
 		}
-		logrus.WithFields(logrus.Fields{
-			"flowerPig": flowerPig,
-		}).Debugln("查花猪结算-------------")
 		// 关联
 		groupIds := make([]uint64, 0)
 		groupflowerSettles := make([]*majongpb.SettleInfo, 0)
