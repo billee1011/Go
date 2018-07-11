@@ -52,6 +52,8 @@ func Test_SCXZ_Angang(t *testing.T) {
 func Test_Angang1(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
+	thisParams.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	thisParams.PeiPaiGame = "scxz"
 	thisParams.Cards[0] = []uint32{11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 26, 27, 28, 29}
 	thisParams.Cards[1] = []uint32{29, 29, 31, 31, 32, 32, 32, 32, 33, 33, 37, 37, 36}
 	thisParams.Cards[2] = []uint32{21, 21, 22, 22, 23, 23, 23, 23, 24, 25, 13, 13, 14}
