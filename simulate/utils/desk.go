@@ -43,7 +43,7 @@ type DDZData struct {
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params structs.StartGameParams) (*DeskData, error) {
-	players, err := createAndLoginUsers(4)
+	players, err := CreateAndLoginUsers(4)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	logEntry.Info("")
 
 	// 创建并登录3个玩家
-	players, err := createAndLoginUsers(3)
+	players, err := CreateAndLoginUsers(3)
 	if err != nil {
 		return nil, err
 	}
@@ -224,6 +224,7 @@ func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.
 		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
 		msgid.MsgID_ROOM_CHAT_NTF, msgid.MsgID_ROOM_RESUME_GAME_RSP, msgid.MsgID_ROOM_DESK_QUIT_RSP,
 		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
+		msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP,
 	}
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
 	for _, msg := range msgs {
@@ -295,7 +296,8 @@ func calcPlayerSeat(seatMap map[int]uint64, playerID uint64) int {
 
 var errCreateClientFailed = errors.New("创建客户端连接失败")
 
-func createAndLoginUsers(num int) ([]interfaces.ClientPlayer, error) {
+// CreateAndLoginUsers 创建玩家并登录
+func CreateAndLoginUsers(num int) ([]interfaces.ClientPlayer, error) {
 	return CreateAndLoginUsersNum(num)
 }
 
@@ -471,7 +473,7 @@ func checkFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskData 
 	for playerID, e := range ntfExpectors {
 		fapaiNtf := room.RoomFapaiNtf{}
 		if err := e.Recv(global.DefaultWaitMessageTime, &fapaiNtf); err != nil {
-			return fmt.Errorf("未收到发牌通知： %v", err)
+			return fmt.Errorf("%v未收到发牌通知： %v", playerID, err)
 		}
 		seat := deskData.Players[playerID].Seat
 		expectCards := seatCards[seat]

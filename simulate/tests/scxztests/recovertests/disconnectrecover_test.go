@@ -63,7 +63,7 @@ func Test_DisconnectRecover(t *testing.T) {
 	// ntf4 := room.RoomDeskNeedReusmeRsp{}
 	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf4))
 	// assert.True(t, ntf4.GetIsNeed())
-	// assert.Equal(t, 1, ntf4.GetGameId()) // gameid后续修改
+	// assert.Equal(t, room.GameId_GAMEID_XUEZHAN, ntf4.GetGameId())
 
 	assert.Nil(t, utils.SendRecoverGameReq(disconnectSeat, deskData))
 	// step 5

@@ -19,8 +19,6 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	var Int1B uint32 = 31
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
-	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	zimoSeat := 1
 	quitSeat := zimoSeat
@@ -58,21 +56,33 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	assert.Nil(t, utils.SendQuitReq(deskData, quitSeat))
 	// 其他玩家收到该玩家退出通知
 	utils.RecvQuitNtf(t, deskData, []int{0, 2, 3})
-
 	assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
+
+	// 需要恢复对局
 	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
 	rsp1 := room.RoomDeskNeedReusmeRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
-	assert.False(t, rsp1.GetIsNeed())
-	// 匹配服务做好后再放开
-	utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUELIU)
+	assert.True(t, rsp1.GetIsNeed())
 
-	// 再加入3个玩家凑够4人开局避免影响其他测试用例
-	newPlayers, err := utils.CreateAndLoginUsers(3)
-	assert.Nil(t, err)
-	err = utils.ApplyJoinDeskPlayers(newPlayers, room.GameId_GAMEID_XUELIU)
-	assert.Nil(t, err)
-	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_CREATED_NTF]
-	ntf1 := room.RoomDeskCreatedNtf{}
-	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf1))
+	// 请求加入失败  新架构匹配服务没有识别 在游戏中
+	// rsp2, err := utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUEZHAN)
+	// assert.Nil(t, err)
+	// assert.Equal(t, room.RoomError_DESK_GAME_PLAYING, rsp2.GetErrCode())
+
+	// 请求恢复对局
+	assert.Nil(t, utils.SendRecoverGameReq(quitSeat, deskData))
+	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_RESUME_GAME_RSP]
+	rsp3 := &room.RoomResumeGameRsp{}
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, rsp3))
+	assert.Equal(t, room.RoomError_SUCCESS, rsp3.GetResumeRes())
+	assert.Equal(t, room.GameStage_GAMESTAGE_PLAYCARD, rsp3.GetGameInfo().GetGameStage())
+
+	var player *room.GamePlayerInfo
+	for _, player = range rsp3.GetGameInfo().GetPlayers() {
+		if player.GetPlayerInfo().GetSeat() == uint32(zimoSeat) {
+			break
+		}
+	}
+	assert.False(t, player.GetIsTuoguan())
+	assert.Equal(t, room.XingPaiState_XP_STATE_HU, player.GetXpState())
 }
