@@ -12,46 +12,41 @@ func checkSiBuGao(tc *typeCalculator) bool {
 	}
 	for _, combine := range tc.combines {
 		// 刻子为0
-		if len(combine.kes) == 0 {
-			colorPointMap := make(map[majongpb.CardColor][]int32)
-			// 吃
-			for _, chi := range tc.getChiCards() {
-				chiCard := chi.GetOprCard()
-				colorPointMap[chiCard.GetColor()] = append(colorPointMap[chiCard.GetColor()], chiCard.GetPoint())
-			}
-			for _, shun := range combine.shuns {
-				shunCard := intToCard(shun)
-				colorPointMap[shunCard.GetColor()] = append(colorPointMap[shunCard.GetColor()], shunCard.GetPoint())
-			}
-			if len(colorPointMap) > 1 {
-				return false
-			}
-			for _, cardPoints := range colorPointMap {
-				// 差值
-				one, two := diff(cardPoints)
-				if one == 4 || two == 4 {
-					return true
-				}
+		if len(combine.kes) != 0 {
+			continue
+		}
+		colorPointMap := make(map[majongpb.CardColor][]int32)
+		// 吃
+		for _, chi := range tc.getChiCards() {
+			chiCard := chi.GetOprCard()
+			colorPointMap[chiCard.GetColor()] = append(colorPointMap[chiCard.GetColor()], chiCard.GetPoint())
+		}
+		for _, shun := range combine.shuns {
+			shunCard := intToCard(shun)
+			colorPointMap[shunCard.GetColor()] = append(colorPointMap[shunCard.GetColor()], shunCard.GetPoint())
+		}
+		if len(colorPointMap) > 1 {
+			return false
+		}
+		for _, cardPoints := range colorPointMap {
+			// 差值
+			one, two := diff(cardPoints, 1), diff(cardPoints, 2)
+			if one == 4 || two == 4 {
+				return true
 			}
 		}
 	}
 	return false
 }
 
-func diff(cardPoints []int32) (int, int) {
+func diff(cardPoints []int32, diff int32) int {
 	cardPoints = sortRemoveDuplicate(cardPoints)
-	one, two := 1, 1
+	count := 1
 	// 每次的差值1的次数
 	for i := len(cardPoints) - 1; i > 0; i-- {
-		if cardPoints[i]-cardPoints[i-1] == 1 {
-			one++
+		if cardPoints[i]-cardPoints[i-1] == diff {
+			count++
 		}
 	}
-	// 每次的差值2的次数
-	for i := len(cardPoints) - 1; i > 0; i-- {
-		if cardPoints[i]-cardPoints[i-1] == 2 {
-			two++
-		}
-	}
-	return one, two
+	return count
 }

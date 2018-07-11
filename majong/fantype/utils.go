@@ -148,11 +148,10 @@ func intsToCards(cardInts []int) []*majongpb.Card {
 	return newCard
 }
 
-//IsNotFlowerCard 判断是否不是花牌（万，条，筒）
-func IsNotFlowerCard(card *majongpb.Card) bool {
+//IsFlowerCard 判断是否是花牌（万，条，筒）
+func IsFlowerCard(card *majongpb.Card) bool {
 	currColor := card.GetColor()
-	// 万条筒都不是,即是字牌
-	return currColor != majongpb.CardColor_ColorWan && currColor != majongpb.CardColor_ColorTiao && currColor != majongpb.CardColor_ColorTong
+	return currColor == majongpb.CardColor_ColorWan || currColor == majongpb.CardColor_ColorTiao || currColor == majongpb.CardColor_ColorTong
 }
 
 //getPlayerMaxAnKeNum 获取玩家最大暗刻子数

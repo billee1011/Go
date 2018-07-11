@@ -20,7 +20,7 @@ func checkSanBuGao(tc *typeCalculator) bool {
 		for _, cardPoints := range colorPointMap {
 			if len(cardPoints) >= 3 {
 				// 差值
-				one, two := diff(cardPoints)
+				one, two := diff(cardPoints, 1), diff(cardPoints, 2)
 				if one >= 3 || two >= 3 {
 					return true
 				}

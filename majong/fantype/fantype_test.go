@@ -1632,6 +1632,29 @@ func TestHuaPai(t *testing.T) {
 	assert.Equal(t, huaCount, int(6))
 }
 
+//TestWuHua 无花牌
+func TestWuHua(t *testing.T) {
+	handUtilCards := []utils.Card{11, 12, 13, 21, 22, 23, 34, 35, 36, 14, 15, 16, 17}
+	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(17)
+	assert.Nil(t, err)
+	huaUtilsCards := []utils.Card{}
+	HuaCards, err := utils.CheckHuUtilCardsToHandCards(huaUtilsCards)
+	assert.Nil(t, err)
+	playerParams := CardCalcParams{
+		HandCard:         handCards,
+		HuCard:           &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
+		CardtypeOptionID: 4,
+		GameID:           4,
+		HuaCards:         HuaCards,
+	}
+	cardTypes, _, huaCount := calculate(playerParams)
+	// fmt.Println(cardTypes)
+	assert.Contains(t, cardTypes, int(room.FanType_FT_WUHUA))
+	assert.Equal(t, huaCount, int(0))
+}
+
 // TestMinggang 明杠
 func TestMinggang(t *testing.T) {
 	handUtilCards := []utils.Card{12, 13, 16, 16, 16, 17, 18, 19, 18, 18}

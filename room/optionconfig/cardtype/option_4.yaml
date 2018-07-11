@@ -429,7 +429,7 @@ enable_fan_types:
     method: 0   # 计算方式：相加
     score: 4    # 番数 4    
   51: #无花牌
-    id: 51 # 无花牌自摸
+    id: 51 # 无花牌
     func_id: 57  # 计算函数 ID : 57
     mutex: []   # 不互斥
     method: 0   # 计算方式：相加

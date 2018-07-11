@@ -30,7 +30,7 @@ func checkDuanYao(tc *typeCalculator) bool {
 		if card.Point == 1 || card.Point == 9 {
 			return false
 		}
-		if IsNotFlowerCard(card) {
+		if !IsFlowerCard(card) {
 			return false
 
 		}

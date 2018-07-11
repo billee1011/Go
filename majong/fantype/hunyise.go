@@ -28,7 +28,7 @@ func checkHunYiSe(tc *typeCalculator) bool {
 
 	cardColor := majongpb.CardColor(-1)
 	for _, card := range checkCards {
-		if IsNotFlowerCard(card) {
+		if !IsFlowerCard(card) {
 			continue
 		}
 		if cardColor == -1 {

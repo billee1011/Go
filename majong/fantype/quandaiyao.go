@@ -52,7 +52,7 @@ Next:
 
 // isYaoJiuByCard 判断是否是幺九(1,9,字)
 func isYaoJiuByCard(card *majongpb.Card) bool {
-	if !IsNotFlowerCard(card) {
+	if IsFlowerCard(card) {
 		//又不是1和9的序数牌
 		if card.GetPoint() > 1 && card.GetPoint() < 9 {
 			return false

@@ -14,11 +14,11 @@ func checkDaQiXing(tc *typeCalculator) bool {
 		return false
 	}
 	for _, card := range handCards {
-		if !IsNotFlowerCard(card) {
+		if IsFlowerCard(card) {
 			return false
 		}
 	}
-	if !IsNotFlowerCard(huCard.GetCard()) {
+	if IsFlowerCard(huCard.GetCard()) {
 		return false
 	}
 	return true

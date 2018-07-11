@@ -13,7 +13,7 @@ func checkJiuLianBaoDeng(tc *typeCalculator) bool {
 	for _, card := range handHuCards {
 		currColor := card.GetColor()
 		// 牌不属于万也不属于条筒
-		if IsNotFlowerCard(card) {
+		if !IsFlowerCard(card) {
 			return false
 		}
 		if intColor != currColor {
