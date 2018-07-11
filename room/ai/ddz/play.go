@@ -26,44 +26,44 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 	ddzContext := params.DDZContext
 
 	// 当前玩家
-	var curPlayer *ddz.Player = nil
+	var curPlayer *ddz.Player
 	for _, player := range ddzContext.GetPlayers() {
 		if player.GetPalyerId() == params.PlayerID {
 			curPlayer = player
 		}
 	}
 
+	// 找不到玩家
 	if curPlayer == nil {
 		logEntry.Errorf("找不到玩家%d", params.PlayerID)
 		return result, fmt.Errorf("找不到玩家%d", params.PlayerID)
 	}
 
-	// 该自己打牌
-	if ddzContext.GetCurrentPlayerId() == curPlayer.PalyerId {
-
-		// 没有牌型时说明是主动打牌
-		if ddzContext.GetCurCardType() == ddz.CardType_CT_NONE {
-
-			// 主动产生
-			if event := playAI.getActivePlayCardEvent(ddzContext, curPlayer); event != nil {
-				result.Events = append(result.Events, *event)
-			}
-		} else {
-			// 被动产生
-			if event := playAI.getPassivePlayCardEvent(ddzContext, curPlayer); event != nil {
-				result.Events = append(result.Events, *event)
-			}
-		}
-
-	} else {
+	// 不该自己打牌
+	if ddzContext.GetCurrentPlayerId() != curPlayer.GetPalyerId() {
+		logEntry.Errorf("此时不应该调用玩家%d的出牌AI", params.PlayerID)
 		return result, fmt.Errorf("此时不应该调用玩家%d的出牌AI", params.PlayerID)
+	}
+
+	// 没有牌型时说明是主动打牌
+	if ddzContext.GetCurCardType() == ddz.CardType_CT_NONE {
+
+		// 主动产生
+		if event := playAI.getActivePlayCardEvent(ddzContext, curPlayer); event != nil {
+			result.Events = append(result.Events, *event)
+		}
+	} else {
+		// 被动产生
+		if event := playAI.getPassivePlayCardEvent(ddzContext, curPlayer); event != nil {
+			result.Events = append(result.Events, *event)
+		}
 	}
 
 	return
 }
 
-// Play 生成出牌请求事件(主动出牌)
-func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
+// Play 生成出牌请求事件(被动出牌)
+func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
 	// 最终打出去的牌
 	resultCards := []uint32{}
 
@@ -116,7 +116,18 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 	case ddz.CardType_CT_TRIPLES: // 飞机
 		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
 		break
-
+	case ddz.CardType_CT_3SAND1S: // 飞机带翅膀1，例：JJJQQQKKK + 856
+		bSuc, sendPukes = GetMinBigger3sAnd1s(handPokes, curOutPokes)
+		break
+	case ddz.CardType_CT_3SAND2S: // 飞机带翅膀2，例：JJJQQQKKK + 885566
+		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
+		break
+	case ddz.CardType_CT_4SAND1S: // 四带两个单张
+		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
+		break
+	case ddz.CardType_CT_4SAND2S: // 四带两个对子
+		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
+		break
 	case ddz.CardType_CT_BOMB: // 炸弹
 		bSuc, sendPukes = GetMinBiggerBoom(handPokes, curOutPokes)
 		break
@@ -180,8 +191,8 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 	return &event
 }
 
-// Play 生成出牌请求事件(被动出牌)
-func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
+// Play 生成出牌请求事件(主动出牌)
+func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
 
 	// 玩家手中的牌
 	handCards := player.GetHandCards()
@@ -219,7 +230,9 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 // GetPokeCount 统计各个牌的个数
 // @inparam 	pokes ： 需统计的牌
 // @outparam	map[uint32]uint32 :	key:牌的无花色权重，value:牌的个数
-func GetPokeCount(pokes []Poker) (counts map[uint32]uint32) {
+func GetPokeCount(pokes []Poker) map[uint32]uint32 {
+
+	counts := make(map[uint32]uint32)
 
 	for _, poke := range pokes {
 		pointWeight := poke.PointWeight
@@ -233,7 +246,7 @@ func GetPokeCount(pokes []Poker) (counts map[uint32]uint32) {
 		}
 	}
 
-	return
+	return counts
 }
 
 // GetBoom 若有炸弹，返回炸弹;没有则返回false
@@ -861,6 +874,97 @@ func GetMinBigger3And2(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "play.go:GetMinBiggerTriples",
+		"allPokes":  allPokes,
+		"speciPoke": speciPoke,
+	})
+
+	lenSpiciPoke := len(speciPoke)
+
+	// 参数检测
+	if len(allPokes) == 0 || lenSpiciPoke < 6 || lenSpiciPoke%3 != 0 {
+		logEntry.Errorln("参数错误1")
+		return false, nil
+	}
+
+	// 飞机检测
+	for i := 0; i < lenSpiciPoke; i += 3 {
+		if speciPoke[i].PointWeight != speciPoke[i+1].PointWeight ||
+			speciPoke[i].PointWeight != speciPoke[i+2].PointWeight {
+			logEntry.Errorln("参数错误2")
+			return false, nil
+		}
+	}
+
+	// 先排序，从小到大
+	DdzPokerSort(allPokes)
+
+	//Map<无花色权重点数, 牌的个数>
+	counts := GetPokeCount(allPokes)
+
+	// A的无花色权重
+	pointWeightA := 14
+
+	// 符合条件的最小飞机的起点牌的无花色权重
+	var resultStartPokePoint uint32 = 0
+
+	// 办法：若333444555的飞机，则从666777888开始判断，一直判断到QQQKKKAAA
+	for startPokePoint := speciPoke[lenSpiciPoke-1].PointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpiciPoke/3)+1); startPokePoint++ {
+
+		// 飞机的开始牌>=3
+		count1, _ := counts[startPokePoint]
+		if count1 >= 3 {
+
+			// 后面的每张牌都>=3
+			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpiciPoke)+startPokePoint-2); secondPokePoint++ {
+				count2, _ := counts[secondPokePoint]
+
+				// 牌数不足则跳出
+				if count2 < 3 {
+					break
+				}
+			}
+
+			// 全部检测通过，说明存在最小连对了，且startPokePoint就是起点
+			resultStartPokePoint = startPokePoint
+		}
+	}
+
+	// 没找到就返回吧
+	if resultStartPokePoint == 0 {
+		return false, nil
+	}
+
+	resultPoke := []Poker{}
+
+	// 已经排序了，就从低往高遍历，找到需要的牌
+	pushCount := 0
+	for i := 0; i < len(allPokes); i++ {
+		if allPokes[i].PointWeight == resultStartPokePoint {
+			resultPoke = append(resultPoke, allPokes[i])
+			pushCount++
+
+			// 压入两张才下一个
+			if pushCount == 2 {
+				// 这样下次压入的就是下一张牌了
+				resultStartPokePoint++
+			}
+
+			// 牌数压够了，就返回吧
+			if len(resultPoke) == len(speciPoke) {
+				return true, resultPoke
+			}
+		}
+	}
+
+	return false, nil
+}
+
+// GetMinBigger3sAnd1s 从allPokes中获取比指定飞机带翅膀speciPoke大的最小的飞机带翅膀
+// 例如：887777666554 中找到比333444大的牌，应该返回666777;
+// 例如：998887766554 中找到比333444大的牌，应该返回空;
+func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "play.go:GetMinBigger3sAnd1s",
 		"allPokes":  allPokes,
 		"speciPoke": speciPoke,
 	})
