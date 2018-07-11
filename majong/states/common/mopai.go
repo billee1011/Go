@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
@@ -37,7 +37,7 @@ func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, ba
 		ntf.Player = &context.MopaiPlayer
 		ntf.Back = proto.Bool(back)
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_MOPAI_NTF),
+			MsgID: int(msgId.MsgID_ROOM_MOPAI_NTF),
 			Msg:   ntf,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)

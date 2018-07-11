@@ -19,7 +19,7 @@ func checkDuanYao(tc *typeCalculator) bool {
 		checkCards = append(checkCards, pengCard.Card)
 	}
 	for _, chiCard := range chiCards {
-		checkCards = append(checkCards, chiCard.Card)
+		checkCards = append(checkCards, chiCard.OprCard)
 	}
 	for _, handCard := range handCards {
 		checkCards = append(checkCards, handCard)
@@ -30,7 +30,7 @@ func checkDuanYao(tc *typeCalculator) bool {
 		if card.Point == 1 || card.Point == 9 {
 			return false
 		}
-		if IsNotFlowerCard(card) {
+		if !IsFlowerCard(card) {
 			return false
 
 		}

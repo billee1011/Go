@@ -1,7 +1,7 @@
 package tingtest
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -35,7 +35,7 @@ func Test_SCXZ_Ting_times(t *testing.T) {
 	assert.NotNil(t, deskData)
 	//1w=8 9w=8 其他4
 	zjDeskPlayer := utils.GetDeskPlayerBySeat(deskData.BankerSeat, deskData)
-	zixunExpectors := zjDeskPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	zixunExpectors := zjDeskPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	zixunNtf := room.RoomZixunNtf{}
 	zixunExpectors.Recv(2*time.Second, &zixunNtf)
 	assert.Equal(t, 4, len(zixunNtf.GetCanTingCardInfo()))
@@ -78,7 +78,7 @@ func Test_SCXZ_ChuPaiwenxun_Actions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
 	zjDeskPlayer := utils.GetDeskPlayerBySeat(deskData.BankerSeat, deskData)
-	zixunExpectors := zjDeskPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	zixunExpectors := zjDeskPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	zixunNtf := room.RoomZixunNtf{}
 	zixunExpectors.Recv(2*time.Second, &zixunNtf)
 	utils.SendHuReq(deskData, deskData.BankerSeat)

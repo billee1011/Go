@@ -142,7 +142,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 			PlayerCardCounts: playerCardCount,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_FAPAI_NTF),
+			MsgID: int(msgId.MsgID_ROOM_FAPAI_NTF),
 			Msg:   msg,
 		})
 	}

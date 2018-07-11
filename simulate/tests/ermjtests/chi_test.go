@@ -1,7 +1,7 @@
 package ermjtest
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -35,7 +35,7 @@ func TestChi(t *testing.T) {
 	utils.CheckChuPaiNotifyWithSeats(t, deskData, uint32(14), 0, []int{0, 1})
 	//出牌问询检查
 	chiPlayer := utils.GetDeskPlayerBySeat(1, deskData)
-	expector, _ := chiPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := chiPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, []uint32{13, 14, 15, 14, 15, 16}, ntf.GetChiInfo().GetCards())

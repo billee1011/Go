@@ -11,18 +11,19 @@ func checkHunYaoJiu(tc *typeCalculator) bool {
 	}
 	// 幺九只能是刻子和将
 	for _, combine := range tc.combines {
-		if len(combine.shuns) == 0 {
-			jiang := combine.jiang
-			if !isYaoJiuByInt(jiang) {
+		if len(combine.shuns) != 0 {
+			continue
+		}
+		jiang := combine.jiang
+		if !isYaoJiuByInt(jiang) {
+			return false
+		}
+		for _, ke := range combine.kes {
+			if !isYaoJiuByInt(ke) {
 				return false
 			}
-			for _, ke := range combine.kes {
-				if !isYaoJiuByInt(ke) {
-					return false
-				}
-			}
-			return true
 		}
+		return true
 	}
 	return false
 }

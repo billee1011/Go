@@ -11,6 +11,8 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+var cardAll = []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47}
+
 //GetPlayerByID 根据玩家id获取玩家
 func GetPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 	for _, player := range players {
@@ -408,7 +410,6 @@ func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]Card, erro
 	// 推倒胡
 	result = FastCheckTingV2(cardsCard, laizi)
 	// 七对
-	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
 	return MergeAndNoRepeat(result, qiCards), nil
 }
@@ -498,8 +499,6 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[C
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡查胡，打那张牌可以胡那些牌
 	result = FastCheckTingInfoV2(cardsCard, laizi)
-	// 1-9所有牌
-	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	// 七对查胡，打那张牌可以胡那些牌
 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
 

@@ -2,18 +2,18 @@ package fantype
 
 //checkJiuLianBaoDeng 检查九莲宝灯,同种颜色的特定牌型 1112345678999 胡同花色的任意一张牌
 func checkJiuLianBaoDeng(tc *typeCalculator) bool {
-	handCards := huJoinHandCard(tc.getHandCards(), tc.getHuCard())
+	handHuCards := huJoinHandCard(tc.getHandCards(), tc.getHuCard())
 	// 牌必须都在手上
-	if len(handCards) >= 13 && tc.getHuCard() != nil {
+	if len(handHuCards) != 14 {
 		return false
 	}
 	cardMap := make(map[int32]int)
 	// 不能有字牌,只能有一种颜色
-	intColor := handCards[0].GetColor() //初始颜色
-	for _, card := range handCards {
+	intColor := handHuCards[0].GetColor() //初始颜色
+	for _, card := range handHuCards {
 		currColor := card.GetColor()
 		// 牌不属于万也不属于条筒
-		if IsNotFlowerCard(card) {
+		if !IsFlowerCard(card) {
 			return false
 		}
 		if intColor != currColor {

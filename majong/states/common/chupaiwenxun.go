@@ -92,7 +92,7 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 			"actions":     actions,
 		}).Debugln("发送问询通知")
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
+			MsgID: int(msgId.MsgID_ROOM_CHUPAIWENXUN_NTF),
 			Msg:   &ntf,
 		})
 	}

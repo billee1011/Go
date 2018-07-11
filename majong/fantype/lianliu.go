@@ -11,7 +11,7 @@ func checkLianLiu(tc *typeCalculator) bool {
 	colorPointMap := make(map[majongpb.CardColor][]int32)
 	for _, card := range cardAll {
 		// 不字牌
-		if !IsNotFlowerCard(card) {
+		if IsFlowerCard(card) {
 			color := card.GetColor()
 			colorPointMap[color] = append(colorPointMap[color], card.GetPoint())
 		}
@@ -21,14 +21,7 @@ func checkLianLiu(tc *typeCalculator) bool {
 		newPoints := sortRemoveDuplicate(points)
 		if l := len(newPoints); l >= 6 {
 			// 从最大值递减下去，是否连续6张
-			count := 1
-			for i := l - 1; i > 0; i-- {
-				if newPoints[i]-newPoints[i-1] == 1 {
-					count++
-				} else {
-					count = 1
-				}
-			}
+			count := diff(newPoints, 1)
 			if count >= 6 {
 				return true
 			}

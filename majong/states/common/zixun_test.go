@@ -118,7 +118,7 @@ func TestZixunState_bugang(t *testing.T) {
 	// 	},
 	// }
 	// toClientMessage := interfaces.ToClientMessage{
-	// 	MsgID: int(msgid.MsgID_room_bugang_ntf),
+	// 	MsgID: int(msgId.MsgID_room_bugang_ntf),
 	// 	Msg:   ntf,
 	// }
 	// flow.EXPECT().PushMessages(playersID, toClientMessage).DoAndReturn(
@@ -184,7 +184,7 @@ func TestZixunState_chupai(t *testing.T) {
 	// 	},
 	// }
 	// toClientMessage := interfaces.ToClientMessage{
-	// 	MsgID: int(msgid.MsgID_room_chupai_ntf),
+	// 	MsgID: int(msgId.MsgID_room_chupai_ntf),
 	// 	Msg:   ntf,
 	// }
 	// flow.EXPECT().PushMessages(playersID, toClientMessage).DoAndReturn(

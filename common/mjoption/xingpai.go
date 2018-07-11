@@ -23,6 +23,7 @@ type XingPaiOption struct {
 	PlayerNum            int            `yaml:"player_num"`              //玩家人数
 	FapaiType            FapaiType      `yaml:"fapai_type"`              //发牌方式
 	TianhuCardType       TianhuCardType `yaml:"tianhu_card_type"`        //天胡胡哪张牌
+	EnableGangSettle     bool           `yaml:"enable_gang_settle"`      //是否需要杠结算
 	// Zhuang        int            `yaml:"zhuang"`         //选庄的方式
 }
 

@@ -1,7 +1,7 @@
 package hutests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -42,7 +42,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	// 根据座号获取自摸玩家
 	zimoPlayer := utils.GetDeskPlayerBySeat(zimoSeat, deskData)
 	// 1 号玩家期望收到自询通知
-	zixunexpector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	zixunexpector, _ := zimoPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	// 1秒内接收到自询通知，并赋值到ntf
 	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))

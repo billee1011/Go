@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
@@ -55,10 +55,10 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 		GameFlow:         proto.Bool(gameflow),
 	}
 	// 广播牌局结束消息
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)
 	// 日志
 	logrus.WithFields(logrus.Fields{
-		"msgID":           msgid.MsgID_ROOM_GAMEOVER_NTF,
+		"msgID":           msgId.MsgID_ROOM_GAMEOVER_NTF,
 		"roomGameOverNtf": roomGameOverNtf,
 	}).Info("-----牌局结束-推倒牌墙")
 }
@@ -162,17 +162,22 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 				return nil, err
 			}
 			for _, card := range tingCards {
-				pbCard, _ := utils.IntToCard(int32(card))
-				// 获取最大番型*根数
-				cardParams := interfaces.CardCalcParams{
-					HandCard: players[i].HandCards,
-					PengCard: utils.TransPengCard(players[i].PengCards),
-					GangCard: players[i].GangCards,
-					HuCard:   pbCard,
-					GameID:   int(context.GetGameId()),
+				hCard, _ := utils.IntToCard(int32(card))
+				//获取最大番型 * 根数
+				cardParams := interfaces.FantypeParams{
+					PlayerID:  players[i].GetPalyerId(),
+					MjContext: context,
+					HandCard:  players[i].HandCards,
+					PengCard:  utils.TransPengCard(players[i].PengCards),
+					GangCard:  players[i].GangCards,
+					HuCard: &majongpb.HuCard{
+						Card: hCard,
+						Type: majongpb.HuType_hu_dianpao,
+					},
+					GameID: int(context.GetGameId()),
 				}
-				calculator := global.GetCardTypeCalculator()
-				total, _ := facade.CalculateCardValue(calculator, cardParams)
+				calculator := global.GetFanTypeCalculator()
+				total, _, _ := facade.CalculateCardValue(calculator, context, cardParams)
 				if maxMulti < int64(total) {
 					maxMulti = int64(total)
 				}

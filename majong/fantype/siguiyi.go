@@ -18,7 +18,7 @@ func checkSiGuiYi(tc *typeCalculator) bool {
 		cardCount[cardValue] = cardCount[cardValue] + 3
 	}
 	for _, chiCard := range chiCards {
-		cardValue = utils.ServerCard2Number(chiCard.Card)
+		cardValue = utils.ServerCard2Number(chiCard.GetOprCard())
 		cardCount[cardValue] = cardCount[cardValue] + 1
 		cardCount[cardValue+1] = cardCount[cardValue+1] + 1
 		cardCount[cardValue+2] = cardCount[cardValue+2] + 13

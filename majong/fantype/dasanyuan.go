@@ -24,5 +24,5 @@ func checkDaSanYuan(tc *typeCalculator) bool {
 			return true
 		}
 	}
-	return true
+	return false
 }

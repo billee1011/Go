@@ -139,13 +139,14 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 }
 
 // ServerFanType2ClientHuType fanType获取hutype
-func ServerFanType2ClientHuType(gameID int, fanTypes []int) int32 {
-	cardTypeOption := mjoption.GetCardTypeOption(gameID)
+func ServerFanType2ClientHuType(cardTypeOptionID int, fanTypes []int) int32 {
+	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
+	if len(cardTypeOption.FanType2HuType) == 0 {
+		return -1
+	}
 	for _, fanType := range fanTypes {
-		if cardTypeOption.FanType2HuType != nil {
-			if _, ok := cardTypeOption.FanType2HuType[fanType]; !ok {
-				return int32(cardTypeOption.FanType2HuType[fanType].ID)
-			}
+		if _, ok := cardTypeOption.FanType2HuType[fanType]; ok {
+			return int32(cardTypeOption.FanType2HuType[fanType].ID)
 		}
 	}
 	return -1

@@ -82,11 +82,11 @@ func gangToCards(gangs []*majongpb.GangCard) []*majongpb.Card {
 // getPlayerCardAll 获取玩家所有牌,手，胡,碰，杠，吃牌
 func getPlayerCardAll(tc *typeCalculator) []*majongpb.Card {
 	// 所有牌
-	cardAll := make([]*majongpb.Card, 0, 13)
-	// 胡牌
-	cardAll = append(cardAll, tc.getHuCard().GetCard())
+	cardAll := make([]*majongpb.Card, 0, len(tc.getHandCards()))
 	// 手
 	cardAll = append(cardAll, tc.getHandCards()...)
+	// 胡牌
+	cardAll = append(cardAll, tc.getHuCard().GetCard())
 	// 吃
 	cardAll = append(cardAll, chiToCards(tc.getChiCards())...)
 	// 碰
@@ -148,11 +148,10 @@ func intsToCards(cardInts []int) []*majongpb.Card {
 	return newCard
 }
 
-//IsNotFlowerCard 判断是否不是花牌（万，条，筒）
-func IsNotFlowerCard(card *majongpb.Card) bool {
+//IsFlowerCard 判断是否是花牌（万，条，筒）
+func IsFlowerCard(card *majongpb.Card) bool {
 	currColor := card.GetColor()
-	// 万条筒都不是,即是字牌
-	return currColor != majongpb.CardColor_ColorWan && currColor != majongpb.CardColor_ColorTiao && currColor != majongpb.CardColor_ColorTong
+	return currColor == majongpb.CardColor_ColorWan || currColor == majongpb.CardColor_ColorTiao || currColor == majongpb.CardColor_ColorTong
 }
 
 //getPlayerMaxAnKeNum 获取玩家最大暗刻子数

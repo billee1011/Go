@@ -9,6 +9,6 @@ import (
 func SendQuitReq(deskData *DeskData, seat int) error {
 	player := GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_DESK_QUIT_REQ), &room.RoomDeskQuitReq{})
+	_, err := client.SendPackage(CreateMsgHead(msgId.MsgID_ROOM_DESK_QUIT_REQ), &room.RoomDeskQuitReq{})
 	return err
 }

@@ -1,7 +1,7 @@
 package quittests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -71,7 +71,7 @@ func TestHuQuitRecover(t *testing.T) {
 	assert.Nil(t, utils.SendRecoverGameReq(0, deskData))
 
 	// step 5
-	expector, _ := p.Expectors[msgid.MsgID_ROOM_RESUME_GAME_RSP]
+	expector, _ := p.Expectors[msgId.MsgID_ROOM_RESUME_GAME_RSP]
 	ntf3 := &room.RoomResumeGameRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf3))
 	assert.Equal(t, room.RoomError_SUCCESS, ntf3.GetResumeRes())

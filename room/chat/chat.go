@@ -1,7 +1,7 @@
 package chat
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
@@ -80,6 +80,6 @@ func broadChatNotify(playerID uint64, ntf *room.RoomDeskChatNtf) error {
 		return err
 	}
 	// 广播聊天消息([]uint64{}为所有玩家，true为退出玩家不发送聊天消息)
-	desk.BroadcastMessage([]uint64{}, msgid.MsgID_ROOM_CHAT_NTF, msgBody, true)
+	desk.BroadcastMessage([]uint64{}, msgId.MsgID_ROOM_CHAT_NTF, msgBody, true)
 	return nil
 }

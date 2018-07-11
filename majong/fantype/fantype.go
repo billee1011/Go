@@ -1,7 +1,6 @@
 package fantype
 
 import (
-	"fmt"
 	"math"
 	"steve/common/mjoption"
 	"steve/majong/utils"
@@ -110,6 +109,7 @@ func (tc *typeCalculator) calclate() (fantypes []int, gengcount int, huacount in
 			continue
 		}
 		match := tc.callCheckFunc(fantype.FuncID)
+		// fmt.Printf("fun:%v -- %v \n", fantype.FuncID, match)
 		if match {
 			fantypes = append(fantypes, ID)
 			for _, m := range fantype.Mutex {
@@ -146,7 +146,6 @@ func (tc *typeCalculator) callCheckFunc(funcID int) bool {
 		tc.cache[funcID] = false
 		return false
 	}
-	fmt.Println(f(tc))
 	tc.cache[funcID] = f(tc)
 	return tc.cache[funcID]
 }

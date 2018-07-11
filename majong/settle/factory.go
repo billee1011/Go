@@ -5,7 +5,6 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/settle/majong"
-	"steve/majong/settle/null"
 )
 
 type gameSettlerFactory struct {
@@ -15,7 +14,7 @@ type gameSettlerFactory struct {
 func (f *gameSettlerFactory) CreateSettlerFactory(gameID int) interfaces.SettlerFactory {
 	factory, exist := f.factories[gameID]
 	if !exist {
-		return &null.SettlerFactory{}
+		return &majong.SettlerFactory{}
 	}
 	return factory
 }

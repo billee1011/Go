@@ -3,7 +3,7 @@ package connect
 import (
 	"errors"
 	"steve/base/socket"
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/simulate/interfaces"
 	"steve/structs/proto/base"
 	"sync/atomic"
@@ -193,7 +193,7 @@ func (c *client) Request(header interfaces.SendHead, body proto.Message, timeOut
 	}
 }
 
-func (c *client) ExpectMessage(msgID msgid.MsgID) (interfaces.MessageExpector, error) {
+func (c *client) ExpectMessage(msgID msgId.MsgID) (interfaces.MessageExpector, error) {
 	me := messageExpector{
 		closer: func() {
 			c.expectInfos.Delete(msgID)
@@ -307,7 +307,7 @@ func (c *client) recvLoop() {
 
 func (c *client) checkExpects(header *steve_proto_base.Header, bodyData []byte) {
 	msgID := header.GetMsgId()
-	iExpector, ok := c.expectInfos.Load(msgid.MsgID(msgID))
+	iExpector, ok := c.expectInfos.Load(msgId.MsgID(msgID))
 	if iExpector == nil || !ok {
 		return
 	}

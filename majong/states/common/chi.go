@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -112,7 +112,7 @@ func (s *ChiState) addChiCard(card *majongpb.Card, oprCard *majongpb.Card, playe
 }
 
 func (s *ChiState) notifyChi(flow interfaces.MajongFlow, cards []*majongpb.Card, chiCard *majongpb.Card, from uint64, to uint64) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHI_NTF, &room.RoomChiNtf{
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_CHI_NTF, &room.RoomChiNtf{
 		Cards:        utils.ServerCards2Uint32(cards),
 		ChiCard:      proto.Uint32(utils.ServerCard2Uint32(chiCard)),
 		FromPlayerId: proto.Uint64(from),

@@ -1,7 +1,7 @@
 package tests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/config"
 	"steve/simulate/connect"
@@ -26,7 +26,7 @@ func Test_Fapai(t *testing.T) {
 		assert.NotNil(t, player)
 
 		// 创建消息期望： 期望收到发牌通知消息
-		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_FAPAI_NTF)
+		expector, err := client.ExpectMessage(msgId.MsgID_ROOM_FAPAI_NTF)
 		assert.Nil(t, err)
 		fapaiNtfExpectors[i] = expector
 

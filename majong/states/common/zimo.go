@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/majong/global"
@@ -87,7 +87,7 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) ma
 	}
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
 	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
-		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
 			return majongpb.HuType_hu_tianhu
 		}
 		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
@@ -107,7 +107,7 @@ func (s *ZimoState) notifyHu(card *majongpb.Card, huType majongpb.HuType, player
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		HuType:       rhuType.Enum(),
 	}
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_HU_NTF, &body)
 }
 
 // getZimoInfo 获取自摸信息

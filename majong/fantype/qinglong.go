@@ -11,7 +11,7 @@ func checkQingLong(tc *typeCalculator) bool {
 	// 颜色对应牌点数映射
 	colorPointMap := make(map[majongpb.CardColor][]int32)
 	for _, card := range cardAll {
-		if !IsNotFlowerCard(card) {
+		if IsFlowerCard(card) {
 			colorPointMap[card.GetColor()] = append(colorPointMap[card.GetColor()], card.GetPoint())
 		}
 	}
@@ -23,5 +23,3 @@ func checkQingLong(tc *typeCalculator) bool {
 	}
 	return false
 }
-
-

@@ -32,8 +32,9 @@ func checkSiLianKe(tc *typeCalculator) bool {
 				return false
 			}
 		}
+		return true
 	}
-	return true
+	return false
 }
 
 func getPengCardsDetails(pengCards []*majongpb.PengCard) (colorCount map[int]int, cardCount map[int]int, minValue int) {

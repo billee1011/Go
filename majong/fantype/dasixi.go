@@ -34,5 +34,5 @@ func getCardsToFengCardMap(tc *typeCalculator) map[uint32]int {
 	currCard = append(currCard, pengToCards(tc.getPengCards())...)
 	// 手，胡牌
 	currCard = append(currCard, huJoinHandCard(tc.getHandCards(), tc.getHuCard())...)
-	return getAssignCardMap(currCard, gutils.Zhong, gutils.Bai)
+	return getAssignCardMap(currCard, gutils.Dong, gutils.Bei)
 }

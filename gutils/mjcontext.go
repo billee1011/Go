@@ -128,7 +128,7 @@ func IsPlayerContinue(playerState majongpb.XingPaiState, mjContext *majongpb.Maj
 // GetPlayerSeat 获取玩家所在的座位
 func GetPlayerSeat(renNum, playerIndex int) int {
 	indexs := map[int][]int{
-		2: []int{Dong, Nan},          // 东西
+		2: []int{Dong, Xi},           // 东西
 		3: []int{Dong, Nan, Xi},      // 东南西
 		4: []int{Dong, Nan, Xi, Bei}, // 东南西北
 	}[renNum]

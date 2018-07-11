@@ -56,7 +56,6 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 			return s.gang(flow, message)
 
 		}
-		//TODO:需要加一个对补花请求的处理
 	default:
 		{
 			return majongpb.StateID_state_zixun, nil
@@ -108,6 +107,7 @@ func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequ
 //zimo 决策自摸
 func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (majongpb.StateID, error) {
 	can, err := s.canZiMo(flow, message)
+
 	if err != nil {
 		return majongpb.StateID_state_zixun, err
 	}
@@ -267,7 +267,8 @@ func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
 	mjContext := flow.GetMajongContext()
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
 	handCard := player.GetHandCards()
-	if gutils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+	if xpOption.EnableDingque && gutils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
 		return false
 	}
 	l := len(handCard)
@@ -289,13 +290,16 @@ func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.HuReq
 func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	ctx := flow.GetMajongContext()
 	card := ctx.GetGangCard()
-	cardI, _ := utils.CardToInt(*card)
+	cardI := utils.ServerCard2Uint32(card)
+	xpOption := mjoption.GetXingpaiOption(int(ctx.GetXingpaiOptionId()))
 	var hasQGanghu bool
 	for _, player := range utils.GetCanXpPlayers(ctx.GetPlayers(), ctx) {
 		player.PossibleActions = []majongpb.Action{}
-		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
-			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
-			result := utils.CheckHu(player.HandCards, uint32(*cardI), false)
+		if player.GetPalyerId() != ctx.GetLastGangPlayer() {
+			if xpOption.EnableDingque && gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
+				continue
+			}
+			result := utils.CheckHu(player.HandCards, cardI, false)
 			if result.Can {
 				hasQGanghu = true
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
@@ -319,12 +323,12 @@ func (s *ZiXunState) canQi(canAngang bool, canBugang bool, canZimo bool, hasHu b
 func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	context := flow.GetMajongContext()
 	zixunNtf := &room.RoomZixunNtf{}
-	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
+	isNomarlZixun := context.GetZixunType() != majongpb.ZixunType_ZXT_PENG && context.GetZixunType() != majongpb.ZixunType_ZXT_CHI
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
-	player.Record = &majongpb.Record{}
-	record := player.GetRecord()
-	if !isPengZixun {
+	player.ZixunRecord = &majongpb.ZiXunRecord{}
+	record := player.GetZixunRecord()
+	if isNomarlZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
 		canZimo := s.checkZiMo(flow)
@@ -383,7 +387,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
 	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
+		MsgID: int(msgId.MsgID_ROOM_ZIXUN_NTF),
 		Msg:   zixunNtf,
 	}
 	flow.PushMessages(playerIDs, toClient)
@@ -398,7 +402,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
-func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
+func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
 	calcHandCard, _ := utils.RemoveCards(handCards, huCard, 1)
 	calcHuCard := &majongpb.HuCard{
 		Card:      huCard,
@@ -414,11 +418,11 @@ func (s *ZiXunState) checkFanType(record *majongpb.Record, context *majongpb.Maj
 		HfanTypes = append(HfanTypes, int64(fanType))
 	}
 	record.HuFanType.FanTypes = HfanTypes
-	//record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetGameId()), fanTypes))
+	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
 
 }
 
-func (s *ZiXunState) recordZixunMsg(record *majongpb.Record, ntf *room.RoomZixunNtf) {
+func (s *ZiXunState) recordZixunMsg(record *majongpb.ZiXunRecord, ntf *room.RoomZixunNtf) {
 	record.EnableAngangCards = ntf.GetEnableAngangCards()
 	record.EnableBugangCards = ntf.GetEnableBugangCards()
 	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
@@ -431,7 +435,7 @@ func (s *ZiXunState) recordZixunMsg(record *majongpb.Record, ntf *room.RoomZixun
 func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) (room.HuType, majongpb.HuType) {
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
 	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
-		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
 			return room.HuType_HT_TIANHU, majongpb.HuType_hu_tianhu
 		}
 		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
@@ -528,22 +532,26 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
-		for tt := range tingInfo {
-			huCard, _ := utils.IntToCard(int32(tt))
-			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
-				HandCard: newHand,
-				PengCard: s.getPengCards(player.GetPengCards()),
-				GangCard: player.GetGangCards(),
-				HuCard:   huCard,
-				GameID:   int(context.GetGameId()),
+		for _, tt := range tingInfo {
+			hCard, _ := utils.IntToCard(int32(tt))
+			times, _, _ := facade.CalculateCardValue(global.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+				PlayerID:  player.GetPalyerId(),
+				MjContext: context,
+				HandCard:  newHand,
+				PengCard:  s.getPengCards(player.GetPengCards()),
+				GangCard:  player.GetGangCards(),
+				HuCard: &majongpb.HuCard{
+					Card: hCard,
+					Type: majongpb.HuType_hu_dianpao,
+				},
 			})
 			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
 				TingCard: proto.Uint32(uint32(tt)),
-				Times:    proto.Uint32(times),
+				Times:    proto.Uint32(uint32(times)),
 			})
 			recordTingCardInfo = append(recordTingCardInfo, &majongpb.TingCardInfo{
 				TingCard: uint32(tt),
-				Times:    times,
+				Times:    uint32(times),
 			})
 		}
 		canTingInfos = append(canTingInfos, &room.CanTingCardInfo{
@@ -556,7 +564,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		})
 	}
 	zixunNtf.CanTingCardInfo = canTingInfos
-	player.Record.CanTingCardInfo = recordCanTingInfos
+	player.GetZixunRecord().CanTingCardInfo = recordCanTingInfos
 }
 
 // checkZiMo 查自摸
@@ -665,21 +673,21 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 	for _, touchCard := range activePlayer.HandCards {
 		for _, pengCard := range pengCards {
 			if *pengCard.Card == *touchCard {
-				removeCard, _ := utils.CardToInt(*touchCard)
+				removeCard := utils.ServerCard2Uint32(touchCard)
 				if hasHu {
 					//创建副本，移除相应的杠牌进行查胡
 					cardsI, _ := utils.CardsToInt(activePlayer.HandCards)
 					newcardsI := make([]int32, 0, len(cardsI))
 					newcardsI = append(newcardsI, cardsI...)
-					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, *removeCard)
+					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, int32(removeCard))
 					utilCards := utils.IntToUtilCard(newcardsI)
 					laizi := make(map[utils.Card]bool)
 					huCards := utils.FastCheckTingV2(utilCards, laizi)
 					if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
-						enableBugangCards = append(enableBugangCards, uint32(*removeCard))
+						enableBugangCards = append(enableBugangCards, removeCard)
 					}
 				} else {
-					enableBugangCards = append(enableBugangCards, uint32(*removeCard))
+					enableBugangCards = append(enableBugangCards, removeCard)
 				}
 			}
 		}

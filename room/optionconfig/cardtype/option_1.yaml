@@ -149,6 +149,28 @@ enable_fan_types:
     mutex: []    # 不跟任何牌互斥
     method: 1    # 计算方式：相乘
     score: 2     # 番数 2
-    subgeng: 0   # 扣除的根数量
-    
-fanType2HuType:    
+    subgeng: 0   # 扣除的根数量   
+  81:  # 点炮
+    id: 81 # 点炮
+    func_id: 81  # 计算函数 ID : 81
+    mutex: []   # 不互斥
+    method: 0   # 计算方式：相加
+    score: 0    # 番数 0 
+ #番型对应的胡类型
+fan_type_2_hu_type:     
+  68: # 天胡
+    huType: 7
+  69: # 地胡
+    huType: 8  
+  79: # 海底捞月
+    huType: 4
+  77: # 杠上海底捞
+    huType: 5
+  76: # 杠上开花
+    huType: 3
+  75: # 自摸
+    huType: 6
+  80: # 抢杠胡
+    huType: 1
+  81: # 点炮
+    huType: 2

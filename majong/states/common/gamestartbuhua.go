@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -117,7 +117,7 @@ func (bh *GameStartBuhuaState) ntfFirstBuhua(flow interfaces.MajongFlow, buhuaPl
 			}
 		}
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_BUHUA_NTF),
+			MsgID: int(msgId.MsgID_ROOM_BUHUA_NTF),
 			Msg: &room.RoomBuHuaNtf{
 				BuhuaInfo: infos,
 			},
@@ -191,7 +191,7 @@ func (bh *GameStartBuhuaState) ntf(flow interfaces.MajongFlow, players []*majong
 			mjContext.WallCards = mjContext.WallCards[buCardNum:]
 		}
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_BUHUA_NTF),
+			MsgID: int(msgId.MsgID_ROOM_BUHUA_NTF),
 			Msg: &room.RoomBuHuaNtf{
 				BuhuaInfo: []*room.RoomBuHuaInfo{info},
 			},
