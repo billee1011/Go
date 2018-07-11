@@ -99,6 +99,9 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	})
 
 	lordPlayerId := uint64(0)
+	if context.GrabbedCount == 3 && context.TotalGrab == 1 { //只有一个人叫，其他两个人弃时，地主为叫地主的人
+		lordPlayerId = context.FirstGrabPlayerId
+	}
 	if context.GrabbedCount == 4 {
 		if grab { //叫地主玩家抢庄
 			lordPlayerId = playerId
@@ -139,6 +142,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		lordPlayer.HandCards = DDZSortDescend(lordPlayer.HandCards)
 		context.WallCards = []uint32{}
 		context.LordPlayerId = lordPlayerId
+		context.Duration = 0 //清除倒计时
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil
