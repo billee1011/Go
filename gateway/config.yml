@@ -16,6 +16,7 @@ lis_client_addr_inquire: 127.0.0.1
 redis_addr: 127.0.0.1:6379
 redis_passwd: 
 
+consul_addr: 127.0.0.1:8500
 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
