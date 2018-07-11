@@ -120,13 +120,13 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 		bSuc, sendPukes = GetMinBigger3sAnd1s(handPokes, curOutPokes)
 		break
 	case ddz.CardType_CT_3SAND2S: // 飞机带翅膀2，例：JJJQQQKKK + 885566
-		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
+		bSuc, sendPukes = GetMinBigger3sAnd2s(handPokes, curOutPokes)
 		break
 	case ddz.CardType_CT_4SAND1S: // 四带两个单张
-		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
+		bSuc, sendPukes = GetMinBigger4sAnd1s(handPokes, curOutPokes)
 		break
 	case ddz.CardType_CT_4SAND2S: // 四带两个对子
-		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
+		bSuc, sendPukes = GetMinBigger4sAnd2s(handPokes, curOutPokes)
 		break
 	case ddz.CardType_CT_BOMB: // 炸弹
 		bSuc, sendPukes = GetMinBiggerBoom(handPokes, curOutPokes)
@@ -959,9 +959,9 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	return false, nil
 }
 
-// GetMinBigger3sAnd1s 从allPokes中获取比指定飞机带翅膀speciPoke大的最小的飞机带翅膀
-// 例如：887777666554 中找到比333444大的牌，应该返回666777;
-// 例如：998887766554 中找到比333444大的牌，应该返回空;
+// GetMinBigger3sAnd1s 从allPokes中获取比指定飞机带单张speciPoke大的最小的飞机带单张
+// 例如：88777666554 中找到比33344468大的牌，应该返回66677745，其中666777为主体牌，48为带牌，带牌时可拆;
+// 例如：99888776664 中找到比33344468大的牌，应该返回空;
 func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "play.go:GetMinBigger3sAnd1s",
@@ -972,12 +972,12 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	lenSpiciPoke := len(speciPoke)
 
 	// 参数检测
-	if len(allPokes) == 0 || lenSpiciPoke < 6 || lenSpiciPoke%3 != 0 {
+	if (len(allPokes) == 0) || (lenSpiciPoke < 8) || (lenSpiciPoke%4 != 0) {
 		logEntry.Errorln("参数错误1")
 		return false, nil
 	}
 
-	// 飞机检测
+	// 飞机带翅膀检测
 	for i := 0; i < lenSpiciPoke; i += 3 {
 		if speciPoke[i].PointWeight != speciPoke[i+1].PointWeight ||
 			speciPoke[i].PointWeight != speciPoke[i+2].PointWeight {
@@ -1045,6 +1045,343 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 				return true, resultPoke
 			}
 		}
+	}
+
+	return false, nil
+}
+
+// GetMinBigger3sAnd2s 从allPokes中获取比指定飞机带对子speciPoke大的最小的飞机带对子
+// 例如：88777666554 中找到比33344468大的牌，应该返回66677745，其中666777为主体牌，48为带牌，带牌时可拆;
+// 例如：99888776664 中找到比33344468大的牌，应该返回空;
+func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "play.go:GetMinBigger3sAnd2s",
+		"allPokes":  allPokes,
+		"speciPoke": speciPoke,
+	})
+
+	lenSpiciPoke := len(speciPoke)
+
+	// 参数检测
+	if (len(allPokes) == 0) || (lenSpiciPoke < 8) || (lenSpiciPoke%4 != 0) {
+		logEntry.Errorln("参数错误1")
+		return false, nil
+	}
+
+	// 飞机带对子检测
+	for i := 0; i < lenSpiciPoke; i += 3 {
+		if speciPoke[i].PointWeight != speciPoke[i+1].PointWeight ||
+			speciPoke[i].PointWeight != speciPoke[i+2].PointWeight {
+			logEntry.Errorln("参数错误2")
+			return false, nil
+		}
+	}
+
+	// 先排序，从小到大
+	DdzPokerSort(allPokes)
+
+	//Map<无花色权重点数, 牌的个数>
+	counts := GetPokeCount(allPokes)
+
+	// A的无花色权重
+	pointWeightA := 14
+
+	// 符合条件的最小飞机的起点牌的无花色权重
+	var resultStartPokePoint uint32 = 0
+
+	// 办法：若333444555的飞机，则从666777888开始判断，一直判断到QQQKKKAAA
+	for startPokePoint := speciPoke[lenSpiciPoke-1].PointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpiciPoke/3)+1); startPokePoint++ {
+
+		// 飞机的开始牌>=3
+		count1, _ := counts[startPokePoint]
+		if count1 >= 3 {
+
+			// 后面的每张牌都>=3
+			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpiciPoke)+startPokePoint-2); secondPokePoint++ {
+				count2, _ := counts[secondPokePoint]
+
+				// 牌数不足则跳出
+				if count2 < 3 {
+					break
+				}
+			}
+
+			// 全部检测通过，说明存在最小连对了，且startPokePoint就是起点
+			resultStartPokePoint = startPokePoint
+		}
+	}
+
+	// 没找到就返回吧
+	if resultStartPokePoint == 0 {
+		return false, nil
+	}
+
+	resultPoke := []Poker{}
+
+	// 已经排序了，就从低往高遍历，找到需要的牌
+	pushCount := 0
+	for i := 0; i < len(allPokes); i++ {
+		if allPokes[i].PointWeight == resultStartPokePoint {
+			resultPoke = append(resultPoke, allPokes[i])
+			pushCount++
+
+			// 压入两张才下一个
+			if pushCount == 2 {
+				// 这样下次压入的就是下一张牌了
+				resultStartPokePoint++
+			}
+
+			// 牌数压够了，就返回吧
+			if len(resultPoke) == len(speciPoke) {
+				return true, resultPoke
+			}
+		}
+	}
+
+	return false, nil
+}
+
+// GetMinBigger4sAnd1s 从allPokes中获取比指定4带2单张speciPoke大的最小的4带2单张
+// 例如：87777666554 中找到比333378大的牌，应该返回777745，其中7777为主体牌，45为带牌，只比较主体牌，带牌时可拆，带的单牌需要和主题牌不同;
+// 例如：87776665544 中找到比333378大的牌，应该返回空;
+func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "play.go:GetMinBigger4sAnd1s",
+		"allPokes":  allPokes,
+		"speciPoke": speciPoke,
+	})
+
+	lenSpiciPoke := len(speciPoke)
+
+	// 参数检测
+	if (len(allPokes) == 0) || (lenSpiciPoke != 6) {
+		logEntry.Errorln("参数错误")
+		return false, nil
+	}
+
+	// 检测主体牌
+	sameCards := GetMaxSamePointCards(speciPoke)
+	if len(sameCards) != 4 {
+		logEntry.Errorln("参数错误-没有相同的4张牌")
+		return false, nil
+	}
+
+	// 剩下的牌
+	lastSpeciPoke := RemoveAll(speciPoke, sameCards)
+	if IsAllSamePoint(lastSpeciPoke) {
+		logEntry.Errorln("参数错误-带的牌不是2张单牌")
+		return false, nil
+	}
+
+	// 先排序，从小到大
+	DdzPokerSort(allPokes)
+
+	//Map<无花色权重点数, 牌的个数>
+	counts := GetPokeCount(allPokes)
+
+	// 找到的符合条件的牌的无花色权重
+	var findPointWeight uint32 = 0
+
+	// 由于前面已经排序，所以找到个数>=4，且无花色权重比speciPoke中主体牌大的牌即可
+	for pointWeight, count := range counts {
+		if (count >= 4) && (pointWeight > sameCards[0].PointWeight) {
+			findPointWeight = pointWeight
+			break
+		}
+	}
+
+	resultPoke := []Poker{}
+
+	// 找到了符合条件的主体牌
+	if findPointWeight != 0 {
+		// 压入主题牌
+		for _, poke := range allPokes {
+			if poke.PointWeight == findPointWeight {
+				resultPoke = append(resultPoke, poke)
+				if len(resultPoke) == 4 {
+					break
+				}
+			}
+		}
+
+		// 移除主体牌，再查找2个单张
+		lastPoke := RemoveAll(allPokes, resultPoke)
+
+		// 符合条件规则：剩下至少一张牌，且是和主题牌不同的牌
+		if len(lastPoke) >= 2 {
+
+			// 剩下的牌重新排序
+			DdzPokerSort(lastPoke)
+
+			// 从小往大找
+			for i := 0; i < len(lastPoke); i++ {
+				// 和主体牌不同即可压入
+				if lastPoke[i].PointWeight != findPointWeight {
+					resultPoke = append(resultPoke, lastPoke[i])
+
+					if len(resultPoke) == 2 {
+						break
+					}
+				}
+			}
+
+			// 现在应该是6张牌了，不是则置空，并报错
+			if len(resultPoke) != 6 {
+				lastPoke = []Poker{}
+				logEntry.Errorln("添加两个单牌后发现总牌数不足6张")
+			}
+		}
+
+		// 若处理完，结果不是6张，说明没有找到合适的2张单牌，清空
+		if len(resultPoke) != 6 {
+			lastPoke = []Poker{}
+		}
+	}
+
+	if len(resultPoke) == 6 {
+		return true, resultPoke
+	}
+
+	return false, nil
+}
+
+// GetMinBigger4sAnd2s 从allPokes中获取比指定4带2对speciPoke大的最小的4带2对
+// 例如：87777666554 中找到比33338899大的牌，应该返回77775566，其中7777为主体牌，5566为带牌，只比较主体牌，带对子时可拆，带的对子需要和主题牌不同;
+// 例如：J9877666654 中找到比33338899大的牌，应该返回空;
+func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "play.go:GetMinBigger4sAnd2s",
+		"allPokes":  allPokes,
+		"speciPoke": speciPoke,
+	})
+
+	lenSpiciPoke := len(speciPoke)
+
+	// 参数检测
+	if (len(allPokes) == 0) || (lenSpiciPoke != 8) {
+		logEntry.Errorln("参数错误")
+		return false, nil
+	}
+
+	// 检测主体牌
+	sameCards := GetMaxSamePointCards(speciPoke)
+	if len(sameCards) != 4 {
+		logEntry.Errorln("参数错误-没有相同的4张牌")
+		return false, nil
+	}
+
+	// 剩下的牌
+	lastSpeciPoke := RemoveAll(speciPoke, sameCards)
+
+	// 仍需排序，因为是两个对子，可能是乱的
+	DdzPokerSort(lastSpeciPoke)
+
+	// 应该是两两相等
+	if !IsAllSamePoint(lastSpeciPoke[0:2]) || !IsAllSamePoint(lastSpeciPoke[2:]) {
+		logEntry.Errorln("参数错误-带的牌不是2个对子")
+		return false, nil
+	}
+
+	// 先排序，从小到大
+	DdzPokerSort(allPokes)
+
+	//Map<无花色权重点数, 牌的个数>
+	counts := GetPokeCount(allPokes)
+
+	// 找到的符合条件的牌的无花色权重
+	var findPointWeight uint32 = 0
+
+	// 由于前面已经排序，所以找到个数>=4，且无花色权重比speciPoke中主体牌大的牌即可
+	for pointWeight, count := range counts {
+		if (count >= 4) && (pointWeight > sameCards[0].PointWeight) {
+			findPointWeight = pointWeight
+			break
+		}
+	}
+
+	resultPoke := []Poker{}
+
+	// 找到了符合条件的主体牌
+	if findPointWeight != 0 {
+		// 先压入主题牌
+		for _, poke := range allPokes {
+			if poke.PointWeight == findPointWeight {
+				resultPoke = append(resultPoke, poke)
+				if len(resultPoke) == 4 {
+					break
+				}
+			}
+		}
+
+		// 移除主体牌，再查找2个对子
+		lastPoke := RemoveAll(allPokes, resultPoke)
+
+		// 符合条件规则：剩下至少4张牌，且是和主题牌不同的牌
+		if len(lastPoke) >= 4 {
+
+			// 剩下的牌重新排序
+			DdzPokerSort(lastPoke)
+
+			//Map<无花色权重点数, 牌的个数>
+			lastCounts := GetPokeCount(lastPoke)
+
+			// 找到个数>=2的牌即可（不用再判断和主题牌是不是相等了）
+
+			// 两个对子牌的无花色权重
+			var pair1PointWeight uint32 = 0
+			var pair2PointWeight uint32 = 0
+
+			for pointWeight, count := range lastCounts {
+				if count >= 2 {
+					// 先赋值第一个
+					if pair1PointWeight == 0 {
+						pair1PointWeight = pointWeight
+					}
+					// 第一个有值，和第一个不同，但第二个没值，就给第二个
+					if (pair1PointWeight != 0) && (pair1PointWeight != pointWeight) && (pair2PointWeight == 0) {
+						pair2PointWeight = pointWeight
+
+						// 两个都有值了，就跳出
+						break
+					}
+				}
+			}
+
+			// 存在两个不同的对子，则压入
+			if (pair1PointWeight != 0) && (pair2PointWeight != 0) {
+
+				pushPair1Count := 0 // 压入1对子牌的数量
+				pushPair2Count := 0 // 压入2对子牌的数量
+
+				for i := 0; i < len(lastPoke); i++ {
+					// 对子1
+					if (lastPoke[i].PointWeight == pair1PointWeight) && (pushPair1Count < 2) {
+						resultPoke = append(resultPoke, lastPoke[i])
+						pushPair1Count++
+					}
+					// 对子2
+					if (lastPoke[i].PointWeight == pair2PointWeight) && (pushPair2Count < 2) {
+						resultPoke = append(resultPoke, lastPoke[i])
+						pushPair2Count++
+					}
+				}
+
+				// 现在应该是8张牌了，不是则置空，并报错
+				if len(resultPoke) != 8 {
+					lastPoke = []Poker{}
+					logEntry.Errorln("添加两个对子后发现总牌数不足8张")
+				}
+			}
+		}
+
+		// 若处理完，结果不是8张，说明没有找到合适的2个对子，清空
+		if len(resultPoke) != 8 {
+			lastPoke = []Poker{}
+		}
+	}
+
+	if len(resultPoke) == 8 {
+		return true, resultPoke
 	}
 
 	return false, nil
