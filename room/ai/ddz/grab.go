@@ -1,12 +1,13 @@
 package ddz
 
 import (
-	"steve/room/interfaces"
-	"github.com/golang/protobuf/proto"
-	"steve/room/interfaces/global"
 	"steve/client_pb/room"
+	"steve/room/interfaces"
+	"steve/room/interfaces/global"
 	"steve/server_pb/ddz"
+
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type grabStateAI struct {
@@ -17,6 +18,7 @@ func init() {
 	g := global.GetDeskAutoEventGenerator()
 	g.RegisterAI(int(room.GameId_GAMEID_DOUDIZHU), int32(ddz.StateID_state_grab), &grabStateAI{})
 	g.RegisterAI(int(room.GameId_GAMEID_DOUDIZHU), int32(ddz.StateID_state_double), &doubleStateAI{})
+	g.RegisterAI(int(room.GameId_GAMEID_DOUDIZHU), int32(ddz.StateID_state_playing), &playStateAI{})
 }
 
 // GenerateAIEvent 生成 出牌问询AI 事件
@@ -27,10 +29,9 @@ func (h *grabStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (
 	}, nil
 
 	playerId := params.PlayerID
-	request := ddz.GrabRequestEvent{Head:
-		&ddz.RequestEventHead{
-			PlayerId: playerId,
-		}, Grab:false,
+	request := ddz.GrabRequestEvent{Head: &ddz.RequestEventHead{
+		PlayerId: playerId,
+	}, Grab: false,
 	}
 	data, _ := proto.Marshal(&request)
 	event := interfaces.AIEvent{
