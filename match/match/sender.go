@@ -16,7 +16,7 @@ func NewSender() *Sender {
 }
 
 // 通知room服创建desk
-func (s *Sender) createDesk(playersID []uint64, gameID int) (resp *roommgr.CreateDeskResponse, err error) {
+func (s *Sender) createDesk(players []DeskPlayer, gameID int) (resp *roommgr.CreateDeskResponse, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "Sender::createDesk()",
 	})
@@ -26,17 +26,17 @@ func (s *Sender) createDesk(playersID []uint64, gameID int) (resp *roommgr.Creat
 	if err != nil {
 		logEntry.WithError(err).Errorln("get 'room' service failed!!!")
 	}
-	players := []*roommgr.DeskPlayer{}
-	for _, playerID := range playersID {
-		players = append(players, &roommgr.DeskPlayer{
-			PlayerId:   playerID,
-			RobotLevel: 0,
+	createPlayers := []*roommgr.DeskPlayer{}
+	for _, player := range players {
+		createPlayers = append(createPlayers, &roommgr.DeskPlayer{
+			PlayerId:   player.GetPlayerID(),
+			RobotLevel: int32(player.GetRobotLv()),
 		})
 	}
 
 	roomMgrClient := roommgr.NewRoomMgrClient(rs)
 	resp, err = roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
-		Players: players,
+		Players: createPlayers,
 		GameId:  uint32(gameID),
 	})
 
