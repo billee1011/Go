@@ -153,7 +153,8 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	color := player.GetDingqueColor()
 	//胡牌后不能碰了
-	if len(player.GetHuCards()) > 0 || card.Color == color {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	if len(player.GetHuCards()) > 0 || (xpOption.EnableDingque && card.Color == color) {
 		return false
 	}
 	num := 0
