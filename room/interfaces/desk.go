@@ -29,8 +29,9 @@ type DeskPlayer interface {
 
 // PlayerEnterQuitInfo 玩家退出进入信息
 type PlayerEnterQuitInfo struct {
-	PlayerID uint64
-	Quit     bool // true 为退出， false 为进入
+	PlayerID      uint64
+	Quit          bool          // true 为退出， false 为进入
+	FinishChannel chan struct{} // 完成通道
 }
 
 // DeskPlayerMgr 牌桌玩家管理器
@@ -40,10 +41,10 @@ type DeskPlayerMgr interface {
 	GetDeskPlayers() []DeskPlayer
 
 	// PlayerQuit 玩家退出
-	PlayerQuit(playerID uint64)
+	PlayerQuit(playerID uint64) chan struct{}
 
 	// PlayerEnter 玩家进入
-	PlayerEnter(playerID uint64)
+	PlayerEnter(playerID uint64) chan struct{}
 
 	// BroadcastMessage 广播消息给牌桌玩家
 	// playerIDs ： 目标玩家，如果为 nil 或者长度为0，则针对牌桌所有玩家

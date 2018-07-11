@@ -1,6 +1,7 @@
 package recovertests
 
 import (
+	"steve/client_pb/common"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -59,12 +60,16 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	// 其他玩家收到该玩家退出通知
 	utils.RecvQuitNtf(t, deskData, []int{0, 2, 3})
 
-	assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
-	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
-	rsp1 := room.RoomDeskNeedReusmeRsp{}
-	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
-	assert.False(t, rsp1.GetIsNeed())
-	// 匹配服务做好后再放开
+	playerState, err := utils.GetDeskPlayerState(zimoPlayer.Player)
+	assert.Nil(t, err)
+	assert.Equal(t, playerState, common.PlayerState_PS_IDLE)
+
+	// assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
+	// expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
+	// rsp1 := room.RoomDeskNeedReusmeRsp{}
+	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
+	// assert.False(t, rsp1.GetIsNeed())
+
 	utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUELIU)
 
 	// 再加入3个玩家凑够4人开局避免影响其他测试用例

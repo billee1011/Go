@@ -48,19 +48,25 @@ func (dpm *deskPlayerMgr) GetDeskPlayers() []interfaces.DeskPlayer {
 }
 
 // PlayerQuit 玩家退出
-func (dpm *deskPlayerMgr) PlayerQuit(playerID uint64) {
+func (dpm *deskPlayerMgr) PlayerQuit(playerID uint64) chan struct{} {
+	finishChannel := make(chan struct{})
 	dpm.enterQuits <- interfaces.PlayerEnterQuitInfo{
-		PlayerID: playerID,
-		Quit:     true,
+		PlayerID:      playerID,
+		Quit:          true,
+		FinishChannel: finishChannel,
 	}
+	return finishChannel
 }
 
 // PlayerEnter 玩家进入
-func (dpm *deskPlayerMgr) PlayerEnter(playerID uint64) {
+func (dpm *deskPlayerMgr) PlayerEnter(playerID uint64) chan struct{} {
+	finishChannel := make(chan struct{})
 	dpm.enterQuits <- interfaces.PlayerEnterQuitInfo{
-		PlayerID: playerID,
-		Quit:     false,
+		PlayerID:      playerID,
+		Quit:          false,
+		FinishChannel: finishChannel,
 	}
+	return finishChannel
 }
 
 // PlayerEnterQuitChannel 获取玩家进入退出信息通道
