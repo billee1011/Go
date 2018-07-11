@@ -1,7 +1,7 @@
 package procedure
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/states"

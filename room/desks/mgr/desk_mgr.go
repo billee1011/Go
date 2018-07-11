@@ -173,6 +173,7 @@ func (dm *deskMgr) RemoveDeskPlayerByPlayerID(playerID uint64) {
 	dm.mu.Lock()
 	defer dm.mu.Unlock()
 	dm.playerDeskMap.Delete(playerID)
+	dm.unbindPlayerRoomAddr([]uint64{playerID})
 }
 
 func (dm *deskMgr) GetDeskCount() int {

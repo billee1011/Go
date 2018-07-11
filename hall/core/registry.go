@@ -1,7 +1,7 @@
 package core
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/hall/user"
 	"steve/structs/exchanger"
 

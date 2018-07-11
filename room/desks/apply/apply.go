@@ -2,7 +2,7 @@ package apply
 
 import (
 	"fmt"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
@@ -176,32 +176,32 @@ func notifyDeskCreate(desk interfaces.Desk) {
 	facade.BroadCastDeskMessage(desk, nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
 }
 
-// HandleRoomJoinDeskReq 处理器玩家申请加入请求
-// 	将玩家加入到申请列表中， 并且回复；
-func HandleRoomJoinDeskReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (rspMsg []exchanger.ResponseMsg) {
-	playerMgr := global.GetPlayerMgr()
-	player := playerMgr.GetPlayer(playerID)
+// // HandleRoomJoinDeskReq 处理器玩家申请加入请求
+// // 	将玩家加入到申请列表中， 并且回复；
+// func HandleRoomJoinDeskReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomJoinDeskReq) (rspMsg []exchanger.ResponseMsg) {
+// 	playerMgr := global.GetPlayerMgr()
+// 	player := playerMgr.GetPlayer(playerID)
 
-	rsp := &room.RoomJoinDeskRsp{
-		ErrCode: room.RoomError_SUCCESS.Enum(),
-	}
-	rspMsg = []exchanger.ResponseMsg{
-		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
-			Body:  rsp,
-		},
-	}
-	if player == nil {
-		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
-		return
-	}
-	if _, exist := ExistInDesk(playerID); exist {
-		rsp.ErrCode = room.RoomError_DESK_GAME_PLAYING.Enum()
-		return
-	}
-	rsp.ErrCode = getJoinApplyMgr().joinPlayer(playerID, req.GetGameId()).Enum()
-	return
-}
+// 	rsp := &room.RoomJoinDeskRsp{
+// 		ErrCode: room.RoomError_SUCCESS.Enum(),
+// 	}
+// 	rspMsg = []exchanger.ResponseMsg{
+// 		exchanger.ResponseMsg{
+// 			MsgID: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
+// 			Body:  rsp,
+// 		},
+// 	}
+// 	if player == nil {
+// 		rsp.ErrCode = room.RoomError_NOT_LOGIN.Enum()
+// 		return
+// 	}
+// 	if _, exist := ExistInDesk(playerID); exist {
+// 		rsp.ErrCode = room.RoomError_DESK_GAME_PLAYING.Enum()
+// 		return
+// 	}
+// 	rsp.ErrCode = getJoinApplyMgr().joinPlayer(playerID, req.GetGameId()).Enum()
+// 	return
+// }
 
 // HandleRoomContinueReq 玩家申请续局
 func HandleRoomContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskContinueReq) (rspMsg []exchanger.ResponseMsg) {

@@ -2,7 +2,7 @@ package common
 
 import (
 	"math/rand"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"

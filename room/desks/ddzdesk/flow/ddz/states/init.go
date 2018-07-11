@@ -5,7 +5,7 @@ import (
 	"steve/server_pb/ddz"
 
 	"math/rand"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"

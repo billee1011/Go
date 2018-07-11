@@ -2,7 +2,7 @@ package register
 
 import (
 	"steve/structs/exchanger"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/match/match"
 )
 

@@ -2,7 +2,7 @@ package ddzmachine
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 	"time"

@@ -1,7 +1,7 @@
 package majong
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	majongpb "steve/server_pb/majong"

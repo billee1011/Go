@@ -20,7 +20,7 @@ import (
 
 	"steve/client_pb/room"
 
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"

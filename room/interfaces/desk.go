@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/structs/proto/gate_rpc"
 )
 

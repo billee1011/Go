@@ -1,7 +1,7 @@
 package match
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"

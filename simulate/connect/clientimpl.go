@@ -3,7 +3,7 @@ package connect
 import (
 	"errors"
 	"steve/base/socket"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/simulate/interfaces"
 	"steve/structs/proto/base"
 	"sync/atomic"

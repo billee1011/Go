@@ -2,7 +2,7 @@ package core
 
 import (
 	"context"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"

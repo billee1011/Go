@@ -1,7 +1,7 @@
 package ddzdesk
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/procedure"
 	"steve/room/desks/deskbase"

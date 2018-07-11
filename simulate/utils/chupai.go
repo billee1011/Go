@@ -2,7 +2,7 @@ package utils
 
 import (
 	"errors"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 

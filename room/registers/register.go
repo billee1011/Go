@@ -1,7 +1,7 @@
 package registers
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/room/chat"
 	deskapply "steve/room/desks/apply"
 	"steve/room/desks/deskbase"
@@ -17,7 +17,7 @@ func RegisterHandlers(e exchanger.Exchanger) {
 		}
 	}
 
-	registe(msgid.MsgID_ROOM_JOIN_DESK_REQ, deskapply.HandleRoomJoinDeskReq)          // 加入牌桌请求
+	// registe(msgid.MsgID_ROOM_JOIN_DESK_REQ, deskapply.HandleRoomJoinDeskReq)          // 加入牌桌请求
 	registe(msgid.MsgID_ROOM_DESK_QUIT_REQ, deskapply.HandleRoomDeskQuitReq)          // 退出牌桌请求
 	registe(msgid.MsgID_ROOM_DESK_CONTINUE_REQ, deskapply.HandleRoomContinueReq)      // 续局请求
 	registe(msgid.MsgID_ROOM_CANCEL_TUOGUAN_REQ, deskbase.HandleCancelTuoGuanReq)     // 取消托管请求

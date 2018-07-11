@@ -3,7 +3,7 @@ package gateservice
 import (
 	"context"
 	"steve/client_pb/gate"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/gateway/config"
 	"steve/gateway/connection"
 	"steve/gateway/watchdog"

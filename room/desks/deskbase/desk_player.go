@@ -1,7 +1,7 @@
 package deskbase
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
