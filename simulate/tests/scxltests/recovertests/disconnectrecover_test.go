@@ -70,4 +70,5 @@ func Test_DisconnectRecover(t *testing.T) {
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf3))
 	assert.Equal(t, room.RoomError_SUCCESS, ntf3.GetResumeRes())
 	assert.Equal(t, room.GameStage_GAMESTAGE_PLAYCARD, ntf3.GetGameInfo().GetGameStage())
+	assert.Equal(t, room.GameId_GAMEID_XUELIU, ntf3.GetGameInfo().GetGameId())
 }
