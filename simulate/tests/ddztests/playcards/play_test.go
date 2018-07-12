@@ -1,4 +1,4 @@
-package jiaodizhu
+package play
 
 import (
 	"fmt"
@@ -14,14 +14,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//TestJiaodizhu 叫地主测试
+//TestPlay 出牌测试
 //游戏过程中0号玩家发起叫地主
 //期望：
 //     1. 所有玩家都收到，0号玩家的叫地主广播
-func TestJiaodizhu(t *testing.T) {
+func TestPlay(t *testing.T) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "TestJiaodizhu()",
+		"func_name": "TestPlay()",
 	})
 
 	// 正常开始游戏
@@ -263,8 +263,8 @@ func TestJiaodizhu(t *testing.T) {
 
 	for i := 0; i < len(ntf.GetBills()); i++ {
 		playrInfo := ntf.GetBills()[i]
-		logEntry.Infof("玩家:%d，名字:%s，底分:%d，输赢倍数:%d，输赢分数:%d，当前分数:%d，是否为地主:%v，已出的牌:%v，手中的牌:%v",
-			playrInfo.GetPlayerId(), playrInfo.GetPlayerName(), playrInfo.GetBase(), playrInfo.GetMultiple(),
+		logEntry.Infof("玩家:%d，底分:%d，输赢倍数:%d，输赢分数:%d，当前分数:%d，是否为地主:%v，已出的牌:%v，手中的牌:%v",
+			playrInfo.GetPlayerId(), playrInfo.GetBase(), playrInfo.GetMultiple(),
 			playrInfo.GetScore(), playrInfo.GetCurrentScore(), playrInfo.GetLord(), playrInfo.GetOutCards(), playrInfo.GetHandCards())
 	}
 

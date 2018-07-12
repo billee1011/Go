@@ -119,14 +119,6 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		return nil, err
 	}
 
-	// 通知服务器：麻将选项（是否开启换三张）
-	//if err := majongOption(params.PeiPaiGame, params.IsHsz); err != nil {
-	//	return nil, err
-	//}
-
-	// 所有玩家的洗牌通知期望
-	//xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
-
 	// 所有玩家的斗地主发牌通知期望
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_DDZ_DEAL_NTF)
 
@@ -186,9 +178,6 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 			Expectors: createDDZPlayerExpectors(player.GetClient()), // 斗地主所有的消息期望
 		}
 	}
-
-	// 暂停对应的秒数
-	//time.Sleep(time.Duration(deskData.DDZData.NextState.GetTime()) * time.Second)
 
 	// 检测收到的发牌消息是否符合预期
 	if err := checkDDZFapaiNtf(fapaiNtfExpectors, &deskData, params.Cards); err != nil {
