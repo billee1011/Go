@@ -68,14 +68,18 @@ func (s *overState) OnEnter(m machine.Machine) {
 		playerId := player.PalyerId
 		roomPlayer := global.GetPlayerMgr().GetPlayer(playerId)
 		billPlayer := room.DDZBillPlayerInfo{}
-		playerName := roomPlayer.GetUserName()
 		billPlayer.PlayerId = &playerId
-		billPlayer.PlayerName = &playerName
+		isWin := winnerId == playerId
+		billPlayer.Win = &isWin
 		billPlayer.Base = proto.Int32(int32(base))
 		billPlayer.Multiple = proto.Int32(int32(multiple))
 		originCoin := roomPlayer.GetCoin()
 		settleScore := settleScores[playerId]
-		roomPlayer.SetCoin(originCoin - settleScore) //实施扣费
+		if isWin {
+			roomPlayer.SetCoin(originCoin + settleScore) //赢钱
+		} else {
+			roomPlayer.SetCoin(originCoin - settleScore) //输钱
+		}
 		billPlayer.Score = proto.Int64(int64(settleScore))
 		billPlayer.CurrentScore = proto.Int64(int64(roomPlayer.GetCoin()))
 		billPlayer.Lord = &player.Lord
