@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -51,5 +51,5 @@ type Client interface {
 	Request(header SendHead, body proto.Message, timeOut time.Duration, rspMsgID uint32, rspBody proto.Message) error
 
 	// ExpectMessage 创建消息期望
-	ExpectMessage(msgID msgid.MsgID) (MessageExpector, error)
+	ExpectMessage(msgID msgId.MsgID) (MessageExpector, error)
 }

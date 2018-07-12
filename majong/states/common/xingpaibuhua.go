@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -67,8 +67,10 @@ func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.
 			OutHuaCards: utils.ServerCards2Uint32(huaCards),
 		}
 		if player.GetPalyerId() == curPlayerID {
-			info.BuCards = utils.ServerCards2Uint32(mjContext.WallCards[0:buCardNum])
-			player.HandCards = append(player.HandCards, mjContext.WallCards[0:buCardNum]...)
+			buCard := mjContext.WallCards[0:buCardNum]
+			info.BuCards = utils.ServerCards2Uint32(buCard)
+			player.HandCards = append(player.HandCards, buCard...)
+			mjContext.LastMopaiCard = buCard[0]
 			for _, card := range huaCards {
 				var ok bool
 				player.HandCards, ok = utils.RemoveCards(player.HandCards, card, 1)
@@ -84,7 +86,7 @@ func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.
 			mjContext.WallCards = mjContext.WallCards[buCardNum:]
 		}
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_BUHUA_NTF),
+			MsgID: int(msgId.MsgID_ROOM_BUHUA_NTF),
 			Msg: &room.RoomBuHuaNtf{
 				BuhuaInfo: []*room.RoomBuHuaInfo{info},
 			},

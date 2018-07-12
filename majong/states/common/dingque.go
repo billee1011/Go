@@ -18,9 +18,8 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
-	"steve/client_pb/room"
-
 	"steve/client_pb/msgId"
+	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -111,10 +110,10 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 func (s *DingqueState) OnEntry(flow interfaces.MajongFlow) {
 	// 定缺消息NTF被注释了 // 广播通知客户端进入定缺
 	// dingQueNtf := room.RoomDingqueNtf{}
-	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
+	// facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
 	// // 日志
 	// logrus.WithFields(logrus.Fields{
-	// 	"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
+	// 	"msgID":      msgId.MsgID_ROOM_DINGQUE_NTF,
 	// 	"dingQueNtf": dingQueNtf,
 	// }).Info("-----定缺开始-进入定缺状态")
 }
@@ -137,10 +136,10 @@ func (s *DingqueState) OnExit(flow interfaces.MajongFlow) {
 		PlayerDingqueColor: playerDingQueMsg,
 	}
 	// 广播定缺完成消息
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, &dingQueFinishNtf)
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_DINGQUE_FINISH_NTF, &dingQueFinishNtf)
 	// 日志
 	logrus.WithFields(logrus.Fields{
-		"msgID":            msgid.MsgID_ROOM_DINGQUE_FINISH_NTF,
+		"msgID":            msgId.MsgID_ROOM_DINGQUE_FINISH_NTF,
 		"dingQueFinishNtf": dingQueFinishNtf,
 	}).Info("-----定缺完成-退出定缺状态")
 }
@@ -168,7 +167,7 @@ func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
 	errCode := room.RoomError_SUCCESS
 	// 定缺应答 请求-响应
 	toClientRsq := interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_DINGQUE_RSP),
+		MsgID: int(msgId.MsgID_ROOM_DINGQUE_RSP),
 		Msg: &room.RoomDingqueRsp{
 			ErrCode: &errCode,
 		},
@@ -176,7 +175,7 @@ func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
 	// 推送消息应答
 	flow.PushMessages([]uint64{playerID}, toClientRsq)
 	logrus.WithFields(logrus.Fields{
-		"msgID":      msgid.MsgID_ROOM_DINGQUE_RSP,
+		"msgID":      msgId.MsgID_ROOM_DINGQUE_RSP,
 		"dingQueNtf": toClientRsq,
 	}).Info("-----定缺成功应答")
 }

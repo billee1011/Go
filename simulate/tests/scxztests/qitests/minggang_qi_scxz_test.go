@@ -1,7 +1,7 @@
 package qitests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -38,7 +38,7 @@ func Test_SCXZ_MingGang_Qi(t *testing.T) {
 
 	// 1 号玩家收到可杠通知
 	gangPlayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
-	expector, _ := gangPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := gangPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, Int9W, ntf.GetCard())

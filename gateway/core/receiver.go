@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	"errors"
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/gateway/msgrange"
 	"steve/structs"
 	"steve/structs/net"
@@ -75,7 +75,7 @@ func (o *receiver) response(clientID uint64, reqHeader *steve_proto_base.Header,
 	logEntry := logrus.WithFields(logrus.Fields{
 		"name":       "receiver.response",
 		"client_id":  clientID,
-		"req_msg_id": msgid.MsgID(reqHeader.GetMsgId()),
+		"req_msg_id": msgId.MsgID(reqHeader.GetMsgId()),
 		"send_seq":   reqHeader.GetSendSeq(),
 	})
 	dog := o.core.dog
@@ -86,7 +86,7 @@ func (o *receiver) response(clientID uint64, reqHeader *steve_proto_base.Header,
 			MsgId:  proto.Uint32(rspMsgID),
 		}
 		newLogEntry := logEntry.WithFields(logrus.Fields{
-			"rsp_msg_id": msgid.MsgID(rspMsgID),
+			"rsp_msg_id": msgId.MsgID(rspMsgID),
 			"rsp_seq":    header.GetRspSeq(),
 		})
 		if err := dog.SendPackage(clientID, header, response.GetBody()); err != nil {
@@ -102,7 +102,7 @@ func (o *receiver) OnRecv(clientID uint64, header *steve_proto_base.Header, body
 	logEntry := logrus.WithFields(logrus.Fields{
 		"name":      "receiver.OnRecv",
 		"client_id": clientID,
-		"msg_id":    msgid.MsgID(msgID),
+		"msg_id":    msgId.MsgID(msgID),
 	})
 	cc, err := o.getConnection(msgID, clientID)
 	if err != nil {

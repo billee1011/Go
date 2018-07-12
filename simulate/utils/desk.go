@@ -21,7 +21,7 @@ import (
 type DeskPlayer struct {
 	Player    interfaces.ClientPlayer
 	Seat      int
-	Expectors map[msgid.MsgID]interfaces.MessageExpector // 消息期望， 消息 ID -> expector
+	Expectors map[msgId.MsgID]interfaces.MessageExpector // 消息期望， 消息 ID -> expector
 }
 
 // DeskData 牌桌数据
@@ -45,8 +45,8 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 	if err := majongOption(params.PeiPaiGame, params.IsHsz); err != nil {
 		return nil, err
 	}
-	xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
-	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_FAPAI_NTF)
+	xipaiNtfExpectors := createExpectors(players, msgId.MsgID_ROOM_XIPAI_NTF)
+	fapaiNtfExpectors := createExpectors(players, msgId.MsgID_ROOM_FAPAI_NTF)
 	// hszNotifyExpectors := createHSZNotifyExpector(players)
 	gameID := params.GameID // 设置游戏ID
 	seatMap, err := joinDesk(players, gameID)
@@ -89,16 +89,16 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 }
 
 // createPlayerExpectors 创建玩家的麻将逻辑消息期望
-func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.MessageExpector {
-	msgs := []msgid.MsgID{msgid.MsgID_ROOM_DINGQUE_FINISH_NTF, msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF, msgid.MsgID_ROOM_CHUPAIWENXUN_NTF,
-		msgid.MsgID_ROOM_PENG_NTF, msgid.MsgID_ROOM_GANG_NTF, msgid.MsgID_ROOM_HU_NTF, msgid.MsgID_ROOM_TUOGUAN_NTF,
-		msgid.MsgID_ROOM_ZIXUN_NTF, msgid.MsgID_ROOM_CHUPAI_NTF,
-		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
-		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
-		msgid.MsgID_ROOM_CHAT_NTF, msgid.MsgID_ROOM_RESUME_GAME_RSP, msgid.MsgID_ROOM_DESK_QUIT_RSP,
-		msgid.MsgID_ROOM_GAMEOVER_NTF,
+func createPlayerExpectors(client interfaces.Client) map[msgId.MsgID]interfaces.MessageExpector {
+	msgs := []msgId.MsgID{msgId.MsgID_ROOM_DINGQUE_FINISH_NTF, msgId.MsgID_ROOM_HUANSANZHANG_FINISH_NTF, msgId.MsgID_ROOM_CHUPAIWENXUN_NTF,
+		msgId.MsgID_ROOM_BUHUA_NTF, msgId.MsgID_ROOM_CHI_NTF, msgId.MsgID_ROOM_PENG_NTF, msgId.MsgID_ROOM_GANG_NTF, msgId.MsgID_ROOM_HU_NTF, msgId.MsgID_ROOM_TUOGUAN_NTF,
+		msgId.MsgID_ROOM_ZIXUN_NTF, msgId.MsgID_ROOM_CHUPAI_NTF,
+		msgId.MsgID_ROOM_MOPAI_NTF, msgId.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
+		msgId.MsgID_ROOM_TINGINFO_NTF, msgId.MsgID_ROOM_INSTANT_SETTLE, msgId.MsgID_ROOM_ROUND_SETTLE, msgId.MsgID_ROOM_DESK_DISMISS_NTF,
+		msgId.MsgID_ROOM_CHAT_NTF, msgId.MsgID_ROOM_RESUME_GAME_RSP, msgId.MsgID_ROOM_DESK_QUIT_RSP,
+		msgId.MsgID_ROOM_GAMEOVER_NTF,
 	}
-	result := map[msgid.MsgID]interfaces.MessageExpector{}
+	result := map[msgId.MsgID]interfaces.MessageExpector{}
 	for _, msg := range msgs {
 		result[msg], _ = client.ExpectMessage(msg)
 	}
@@ -159,7 +159,7 @@ func CreateAndLoginUsersNum(num int, ServerAddr string, ClientVer string) ([]int
 func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
 	expectors := []interfaces.MessageExpector{}
 	for _, player := range players {
-		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+		e, _ := player.GetClient().ExpectMessage(msgId.MsgID_ROOM_DESK_CREATED_NTF)
 		if _, err := ApplyJoinDesk(player, gameID); err != nil {
 			return nil, err
 		}
@@ -177,7 +177,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]ui
 }
 
 // createExpectors 创建消息期望
-func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[uint64]interfaces.MessageExpector {
+func createExpectors(players []interfaces.ClientPlayer, msgID msgId.MsgID) map[uint64]interfaces.MessageExpector {
 	result := map[uint64]interfaces.MessageExpector{}
 	for _, player := range players {
 		client := player.GetClient()
@@ -190,7 +190,7 @@ func createExpectors(players []interfaces.ClientPlayer, msgID msgid.MsgID) map[u
 func sendCartoonFinish(cartoonType room.CartoonType, deskData *DeskData) error {
 	for _, player := range deskData.Players {
 		client := player.Player.GetClient()
-		if _, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_CARTOON_FINISH_REQ), &room.RoomCartoonFinishReq{
+		if _, err := client.SendPackage(CreateMsgHead(msgId.MsgID_ROOM_CARTOON_FINISH_REQ), &room.RoomCartoonFinishReq{
 			CartoonType: cartoonType.Enum(),
 		}); err != nil {
 			return err
@@ -269,9 +269,9 @@ func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 		cards := HszCards[offset]
 
 		client := player.Player.GetClient()
-		fe := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF]
+		fe := player.Expectors[msgId.MsgID_ROOM_HUANSANZHANG_FINISH_NTF]
 		finishNtfExpectors[playerID] = fe
-		client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
+		client.SendPackage(createMsgHead(msgId.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
 			Cards: cards,
 			Sure:  proto.Bool(true),
 		})
@@ -322,7 +322,7 @@ func executeDingque(deskData *DeskData, colors []room.CardColor) error {
 func SendDingqueReq(seat int, deskData *DeskData, color room.CardColor) error {
 	player := GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(createMsgHead(msgid.MsgID_ROOM_DINGQUE_REQ), &room.RoomDingqueReq{
+	_, err := client.SendPackage(createMsgHead(msgId.MsgID_ROOM_DINGQUE_REQ), &room.RoomDingqueReq{
 		Color: color.Enum(),
 	})
 	return err
@@ -332,7 +332,7 @@ func SendDingqueReq(seat int, deskData *DeskData, color room.CardColor) error {
 func SendHuansanzhangReq(seat int, deskData *DeskData, hszCards []uint32, sure bool) error {
 	player := GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(createMsgHead(msgid.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
+	_, err := client.SendPackage(createMsgHead(msgId.MsgID_ROOM_HUANSANZHANG_REQ), &room.RoomHuansanzhangReq{
 		Cards: hszCards,
 		Sure:  proto.Bool(sure),
 	})
@@ -344,7 +344,7 @@ func WaitDingqueFinish(deskData *DeskData, duration time.Duration, expectedColor
 	for _, seat := range waitSeats {
 		ntf := room.RoomDingqueFinishNtf{}
 		player := GetDeskPlayerBySeat(seat, deskData)
-		expector := player.Expectors[msgid.MsgID_ROOM_DINGQUE_FINISH_NTF]
+		expector := player.Expectors[msgId.MsgID_ROOM_DINGQUE_FINISH_NTF]
 		if err := expector.Recv(duration, &ntf); err != nil {
 			return err
 		}
@@ -360,7 +360,7 @@ func WaitHuansanzhangFinish(deskData *DeskData, duration time.Duration, waitSeat
 	for _, seat := range waitSeats {
 		ntf := room.RoomHuansanzhangFinishNtf{}
 		player := GetDeskPlayerBySeat(seat, deskData)
-		expector := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF]
+		expector := player.Expectors[msgId.MsgID_ROOM_HUANSANZHANG_FINISH_NTF]
 		if err := expector.Recv(duration, &ntf); err != nil {
 			return err
 		}
@@ -390,7 +390,7 @@ func WaitMoPaiNtf(deskData *DeskData, duration time.Duration, waitSeats []int, m
 	for _, seat := range waitSeats {
 		ntf := room.RoomMopaiNtf{}
 		player := GetDeskPlayerBySeat(seat, deskData)
-		expector := player.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
+		expector := player.Expectors[msgId.MsgID_ROOM_MOPAI_NTF]
 		if err := expector.Recv(duration, &ntf); err != nil {
 			return err
 		}
@@ -408,7 +408,7 @@ func WaitTuoGuanNtf(deskData *DeskData, duration time.Duration, waitSeats []int)
 	for _, seat := range waitSeats {
 		ntf := room.RoomTuoGuanNtf{}
 		player := GetDeskPlayerBySeat(seat, deskData)
-		expector := player.Expectors[msgid.MsgID_ROOM_TUOGUAN_NTF]
+		expector := player.Expectors[msgId.MsgID_ROOM_TUOGUAN_NTF]
 		if err := expector.Recv(duration, &ntf); err != nil {
 			return err
 		}

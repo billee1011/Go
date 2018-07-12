@@ -1,7 +1,7 @@
 package hutests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -38,12 +38,12 @@ func Test_RoundSettle(t *testing.T) {
 
 	// 0 号玩家收到出牌问询通知，直接出牌1W
 	bankerPlayer := utils.GetDeskPlayerBySeat(bankerSeat, deskData)
-	expector, _ := bankerPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := bankerPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	assert.Nil(t, utils.SendChupaiReq(deskData, bankerSeat, Int1W))
 
 	// 1 号玩家收到出牌问询通知，并且可杠
 	gangPlayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
-	expector, _ = gangPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ = gangPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableMinggang())
@@ -52,7 +52,7 @@ func Test_RoundSettle(t *testing.T) {
 	utils.SendGangReq(deskData, gangSeat, Int1W, room.GangType_MingGang)
 
 	// 1号玩家 摸牌出牌
-	expector, _ = gangPlayer.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
+	expector, _ = gangPlayer.Expectors[msgId.MsgID_ROOM_MOPAI_NTF]
 	mopaiNtf := room.RoomMopaiNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &mopaiNtf))
 	assert.Equal(t, gangPlayer.Player.GetID(), mopaiNtf.GetPlayer())
@@ -60,7 +60,7 @@ func Test_RoundSettle(t *testing.T) {
 
 	// 1号玩家 收到 自询问通知
 	huPlayer := utils.GetDeskPlayerBySeat(huSeat, deskData)
-	expector, _ = huPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ = huPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	zxNtf := room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &zxNtf))
 	assert.True(t, zxNtf.GetEnableZimo())
@@ -79,7 +79,7 @@ func CheckRoundSettleNotify(t *testing.T, deskData *utils.DeskData, gangSeat int
 	//fromPlayer := utils.GetDeskPlayerBySeat(from, deskData).Player.GetID()
 
 	for _, player := range deskData.Players {
-		expector, _ := player.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
+		expector, _ := player.Expectors[msgId.MsgID_ROOM_ROUND_SETTLE]
 		ntf := room.RoomBalanceInfoRsp{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	}

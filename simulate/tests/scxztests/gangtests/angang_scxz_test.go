@@ -1,7 +1,7 @@
 package gangtests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -24,7 +24,7 @@ func Test_SCXZ_Angang(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
 	zjPlayer := utils.GetDeskPlayerBySeat(deskData.BankerSeat, deskData)
-	expector, _ := zjPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := zjPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	zixunNtf := room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(3*time.Second, &zixunNtf))
 	assert.Subset(t, zixunNtf.GetEnableAngangCards(), []uint32{12, 13})
@@ -35,7 +35,7 @@ func Test_SCXZ_Angang(t *testing.T) {
 	//下家这时候摸到牌后，进入自询状态，自询状态下可以暗杠
 	xjPlayer := utils.CheckMoPaiNotify(t, deskData, (deskData.BankerSeat+1)%len(deskData.Players), 31)
 	//检查自询通知
-	xjexpector, _ := xjPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	xjexpector, _ := xjPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	xjzixunNtf := room.RoomZixunNtf{}
 	assert.Nil(t, xjexpector.Recv(3*time.Second, &xjzixunNtf))
 	assert.Subset(t, xjzixunNtf.GetEnableAngangCards(), []uint32{16, 17})
@@ -72,7 +72,7 @@ func Test_Angang1(t *testing.T) {
 	gangSeat := deskData.BankerSeat
 	// 收到自询通知,可以暗杠 1万,2万,3万
 	gangPlayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
-	expector, _ := gangPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := gangPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	zixunNtf := room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(3*time.Second, &zixunNtf))
 	assert.Subset(t, zixunNtf.GetEnableAngangCards(), []uint32{11, 12, 13})

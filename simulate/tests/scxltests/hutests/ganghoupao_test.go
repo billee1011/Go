@@ -2,7 +2,7 @@ package hutests
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -46,7 +46,7 @@ func Test_Ganghoupao(t *testing.T) {
 
 	// 1 号玩家收到出牌问询通知， 可以胡
 	huPlayer := utils.GetDeskPlayerBySeat(1, deskData)
-	expector, _ := huPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := huPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableDianpao())
@@ -68,7 +68,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	gangID := gangplayer.Player.GetID()
 	huPlayer := utils.GetDeskPlayerBySeat(huSeat, deskData)
 	huPlayerID := huPlayer.Player.GetID()
-	expector, _ := gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	expector, _ := gangplayer.Expectors[msgId.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
@@ -80,7 +80,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 			assert.Equal(t, billInfo.GetScore(), -int64((gangWinScore / 3)))
 		}
 	}
-	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	expector, _ = gangplayer.Expectors[msgId.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	dianpaoWinScore := 16
@@ -94,7 +94,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 		}
 	}
 
-	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
+	expector, _ = gangplayer.Expectors[msgId.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	fmt.Println(ntf)
@@ -109,7 +109,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 		}
 	}
 
-	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
+	expector, _ = gangplayer.Expectors[msgId.MsgID_ROOM_ROUND_SETTLE]
 	ntf2 := room.RoomBalanceInfoRsp{}
 	expector.Recv(time.Second*5, &ntf2)
 	fmt.Println(ntf2)

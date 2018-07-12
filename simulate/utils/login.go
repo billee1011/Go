@@ -1,7 +1,7 @@
 package utils
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -42,11 +42,11 @@ func LoginUser(client interfaces.Client, userName string) (interfaces.ClientPlay
 	rsp := room.RoomLoginRsp{}
 	err := client.Request(interfaces.SendHead{
 		Head: interfaces.Head{
-			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_REQ),
+			MsgID: uint32(msgId.MsgID_ROOM_LOGIN_REQ),
 		},
 	}, &room.RoomLoginReq{
 		UserName: &userName,
-	}, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_LOGIN_RSP), &rsp)
+	}, global.DefaultWaitMessageTime, uint32(msgId.MsgID_ROOM_LOGIN_RSP), &rsp)
 
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)
@@ -70,9 +70,9 @@ func LoginVisitor(client interfaces.Client, RoomVisitorLoginReq *room.RoomVisito
 	rsp := room.RoomVisitorLoginRsp{}
 	err := client.Request(interfaces.SendHead{
 		Head: interfaces.Head{
-			MsgID: uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_REQ),
+			MsgID: uint32(msgId.MsgID_ROOM_VISITOR_LOGIN_REQ),
 		},
-	}, RoomVisitorLoginReq, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP), &rsp)
+	}, RoomVisitorLoginReq, global.DefaultWaitMessageTime, uint32(msgId.MsgID_ROOM_VISITOR_LOGIN_RSP), &rsp)
 
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)

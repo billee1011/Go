@@ -1,7 +1,7 @@
 package hutests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -29,7 +29,7 @@ func Test_Tianhu(t *testing.T) {
 
 	// 0 号玩家收到可自摸通知
 	bankerPlayer := utils.GetDeskPlayerBySeat(bankerSeat, deskData)
-	expector, _ := bankerPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := bankerPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(time.Second*1, &ntf))
 	assert.True(t, ntf.GetEnableZimo())

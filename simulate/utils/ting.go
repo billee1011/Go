@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
@@ -13,7 +13,7 @@ import (
 // WaitTingInfoNtf 等待听牌信息通知
 func WaitTingInfoNtf(t *testing.T, desk *DeskData, seat int, canTingCards ...uint32) error {
 	player := GetDeskPlayerBySeat(seat, desk)
-	expector, _ := player.Expectors[msgid.MsgID_ROOM_TINGINFO_NTF]
+	expector, _ := player.Expectors[msgId.MsgID_ROOM_TINGINFO_NTF]
 
 	ntf := room.RoomTingInfoNtf{}
 	if err := expector.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {

@@ -43,7 +43,7 @@ func (s *WaitQiangganghuState) OnEntry(flow interfaces.MajongFlow) {
 		playerID := player.GetPalyerId()
 		player.HasSelected = false
 		flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
+			MsgID: int(msgId.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
 			Msg: &room.RoomWaitQianggangHuNtf{
 				Card:         proto.Uint32(utils.ServerCard2Uint32(card)),
 				SelfCan:      proto.Bool(len(player.GetPossibleActions()) != 0),

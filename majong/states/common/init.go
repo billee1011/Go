@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/majong/global"
@@ -35,7 +35,7 @@ func (s *InitState) notifyPlayers(flow interfaces.MajongFlow) {
 	if isHsz {
 		isHsz = mjContext.GetOption().GetHasHuansanzhang()
 	}
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_START_GAME_NTF, &room.RoomStartGameNtf{
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_START_GAME_NTF, &room.RoomStartGameNtf{
 		NeedHsz: proto.Bool(isHsz),
 	})
 }

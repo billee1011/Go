@@ -32,6 +32,10 @@ func cti(card *majongpb.Card) int {
 		color = 2
 	case majongpb.CardColor_ColorTong:
 		color = 3
+	case majongpb.CardColor_ColorFeng:
+		color = 4
+	case majongpb.CardColor_ColorHua:
+		color = 5
 	}
 	tValue := int(card.Point)
 	value := color*10 + tValue

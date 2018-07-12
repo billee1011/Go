@@ -9,7 +9,7 @@ import (
 func SendRecoverGameReq(seat int, deskData *DeskData) error {
 	player := GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_RESUME_GAME_REQ), &room.RoomResumeGameReq{})
+	_, err := client.SendPackage(CreateMsgHead(msgId.MsgID_ROOM_RESUME_GAME_REQ), &room.RoomResumeGameReq{})
 	return err
 }
 
@@ -17,6 +17,6 @@ func SendRecoverGameReq(seat int, deskData *DeskData) error {
 func SendNeedRecoverGameReq(seat int, deskData *DeskData) error {
 	player := GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_DESK_NEED_RESUME_REQ), &room.RoomDeskNeedReusmeReq{})
+	_, err := client.SendPackage(CreateMsgHead(msgId.MsgID_ROOM_DESK_NEED_RESUME_REQ), &room.RoomDeskNeedReusmeReq{})
 	return err
 }
