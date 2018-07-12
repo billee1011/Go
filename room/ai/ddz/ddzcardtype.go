@@ -387,3 +387,14 @@ func AppendAll(cards []Poker, addCards []Poker) []Poker {
 	}
 	return cards
 }
+
+// ContainsPointWeightCount cards中包含指定无花色权重点数的牌的个数
+func ContainsPointWeightCount(cards []Poker, pointWeight uint32) uint32 {
+	var count uint32 = 0
+	for _, card := range cards {
+		if card.PointWeight == pointWeight {
+			count++
+		}
+	}
+	return count
+}
