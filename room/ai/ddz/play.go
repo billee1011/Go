@@ -563,23 +563,28 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	// 符合条件的最小连对的起点牌的无花色权重
 	var resultStartPokePoint uint32 = 0
 
-	// 办法：若3-4-5-6-7的顺子，则从4-5-6-7-8开始判断，一直判断到10-11-12-13-14
+	// 办法：若33-44-55-66的连对，则从44-55-66-77开始判断，一直判断到JJ-QQ-KK-AA
 	for startPokePoint := speciPoke[0].PointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpecialPoke/2)+1); startPokePoint++ {
 		count1, _ := counts[startPokePoint]
 		// 连对的起点牌个数要>=2
 		if count1 >= 2 {
+			bAllExist := true
+
 			// 后面的每张牌个数都>=2
 			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpecialPoke)+startPokePoint-2); secondPokePoint++ {
 				count, _ := counts[secondPokePoint]
 
 				// 牌数不足则跳出
 				if count < 2 {
+					bAllExist = false
 					break
 				}
 			}
 
 			// 全部检测通过，说明存在最小连对了，且startPokePoint就是起点
-			resultStartPokePoint = startPokePoint
+			if bAllExist {
+				resultStartPokePoint = startPokePoint
+			}
 		}
 
 	}
