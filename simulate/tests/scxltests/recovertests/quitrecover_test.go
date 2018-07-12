@@ -27,14 +27,14 @@ func Test_QuitRecover(t *testing.T) {
 	assert.NotNil(t, deskData)
 	// step 2
 	quitPlayer := utils.GetDeskPlayerBySeat(quitSeat, deskData)
-	expector, _ := quitPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := quitPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf1 := &room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf1))
 	assert.Nil(t, utils.SendQuitReq(deskData, quitSeat))
 
 	// step 3、4
 	mopaiPlayer := utils.GetDeskPlayerBySeat(mopaiSeat, deskData)
-	expector, _ = mopaiPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ = mopaiPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf2 := &room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf2))
 	rsp, err := utils.ApplyJoinDesk(quitPlayer.Player, room.GameId_GAMEID_XUELIU)
@@ -43,7 +43,7 @@ func Test_QuitRecover(t *testing.T) {
 	assert.Nil(t, utils.SendRecoverGameReq(quitSeat, deskData))
 
 	// step 5
-	expector, _ = quitPlayer.Expectors[msgId.MsgID_ROOM_RESUME_GAME_RSP]
+	expector, _ = quitPlayer.Expectors[msgid.MsgID_ROOM_RESUME_GAME_RSP]
 	ntf3 := &room.RoomResumeGameRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf3))
 	assert.Equal(t, room.RoomError_SUCCESS, ntf3.GetResumeRes())

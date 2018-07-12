@@ -73,7 +73,7 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 		}
 	}
 	flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
-		MsgID: int(msgId.MsgID_ROOM_TINGINFO_NTF),
+		MsgID: int(msgid.MsgID_ROOM_TINGINFO_NTF),
 		Msg:   &ntf,
 	})
 }

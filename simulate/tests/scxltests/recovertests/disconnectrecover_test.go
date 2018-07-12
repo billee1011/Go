@@ -30,7 +30,7 @@ func Test_DisconnectRecover(t *testing.T) {
 	assert.NotNil(t, deskData)
 	// step 2
 	disconnectPlayer := utils.GetDeskPlayerBySeat(disconnectSeat, deskData)
-	expector, _ := disconnectPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := disconnectPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf1 := &room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf1))
 	// 出牌，时间好掌握
@@ -41,7 +41,7 @@ func Test_DisconnectRecover(t *testing.T) {
 
 	// step 3
 	mopaiPlayer := utils.GetDeskPlayerBySeat(mopaiSeat, deskData)
-	expector, _ = mopaiPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ = mopaiPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf2 := &room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf2))
 	client := connect.NewTestClient(config.ServerAddr, config.ClientVersion)
@@ -56,7 +56,7 @@ func Test_DisconnectRecover(t *testing.T) {
 	// // 发牌后睡眠，在关闭链接前保证发送成功
 	// time.Sleep(time.Second)
 	// assert.Nil(t, utils.SendNeedRecoverGameReq(disconnectSeat, deskData))
-	// expector, _ = disconnectPlayer.Expectors[msgId.MsgID_ROOM_DESK_NEED_RESUME_RSP]
+	// expector, _ = disconnectPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
 	// ntf4 := room.RoomDeskNeedReusmeRsp{}
 	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf4))
 	// assert.True(t, ntf4.GetIsNeed())
@@ -65,7 +65,7 @@ func Test_DisconnectRecover(t *testing.T) {
 	assert.Nil(t, utils.SendRecoverGameReq(disconnectSeat, deskData))
 	// step 5
 	disconnectPlayer = utils.GetDeskPlayerBySeat(disconnectSeat, deskData)
-	expector, _ = disconnectPlayer.Expectors[msgId.MsgID_ROOM_RESUME_GAME_RSP]
+	expector, _ = disconnectPlayer.Expectors[msgid.MsgID_ROOM_RESUME_GAME_RSP]
 	ntf3 := &room.RoomResumeGameRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf3))
 	assert.Equal(t, room.RoomError_SUCCESS, ntf3.GetResumeRes())

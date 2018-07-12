@@ -20,7 +20,7 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 	msgID := req.GetHeader().GetMsgId()
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "sender.SendMessage",
-		"msg_id":    msgId.MsgID(msgID),
+		"msg_id":    msgid.MsgID(msgID),
 		"clients":   req.GetClientId(),
 	})
 	header := steve_proto_base.Header{

@@ -86,7 +86,7 @@ func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.
 			mjContext.WallCards = mjContext.WallCards[buCardNum:]
 		}
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgId.MsgID_ROOM_BUHUA_NTF),
+			MsgID: int(msgid.MsgID_ROOM_BUHUA_NTF),
 			Msg: &room.RoomBuHuaNtf{
 				BuhuaInfo: []*room.RoomBuHuaInfo{info},
 			},

@@ -387,7 +387,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	playerIDs := make([]uint64, 0, 0)
 	playerIDs = append(playerIDs, playerID)
 	toClient := interfaces.ToClientMessage{
-		MsgID: int(msgId.MsgID_ROOM_ZIXUN_NTF),
+		MsgID: int(msgid.MsgID_ROOM_ZIXUN_NTF),
 		Msg:   zixunNtf,
 	}
 	flow.PushMessages(playerIDs, toClient)

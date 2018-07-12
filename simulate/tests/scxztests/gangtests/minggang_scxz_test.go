@@ -39,7 +39,7 @@ func Test_SCXZ_Minggang(t *testing.T) {
 
 	// 1 号玩家收到可杠通知
 	gangPlayer := utils.GetDeskPlayerBySeat(gangSeat, deskData)
-	expector, _ := gangPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := gangPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, Int9W, ntf.GetCard())
