@@ -5,7 +5,6 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
-	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
@@ -164,10 +163,10 @@ func notifyDeskCreate(desk interfaces.Desk) {
 			clientIDs = append(clientIDs, p.GetClientID())
 		}
 	}
-	gameID := gutils.GameIDServer2Client(desk.GetGameID())
+	// gameID := gutils.GameIDServer2Client(desk.GetGameID())
 	ntf := room.RoomDeskCreatedNtf{
 		Players: desk.GetPlayers(),
-		GameId:  &gameID,
+		// GameId:  &gameID,
 	}
 	head := &steve_proto_gaterpc.Header{
 		MsgId: uint32(msgid.MsgID_ROOM_DESK_CREATED_NTF)}

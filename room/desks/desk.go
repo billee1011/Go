@@ -730,9 +730,9 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	bankerSeat := mjContext.GetZhuangjiaIndex()
 	totalCardsNum := mjContext.GetCardTotalNum()
 	gameStage := getGameStage(mjContext.GetCurState())
-	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
+	// gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
-		GameId:      &gameID,
+		// GameId:      &gameID,
 		GameStage:   &gameStage,
 		Players:     getRecoverPlayerInfo(playerID, d),
 		Dices:       mjContext.GetDices(),
