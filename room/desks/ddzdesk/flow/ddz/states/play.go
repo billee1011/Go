@@ -80,7 +80,6 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		})
 
 		context.CurrentPlayerId = nextPlayerId
-		context.LastPlayerId = playerId
 		//产生超时事件
 		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 		context.StartTime, _ = time.Now().MarshalBinary()
@@ -157,7 +156,6 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	//更新context
 	context.CurrentPlayerId = nextPlayerId
-	context.LastPlayerId = playerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
