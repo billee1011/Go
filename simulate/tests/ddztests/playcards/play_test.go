@@ -7,6 +7,7 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
+	"steve/simulate/utils/doudizhu"
 	"testing"
 	"time"
 
@@ -32,6 +33,12 @@ func TestPlay(t *testing.T) {
 
 	// 当前状态的时间间隔
 	logEntry.Infof("当前状态 = %v, 进入下一状态等待时间 = %v", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
+
+	// 叫地主用例1
+	doudizhu.JiaodizhuTest1(deskData)
+
+	// 加倍用例1
+	doudizhu.JiabeiTest1(deskData)
 
 	// ---------------------------------------------------------	行牌状态	-----------------------------------------------------------
 	// 最终地主的deskPlayer
