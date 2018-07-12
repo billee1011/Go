@@ -17,6 +17,7 @@ type playState struct{}
 
 func (s *playState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
+	context.CurStage = ddz.DDZStage_DDZ_STAGE_PLAYING
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -191,7 +192,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		CardType:     &clientCardType,
 		TotalBomb:    &context.TotalBomb,
 		NextPlayerId: &nextPlayerId,
-		NextStage:    genNextStage(nextStage),
+		NextStage:    GenNextStage(nextStage),
 	})
 
 	if len(player.HandCards) == 0 {

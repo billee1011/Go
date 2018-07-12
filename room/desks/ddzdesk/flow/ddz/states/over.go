@@ -1,13 +1,13 @@
 package states
 
 import (
-	"steve/room/desks/ddzdesk/flow/machine"
 	"github.com/Sirupsen/logrus"
-	"steve/server_pb/ddz"
+	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
-	"github.com/golang/protobuf/proto"
+	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/room/interfaces/global"
+	"steve/server_pb/ddz"
 )
 
 type overState struct{}
@@ -16,6 +16,7 @@ func (s *overState) OnEnter(m machine.Machine) {
 	logrus.WithField("context", getDDZContext(m)).Debugln("进入Over状态")
 
 	context := getDDZContext(m)
+	context.CurStage = ddz.DDZStage_DDZ_STAGE_OVER
 
 	totalGrab := context.TotalGrab
 	totalDouble := context.TotalDouble
@@ -34,14 +35,14 @@ func (s *overState) OnEnter(m machine.Machine) {
 	for _, player := range context.GetPlayers() {
 		playerId := player.PalyerId
 		coin := global.GetPlayerMgr().GetPlayer(playerId).GetCoin()
-		s := If(playerId==lordId, score*2, score).(uint64)
-		maxScores[playerId] = If(s>coin, coin, s).(uint64)
+		s := If(playerId == lordId, score*2, score).(uint64)
+		maxScores[playerId] = If(s > coin, coin, s).(uint64)
 	}
 
 	settleScores := make(map[uint64]uint64)
 
 	lordMax := maxScores[lordId]
-	score = lordMax/2
+	score = lordMax / 2
 	lordScore := uint64(0)
 	for _, player := range context.GetPlayers() {
 		playerId := player.PalyerId
@@ -49,11 +50,11 @@ func (s *overState) OnEnter(m machine.Machine) {
 			continue
 		}
 		maxScore := maxScores[playerId]
-		settleScore := If(score>maxScore, maxScore, score).(uint64)
+		settleScore := If(score > maxScore, maxScore, score).(uint64)
 		settleScores[playerId] = settleScore
 		lordScore += settleScore
 	}
-	if lordMax % 2 == 1 {//如果地主金豆数是奇数
+	if lordMax%2 == 1 { //如果地主金豆数是奇数
 		if lordWin {
 			lordScore-- //少赢一分(赢的分不能超过本人金豆上限)
 		} else {
@@ -74,7 +75,7 @@ func (s *overState) OnEnter(m machine.Machine) {
 		billPlayer.Multiple = proto.Int32(int32(multiple))
 		originCoin := roomPlayer.GetCoin()
 		settleScore := settleScores[playerId]
-		roomPlayer.SetCoin(originCoin-settleScore)//实施扣费
+		roomPlayer.SetCoin(originCoin - settleScore) //实施扣费
 		billPlayer.Score = proto.Int64(int64(settleScore))
 		billPlayer.CurrentScore = proto.Int64(int64(roomPlayer.GetCoin()))
 		billPlayer.Lord = &player.Lord
@@ -86,11 +87,11 @@ func (s *overState) OnEnter(m machine.Machine) {
 	antiSpring := !context.Spring && context.AntiSpring
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF,
 		&room.DDZGameOverNtf{
-			WinnerId: &context.WinnerId,
+			WinnerId:     &context.WinnerId,
 			ShowHandTime: proto.Uint32(4),
-			Spring: &context.Spring,
-			AntiSpring: &antiSpring,
-			Bills: billPlayers,
+			Spring:       &context.Spring,
+			AntiSpring:   &antiSpring,
+			Bills:        billPlayers,
 		},
 	)
 }

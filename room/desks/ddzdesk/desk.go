@@ -231,60 +231,6 @@ func (d *desk) processEvent(e *deskEvent) {
 		EventContext: e.eventContext,
 	}
 
-	/* 	// 处理恢复对局的请求
-	   	if e.eventID == int(ddz.EventID_event_resume_request) {
-	   		message := &ddz.ResumeRequestEvent{}
-	   		err := proto.Unmarshal(e.eventContext, message)
-	   		if err != nil {
-	   			//logEntry.WithError(err).Errorln("处理恢复对局事件失败")
-	   			return
-	   		}
-
-	   		// 请求的玩家ID
-	   		reqPlayerID := message.GetHead().GetPlayerId()
-
-	   		bExist := false
-
-	   		// 是否有这个玩家
-	   		for _, player := range d.ddzContext.GetPlayers() {
-	   			if player.GetPalyerId() == reqPlayerID {
-	   				bExist = true
-	   			}
-	   		}
-
-	   		// 存在的话，则发送回复消息
-	   		if bExist {
-	   			playersInfo := []*room.DDZPlayerInfo{}
-
-	   			for _, player := range d.ddzContext.GetPlayers() {
-	   				// Player转为RoomPlayer
-	   				roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
-	   				lord := player.GetLord()
-	   				double := player.GetIsDouble()
-	   				tuoguan := false // TODO
-
-	   				ddzPlayerInfo := room.DDZPlayerInfo{}
-	   				ddzPlayerInfo.PlayerInfo = &roomPlayerInfo
-	   				ddzPlayerInfo.OutCards = player.GetOutCards()
-	   				ddzPlayerInfo.HandCards = player.GetHandCards()
-	   				ddzPlayerInfo.Lord = &lord
-	   				ddzPlayerInfo.IsDouble = &double
-	   				ddzPlayerInfo.Tuoguan = &tuoguan
-
-	   				playersInfo = append(playersInfo, &ddzPlayerInfo)
-	   			}
-
-	   			// 发送游戏信息
-	   			d.getMessageSender().([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_REQ, &room.DDZResumeGameRsp{
-	   				Result: genResult(0, ""),
-	   				GameInfo: &room.DDZDeskInfo{
-	   					Players: playersInfo,
-	   					Stage:d.get
-	   				},
-	   			})
-	   		}
-	   	} */
-
 	result := procedure.HandleEvent(params)
 	if !result.Succeed {
 		entry.Errorln("处理事件失败")

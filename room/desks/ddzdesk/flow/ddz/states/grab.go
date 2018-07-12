@@ -17,6 +17,7 @@ type grabState struct{}
 
 func (s *grabState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
+	context.CurStage = ddz.DDZStage_DDZ_STAGE_CALL
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -58,8 +59,6 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.TotalGrab = 1
 		//context.LordPlayerId = playerId
 		context.CurStage = ddz.DDZStage_DDZ_STAGE_GRAB
-	} else {
-		context.CurStage = ddz.DDZStage_DDZ_STAGE_CALL //还没人叫地主
 	}
 
 	if context.FirstGrabPlayerId != 0 && grab { //抢地主
@@ -106,7 +105,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		Grab:         &grab,
 		TotalGrab:    &context.TotalGrab,
 		NextPlayerId: &nextPlayerId,
-		NextStage:    genNextStage(room.DDZStage(int32(context.CurStage))),
+		NextStage:    GenNextStage(room.DDZStage(int32(context.CurStage))),
 	})
 
 	if context.CurStage == ddz.DDZStage_DDZ_STAGE_DEAL {
@@ -133,7 +132,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			PlayerId:  &lordPlayerId,
 			TotalGrab: &context.TotalGrab,
 			Dipai:     context.WallCards,
-			NextStage: genNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
+			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
 		return int(ddz.StateID_state_double), nil
 	} else {

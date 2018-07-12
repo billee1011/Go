@@ -16,6 +16,7 @@ type doubleState struct{}
 
 func (s *doubleState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
+	context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
 	context.CountDownPlayers = getPlayerIds(m)
 	context.StartTime, _ = time.Now().MarshalBinary()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_DOUBLE]
@@ -51,7 +52,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	var nextStage *room.NextStage
 	context.DoubledCount++
 	if context.DoubledCount >= 3 {
-		nextStage = genNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
+		nextStage = GenNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_DOUBLE_NTF, &room.DDZDoubleNtf{
 		PlayerId:    &playerId,
