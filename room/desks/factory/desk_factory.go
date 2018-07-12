@@ -13,12 +13,12 @@ import (
 
 type deskFactory struct{}
 
-func (df *deskFactory) CreateDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions) (interfaces.CreateDeskResult, error) {
+func (df *deskFactory) CreateDesk(deskPlayers []interfaces.DeskPlayer, gameID int, opt interfaces.CreateDeskOptions) (interfaces.CreateDeskResult, error) {
 	switch room.GameId(gameID) {
 	case room.GameId_GAMEID_DOUDIZHU:
-		return ddzdesk.CreateDDZDesk(players, gameID, opt, global.GetDeskIDAllocator())
+		return ddzdesk.CreateDDZDesk(deskPlayers, gameID, opt, global.GetDeskIDAllocator())
 	default:
-		return mjdesk.CreateMajongDesk(players, gameID, opt, global.GetDeskIDAllocator())
+		return mjdesk.CreateMajongDesk(deskPlayers, gameID, opt, global.GetDeskIDAllocator())
 
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/data/player"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
@@ -43,20 +44,25 @@ func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 		ErrCode: roommgr.RoomError_FAILED, // 默认是失败的
 	}
 
-	playerIDs := []uint64{}
-	for _, player := range players {
-		playerIDs = append(playerIDs, player.GetPlayerId())
+	deskPlayers := make([]interfaces.DeskPlayer, 0, len(players))
+	var seat uint32
+	for _, pbPlayer := range players {
+		robotLv := int(pbPlayer.GetRobotLevel())
+		playerID := pbPlayer.GetPlayerId()
+		deskPlayer := deskbase.CreateDeskPlayer(playerID, seat, player.GetPlayerCoin(playerID), 2, robotLv)
+		deskPlayers = append(deskPlayers, deskPlayer)
+		seat++
 	}
 
 	deskFactory := global.GetDeskFactory()
 	deskMgr := global.GetDeskMgr()
 
 	// 创建桌子
-	result, err := deskFactory.CreateDesk(playerIDs, int(req.GetGameId()), interfaces.CreateDeskOptions{})
+	result, err := deskFactory.CreateDesk(deskPlayers, int(req.GetGameId()), interfaces.CreateDeskOptions{})
 	if err != nil {
 		logEntry.WithFields(
 			logrus.Fields{
-				"players": playerIDs,
+				"players": deskPlayers,
 				"result":  result,
 			},
 		).WithError(err).Errorln("创建桌子失败")

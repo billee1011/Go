@@ -63,7 +63,13 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenera
 		RobotLv:       robotLv,
 	})
 	if err == nil {
-		aeg.addAIEvents(result, &aiResult, playerID, interfaces.OverTimeEvent)
+		eventType := interfaces.OverTimeEvent
+		if aiType == interfaces.RobotAI {
+			eventType = interfaces.RobotEvent
+		} else if aiType == interfaces.TuoGuangAI {
+			eventType = interfaces.TuoGuanEvent
+		}
+		aeg.addAIEvents(result, &aiResult, playerID, eventType)
 	}
 }
 
@@ -142,7 +148,7 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	players := mjContext.GetPlayers()
 	for _, player := range players {
 		playerID := player.GetPalyerId()
-		if lv, exist := params.RobotLv[playerID]; exist {
+		if lv, exist := params.RobotLv[playerID]; exist && lv != 0 {
 			aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.RobotAI, lv)
 		}
 	}

@@ -25,6 +25,8 @@ type DeskPlayer interface {
 	IsTuoguan() bool
 	// SetTuoguan 设置托管
 	SetTuoguan(tuoguan bool, notify bool)
+	// 获取机器人等级
+	GetRobotLv() int
 }
 
 // PlayerEnterQuitInfo 玩家退出进入信息
@@ -110,7 +112,7 @@ type CreateDeskResult struct {
 // DeskFactory 牌桌工厂
 type DeskFactory interface {
 	// CreateDesk 创建牌桌
-	CreateDesk(players []uint64, gameID int, opt CreateDeskOptions) (CreateDeskResult, error)
+	CreateDesk(deskPlayers []DeskPlayer, gameID int, opt CreateDeskOptions) (CreateDeskResult, error)
 }
 
 // DeskIDAllocator 牌桌 ID 分配器

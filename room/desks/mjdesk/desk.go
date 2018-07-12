@@ -261,11 +261,19 @@ func (d *desk) genTimerEvent() {
 		"state_number":    dContext.stateNumber,
 		"tuoguan_players": tuoGuanPlayers,
 	})
+	deskPlayers := d.GetDeskPlayers()
+	robotLvs := make(map[uint64]int, len(deskPlayers))
+	for _, deskPlayer := range deskPlayers {
+		robotLv := deskPlayer.GetRobotLv()
+		if robotLv != 0 {
+			robotLvs[deskPlayer.GetPlayerID()] = robotLv
+		}
+	}
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
 		MajongContext:  &dContext.mjContext,
 		CurTime:        time.Now(),
 		StateTime:      dContext.stateTime,
-		RobotLv:        map[uint64]int{},
+		RobotLv:        robotLvs,
 		TuoGuanPlayers: tuoGuanPlayers,
 	})
 	for _, event := range result.Events {
