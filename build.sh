@@ -15,6 +15,10 @@ cp match/config.yml configs/match/config.yml
 go build -o bin/login/login.so -buildmode=plugin steve/login 
 cp login/config.yml configs/login/config.yml 
 
+
+go build -o bin/hall/hall.so -buildmode=plugin steve/hall 
+cp hall/config.yml configs/hall/config.yml 
+
 ./simulate/packtests.sh 
 
 

@@ -8,15 +8,24 @@ import (
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
 // getPlayerState 获取玩家状态
-func getPlayerState(playerID uint64) common.PlayerState {
-	if player.GetPlayerRoomAddr(playerID) == "" {
-		return common.PlayerState_PS_IDLE
+func getPlayerState(playerID uint64) (common.PlayerState, int) {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "getPlayerState",
+		"player_id": playerID,
+	})
+	states, err := player.GetPlayerPlayStates(playerID, player.PlayStates{
+		State: int(common.PlayerState_PS_IDLE),
+	})
+	if err != nil {
+		entry.Errorln("获取玩家状态失败")
+		return common.PlayerState_PS_IDLE, 0
 	}
-	return common.PlayerState_PS_GAMEING
+	return common.PlayerState(states.State), 0
 }
 
 // HandleGetPlayerInfoReq 处理获取玩家信息请求
@@ -31,7 +40,9 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	response.ErrCode = proto.Uint32(0)
 	response.Coin = proto.Uint64(player.GetPlayerCoin(playerID))
 	response.NickName = proto.String(player.GetPlayerNickName(playerID))
-	response.PlayerState = getPlayerState(playerID).Enum()
+	state, gameID := getPlayerState(playerID)
+	response.PlayerState = state.Enum()
+	response.GameId = common.GameId(gameID).Enum()
 	return
 }
 
@@ -44,6 +55,8 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 			Body:  response,
 		},
 	}
-	response.PlayerState = getPlayerState(playerID).Enum()
+	state, gameID := getPlayerState(playerID)
+	response.PlayerState = state.Enum()
+	response.GameId = common.GameId(gameID).Enum()
 	return
 }

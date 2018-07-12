@@ -3,6 +3,7 @@ package mgr
 import (
 	"errors"
 	"fmt"
+	"steve/client_pb/common"
 	"steve/common/data/player"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
@@ -42,7 +43,7 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 	})
 
 	playerIDs := facade.GetDeskPlayerIDs(desk)
-	dm.bindPlayerRoomAddr(playerIDs)
+	dm.bindPlayerRoomAddr(playerIDs, desk.GetGameID())
 
 	for _, playerID := range playerIDs {
 		if _, ok := dm.playerDeskMap.Load(playerID); ok {
@@ -66,7 +67,7 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 }
 
 // 绑定玩家所在 room 服
-func (dm *deskMgr) bindPlayerRoomAddr(players []uint64) {
+func (dm *deskMgr) bindPlayerRoomAddr(players []uint64, gameID int) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "deskFactory.bindPlayerRoomAddr",
 		"players":   players,
@@ -75,8 +76,12 @@ func (dm *deskMgr) bindPlayerRoomAddr(players []uint64) {
 	roomPort := viper.GetInt("rpc_port")
 	roomAddr := fmt.Sprintf("%s:%d", roomIP, roomPort)
 	for _, playerID := range players {
-		if err := player.SetPlayerRoomAddr(playerID, roomAddr); err != nil {
-			entry.WithError(err).Errorln("绑定玩家所在 room 失败")
+		if err := player.SetPlayerPlayStates(playerID, player.PlayStates{
+			GameID:   gameID,
+			State:    int(common.PlayerState_PS_GAMEING),
+			RoomAddr: roomAddr,
+		}); err != nil {
+			entry.WithError(err).Errorln("设置玩家游戏状态失败")
 		}
 	}
 }
@@ -88,8 +93,12 @@ func (dm *deskMgr) unbindPlayerRoomAddr(players []uint64) {
 		"players":   players,
 	})
 	for _, playerID := range players {
-		if err := player.SetPlayerRoomAddr(playerID, ""); err != nil {
-			entry.WithError(err).Errorln("解除玩家的 room 服绑定失败")
+		if err := player.SetPlayerPlayStates(playerID, player.PlayStates{
+			GameID:   0,
+			State:    int(common.PlayerState_PS_IDLE),
+			RoomAddr: "",
+		}); err != nil {
+			entry.WithError(err).Errorln("设置玩家游戏状态失败")
 		}
 	}
 }

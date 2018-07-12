@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"steve/common/data/helper"
 	"steve/common/data/redis"
+	"strconv"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -16,6 +17,10 @@ const (
 	playerGatewayAddrField string = "gate_addr"
 	// playerRoomAddrField 玩家所在 room 地址字段名
 	playerRoomAddrField string = "room_addr"
+	// playerGameStateField 玩家游戏状态字段名
+	playerGameStateField string = "game_state"
+	// playerGameIDField 玩家游戏 ID 字段名
+	playerGameIDField string = "game_id"
 
 	// playerNickNameField 玩家昵称字段
 	playerNickNameField string = "nick_name"
@@ -164,4 +169,53 @@ func GetPlayerRoomAddr(playerID uint64) string {
 // SetPlayerRoomAddr 设置玩家所在 room 地址
 func SetPlayerRoomAddr(playerID uint64, addr string) error {
 	return setPlayerStringField(playerID, playerRoomAddrField, addr)
+}
+
+// PlayStates 玩家游戏状态
+type PlayStates struct {
+	State    int    // 玩家状态，参考 client_pb/common.PlayerState
+	GameID   int    // 当前正在进行的游戏 ID， 参考 client_pb/common.GameId
+	RoomAddr string // 所在的 Room 服地址
+}
+
+// SetPlayerPlayStates 设置玩家状态
+func SetPlayerPlayStates(playerID uint64, states PlayStates) error {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "setPlayerUint64Field",
+		"player_id": playerID,
+		"states":    states,
+	})
+	redis := redis.GetRedisClient()
+	key := fmtPlayerKey(playerID)
+	fields := map[string]interface{}{
+		playerGameStateField: states.State,
+		playerGameIDField:    states.GameID,
+		playerRoomAddrField:  states.RoomAddr,
+	}
+	cmd := redis.HMSet(key, fields)
+	if cmd.Err() != nil {
+		entry.WithError(cmd.Err()).Errorln(errRedisOperation)
+		return errRedisOperation
+	}
+	return nil
+}
+
+// GetPlayerPlayStates 获取玩家游戏状态
+func GetPlayerPlayStates(playerID uint64, def PlayStates) (PlayStates, error) {
+	redis := redis.GetRedisClient()
+	key := fmtPlayerKey(playerID)
+	cmds := redis.HMGet(key, playerGameStateField, playerGameIDField, playerRoomAddrField)
+	vals := cmds.Val()
+	states := def
+
+	if vals[0] != nil {
+		states.State, _ = strconv.Atoi(vals[0].(string))
+	}
+	if vals[1] != nil {
+		states.GameID, _ = strconv.Atoi(vals[1].(string))
+	}
+	if vals[2] != nil {
+		states.RoomAddr = vals[2].(string)
+	}
+	return states, nil
 }
