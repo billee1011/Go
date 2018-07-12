@@ -1,7 +1,7 @@
 package majong
 
 import (
-	"steve/client_pb/msgId"
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/gutils"
@@ -10,6 +10,7 @@ import (
 	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -80,7 +81,7 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 		// 扣费并设置玩家金币数
 		majongSettle.chargeCoin(deskPlayers, rSettleInfo.Scores)
 		// 广播退税信息
-		facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgId.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+		facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 			BillPlayersInfo: majongSettle.getBillPlayerInfos(deskPlayers, rSettleInfo, rSettleInfo.Scores),
 		})
 	}
@@ -92,9 +93,11 @@ func (majongSettle *majongSettle) RoundSettle(desk interfaces.Desk, mjContext ma
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
 	deskPlayers := desk.GetDeskPlayers()
+	// 游戏结算玩法
+	settleOption := GetSettleOption(int(mjContext.GetGameId()))
 
 	for _, sInfo := range contextSInfos {
-		if !majongSettle.handleSettle[sInfo.Id] {
+		if !CanInstantSettle(sInfo.SettleType, settleOption) {
 			// 扣费并设置玩家金币数
 			majongSettle.chargeCoin(deskPlayers, majongSettle.settleMap[sInfo.Id])
 		}
@@ -122,15 +125,21 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 		if needBillDetails {
 			balanceRsp.BillDetail, totalValue = majongSettle.makeBillDetails(pid, contextSInfos)
 			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, nil, mjContext)
-		} else {
+		} else if len(contextSInfos) != 0 {
 			sinfo := contextSInfos[0]
 			cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
 			fans := make([]*room.Fan, 0)
 			fans, totalValue = makeFanType(sinfo.CardType, cardOption)
 			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, fans, mjContext)
+
+			logrus.WithFields(logrus.Fields{
+				"sinfo":                      "sinfo",
+				"totalValue":                 totalValue,
+				"balanceRsp.BillPlayersInfo": balanceRsp.BillPlayersInfo,
+			}).Errorln("记录该玩家单局结算信息")
 		}
 		// 通知该玩家单局结算信息
-		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgId.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
+		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 	}
 }
 
@@ -139,11 +148,11 @@ func (majongSettle *majongSettle) instantSettle(desk interfaces.Desk, sInfo *maj
 	// 扣费并设置玩家金币数
 	majongSettle.chargeCoin(desk.GetDeskPlayers(), score)
 	// 广播结算
-	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgId.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 		BillPlayersInfo: majongSettle.getBillPlayerInfos(desk.GetDeskPlayers(), sInfo, score),
 	})
 	// 广播认输
-	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgId.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
+	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
 		PlayerId: brokerPlayers,
 	})
 }
@@ -359,11 +368,14 @@ func (majongSettle *majongSettle) makeBillPlayerInfo(currentPid uint64, cardValu
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
 		playerID := player.GetPalyerId()
+		coin := int64(global.GetPlayerMgr().GetPlayer(playerID).GetCoin())
 		billPlayerInfo := &room.BillPlayerInfo{
-			Pid:       proto.Uint64(playerID),
-			Score:     proto.Int64(majongSettle.roundScore[playerID]),
-			CardValue: proto.Int32(cardValue),
-			Fan:       fans,
+			Pid:          proto.Uint64(playerID),
+			Score:        proto.Int64(majongSettle.roundScore[playerID]),
+			CardValue:    proto.Int32(cardValue),
+			BillType:     room.BillType(-1).Enum(),
+			Fan:          fans,
+			CurrentScore: proto.Int64(coin),
 		}
 		if playerID == currentPid {
 			billPlayerInfo.CardsGroup = gutils.GetCardsGroup(player)

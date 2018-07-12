@@ -9,14 +9,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//TestDaSiXi_ZiMo 共同步骤
+//TestDaSiXi_quanDaiYao_ZiMo 大四喜 全带幺
+//步奏:庄家天胡自摸
+//期望:所有玩家收到结算通知
 
-func TestDaSiXi_ZiMo(t *testing.T) {
+func TestDaSiXi_quanDaiYao_ZiMo(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.PlayerNum = 2
 	params.BankerSeat = 0
 	params.PeiPaiGame = "ermj"
 	params.GameID = room.GameId_GAMEID_ERRENMJ
+	params.PlayerSeatGold = map[int]uint64{0: 100000, 1: 100000}
 	params.IsDq = false
 	params.IsHsz = false
 	params.Cards = [][]uint32{
@@ -32,11 +35,9 @@ func TestDaSiXi_ZiMo(t *testing.T) {
 	//开局 庄家 自询 能自摸
 	utils.CheckZixunNtf(t, deskData, banker, false, false, true)
 	// 发送胡请求
-	// assert.Nil(t, utils.SendHuReq(deskData, banker))
+	assert.Nil(t, utils.SendHuReq(deskData, banker))
 	// 检测所有玩家收到自摸通知
-	// utils.CheckHuNotify(t, deskData, []int{banker}, banker, 44, room.HuType_HT_TIANHU)
-
-	// 检测对对胡自摸分数
-	// winScro := 2 * 2 * (len(deskData.Players) - 1)
-	// utils.CheckInstantSettleScoreNotify(t, deskData, banker, int64(winScro))
+	utils.CheckHuNotify(t, deskData, []int{banker}, banker, 44, room.HuType_HT_TIANHU)
+	// 检查番结算 天胡 88,无花 4,大四喜 88，混一色 6，全带幺 4,四暗刻 64 = 254
+	utils.CheckFanSettle(t, deskData, params.GameID, banker, 254, room.FanType_FT_DASIXI)
 }

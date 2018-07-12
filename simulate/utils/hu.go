@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	 "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
@@ -22,7 +22,9 @@ func SendHuReq(deskData *DeskData, seat int) error {
 
 // CheckHuNotify 检查胡通知
 func CheckHuNotify(t *testing.T, deskData *DeskData, huSeats []int, from int, card uint32, huType room.HuType) {
-	CheckHuNotifyBySeats(t, deskData, huSeats, from, card, huType, []int{0, 1, 2, 3})
+	rs := len(deskData.Players)
+	playerAll := []int{0, 1, 2, 3}[:rs]
+	CheckHuNotifyBySeats(t, deskData, huSeats, from, card, huType, playerAll)
 }
 
 // CheckHuNotifyBySeats 指定玩家检查胡通知
