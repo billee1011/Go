@@ -1,7 +1,7 @@
 package utils
 
 import (
-	 "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createMsgHead(msgID msgId.MsgID) interfaces.SendHead {
+func createMsgHead(msgID msgid.MsgID) interfaces.SendHead {
 	return interfaces.SendHead{
 		Head: interfaces.Head{
 			MsgID: uint32(msgID),
@@ -20,7 +20,7 @@ func createMsgHead(msgID msgId.MsgID) interfaces.SendHead {
 }
 
 // CreateMsgHead 创建消息头
-func CreateMsgHead(msgID msgId.MsgID) interfaces.SendHead {
+func CreateMsgHead(msgID msgid.MsgID) interfaces.SendHead {
 	return createMsgHead(msgID)
 }
 
@@ -38,7 +38,7 @@ func CheckChuPaiNotifyWithSeats(t *testing.T, deskData *DeskData, card uint32, s
 	activePlayer := GetDeskPlayerBySeat(seat, deskData)
 	for _, s := range expectedSeats {
 		player := GetDeskPlayerBySeat(s, deskData)
-		messageExpector := player.Expectors[msgId.MsgID_ROOM_CHUPAI_NTF]
+		messageExpector := player.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
 		ntf := &room.RoomChupaiNtf{}
 		assert.Nil(t, messageExpector.Recv(global.DefaultWaitMessageTime, ntf))
 		assert.Equal(t, card, ntf.GetCard())
@@ -55,7 +55,7 @@ func CheckChuPaiNotify(t *testing.T, deskData *DeskData, card uint32, seat int) 
 func CheckMoPaiNotify(t *testing.T, deskData *DeskData, mopaiSeat int, card uint32) *DeskPlayer {
 	player := GetDeskPlayerBySeat(mopaiSeat, deskData)
 	for _, deskPlayer := range deskData.Players {
-		expector, _ := deskPlayer.Expectors[msgId.MsgID_ROOM_MOPAI_NTF]
+		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
 		ntf := &room.RoomMopaiNtf{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf))
 		assert.Equal(t, false, ntf.GetBack())
@@ -71,7 +71,7 @@ func CheckMoPaiNotify(t *testing.T, deskData *DeskData, mopaiSeat int, card uint
 //CheckPengNotify 检查碰广播
 func CheckPengNotify(t *testing.T, deskData *DeskData, seat int, card uint32) {
 	xjPlayer := GetDeskPlayerBySeat(seat, deskData)
-	messageExpector := xjPlayer.Expectors[msgId.MsgID_ROOM_PENG_NTF]
+	messageExpector := xjPlayer.Expectors[msgid.MsgID_ROOM_PENG_NTF]
 	ntf := &room.RoomPengNtf{}
 	assert.Nil(t, messageExpector.Recv(2*time.Second, ntf))
 	assert.Equal(t, card, ntf.GetCard())
@@ -82,7 +82,7 @@ func CheckPengNotify(t *testing.T, deskData *DeskData, seat int, card uint32) {
 //CheckZixunNotify 检查自询广播
 func CheckZixunNotify(t *testing.T, deskData *DeskData, seat int) {
 	xjPlayer := GetDeskPlayerBySeat(seat, deskData)
-	zxMessageExpector := xjPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	zxMessageExpector := xjPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	zxNtf := &room.RoomZixunNtf{}
 	assert.Nil(t, zxMessageExpector.Recv(2*time.Second, zxNtf))
 }

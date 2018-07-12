@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -56,6 +57,9 @@ func (som *CardTypeOptionManager) loadOption(path string) {
 		"func_name": "CardTypeOptionManager.loadOption",
 		"path":      path,
 	})
+	if !strings.HasSuffix(path, "yaml") {
+		return
+	}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		entry.WithError(err).Panicln("读取文件失败")

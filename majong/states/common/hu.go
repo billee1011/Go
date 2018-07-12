@@ -98,5 +98,5 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(mjContext.GetLastOutCard()))),
 		HuType:       huType,
 	}
-	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_HU_NTF, &body)
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }

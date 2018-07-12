@@ -5,18 +5,7 @@ gang_value:
   angang_value: 2            # 暗杠倍数2
   minggang_value: 2          # 明杠倍数2
   bugang_value: 1            # 补杠倍数1
-# 胡牌倍数
-# hu_type_value:
-#   hu_ganghoupao: 2     # 杠后炮2倍
-#   hu_qiangganghu: 2    # 枪杠胡2倍
-#   hu_dianpao: 1        # 点炮1倍
-#   hu_gangkai: 4        # 杠开4倍
-#   hu_haidilao: 2       # 海底捞2倍
-#   hu_gangshanghaidilao: 4 # 杠上海底捞4倍
-#   hu_zimo: 2              # 自摸2倍
-#   hu_tianhu: 64           # 天胡64倍
-#   hu_dihu: 64             # 地胡64倍
-
+  
 # 已胡牌玩家(未退出)可参与的结算
 huPlayer_can_settle:
   huPlayer_can_gang_settle: true #杠结算

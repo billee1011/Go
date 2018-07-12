@@ -383,5 +383,18 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		Cards: cards,
 	}
 	cardsGroupList = append(cardsGroupList, cardsGroup)
+	// 胡牌组
+	var huCardGroups []*room.CardsGroup
+	for _, huCard := range player.GetHuCards() {
+		srcPlayerID := huCard.GetSrcPlayer()
+		huCardGroup := &room.CardsGroup{
+			Cards:  []uint32{ServerCard2Number(huCard.GetCard())},
+			Type:   room.CardsGroupType_CGT_HU.Enum(),
+			Pid:    &srcPlayerID,
+			IsReal: proto.Bool(huCard.GetIsReal()),
+		}
+		huCardGroups = append(huCardGroups, huCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, huCardGroups...)
 	return cardsGroupList
 }

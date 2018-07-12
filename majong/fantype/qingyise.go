@@ -1,49 +1,30 @@
 package fantype
 
+import majongpb "steve/server_pb/majong"
+
 func checkQingyise(tc *typeCalculator) bool {
 	handCards := tc.getHandCards()
 	color := handCards[0].Color
-	for _, card := range handCards {
+
+	checkCards := make([]*majongpb.Card, 0)
+
+	checkCards = append(checkCards, handCards...)
+	checkCards = append(checkCards, tc.getHuCard().GetCard())
+
+	for _, gangCard := range tc.getGangCards() {
+		checkCards = append(checkCards, gangCard.Card)
+	}
+	for _, pengCard := range tc.getPengCards() {
+		checkCards = append(checkCards, pengCard.Card)
+	}
+	for _, chiCard := range tc.getChiCards() {
+		checkCards = append(checkCards, chiCard.Card)
+	}
+	for _, card := range checkCards {
 		if card.Color != color {
 			return false
 		}
 		if !IsXuShuCard(card) {
-			return false
-		}
-	}
-	huCard := tc.getHuCard()
-	if huCard != nil && huCard.GetCard().GetColor() != color {
-		return false
-	}
-	if !IsXuShuCard(huCard.GetCard()) {
-		return false
-	}
-	gangCards := tc.getGangCards()
-	for _, card := range gangCards {
-		if card.GetCard().GetColor() != color {
-			return false
-		}
-		if !IsXuShuCard(card.GetCard()) {
-			return false
-		}
-	}
-
-	pengCards := tc.getPengCards()
-	for _, card := range pengCards {
-		if card.GetCard().GetColor() != color {
-			return false
-		}
-		if !IsXuShuCard(card.GetCard()) {
-			return false
-		}
-	}
-
-	chiCards := tc.getChiCards()
-	for _, chiCard := range chiCards {
-		if chiCard.Card.GetColor() != color {
-			return false
-		}
-		if !IsXuShuCard(chiCard.Card) {
 			return false
 		}
 	}

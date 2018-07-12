@@ -9,12 +9,12 @@ import (
 
 // RegisterRoomReqHandlers 注册牌桌请求处理函数
 func RegisterRoomReqHandlers(e exchanger.Exchanger) {
-	roomReqs := []msgId.MsgID{
-		msgId.MsgID_ROOM_HUANSANZHANG_REQ,
-		msgId.MsgID_ROOM_XINGPAI_ACTION_REQ,
-		msgId.MsgID_ROOM_DINGQUE_REQ,
-		msgId.MsgID_ROOM_CHUPAI_REQ,
-		msgId.MsgID_ROOM_CARTOON_FINISH_REQ,
+	roomReqs := []msgid.MsgID{
+		msgid.MsgID_ROOM_HUANSANZHANG_REQ,
+		msgid.MsgID_ROOM_XINGPAI_ACTION_REQ,
+		msgid.MsgID_ROOM_DINGQUE_REQ,
+		msgid.MsgID_ROOM_CHUPAI_REQ,
+		msgid.MsgID_ROOM_CARTOON_FINISH_REQ,
 	}
 
 	for _, msg := range roomReqs {

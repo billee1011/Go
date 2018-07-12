@@ -11,7 +11,7 @@ func checkHunYiSe(tc *typeCalculator) bool {
 	existXuShu := false
 	cardColor := majongpb.CardColor(-1)
 	for _, card := range checkCards {
-		if !IsXuShuCard(card) {
+		if card.GetColor() == majongpb.CardColor_ColorFeng {
 			existZi = true
 			continue
 		}

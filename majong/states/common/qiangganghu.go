@@ -97,5 +97,5 @@ func (s *QiangganghuState) notifyHu(flow interfaces.MajongFlow) {
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		HuType:       room.HuType_HT_QIANGGANGHU.Enum(),
 	}
-	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_HU_NTF, &body)
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }

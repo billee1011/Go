@@ -1,7 +1,7 @@
 package facade
 
 import (
-	 "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // BroadcaseMessage 将消息广播给牌桌所有玩家
-func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgId.MsgID, msg proto.Message) {
+func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgid.MsgID, msg proto.Message) {
 	mjContext := flow.GetMajongContext()
 	players := []uint64{}
 
@@ -27,25 +27,4 @@ func CalculateCardValue(ctc interfaces.FantypeCalculator, context *majongpb.Majo
 	types, gen, hua := ctc.Calculate(fanParams)
 	cardValue = ctc.CardTypeValue(context, types, gen, hua)
 	return
-}
-
-// SettleGang 作杠结算
-func SettleGang(factory interfaces.GameSettlerFactory, gameID int, params interfaces.GangSettleParams) *majongpb.SettleInfo {
-	f := factory.CreateSettlerFactory(gameID)
-	settler := f.CreateGangSettler()
-	return settler.Settle(params)
-}
-
-// SettleHu 作胡结算
-func SettleHu(factory interfaces.GameSettlerFactory, gameID int, params interfaces.HuSettleParams) []*majongpb.SettleInfo {
-	f := factory.CreateSettlerFactory(gameID)
-	settler := f.CreateHuSettler()
-	return settler.Settle(params)
-}
-
-// SettleRound 作单局结算
-func SettleRound(factory interfaces.GameSettlerFactory, gameID int, params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
-	f := factory.CreateSettlerFactory(gameID)
-	settler := f.CreateRoundSettle()
-	return settler.Settle(params)
 }

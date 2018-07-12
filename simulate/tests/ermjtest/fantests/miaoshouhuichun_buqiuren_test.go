@@ -55,7 +55,7 @@ func Test_miaoShouHuiChun_buQiuRen_Zimo_ErRen(t *testing.T) {
 	assert.Nil(t, utils.SendHuReq(deskData, zimoSeat))
 	// 检测所有玩家收到自摸通知
 	utils.CheckHuNotify(t, deskData, []int{zimoSeat}, zimoSeat, 19, room.HuType_HT_HAIDILAO)
-	// 检查番结算 无花 4,三暗刻 16,清一色 16,不求人 4，平胡 1，单吊将 1,四同顺 48,妙手回春 8 = 98
-	utils.CheckFanSettle(t, deskData, params.GameID, zimoSeat, 98, room.FanType_FT_MIAOSHOUHUICHUN)
+	// 检查番结算 无花 4,三暗刻 16,清一色 16,不求人 4，平胡 1，四同顺 48,妙手回春 8 = 97
+	utils.CheckFanSettle(t, deskData, params.GameID, zimoSeat, 97, room.FanType_FT_MIAOSHOUHUICHUN)
 
 }

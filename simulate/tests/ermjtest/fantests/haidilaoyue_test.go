@@ -55,7 +55,7 @@ func Test_haiDiLaoYue_Zimo_ErRen(t *testing.T) {
 	assert.Nil(t, utils.SendHuReq(deskData, huSeat))
 	// 检测所有玩家收到点炮通知
 	utils.CheckHuNotify(t, deskData, []int{huSeat}, bankerSeat, 19, room.HuType_HT_DIANPAO)
-	// 检查番结算 无花 4,门前清 2,海底捞月 8,单吊将 1,四同顺 48,三暗刻 16,平和 1,清一色 16 = 96
-	utils.CheckFanSettle(t, deskData, params.GameID, huSeat, 96, room.FanType_FT_HAIDILAOYUE)
+	// 检查番结算 无花 4,门前清 2,海底捞月 8,四同顺 48,三暗刻 16,平和 1,清一色 16 = 95
+	utils.CheckFanSettle(t, deskData, params.GameID, huSeat, 95, room.FanType_FT_HAIDILAOYUE)
 
 }

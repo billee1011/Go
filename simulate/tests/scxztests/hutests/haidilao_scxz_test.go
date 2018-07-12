@@ -44,7 +44,7 @@ func Test_SCXZ_Zimo_Haidilao(t *testing.T) {
 	// 根据座号获取自摸玩家
 	zimoPlayer := utils.GetDeskPlayerBySeat(zimoSeat, deskData)
 	// 1 号玩家期望收到自询通知
-	zixunexpector, _ := zimoPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	zixunexpector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	// 1秒内接收到自询通知，并赋值到ntf
 	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
@@ -54,8 +54,8 @@ func Test_SCXZ_Zimo_Haidilao(t *testing.T) {
 	// 发送胡请求
 	assert.Nil(t, utils.SendHuReq(deskData, zimoSeat))
 
-	// 检测所有玩家收到地胡结算通知,地胡-清一色-2根 = 2 * 4 *4 = 32
-	winScro := 32 * 4 * 4 * (len(deskData.Players) - 1)
+	// 检测所有玩家收到自摸结算通知,地胡-清一色-2根*自摸 = 32 * 4 *4 = 512
+	winScro := 32 * 4 * 4 * 2 * (len(deskData.Players) - 1)
 	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
 
 	// 检测所有玩家收到海底捞胡类型通知

@@ -5,7 +5,7 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
+	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -101,27 +101,28 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 	}
 
 	params := interfaces.HuSettleParams{
-		GameID:        int32(mjContext.GetGameId()),
-		HuPlayers:     huPlayers,
-		SrcPlayer:     mjContext.GetLastChupaiPlayer(),
-		AllPlayers:    utils.GetAllPlayers(mjContext),
-		HasHuPlayers:  utils.GetHuPlayers(mjContext),
-		QuitPlayers:   utils.GetQuitPlayers(mjContext),
-		GiveupPlayers: utils.GetGiveupPlayers(mjContext),
-		SettleType:    majongpb.SettleType_settle_dianpao,
-		HuType:        majongpb.HuType_hu_dianpao,
-		CardTypes:     cardTypes,
-		CardValues:    cardValues,
-		GenCount:      genCount,
-		HuaCount:      huaCount,
-		SettleID:      mjContext.CurrentSettleId,
+		SettleOptionID: int(mjContext.GetSettleOptionId()),
+		HuPlayers:      huPlayers,
+		SrcPlayer:      mjContext.GetLastChupaiPlayer(),
+		AllPlayers:     utils.GetAllPlayers(mjContext),
+		HasHuPlayers:   utils.GetHuPlayers(mjContext),
+		QuitPlayers:    utils.GetQuitPlayers(mjContext),
+		GiveupPlayers:  utils.GetGiveupPlayers(mjContext),
+		SettleType:     majongpb.SettleType_settle_dianpao,
+		HuType:         majongpb.HuType_hu_dianpao,
+		CardTypes:      cardTypes,
+		CardValues:     cardValues,
+		GenCount:       genCount,
+		HuaCount:       huaCount,
+		SettleID:       mjContext.CurrentSettleId,
 	}
 	if s.isAfterGang(mjContext) {
 		GangCards := utils.GetMajongPlayer(mjContext.GetLastChupaiPlayer(), mjContext).GangCards
 		params.HuType = majongpb.HuType_hu_ganghoupao
 		params.GangCard = *GangCards[len(GangCards)-1]
 	}
-	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
+	settlerFactory := majong.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
 	if s.isAfterGang(mjContext) {
 		lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
 		if lastSettleInfo.SettleType == majongpb.SettleType_settle_angang || lastSettleInfo.SettleType == majongpb.SettleType_settle_minggang || lastSettleInfo.SettleType == majongpb.SettleType_settle_bugang {

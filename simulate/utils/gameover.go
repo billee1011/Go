@@ -13,7 +13,7 @@ import (
 func WaitGameOverNtf(t *testing.T, d *DeskData) {
 	for i := 0; i < len(d.Players); i++ {
 		player := GetDeskPlayerBySeat(i, d)
-		expector, _ := player.Expectors[msgId.MsgID_ROOM_GAMEOVER_NTF]
+		expector, _ := player.Expectors[msgid.MsgID_ROOM_GAMEOVER_NTF]
 		ntf := &room.RoomGameOverNtf{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf))
 	}

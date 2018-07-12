@@ -12,7 +12,7 @@ package common
 import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
+	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -69,20 +69,19 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 	gangCard := player.GetGangCards()[len(player.GetGangCards())-1]
 
 	param := interfaces.GangSettleParams{
-		GameID:        mjContext.GetGameId(),
-		GangPlayer:    player.GetPalyerId(),
-		SrcPlayer:     gangCard.GetSrcPlayer(),
-		AllPlayers:    utils.GetAllPlayers(mjContext),
-		HasHuPlayers:  utils.GetHuPlayers(mjContext),
-		QuitPlayers:   utils.GetQuitPlayers(mjContext),
-		GiveupPlayers: utils.GetGiveupPlayers(mjContext),
-		GangType:      gangCard.GetType(),
-		SettleID:      mjContext.CurrentSettleId,
+		SettleOptionID: int(mjContext.GetSettleOptionId()),
+		GangPlayer:     player.GetPalyerId(),
+		SrcPlayer:      gangCard.GetSrcPlayer(),
+		AllPlayers:     utils.GetAllPlayers(mjContext),
+		HasHuPlayers:   utils.GetHuPlayers(mjContext),
+		QuitPlayers:    utils.GetQuitPlayers(mjContext),
+		GiveupPlayers:  utils.GetGiveupPlayers(mjContext),
+		GangType:       gangCard.GetType(),
+		SettleID:       mjContext.CurrentSettleId,
 	}
 
-	f := global.GetGameSettlerFactory()
-	gameID := int(mjContext.GetGameId())
-	settleInfo := facade.SettleGang(f, gameID, param)
+	settlerFactory := majong.SettlerFactory{}
+	settleInfo := settlerFactory.CreateGangSettler().Settle(param)
 	if settleInfo != nil {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++

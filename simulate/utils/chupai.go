@@ -13,7 +13,7 @@ import (
 func SendChupaiReq(deskData *DeskData, seat int, card uint32) error {
 	player := GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(CreateMsgHead(msgId.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
+	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
 		Card: proto.Uint32(card),
 	})
 	return err
@@ -22,7 +22,7 @@ func SendChupaiReq(deskData *DeskData, seat int, card uint32) error {
 // WaitChupaiWenxunNtf 等待出牌问询通知
 func WaitChupaiWenxunNtf(desk *DeskData, seat int, canPeng bool, canDianpao bool, canGang bool) error {
 	player := GetDeskPlayerBySeat(seat, desk)
-	expector, _ := player.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := player.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 
 	ntf := room.RoomChupaiWenxunNtf{}
 	if err := expector.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
@@ -43,7 +43,7 @@ func WaitChupaiWenxunNtf(desk *DeskData, seat int, canPeng bool, canDianpao bool
 // WaitChupaiWenxunNtf0 等待出牌问询通知(包含检测弃动作)
 func WaitChupaiWenxunNtf0(desk *DeskData, seat int, canPeng bool, canDianpao bool, canGang bool, canQi bool) error {
 	player := GetDeskPlayerBySeat(seat, desk)
-	expector, _ := player.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := player.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 
 	ntf := room.RoomChupaiWenxunNtf{}
 	if err := expector.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
