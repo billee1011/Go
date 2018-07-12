@@ -30,7 +30,7 @@ func recoverPanic() {
 }
 
 // createExposer 创建 exposer 对象
-func createExposer(opt option) *structs.Exposer {
+func CreateExposer(opt option) *structs.Exposer {
 	exposer := &structs.Exposer{}
 	exposer.Configuration = createConfiguration()
 	exposer.RPCServer = createRPCServer(opt.rpcKeyFile, opt.rpcCertiFile)
@@ -45,7 +45,7 @@ func createExposer(opt option) *structs.Exposer {
 }
 
 // run 启动服务循环
-func run(service service.Service, exposer *structs.Exposer, opt option) {
+func Run(service service.Service, exposer *structs.Exposer, opt option) {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
@@ -62,18 +62,8 @@ func run(service service.Service, exposer *structs.Exposer, opt option) {
 	wg.Wait()
 }
 
-// LoadService load service appointed by name
-func LoadService(name string, options ...ServiceOption) {
-	opt := loadOptions(options...)
-	exposer := createExposer(opt)
-
-	registerServer(&registerParams{
-		serverName: opt.rpcServerName,
-		addr:       opt.rpcAddr,
-		port:       opt.rpcPort,
-		consulAddr: opt.consulAddr,
-	})
-	registerHealthServer(exposer.RPCServer)
-	service := initService(name, exposer)
-	run(service, exposer, opt)
+func runService(s service.Service) {
+	if err := s.Start(); err != nil {
+		logrus.WithError(err).Fatalln("服务启动失败")
+	}
 }
