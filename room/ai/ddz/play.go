@@ -2,6 +2,7 @@ package ddz
 
 import (
 	"fmt"
+	. "steve/room/desks/ddzdesk/flow/ddz/states"
 	"steve/room/interfaces"
 	"steve/server_pb/ddz"
 
@@ -76,7 +77,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 	handPokes := ToDDZCards(handCards)
 
 	// 按照排序权重进行排序
-	//DdzPokerSort(handPokes)
+	//DDZPokerSort(handPokes)
 
 	// 当前牌型
 	curCardType := ddzContext.GetCurCardType()
@@ -170,7 +171,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 
 	// 有压制的牌，转换数组
 	if bSuc {
-		resultCards = toInts(sendPukes)
+		resultCards = ToInts(sendPukes)
 	}
 
 	request := ddz.PlayCardRequestEvent{
@@ -200,10 +201,10 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 	handPokes := ToDDZCards(handCards)
 
 	// 按照排序权重进行排序
-	DdzPokerSort(handPokes)
+	DDZPokerSort(handPokes)
 
 	// 最终打出去的牌（打最小的那个牌）
-	resultCards := []uint32{handPokes[0].toInt()}
+	resultCards := []uint32{handPokes[0].ToInt()}
 
 	// 最终打出去的牌型（单张）
 	resultCardType := ddz.CardType_CT_SINGLE
@@ -262,7 +263,7 @@ func GetBoom(allPokes []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	// 统计各个牌的个数
 	counts := GetPokeCount(allPokes)
@@ -347,7 +348,7 @@ func GetMinBiggerSingle(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	// 统计各个牌的个数
 	counts := GetPokeCount(allPokes)
@@ -393,7 +394,7 @@ func GetMinBiggerPair(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -460,7 +461,7 @@ func GetMinBiggerShunzi(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -552,7 +553,7 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -636,7 +637,7 @@ func GetMinBiggerTriple(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -698,7 +699,7 @@ func GetMinBigger3And1(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -735,7 +736,7 @@ func GetMinBigger3And1(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		if len(lastPoke) >= 1 {
 
 			// 重新排序
-			DdzPokerSort(lastPoke)
+			DDZPokerSort(lastPoke)
 
 			// 从小往大找
 			for i := 0; i < len(lastPoke); i++ {
@@ -791,7 +792,7 @@ func GetMinBigger3And2(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -829,7 +830,7 @@ func GetMinBigger3And2(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		if len(lastPoke) >= 2 {
 
 			// 重新排序
-			DdzPokerSort(lastPoke)
+			DDZPokerSort(lastPoke)
 
 			//Map<无花色权重点数, 牌的个数>
 			lastCounts := GetPokeCount(lastPoke)
@@ -900,7 +901,7 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -1014,7 +1015,7 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序主体牌，从小到大
-	DdzPokerSort(dealSpeciPoke)
+	DDZPokerSort(dealSpeciPoke)
 
 	// 剩下的牌，不再分析，默认是正常牌了，全部压入dealSpeciPoke
 	for i := 1; i <= len(lastPokes); i++ {
@@ -1022,7 +1023,7 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先对手牌排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -1103,7 +1104,7 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	// 寻找需要的单张，张数为：len(speciPoke)/4，且和主体牌不同，可以拆牌
 
 	// 重新排序
-	DdzPokerSort(lastPokes)
+	DDZPokerSort(lastPokes)
 
 	// 从小往大找
 	singleCount := 0
@@ -1180,7 +1181,7 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序主体牌，从小到大
-	DdzPokerSort(dealSpeciPoke)
+	DDZPokerSort(dealSpeciPoke)
 
 	// 剩下的牌，不再分析，默认是正常牌了，全部压入dealSpeciPoke
 	for i := 1; i <= len(lastPokes); i++ {
@@ -1188,7 +1189,7 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先把手牌排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -1269,7 +1270,7 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	// 寻找需要的对子，张数为：len(speciPoke)/5 * 2，且和主体牌不同，可以拆牌
 
 	// 重新排序
-	DdzPokerSort(lastPokes)
+	DDZPokerSort(lastPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts = GetPokeCount(lastPokes)
@@ -1350,7 +1351,7 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -1387,7 +1388,7 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		if len(lastPoke) >= 2 {
 
 			// 剩下的牌重新排序
-			DdzPokerSort(lastPoke)
+			DDZPokerSort(lastPoke)
 
 			// 从小往大找
 			for i := 0; i < len(lastPoke); i++ {
@@ -1450,7 +1451,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	lastSpeciPoke := RemoveAll(speciPoke, sameCards)
 
 	// 仍需排序，因为是两个对子，可能是乱的
-	DdzPokerSort(lastSpeciPoke)
+	DDZPokerSort(lastSpeciPoke)
 
 	// 应该是两两相等
 	if !IsAllSamePoint(lastSpeciPoke[0:2]) || !IsAllSamePoint(lastSpeciPoke[2:]) {
@@ -1459,7 +1460,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -1496,7 +1497,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		if len(lastPoke) >= 4 {
 
 			// 剩下的牌重新排序
-			DdzPokerSort(lastPoke)
+			DDZPokerSort(lastPoke)
 
 			//Map<无花色权重点数, 牌的个数>
 			lastCounts := GetPokeCount(lastPoke)
@@ -1580,7 +1581,7 @@ func GetMinBiggerBoom(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	}
 
 	// 先排序，从小到大
-	DdzPokerSort(allPokes)
+	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
 	counts := GetPokeCount(allPokes)
@@ -1629,7 +1630,7 @@ func GetMinBiggerKingBoom(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	})
 
 	// 参数检测
-	if len(allPokes) == 0 || len(speciPoke) != 2 || !Contains(speciPoke, redJoker) || !Contains(speciPoke, blackJoker) {
+	if len(allPokes) == 0 || len(speciPoke) != 2 || !Contains(speciPoke, RedJoker) || !Contains(speciPoke, BlackJoker) {
 		logEntry.Errorln("参数错误")
 		return false, nil
 	}

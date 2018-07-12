@@ -45,7 +45,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
-	outCards := toDDZCards(message.GetCards())
+	outCards := ToDDZCards(message.GetCards())
 	logrus.WithField("playerId", playerId).WithField("outCards", outCards).Debug("玩家出牌")
 	if context.CurrentPlayerId != playerId {
 		logrus.WithField("expected player:", context.CurrentPlayerId).WithField("fact player", playerId).Error("未到本玩家出牌")
@@ -97,7 +97,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	player := GetPlayerByID(context.GetPlayers(), playerId)
-	handCards := toDDZCards(player.HandCards)
+	handCards := ToDDZCards(player.HandCards)
 	if !ContainsAll(handCards, outCards) { //检查所出的牌是否在手牌中
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(2, "所出的牌不在手牌中"),
@@ -105,7 +105,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_playing), errors.New("所出的牌不在手牌中")
 	}
 
-	cardType, pivot := getCardType(outCards)
+	cardType, pivot := GetCardType(outCards)
 	if cardType == ddz.CardType_CT_NONE { //检查所出的牌能否组成牌型
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(3, "无法组成牌型"),
@@ -114,7 +114,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	if context.CurCardType != ddz.CardType_CT_NONE &&
-		(!canBiggerThan(cardType, context.CurCardType) || //牌型与上家不符(炸弹不算不符)
+		(!CanBiggerThan(cardType, context.CurCardType) || //牌型与上家不符(炸弹不算不符)
 			(context.CurCardType == ddz.CardType_CT_SHUNZI && cardType == ddz.CardType_CT_SHUNZI && len(outCards) != len(context.CurOutCards))) { //顺子牌数不足
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(4, "牌型与上家不符"),
@@ -122,7 +122,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_playing), errors.New("牌型与上家不符")
 	}
 
-	lastPivot := toDDZCard(context.CardTypePivot)
+	lastPivot := ToDDZCard(context.CardTypePivot)
 	currPivot := *pivot
 	bigger := false
 	if cardType == ddz.CardType_CT_KINGBOMB {
@@ -148,12 +148,12 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	//更新玩家手牌和已出的牌
 	handCards = RemoveAll(handCards, outCards)
-	player.HandCards = toInts(handCards)
+	player.HandCards = ToInts(handCards)
 	player.OutCards = message.GetCards()
 
-	//lastOutCards := toDDZCards(player.OutCards)
+	//lastOutCards := ToDDZCards(player.OutCards)
 	//lastOutCards = AppendAll(lastOutCards, outCards)
-	//player.AllOutCards = toInts(lastOutCards) // for 记牌器
+	//player.AllOutCards = ToInts(lastOutCards) // for 记牌器
 
 	//更新context
 	context.CurrentPlayerId = nextPlayerId
@@ -164,7 +164,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	context.CurOutCards = message.GetCards()
 	context.CurCardType = cardType
-	context.CardTypePivot = (*pivot).toInt()
+	context.CardTypePivot = (*pivot).ToInt()
 	if cardType == ddz.CardType_CT_BOMB || cardType == ddz.CardType_CT_KINGBOMB {
 		context.TotalBomb = context.TotalBomb * 2
 	}
