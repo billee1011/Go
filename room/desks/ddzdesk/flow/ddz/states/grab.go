@@ -57,14 +57,10 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.FirstGrabPlayerId == 0 && grab { //第一次叫地主
 		context.FirstGrabPlayerId = playerId
 		context.TotalGrab = 1
-		//context.LordPlayerId = playerId
 		context.CurStage = ddz.DDZStage_DDZ_STAGE_GRAB
-	}
-
-	if context.FirstGrabPlayerId != 0 && grab { //抢地主
+	} else if context.FirstGrabPlayerId != 0 && grab { //抢地主
 		context.TotalGrab = context.TotalGrab * 2
 		context.LastGrabPlayerId = playerId
-		//context.LordPlayerId = playerId
 	}
 
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PalyerId
@@ -76,13 +72,13 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 				context.CurStage = ddz.DDZStage_DDZ_STAGE_DEAL
 			}
 			nextPlayerId = 0 //重新发牌，没有操作玩家
-		} else { //有人叫，则由叫地主玩家最后决定
-			nextPlayerId = context.FirstGrabPlayerId
 		}
 
 		if context.TotalGrab == 1 { //只有一个人叫，其他两个人弃时，地主为叫地主的人
 			lordPlayerId = context.FirstGrabPlayerId
 			nextPlayerId = 0 //确定地主，进入加倍阶段，没有操作玩家
+		} else { //有人叫，则由叫地主玩家最后决定
+			nextPlayerId = context.FirstGrabPlayerId
 		}
 	}
 
@@ -125,7 +121,6 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			lordPlayer.HandCards = append(lordPlayer.HandCards, card)
 		}
 		lordPlayer.HandCards = DDZSortDescend(lordPlayer.HandCards)
-		context.WallCards = []uint32{}
 		context.LordPlayerId = lordPlayerId
 		context.Duration = 0 //清除倒计时
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
@@ -134,6 +129,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			Dipai:     context.WallCards,
 			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
+		context.WallCards = []uint32{}
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil
