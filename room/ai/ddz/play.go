@@ -24,7 +24,6 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 	}, nil
 
 	ddzContext := params.DDZContext
-	ddzContext.Duration = 0 //清除倒计时
 
 	// 当前玩家
 	var curPlayer *ddz.Player
@@ -40,15 +39,13 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 		return result, fmt.Errorf("找不到玩家%d", params.PlayerID)
 	}
 
-	// 不该自己打牌
+	// 没到自己打牌
 	if ddzContext.GetCurrentPlayerId() != curPlayer.GetPalyerId() {
-		logEntry.Errorf("此时不应该调用玩家%d的出牌AI", params.PlayerID)
-		return result, fmt.Errorf("此时不应该调用玩家%d的出牌AI", params.PlayerID)
+		return result, nil
 	}
 
 	// 没有牌型时说明是主动打牌
 	if ddzContext.GetCurCardType() == ddz.CardType_CT_NONE {
-
 		// 主动产生
 		if event := playAI.getActivePlayCardEvent(ddzContext, curPlayer); event != nil {
 			result.Events = append(result.Events, *event)
