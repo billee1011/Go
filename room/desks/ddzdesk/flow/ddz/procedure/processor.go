@@ -94,14 +94,13 @@ func HandleEvent(params Params) (result Result) {
 
 			var errCode uint32 = 0
 			errDesc := ""
-			//stage := room.DDZStage_DDZ_STAGE_PLAYING
 
 			// 发送游戏信息
 			m.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_REQ, &room.DDZResumeGameRsp{
 				Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
 				GameInfo: &room.DDZDeskInfo{
 					Players: playersInfo,
-					//Stage: , TODO
+					Stage:   states.GenNextStage(room.DDZStage(int32(cloneContext.CurStage))),
 				},
 			})
 		}

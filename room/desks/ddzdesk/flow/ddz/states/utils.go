@@ -8,9 +8,9 @@ import (
 	"steve/server_pb/ddz"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"strconv"
-	"github.com/Sirupsen/logrus"
 )
 
 // PeiPai 配牌工具
@@ -31,7 +31,7 @@ func PeiPai(wallCards []uint32, value string) error {
 			}
 		}
 	}
-	logrus.WithFields(logrus.Fields{"wallCards":wallCards, "peipai:":value}).Debug("斗地主配牌成功")
+	logrus.WithFields(logrus.Fields{"wallCards": wallCards, "peipai:": value}).Debug("斗地主配牌成功")
 	return nil
 }
 
@@ -108,11 +108,14 @@ func sendMessage(m machine.Machine, players []uint64, msgID msgid.MsgID, body pr
 }
 
 func sendToPlayer(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
+	logrus.WithFields(logrus.Fields{"playerID": playerID, "msgId": msgID, "msg": body}).Debug("斗地主玩家响应")
 	return sendMessage(m, []uint64{playerID}, msgID, body)
 }
 
 func broadcast(m machine.Machine, msgID msgid.MsgID, body proto.Message) error {
-	return sendMessage(m, getPlayerIds(m), msgID, body)
+	playerIDs := getPlayerIds(m)
+	logrus.WithFields(logrus.Fields{"playerIDs": playerIDs, "msgId": msgID, "msg": body}).Debug("斗地主广播")
+	return sendMessage(m, playerIDs, msgID, body)
 }
 
 func broadcastExcept(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
@@ -134,7 +137,6 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 	}
 	dm.SetAutoEvent(event, duration)
 }
-
 
 // ContainsAll handCards是否包含所有outCards
 func ContainsAll(handCards []Poker, outCards []Poker) bool {

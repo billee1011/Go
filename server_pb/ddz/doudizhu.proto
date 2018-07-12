@@ -15,40 +15,51 @@ message Player {
     repeated uint32 hand_cards = 5;         // 玩家手牌
     repeated uint32 out_cards = 6;          // 上次打出的牌
     repeated uint32 all_out_cards = 7;      // 所有打出的牌(保留给记牌器需求)
-} 
+}
+
+enum DDZStage{
+    DDZ_STAGE_NONE = 0;// 收到DDZStartGameNtf前的状态
+    DDZ_STAGE_DEAL = 1;// 发牌
+    DDZ_STAGE_CALL = 2;// 叫地主
+    DDZ_STAGE_GRAB = 3;// 抢地主
+    DDZ_STAGE_DOUBLE = 4;// 加倍
+    DDZ_STAGE_PLAYING = 5;// 行牌
+    DDZ_STAGE_OVER = 6; // 游戏结束
+}
 
 // DDZContext 麻将现场
 message DDZContext {
     int32 game_id = 1;              // 游戏 ID 
     StateID cur_state = 2;          // 当前状态
-    repeated Player players = 3;    // 玩家列表
-    repeated uint32 wall_cards = 4; // 墙牌(开局发好牌后，只剩3张)
-    uint64 current_player_id = 5;   // 当前操作玩家
-    uint64 last_player_id = 6;      // 上一个操作玩家
+    DDZStage cur_stage = 3;         // 客户端当前阶段
+    repeated Player players = 4;    // 玩家列表
+    repeated uint32 wall_cards = 5; // 墙牌(开局发好牌后，只剩3张)
+    uint64 current_player_id = 6;   // 当前操作玩家
     //叫地主阶段
     uint64 first_grab_player_id = 7;// 第一个实际叫地主玩家
-    uint32 grabbed_count = 8;        // 已抢/弃地主玩家人数
-    uint64 lord_player_id = 9;      // 地主id
-    uint32 all_abandon_count = 10;  // 全部玩家弃地主的次数,3次随机确定地主
-    uint32 total_grab = 11;         // 抢庄总倍数
+    uint64 last_grab_player_id = 8; // 上一个抢地主玩家
+    uint32 grabbed_count = 9;        // 已抢/弃地主玩家人数
+    uint64 lord_player_id = 10;      // 地主id
+    uint32 all_abandon_count = 11;  // 全部玩家弃地主的次数,3次随机确定地主
+    uint32 total_grab = 12;         // 抢庄总倍数
     //加倍阶段
-    uint32 doubled_count = 12;       //加倍/弃加倍玩家人数
-    uint32 total_double = 13;        //加倍总倍数
+    uint32 doubled_count = 13;       //加倍/弃加倍玩家人数
+    uint32 total_double = 14;        //加倍总倍数
     //出牌阶段
-    repeated uint32 cur_out_cards = 14; //当前出牌
-    CardType cur_card_type = 15;    //当前出牌牌型
-    uint32 card_type_pivot = 16;    //当前牌型用来比较的pivot
-    uint32 pass_count = 17;         //过牌人数
-    uint32 total_bomb = 18;         //炸弹总倍数 2的n次方
+    repeated uint32 cur_out_cards = 15; //当前出牌
+    CardType cur_card_type = 16;    //当前出牌牌型
+    uint32 card_type_pivot = 17;    //当前牌型用来比较的pivot
+    uint32 pass_count = 18;         //过牌人数
+    uint32 total_bomb = 19;         //炸弹总倍数 2的n次方
     //结算阶段
-    uint64 winner_id = 19;          //胜利玩家id
-    bool spring = 20;               //春天(农民没有出过牌)
-    bool anti_spring = 21;          //反春天(地主只出了一次牌)
+    uint64 winner_id = 20;          //胜利玩家id
+    bool spring = 21;               //春天(农民没有出过牌)
+    bool anti_spring = 22;          //反春天(地主只出了一次牌)
     //配牌
-    string peipai = 22;             //测试配牌
-    repeated uint64 count_down_players = 23;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
-    bytes startTime = 24;           //开始倒计时时间
-    uint32 duration = 25;           //倒计时时间
+    string peipai = 23;             //测试配牌
+    repeated uint64 count_down_players = 24;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
+    bytes startTime = 25;           //开始倒计时时间
+    uint32 duration = 26;           //倒计时时间
 }
 
 // AutoEvent 自动事件

@@ -12,18 +12,18 @@ import (
 	"steve/structs/proto/gate_rpc"
 	"time"
 
+	"context"
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"runtime/debug"
-	"context"
 )
 
 // deskEvent 牌桌事件
 type deskEvent struct {
 	eventID      int
 	eventContext []byte
-	eventType interfaces.EventType
-	playerID uint64
+	eventType    interfaces.EventType
+	playerID     uint64
 }
 
 // desk 斗地主牌桌
@@ -32,7 +32,7 @@ type desk struct {
 	eventChannel   chan deskEvent
 	closingChannel chan struct{}
 	ddzContext     *ddz.DDZContext
-	cancel  context.CancelFunc     // 取消事件处理
+	cancel         context.CancelFunc // 取消事件处理
 }
 
 // initDDZContext 初始化斗地主现场
@@ -48,6 +48,12 @@ func (d *desk) Start(finish func()) error {
 
 	d.initDDZContext()
 	go func() {
+		defer func() {
+			if x := recover(); x != nil {
+				logrus.Errorln(x)
+				debug.PrintStack()
+			}
+		}()
 		d.run()
 		finish()
 	}()
@@ -55,6 +61,12 @@ func (d *desk) Start(finish func()) error {
 	var ctx context.Context
 	ctx, d.cancel = context.WithCancel(context.Background())
 	go func() {
+		defer func() {
+			if x := recover(); x != nil {
+				logrus.Errorln(x)
+				debug.PrintStack()
+			}
+		}()
 		d.timerTask(ctx)
 	}()
 	d.pushEvent(&deskEvent{
@@ -114,10 +126,10 @@ func (d *desk) genTimerEvent() {
 			"event_type":   event.EventType,
 		}).Debugln("注入计时事件")
 		d.eventChannel <- deskEvent{
-			eventID:       int(event.ID),
+			eventID:      int(event.ID),
 			eventContext: event.Context,
-			eventType: event.EventType,
-			playerID: event.PlayerID,
+			eventType:    event.EventType,
+			playerID:     event.PlayerID,
 		}
 	}
 }
@@ -218,60 +230,6 @@ func (d *desk) processEvent(e *deskEvent) {
 		EventID:      e.eventID,
 		EventContext: e.eventContext,
 	}
-
-	/* 	// 处理恢复对局的请求
-	   	if e.eventID == int(ddz.EventID_event_resume_request) {
-	   		message := &ddz.ResumeRequestEvent{}
-	   		err := proto.Unmarshal(e.eventContext, message)
-	   		if err != nil {
-	   			//logEntry.WithError(err).Errorln("处理恢复对局事件失败")
-	   			return
-	   		}
-
-	   		// 请求的玩家ID
-	   		reqPlayerID := message.GetHead().GetPlayerId()
-
-	   		bExist := false
-
-	   		// 是否有这个玩家
-	   		for _, player := range d.ddzContext.GetPlayers() {
-	   			if player.GetPalyerId() == reqPlayerID {
-	   				bExist = true
-	   			}
-	   		}
-
-	   		// 存在的话，则发送回复消息
-	   		if bExist {
-	   			playersInfo := []*room.DDZPlayerInfo{}
-
-	   			for _, player := range d.ddzContext.GetPlayers() {
-	   				// Player转为RoomPlayer
-	   				roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
-	   				lord := player.GetLord()
-	   				double := player.GetIsDouble()
-	   				tuoguan := false // TODO
-
-	   				ddzPlayerInfo := room.DDZPlayerInfo{}
-	   				ddzPlayerInfo.PlayerInfo = &roomPlayerInfo
-	   				ddzPlayerInfo.OutCards = player.GetOutCards()
-	   				ddzPlayerInfo.HandCards = player.GetHandCards()
-	   				ddzPlayerInfo.Lord = &lord
-	   				ddzPlayerInfo.IsDouble = &double
-	   				ddzPlayerInfo.Tuoguan = &tuoguan
-
-	   				playersInfo = append(playersInfo, &ddzPlayerInfo)
-	   			}
-
-	   			// 发送游戏信息
-	   			d.getMessageSender().([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_REQ, &room.DDZResumeGameRsp{
-	   				Result: genResult(0, ""),
-	   				GameInfo: &room.DDZDeskInfo{
-	   					Players: playersInfo,
-	   					Stage:d.get
-	   				},
-	   			})
-	   		}
-	   	} */
 
 	result := procedure.HandleEvent(params)
 	if !result.Succeed {

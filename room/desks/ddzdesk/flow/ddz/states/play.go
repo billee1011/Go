@@ -17,6 +17,7 @@ type playState struct{}
 
 func (s *playState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
+	context.CurStage = ddz.DDZStage_DDZ_STAGE_PLAYING
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -80,7 +81,6 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		})
 
 		context.CurrentPlayerId = nextPlayerId
-		context.LastPlayerId = playerId
 		//产生超时事件
 		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 		context.StartTime, _ = time.Now().MarshalBinary()
@@ -124,7 +124,22 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	lastPivot := toDDZCard(context.CardTypePivot)
 	currPivot := *pivot
-	if lastPivot.pointBiggerThan(currPivot) {
+	bigger := false
+	if cardType == ddz.CardType_CT_KINGBOMB {
+		bigger = true
+	} else if context.CurCardType == ddz.CardType_CT_KINGBOMB {
+		bigger = false
+	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
+		bigger = currPivot.pointBiggerThan(lastPivot)
+	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
+		bigger = true
+	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
+		bigger = false
+	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
+		bigger = currPivot.pointBiggerThan(lastPivot)
+	}
+
+	if !bigger {
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(5, "牌比上家小"),
 		})
@@ -142,7 +157,6 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	//更新context
 	context.CurrentPlayerId = nextPlayerId
-	context.LastPlayerId = playerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -178,7 +192,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		CardType:     &clientCardType,
 		TotalBomb:    &context.TotalBomb,
 		NextPlayerId: &nextPlayerId,
-		NextStage:    genNextStage(nextStage),
+		NextStage:    GenNextStage(nextStage),
 	})
 
 	if len(player.HandCards) == 0 {

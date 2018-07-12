@@ -5,10 +5,10 @@ import (
 	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
-	"steve/majong/global"
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/majong/global"
 	"time"
 )
 
@@ -16,6 +16,7 @@ type doubleState struct{}
 
 func (s *doubleState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
+	context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
 	context.CountDownPlayers = getPlayerIds(m)
 	context.StartTime, _ = time.Now().MarshalBinary()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_DOUBLE]
@@ -37,10 +38,10 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 		return int(ddz.StateID_state_double), global.ErrUnmarshalEvent
 	}
 
-	context := getDDZContext(m);
+	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
 	isDouble := message.IsDouble
-	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble//记录该玩家加倍
+	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble //记录该玩家加倍
 	if isDouble {
 		context.TotalDouble = context.TotalDouble * 2
 	}
@@ -51,17 +52,18 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	var nextStage *room.NextStage
 	context.DoubledCount++
 	if context.DoubledCount >= 3 {
-		nextStage = genNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
+		nextStage = GenNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_DOUBLE_NTF, &room.DDZDoubleNtf{
-		PlayerId: &playerId,
-		IsDouble: &isDouble,
+		PlayerId:    &playerId,
+		IsDouble:    &isDouble,
 		TotalDouble: &context.TotalDouble,
-		NextStage: nextStage,
+		NextStage:   nextStage,
 	})
 
 	if context.DoubledCount >= 3 {
 		context.CurrentPlayerId = context.LordPlayerId
+		context.Duration = 0 //清除倒计时
 		return int(ddz.StateID_state_playing), nil
 	} else {
 		return int(ddz.StateID_state_double), nil
