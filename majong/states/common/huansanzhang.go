@@ -23,7 +23,7 @@ type HuansanzhangState struct {
 // OnEntry 进入换三张状态
 func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
 	// 客户端强烈要求不要这个通知
-	// facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
+	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
 }
 
 // ProcessEvent 处理换三张事件
@@ -214,7 +214,7 @@ func (s *HuansanzhangState) notifyFinish(flow interfaces.MajongFlow, dir room.Di
 			Direction: dir.Enum(),
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgId.MsgID_ROOM_HUANSANZHANG_FINISH_NTF),
+			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF),
 			Msg:   &notify,
 		})
 	}
@@ -266,7 +266,7 @@ func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 	errCode := room.RoomError_SUCCESS
 	// 定缺应答 请求-响应
 	toClientRsq := interfaces.ToClientMessage{
-		MsgID: int(msgId.MsgID_ROOM_HUANSANZHANG_RSP),
+		MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_RSP),
 		Msg: &room.RoomHuansanzhangRsp{
 			ErrCode: &errCode,
 		},
@@ -274,7 +274,7 @@ func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 	// 推送消息应答
 	flow.PushMessages([]uint64{playerID}, toClientRsq)
 	logrus.WithFields(logrus.Fields{
-		"msgID":      msgId.MsgID_ROOM_HUANSANZHANG_RSP,
+		"msgID":      msgid.MsgID_ROOM_HUANSANZHANG_RSP,
 		"dingQueNtf": toClientRsq,
 	}).Info("-----换三张成功应答")
 }

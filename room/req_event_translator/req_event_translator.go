@@ -19,14 +19,14 @@ type msgTranslator struct {
 }
 
 type translator struct {
-	msgTranslators map[msgId.MsgID]msgTranslator
+	msgTranslators map[msgid.MsgID]msgTranslator
 }
 
 var errTranslatorNotExists = errors.New("转换器不存在")
 var errUnmarshalReqFailed = errors.New("反序列化请求消息体失败")
 
 func (t *translator) Translate(playerID uint64, header *steve_proto_gaterpc.Header, bodyData []byte) (eventID server_pb.EventID, eventContext proto.Message, err error) {
-	f, ok := t.msgTranslators[msgId.MsgID(header.GetMsgId())]
+	f, ok := t.msgTranslators[msgid.MsgID(header.GetMsgId())]
 	if !ok {
 		err = errTranslatorNotExists
 		return
@@ -67,7 +67,7 @@ func (t *translator) callTranslator(msgTranslator msgTranslator, playerID uint64
 	return
 }
 
-func (t *translator) addTranslator(msgID msgId.MsgID, f interface{}) {
+func (t *translator) addTranslator(msgID msgid.MsgID, f interface{}) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "translator.addTranslator",
 		"msg_id":    msgID,
@@ -115,16 +115,16 @@ func (t *translator) addTranslator(msgID msgId.MsgID, f interface{}) {
 
 func (t *translator) addTranslators() {
 	// TODO 添加所有请求转事件表
-	t.addTranslator(msgId.MsgID_ROOM_HUANSANZHANG_REQ, translateHuansanzhangReq)
-	t.addTranslator(msgId.MsgID_ROOM_XINGPAI_ACTION_REQ, translateXingpaiActionReq)
-	t.addTranslator(msgId.MsgID_ROOM_CHUPAI_REQ, translateChupaiReq)
-	t.addTranslator(msgId.MsgID_ROOM_DINGQUE_REQ, translateDingqueReq)
-	t.addTranslator(msgId.MsgID_ROOM_CARTOON_FINISH_REQ, translateCartoonFinishReq)
+	t.addTranslator(msgid.MsgID_ROOM_HUANSANZHANG_REQ, translateHuansanzhangReq)
+	t.addTranslator(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ, translateXingpaiActionReq)
+	t.addTranslator(msgid.MsgID_ROOM_CHUPAI_REQ, translateChupaiReq)
+	t.addTranslator(msgid.MsgID_ROOM_DINGQUE_REQ, translateDingqueReq)
+	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, translateCartoonFinishReq)
 }
 
 func init() {
 	t := &translator{
-		msgTranslators: make(map[msgId.MsgID]msgTranslator, 1),
+		msgTranslators: make(map[msgid.MsgID]msgTranslator, 1),
 	}
 	t.addTranslators()
 

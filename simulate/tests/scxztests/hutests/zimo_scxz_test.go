@@ -40,7 +40,7 @@ func Test_SCXZ_Zimo(t *testing.T) {
 
 	// 1 号玩家收到可自摸通知
 	zimoPlayer := utils.GetDeskPlayerBySeat(zimoSeat, deskData)
-	expector, _ := zimoPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ := zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	ntf := room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableZimo())

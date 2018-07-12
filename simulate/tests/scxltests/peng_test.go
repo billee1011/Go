@@ -36,7 +36,7 @@ func Test_Peng(t *testing.T) {
 	pengSeat := (params.BankerSeat + 1) % len(deskData.Players)
 	pengPlayer := utils.GetDeskPlayerBySeat(pengSeat, deskData)
 
-	expector, _ := pengPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := pengPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, Int5w, ntf.GetCard())
@@ -45,7 +45,7 @@ func Test_Peng(t *testing.T) {
 
 	// 请求碰
 	pengClient := pengPlayer.Player.GetClient()
-	pengClient.SendPackage(utils.CreateMsgHead(msgId.MsgID_ROOM_XINGPAI_ACTION_REQ), &room.RoomXingpaiActionReq{
+	pengClient.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ), &room.RoomXingpaiActionReq{
 		ActionId: room.XingpaiAction_XA_PENG.Enum(),
 	})
 
@@ -53,7 +53,7 @@ func Test_Peng(t *testing.T) {
 	// 所有玩家收到碰通知
 	checkPengNotify(t, deskData, pengPlayer.Player.GetID(), from.Player.GetID(), Int5w)
 	// 碰的玩家收到自询通知，且只能出牌
-	expector, _ = pengPlayer.Expectors[msgId.MsgID_ROOM_ZIXUN_NTF]
+	expector, _ = pengPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	zixunNtf := room.RoomZixunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &zixunNtf))
 	assert.Equal(t, len(zixunNtf.GetEnableAngangCards()), 0)
@@ -64,7 +64,7 @@ func Test_Peng(t *testing.T) {
 
 func checkPengNotify(t *testing.T, deskData *utils.DeskData, to uint64, from uint64, card uint32) {
 	for _, player := range deskData.Players {
-		expector, _ := player.Expectors[msgId.MsgID_ROOM_PENG_NTF]
+		expector, _ := player.Expectors[msgid.MsgID_ROOM_PENG_NTF]
 		pengNtf := room.RoomPengNtf{}
 		expector.Recv(global.DefaultWaitMessageTime, &pengNtf)
 		assert.Equal(t, to, pengNtf.GetToPlayerId())

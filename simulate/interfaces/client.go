@@ -51,5 +51,5 @@ type Client interface {
 	Request(header SendHead, body proto.Message, timeOut time.Duration, rspMsgID uint32, rspBody proto.Message) error
 
 	// ExpectMessage 创建消息期望
-	ExpectMessage(msgID msgId.MsgID) (MessageExpector, error)
+	ExpectMessage(msgID msgid.MsgID) (MessageExpector, error)
 }

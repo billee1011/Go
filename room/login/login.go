@@ -83,7 +83,7 @@ func HandleLogin(clientID uint64, header *steve_proto_gaterpc.Header, req room.R
 	rsp := &room.RoomLoginRsp{}
 	ret = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgId.MsgID_ROOM_LOGIN_RSP),
+			MsgID: uint32(msgid.MsgID_ROOM_LOGIN_RSP),
 			Body:  rsp,
 		},
 	}
@@ -143,7 +143,7 @@ func HandleVisitorLogin(clientID uint64, header *steve_proto_gaterpc.Header, req
 	rsp := &room.RoomVisitorLoginRsp{}
 	ret = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgId.MsgID_ROOM_VISITOR_LOGIN_RSP),
+			MsgID: uint32(msgid.MsgID_ROOM_VISITOR_LOGIN_RSP),
 			Body:  rsp,
 		},
 	}

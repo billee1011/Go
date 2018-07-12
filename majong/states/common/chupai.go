@@ -243,7 +243,7 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	card := context.GetLastOutCard()
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
-	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
 		Player: proto.Uint64(activePlayer.GetPalyerId()),
 		Card:   proto.Uint32(utils.ServerCard2Uint32(card)),
 	})

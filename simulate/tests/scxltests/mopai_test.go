@@ -25,7 +25,7 @@ func Test_Mopai(t *testing.T) {
 	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	zjPlayer := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
 	zjClient := zjPlayer.Player.GetClient()
-	zjClient.SendPackage(utils.CreateMsgHead(msgId.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
+	zjClient.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
 		Card: proto.Uint32(31),
 	})
 
@@ -34,7 +34,7 @@ func Test_Mopai(t *testing.T) {
 	mopaiPlayerID := mopaiPlayer.Player.GetID()
 	// 所有玩家收到庄家下家摸牌通知
 	for _, deskPlayer := range deskData.Players {
-		expector, _ := deskPlayer.Expectors[msgId.MsgID_ROOM_MOPAI_NTF]
+		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_MOPAI_NTF]
 		ntf := room.RoomMopaiNtf{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, mopaiPlayerID, ntf.GetPlayer())

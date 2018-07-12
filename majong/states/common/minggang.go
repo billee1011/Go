@@ -95,7 +95,7 @@ func (s *MingGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb
 		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_MingGang.Enum(),
 	}
-	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_GANG_NTF, &body)
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GANG_NTF, &body)
 }
 
 // addGangCard 添加明杠的牌
