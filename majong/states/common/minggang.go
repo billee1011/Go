@@ -13,7 +13,6 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -112,27 +111,4 @@ func (s *MingGangState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	mjContext.MopaiPlayer = mjContext.GetLastGangPlayer()
 	mjContext.MopaiType = majongpb.MopaiType_MT_GANG
-}
-
-//	doMingGangSettle 明杠结算
-func (s *MingGangState) doMingGangSettle(mjContext *majongpb.MajongContext, player *majongpb.Player, srcPlayerID uint64) {
-	allPlayers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-	}
-	param := interfaces.GangSettleParams{
-		GangPlayer: player.GetPalyerId(),
-		SrcPlayer:  srcPlayerID,
-		AllPlayers: allPlayers,
-		GangType:   majongpb.GangType_gang_minggang,
-		SettleID:   mjContext.CurrentSettleId,
-	}
-
-	f := global.GetGameSettlerFactory()
-	gameID := int(mjContext.GetGameId())
-	settleInfo := facade.SettleGang(f, gameID, param)
-	if settleInfo != nil {
-		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
-		mjContext.CurrentSettleId++
-	}
 }

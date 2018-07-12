@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	 "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
@@ -79,6 +79,22 @@ func CheckInstantSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int
 	winID := winplayer.Player.GetID()
 	expector, _ := winplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf := room.RoomSettleInstantRsp{}
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
+	for _, billInfo := range ntf.BillPlayersInfo {
+		// 赢的分数
+		if billInfo.GetPid() == winID {
+			assert.Equal(t, billInfo.GetScore(), winScore)
+		}
+		fmt.Println(billInfo)
+	}
+}
+
+// CheckRoundSettleScoreNotify 检查单局分数结算通知
+func CheckRoundSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int, winScore int64) {
+	winplayer := GetDeskPlayerBySeat(winSeat, deskData)
+	winID := winplayer.Player.GetID()
+	expector, _ := winplayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
+	ntf := room.RoomBalanceInfoRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	for _, billInfo := range ntf.BillPlayersInfo {
 		// 赢的分数

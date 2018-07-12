@@ -92,9 +92,11 @@ func (majongSettle *majongSettle) RoundSettle(desk interfaces.Desk, mjContext ma
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
 	deskPlayers := desk.GetDeskPlayers()
+	// 游戏结算玩法
+	settleOption := GetSettleOption(int(mjContext.GetGameId()))
 
 	for _, sInfo := range contextSInfos {
-		if !majongSettle.handleSettle[sInfo.Id] {
+		if !CanInstantSettle(sInfo.SettleType, settleOption) {
 			// 扣费并设置玩家金币数
 			majongSettle.chargeCoin(deskPlayers, majongSettle.settleMap[sInfo.Id])
 		}
@@ -122,7 +124,7 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 		if needBillDetails {
 			balanceRsp.BillDetail, totalValue = majongSettle.makeBillDetails(pid, contextSInfos)
 			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, nil, mjContext)
-		} else {
+		} else if len(contextSInfos) != 0 {
 			sinfo := contextSInfos[0]
 			cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
 			fans := make([]*room.Fan, 0)
@@ -359,11 +361,14 @@ func (majongSettle *majongSettle) makeBillPlayerInfo(currentPid uint64, cardValu
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
 		playerID := player.GetPalyerId()
+		coin := int64(global.GetPlayerMgr().GetPlayer(playerID).GetCoin())
 		billPlayerInfo := &room.BillPlayerInfo{
-			Pid:       proto.Uint64(playerID),
-			Score:     proto.Int64(majongSettle.roundScore[playerID]),
-			CardValue: proto.Int32(cardValue),
-			Fan:       fans,
+			Pid:          proto.Uint64(playerID),
+			Score:        proto.Int64(majongSettle.roundScore[playerID]),
+			CardValue:    proto.Int32(cardValue),
+			BillType:     room.BillType(-1).Enum(),
+			Fan:          fans,
+			CurrentScore: proto.Int64(coin),
 		}
 		if playerID == currentPid {
 			billPlayerInfo.CardsGroup = gutils.GetCardsGroup(player)

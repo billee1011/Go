@@ -16,7 +16,7 @@ type RoundSettle struct {
 func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":       "roundSettle",
-		"gameId":          params.GameID,
+		"settleOptionID":  params.SettleOptionID,
 		"flowPigPlayers":  params.FlowerPigPlayers,
 		"huPlayers":       params.HuPlayers,
 		"quitPlayers":     params.QuitPlayers,
@@ -26,7 +26,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 	logEntry.Debugln("单局结算信息")
 
 	// 游戏结算玩法
-	settleOption := GetSettleOption(int(params.GameID))
+	settleOption := mjoption.GetSettleOption(params.SettleOptionID)
 	// 结算信息
 	setletInfos := make([]*majongpb.SettleInfo, 0)
 	// 查花猪

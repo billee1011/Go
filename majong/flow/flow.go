@@ -10,7 +10,6 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	_ "steve/majong/fantype"        // init fantype
-	_ "steve/majong/settle"         // init settles
 	_ "steve/majong/states/factory" // init state facotry
 
 	"github.com/Sirupsen/logrus"
