@@ -1,13 +1,25 @@
-package loader
+package plugin
 
 import (
-	"plugin"
-	"steve/structs"
 	"steve/structs/service"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"plugin"
+	"steve/serviceloader/loader"
+	"steve/structs"
 )
+
+// LoadService load service appointed by name
+func LoadService(name string, options ...loader.ServiceOption) {
+	opt := loader.LoadOptions(options...)
+	exposer := loader.CreateExposer(opt)
+
+	loader.RegisterServer2(&opt)
+	loader.RegisterHealthServer(exposer.RPCServer)
+	service := initService(name, exposer)
+	loader.Run(service, exposer, opt)
+}
 
 func initService(name string, ep *structs.Exposer) service.Service {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -25,12 +37,6 @@ func initService(name string, ep *structs.Exposer) service.Service {
 	return service
 }
 
-func runService(s service.Service) {
-	if err := s.Start(); err != nil {
-		logrus.WithError(err).Fatalln("服务启动失败")
-	}
-}
-
 func getPluginService(name string) (service.Service, error) {
 	if !strings.HasSuffix(name, ".so") {
 		name += ".so"
@@ -45,5 +51,5 @@ func getPluginService(name string) (service.Service, error) {
 	}
 	getter := f.(func() service.Service)
 	service := getter()
-	return service, nil
+	return service, err
 }

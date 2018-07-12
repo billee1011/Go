@@ -4,9 +4,9 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
+//     http://www.a
+// Unless requipache.org/licenses/LICENSE-2.0
+////red by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
@@ -17,40 +17,28 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"steve/serviceloader/loader"
-	"steve/serviceloader/logger"
+	//"steve/serviceloader/logger"
 
 	"github.com/Sirupsen/logrus"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"steve/serviceloader/plugin"
+	"steve/servicelauncher/launcher"
 )
 
 var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "serviceloader",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.MinimumNArgs(1),
+	Use:   "servicelauncher",
+	Short: "Debug service",
+	Long:  ``,
+	Args:  cobra.MinimumNArgs(1),
 
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		plugin.LoadService(args[0],
-			loader.WithRPCParams(viper.GetString("rpc_certi_file"), viper.GetString("rpc_key_file"), viper.GetString("rpc_addr"), viper.GetInt("rpc_port"),
-				viper.GetString("rpc_server_name")),
-			loader.WithClientRPCCA(viper.GetString("rpc_ca_file"), viper.GetString("certi_server_name")),
-			loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
-			loader.WithConsulAddr(viper.GetString("consul_addr")),
-			loader.WithParams(args[1:]))
+		launcher.Init(args)
 	},
 }
 
@@ -131,6 +119,6 @@ func initDefaultConfig() {
 }
 
 func initLogger() {
-	logger.SetupLog(viper.GetString("log_prefix"), viper.GetString("log_dir"),
-		viper.GetString("log_level"), viper.GetBool("log_stderr"))
+	//logger.SetupLog(viper.GetString("log_prefix"), viper.GetString("log_dir"),
+	//	viper.GetString("log_level"), viper.GetBool("log_stderr"))
 }

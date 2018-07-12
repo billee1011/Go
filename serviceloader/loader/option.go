@@ -86,7 +86,7 @@ func infoOption(opt option) {
 }
 
 // loadOptions 加载服务选项
-func loadOptions(options ...ServiceOption) option {
+func LoadOptions(options ...ServiceOption) option {
 	opt := defaultOption
 	for _, option := range options {
 		option(&opt)

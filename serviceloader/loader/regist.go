@@ -14,15 +14,24 @@ var errAllocServerID = errors.New("分配服务 ID 失败")
 var errNewRedisClient = errors.New("创建 redis 客户端失败")
 
 // registerParams 服务注册参数
-type registerParams struct {
+type RegisterParams struct {
 	serverName string
 	addr       string
 	port       int
 	consulAddr string // consul 地址
 }
 
+func RegisterServer2(opt *option) {
+	RegisterServer(&RegisterParams{
+		serverName: opt.rpcServerName,
+		addr:       opt.rpcAddr,
+		port:       opt.rpcPort,
+		consulAddr: opt.consulAddr,
+	})
+}
+
 // registerServer 注册服务
-func registerServer(rp *registerParams) {
+func RegisterServer(rp *RegisterParams) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":   "registerServer",
 		"server_name": rp.serverName,
@@ -43,7 +52,7 @@ func registerServer(rp *registerParams) {
 }
 
 // allocServerID 分配服务 ID
-func allocServerIDNew(rp *registerParams) string {
+func allocServerIDNew(rp *RegisterParams) string {
 	return fmt.Sprintf("%s-%s-%d", rp.serverName, rp.addr, rp.port)
 }
 
