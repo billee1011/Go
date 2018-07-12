@@ -97,7 +97,9 @@ message ZiXunRecord {
     repeated CanTingCardInfo can_ting_card_info = 5; // 每张牌对应的听的牌和倍数
     bool enable_qi = 6; //是否可弃牌
     HuType hu_type = 7;  // 胡牌类型
-    HuFanType hu_fan_type = 9; // 胡牌的番型
+    bool enable_ting = 8;   //是否能听
+    TingType ting_type = 9; //听的类型
+    HuFanType hu_fan_type = 10; // 胡牌的番型
 }
 
 // Player 玩家数据
@@ -194,6 +196,7 @@ enum MopaiType {
 enum ZixunType {
     ZXT_NORMAL = 0; // 普通自询
     ZXT_PENG = 1;   // 碰后的自询
+    ZXT_CHI = 2;    // 吃后的自询
 }
 
 // MajongContext 麻将现场

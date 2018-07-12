@@ -29,4 +29,4 @@ giveup_player_settle:
 
 # 结算时刻
 gang_instant_settle: false  #杠立即结算
-hu_instant_settle: true    #胡立即结算
+hu_instant_settle: false    #胡立即结算

@@ -1,12 +1,11 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -38,7 +37,7 @@ func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, ba
 		ntf.Player = &context.MopaiPlayer
 		ntf.Back = proto.Bool(back)
 		toClientMessage := interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_MOPAI_NTF),
+			MsgID: int(msgId.MsgID_ROOM_MOPAI_NTF),
 			Msg:   ntf,
 		}
 		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
@@ -82,19 +81,6 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 		return majongpb.StateID_state_xingpai_buhua, nil
 	}
 	return majongpb.StateID_state_zixun, nil
-}
-
-func (s *MoPaiState) checkGameOver(flow interfaces.MajongFlow) bool {
-	context := flow.GetMajongContext()
-	if len(context.WallCards) == 0 {
-		return true
-	}
-	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
-	length := handle.GetLensOfWallCards(int(context.GetGameId()))
-	if utils.GetAllMopaiCount(context) == length-53 {
-		return true
-	}
-	return false
 }
 
 // OnEntry 进入状态

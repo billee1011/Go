@@ -1,4 +1,4 @@
-package start
+package ermjtest
 
 import (
 	"steve/client_pb/room"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStartBuhua(t *testing.T) {
+func TestGameOver(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.PlayerNum = 2
 	params.BankerSeat = 0
@@ -21,13 +21,13 @@ func TestStartBuhua(t *testing.T) {
 		{11, 11, 11, 51, 52, 12, 12, 12, 13, 13, 13, 14, 14},
 		{53, 54, 15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18},
 	}
-	params.WallCards = []uint32{11, 55, 12, 56, 13, 14, 57, 58, 14, 19, 19, 19, 41, 41, 41}
+	params.WallCards = []uint32{11, 55, 12, 56, 13, 14, 57, 58, 14, 41}
 	deskData, err := utils.StartGame(params)
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)
-	utils.CheckZixunNotify(t, deskData, 0)
-	//等補花結束
-	// time.Sleep(time.Second * 2)
+	utils.CheckZixunNtfWithTing(t, deskData, 0, false, true, true, true)
 	assert.Nil(t, utils.SendChupaiReq(deskData, 0, uint32(14)))
 	utils.CheckChuPaiNotifyWithSeats(t, deskData, uint32(14), 0, []int{0, 1})
+	assert.Nil(t, utils.SendQiReq(deskData, 1))
+	assert.Nil(t, utils.SendChupaiReq(deskData, 1, uint32(18)))
 }

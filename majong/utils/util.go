@@ -3,12 +3,15 @@ package utils
 import (
 	"fmt"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
 )
+
+var cardAll = []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47}
 
 //GetPlayerByID 根据玩家id获取玩家
 func GetPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
@@ -35,8 +38,8 @@ func GetNextPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 func CardsToUtilCards(cards []*majongpb.Card) []Card {
 	cardsCard := make([]Card, 0)
 	for _, v := range cards {
-		cardInt, _ := CardToInt(*v)
-		cardsCard = append(cardsCard, Card(*cardInt))
+		cardInt := ServerCard2Number(v)
+		cardsCard = append(cardsCard, Card(cardInt))
 	}
 	return cardsCard
 }
@@ -407,7 +410,6 @@ func GetTingCards(handCards []*majongpb.Card, laizi map[Card]bool) ([]Card, erro
 	// 推倒胡
 	result = FastCheckTingV2(cardsCard, laizi)
 	// 七对
-	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	qiCards := FastCheckQiDuiTing(cardsCard, cardAll)
 	return MergeAndNoRepeat(result, qiCards), nil
 }
@@ -497,8 +499,6 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[C
 	cardsCard := CardsToUtilCards(handCards)
 	// 推倒胡查胡，打那张牌可以胡那些牌
 	result = FastCheckTingInfoV2(cardsCard, laizi)
-	// 1-9所有牌
-	cardAll := []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39}
 	// 七对查胡，打那张牌可以胡那些牌
 	qiStrategy := FastCheckQiDuiTingInfo(cardsCard, cardAll)
 
@@ -535,6 +535,7 @@ func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
 	count := 0
 	for _, player := range mjContext.GetPlayers() {
 		count += int(player.GetMopaiCount())
+		count += len(player.GetHuaCards())
 	}
 	return count
 }
@@ -547,7 +548,13 @@ func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
 	}
 	// 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
 	length := context.GetOption().GetWallcardsLength()
-	if GetAllMopaiCount(context) == int(length)-53 {
+	maxCount := 0
+	if mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId())).EnableKaijuAddflower {
+		maxCount = int(length) - (len(context.GetPlayers()) * 13)
+	} else {
+		maxCount = int(length) - (len(context.GetPlayers())*13 + 1)
+	}
+	if GetAllMopaiCount(context) == maxCount {
 		return false
 	}
 	return true

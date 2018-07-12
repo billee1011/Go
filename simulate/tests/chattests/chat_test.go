@@ -2,7 +2,7 @@ package chattests
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -37,7 +37,7 @@ func TestChat(t *testing.T) {
 func sendChatReq(deskData *utils.DeskData, seat int, chatType room.ChatType, chatInfo string) error {
 	player := utils.GetDeskPlayerBySeat(seat, deskData)
 	client := player.Player.GetClient()
-	_, err := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_CHAT_REQ), &room.RoomDeskChatReq{
+	_, err := client.SendPackage(utils.CreateMsgHead(msgId.MsgID_ROOM_CHAT_REQ), &room.RoomDeskChatReq{
 		ChatType: &chatType,
 		ChatInfo: &chatInfo,
 	})
@@ -47,7 +47,7 @@ func sendChatReq(deskData *utils.DeskData, seat int, chatType room.ChatType, cha
 // waitChatRsp 等待接收玩家聊天信息,sourceSeat 聊天发起人，seat接受聊天的人
 func waitChatRsp(deskData *utils.DeskData, seat, sourceSeat int, chatType room.ChatType, chatInfo string) error {
 	player := utils.GetDeskPlayerBySeat(seat, deskData)
-	expector, _ := player.Expectors[msgid.MsgID_ROOM_CHAT_NTF]
+	expector, _ := player.Expectors[msgId.MsgID_ROOM_CHAT_NTF]
 
 	ntf := room.RoomDeskChatNtf{}
 	if err := expector.Recv(global.DefaultWaitMessageTime, &ntf); err != nil {

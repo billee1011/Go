@@ -79,7 +79,8 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 			case majongpb.Action_action_chi:
 				{
 					ntf.ChiInfo = &room.RoomChiInfo{
-						Cards: player.GetEnbleChiCards(),
+						Cards:   player.GetEnbleChiCards(),
+						ChiCard: proto.Uint32(utils.ServerCard2Uint32(mjContext.GetLastOutCard())),
 					}
 				}
 			}
@@ -91,7 +92,7 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 			"actions":     actions,
 		}).Debugln("发送问询通知")
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
+			MsgID: int(msgId.MsgID_ROOM_CHUPAIWENXUN_NTF),
 			Msg:   &ntf,
 		})
 	}

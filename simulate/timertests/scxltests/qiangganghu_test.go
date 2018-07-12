@@ -1,7 +1,7 @@
 package timertests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -62,7 +62,7 @@ func Test_Qiangganghu01(t *testing.T) {
 	gangPlayer := utils.GetDeskPlayerBySeat(1, deskData)
 	for i := 0; i < 4; i++ {
 		deskPlayer := utils.GetDeskPlayerBySeat(i, deskData)
-		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF]
+		expector, _ := deskPlayer.Expectors[msgId.MsgID_ROOM_WAIT_QIANGGANGHU_NTF]
 		ntf := room.RoomWaitQianggangHuNtf{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, uint32(19), ntf.GetCard())
@@ -70,7 +70,7 @@ func Test_Qiangganghu01(t *testing.T) {
 		assert.Equal(t, i == 2, ntf.GetSelfCan())
 	}
 	player := utils.GetDeskPlayerBySeat(1, deskData)
-	expector, _ := player.Expectors[msgid.MsgID_ROOM_GANG_NTF]
+	expector, _ := player.Expectors[msgId.MsgID_ROOM_GANG_NTF]
 	ntf := room.RoomGangNtf{}
 	assert.Nil(t, expector.Recv(time.Second*16, &ntf))
 	assert.Equal(t, uint32(19), ntf.GetCard())
@@ -135,7 +135,7 @@ func Test_Qiangganghu02(t *testing.T) {
 	gangPlayer := utils.GetDeskPlayerBySeat(1, deskData)
 	for i := 0; i < 4; i++ {
 		deskPlayer := utils.GetDeskPlayerBySeat(i, deskData)
-		expector, _ := deskPlayer.Expectors[msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF]
+		expector, _ := deskPlayer.Expectors[msgId.MsgID_ROOM_WAIT_QIANGGANGHU_NTF]
 		ntf := room.RoomWaitQianggangHuNtf{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, uint32(19), ntf.GetCard())

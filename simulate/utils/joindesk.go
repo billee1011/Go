@@ -20,7 +20,7 @@ func ApplyJoinDesk(player interfaces.ClientPlayer, gameID room.GameId) (*room.Ro
 	}
 	rsp := room.RoomJoinDeskRsp{}
 	client := player.GetClient()
-	err := client.Request(createMsgHead(msgid.MsgID_ROOM_JOIN_DESK_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP), &rsp)
+	err := client.Request(createMsgHead(msgId.MsgID_ROOM_JOIN_DESK_REQ), &req, global.DefaultWaitMessageTime, uint32(msgId.MsgID_ROOM_JOIN_DESK_RSP), &rsp)
 	if err != nil {
 		logEntry.WithError(err).Errorln(errRequestFailed)
 		return nil, errRequestFailed

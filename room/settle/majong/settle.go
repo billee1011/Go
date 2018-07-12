@@ -1,7 +1,7 @@
 package majong
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/gutils"
@@ -69,6 +69,8 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 		if CanInstantSettle(sInfo.SettleType, settleOption) { // 立即结算
 			majongSettle.instantSettle(desk, sInfo, score, brokerPlayers)
 		}
+		// 生成结算完成事件
+		GenerateSettleEvent(desk, sInfo.SettleType, brokerPlayers)
 	}
 	// 退税id
 	revertIds := mjContext.RevertSettles
@@ -78,7 +80,7 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 		// 扣费并设置玩家金币数
 		majongSettle.chargeCoin(deskPlayers, rSettleInfo.Scores)
 		// 广播退税信息
-		facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+		facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgId.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 			BillPlayersInfo: majongSettle.getBillPlayerInfos(deskPlayers, rSettleInfo, rSettleInfo.Scores),
 		})
 	}
@@ -128,7 +130,7 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, fans, mjContext)
 		}
 		// 通知该玩家单局结算信息
-		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
+		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgId.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 	}
 }
 
@@ -137,15 +139,13 @@ func (majongSettle *majongSettle) instantSettle(desk interfaces.Desk, sInfo *maj
 	// 扣费并设置玩家金币数
 	majongSettle.chargeCoin(desk.GetDeskPlayers(), score)
 	// 广播结算
-	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgId.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 		BillPlayersInfo: majongSettle.getBillPlayerInfos(desk.GetDeskPlayers(), sInfo, score),
 	})
 	// 广播认输
-	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
+	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgId.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
 		PlayerId: brokerPlayers,
 	})
-	// 生成结算完成事件
-	GenerateSettleEvent(desk, sInfo.SettleType, brokerPlayers)
 }
 
 func (majongSettle *majongSettle) makeBillDetails(pid uint64, contextSInfos []*majongpb.SettleInfo) (billDetails []*room.BillDetail, totalValue int32) {

@@ -2,7 +2,7 @@ package common
 
 import (
 	"math/rand"
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
@@ -96,7 +96,7 @@ func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices []
 
 // pushMessages 发送消息给玩家
 func (s *XipaiState) pushMessages(cardCount int, dices []uint32, zjIndex int, flow interfaces.MajongFlow) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_XIPAI_NTF, &room.RoomXipaiNtf{
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_XIPAI_NTF, &room.RoomXipaiNtf{
 		Dices:      dices,
 		TotalCard:  proto.Uint32(uint32(cardCount)),
 		BankerSeat: proto.Uint32(uint32(zjIndex)),

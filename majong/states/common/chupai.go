@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/gutils"
@@ -67,7 +67,8 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 //checkActions 检查玩家可以有哪些操作
 func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
 	context := flow.GetMajongContext()
-	canMingGang := s.checkMingGang(flow, player, card)
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	canMingGang := s.checkMingGang(flow, player, card, xpOption)
 	if canMingGang {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_gang)
 	}
@@ -80,7 +81,6 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 	if canPeng {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
 	}
-	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
 	chiSlice := make([]uint32, 0)
 	if xpOption.EnableChi {
 		chiSlice = s.checkChi(context, player, card)
@@ -104,11 +104,11 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 		"chiSlice":    chiSlice,
 		"handCards":   gutils.FmtMajongpbCards(player.GetHandCards()),
 	}).Info("检测玩家是否有特殊操作")
-	return canDianPao || canMingGang || canPeng
+	return canDianPao || canMingGang || canPeng || len(chiSlice) != 0
 }
 
 //checkMingGang 查明杠
-func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
+func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card, xpOption *mjoption.XingPaiOption) bool {
 	// 没有墙牌不能明杠
 	context := flow.GetMajongContext()
 	if !utils.HasAvailableWallCards(flow) {
@@ -118,7 +118,7 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 	outCard := context.GetLastOutCard()
 	color := player.GetDingqueColor()
 	//定缺牌不查
-	if outCard.Color == color {
+	if xpOption.EnableDingque && outCard.Color == color {
 		return false
 	}
 	cards := player.HandCards
@@ -153,7 +153,8 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	color := player.GetDingqueColor()
 	//胡牌后不能碰了
-	if len(player.GetHuCards()) > 0 || card.Color == color {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	if len(player.GetHuCards()) > 0 || (xpOption.EnableDingque && card.Color == color) {
 		return false
 	}
 	num := 0
@@ -177,12 +178,13 @@ func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majo
 	cpCard := context.GetLastOutCard()
 	color := player.GetDingqueColor()
 	hasDingQueCard := gutils.CheckHasDingQueCard(player.HandCards, color)
-	if hasDingQueCard {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	if xpOption.EnableDingque && hasDingQueCard {
 		return false
 	}
 	handCard := player.GetHandCards() // 当前点炮胡玩家手牌
-	cardI, _ := utils.CardToInt(*cpCard)
-	result := utils.CheckHu(handCard, uint32(*cardI), false)
+	cardI := utils.ServerCard2Uint32(cpCard)
+	result := utils.CheckHu(handCard, cardI, false)
 	if result.Can {
 		return true
 	}
@@ -241,7 +243,7 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	card := context.GetLastOutCard()
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
 		Player: proto.Uint64(activePlayer.GetPalyerId()),
 		Card:   proto.Uint32(utils.ServerCard2Uint32(card)),
 	})

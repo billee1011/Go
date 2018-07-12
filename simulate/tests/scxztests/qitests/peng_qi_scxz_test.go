@@ -1,7 +1,7 @@
 package qitests
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -41,7 +41,7 @@ func Test_SCXZ_Peng_Qi(t *testing.T) {
 	pengSeat := (params.BankerSeat + 1) % len(deskData.Players)
 	pengPlayer := utils.GetDeskPlayerBySeat(pengSeat, deskData)
 
-	expector, _ := pengPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := pengPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.Equal(t, Int5w, ntf.GetCard())

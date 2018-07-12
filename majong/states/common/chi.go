@@ -1,7 +1,7 @@
 package common
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -23,7 +23,7 @@ func (s *ChiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, f
 	switch eventID {
 	case majongpb.EventID_event_chi_finish:
 		mjContext := flow.GetMajongContext()
-		mjContext.ZixunType = majongpb.ZixunType_ZXT_PENG
+		mjContext.ZixunType = majongpb.ZixunType_ZXT_CHI
 		return majongpb.StateID_state_zixun, nil
 	}
 	return majongpb.StateID_state_chi, nil
@@ -60,8 +60,9 @@ func (s *ChiState) doChi(flow interfaces.MajongFlow) {
 	srcPlayer := utils.GetMajongPlayer(srcPlayerID, mjContext)
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":      "PengState.doChi",
-		"peng_player_id": chiPlayer,
+		"func_name":       "ChiState.doChi",
+		"chi_player_id":   chiPlayerID,
+		"chied_player_id": srcPlayerID,
 	})
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 	utils.SortCards(chiPlayer.GetDesignChiCards())
@@ -76,22 +77,28 @@ func (s *ChiState) doChi(flow interfaces.MajongFlow) {
 	srcOutCards := srcPlayer.GetOutCards()
 	srcPlayer.OutCards = removeLastCard(logEntry, srcOutCards, card)
 	// 从吃牌玩家的handCards移除吃牌
-	logEntry = logEntry.WithFields(logrus.Fields{})
 	newCards := make([]*majongpb.Card, 0)
+	newCards = append(newCards, chiPlayer.GetHandCards()...)
 	for _, designCard := range chiPlayer.DesignChiCards {
 		if utils.CardEqual(card, designCard) {
 			continue
 		}
 		var ok bool
-		newCards, ok = utils.RemoveCards(chiPlayer.GetHandCards(), designCard, 1)
+		newCards, ok = utils.RemoveCards(newCards, designCard, 1)
 		if !ok {
 			logEntry.Errorln("移除玩家手牌失败")
 			return
 		}
 	}
 	chiPlayer.HandCards = newCards
-	s.notifyChi(flow, chiPlayer.DesignChiCards, srcPlayerID, chiPlayerID)
+	s.notifyChi(flow, chiPlayer.DesignChiCards, card, srcPlayerID, chiPlayerID)
 	s.addChiCard(chiPlayer.DesignChiCards[0], card, chiPlayer, srcPlayerID)
+	logEntry = logEntry.WithFields(logrus.Fields{
+		"chi_cards": checkCards,
+		"out_card":  utils.ServerCard2Number(card),
+		"chiCard":   chiPlayer.GetChiCards(),
+	})
+	logEntry.Infoln("吃牌成功")
 	return
 }
 
@@ -104,9 +111,10 @@ func (s *ChiState) addChiCard(card *majongpb.Card, oprCard *majongpb.Card, playe
 	})
 }
 
-func (s *ChiState) notifyChi(flow interfaces.MajongFlow, cards []*majongpb.Card, from uint64, to uint64) {
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHI_NTF, &room.RoomChiNtf{
+func (s *ChiState) notifyChi(flow interfaces.MajongFlow, cards []*majongpb.Card, chiCard *majongpb.Card, from uint64, to uint64) {
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_CHI_NTF, &room.RoomChiNtf{
 		Cards:        utils.ServerCards2Uint32(cards),
+		ChiCard:      proto.Uint32(utils.ServerCard2Uint32(chiCard)),
 		FromPlayerId: proto.Uint64(from),
 		ToPlayerId:   proto.Uint64(to),
 	})

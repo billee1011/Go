@@ -32,7 +32,8 @@ func TestCalculateAndCardTypeValuePingHu(t *testing.T) {
 	cardTypes, genCount, _ := calculate(playerParams)
 	fmt.Println(cardTypes)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_PINGHU))
-	assert.Equal(t, genCount, int(0))
+	assert.Equal(t, genCount, 0)
+
 }
 
 // 清一色
@@ -50,7 +51,7 @@ func TestCalculateAndCardTypeValueQingYiSe(t *testing.T) {
 	}
 	cardTypes, genCount, _ := calculate(playerParams)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGYISE))
-	assert.Equal(t, genCount, int(0))
+	assert.Equal(t, genCount, 0)
 
 }
 
@@ -124,7 +125,6 @@ func TestCalculateAndCardTypeValueQingLongQiDui(t *testing.T) {
 		GameID:           1,
 	}
 	cardTypes, _, _ := calculate(playerParams)
-	fmt.Println(cardTypes)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_QINGLONGQIDUI))
 }
 

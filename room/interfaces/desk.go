@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	room "steve/client_pb/room"
 	"steve/structs/proto/gate_rpc"
 )
@@ -70,7 +70,7 @@ type Desk interface {
 	// BroadcastMessage 广播消息给牌桌玩家
 	// playerIDs ： 目标玩家，如果为 nil 或者长度为0，则针对牌桌所有玩家
 	// exceptQuit ： 已经退出的玩家是否排除
-	BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool)
+	BroadcastMessage(playerIDs []uint64, msgID msgId.MsgID, body []byte, exceptQuit bool)
 }
 
 // DeskMgr 牌桌管理器

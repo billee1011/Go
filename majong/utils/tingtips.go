@@ -1,7 +1,7 @@
 package utils
 
 import (
-	msgid "steve/client_pb/msgId"
+	 "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/majong/global"
@@ -73,7 +73,7 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 		}
 	}
 	flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
-		MsgID: int(msgid.MsgID_ROOM_TINGINFO_NTF),
+		MsgID: int(msgId.MsgID_ROOM_TINGINFO_NTF),
 		Msg:   &ntf,
 	})
 }

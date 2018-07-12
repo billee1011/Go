@@ -10,8 +10,9 @@ package common
 //并设置杠玩家Properties["gang"]为[]byte("true")，最后进行明杠结算
 //约束条件：无
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -32,7 +33,11 @@ var _ interfaces.MajongState = new(MingGangState)
 func (s *MingGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_gang_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
+		xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
+		if xpOption.EnableGangSettle {
+			return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
+		}
+		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang), nil
 }
@@ -90,7 +95,7 @@ func (s *MingGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb
 		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_MingGang.Enum(),
 	}
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GANG_NTF, &body)
+	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_GANG_NTF, &body)
 }
 
 // addGangCard 添加明杠的牌
