@@ -20,7 +20,7 @@ func (s *overState) OnEnter(m machine.Machine) {
 
 	totalGrab := context.TotalGrab
 	totalDouble := context.TotalDouble
-	base := uint32(1) // TODO:待确定底分从哪获取
+	base := uint32(1000) // TODO:待确定底分从哪获取
 	multiple := uint32(totalGrab * totalDouble * context.TotalBomb)
 	if context.Spring || context.AntiSpring {
 		multiple = multiple * 2

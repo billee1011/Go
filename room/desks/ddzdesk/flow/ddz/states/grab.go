@@ -96,6 +96,9 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.StartTime, _ = time.Now().MarshalBinary()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
 
+	if lordPlayerId != 0 {
+		context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
+	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId:     &playerId,
 		Grab:         &grab,

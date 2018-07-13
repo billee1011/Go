@@ -74,10 +74,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			CardType:     nil,
 			TotalBomb:    &context.TotalBomb,
 			NextPlayerId: &nextPlayerId,
-			NextStage: &room.NextStage{
-				Stage: &stage,
-				Time:  proto.Uint32(15),
-			},
+			NextStage:    GenNextStage(stage),
 		})
 
 		context.CurrentPlayerId = nextPlayerId
@@ -151,9 +148,9 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	player.HandCards = ToInts(handCards)
 	player.OutCards = message.GetCards()
 
-	//lastOutCards := ToDDZCards(player.OutCards)
-	//lastOutCards = AppendAll(lastOutCards, outCards)
-	//player.AllOutCards = ToInts(lastOutCards) // for 记牌器
+	lastOutCards := ToDDZCards(player.AllOutCards)
+	lastOutCards = AppendAll(lastOutCards, outCards)
+	player.AllOutCards = ToInts(lastOutCards) // for 记牌器
 
 	//更新context
 	context.CurrentPlayerId = nextPlayerId

@@ -61,23 +61,3 @@ message DDZContext {
     bytes startTime = 25;           //开始倒计时时间
     uint32 duration = 26;           //倒计时时间
 }
-
-// AutoEvent 自动事件
-message AutoEvent {
-    EventID event_id = 1;       // 事件 ID
-    bytes event_context = 2;    // 事件现场
-    uint32 wait_time = 3;       // 多长时间（ms）后产生该事件
-}
-
-// ReplyClientMessage 回复给客户端的消息
-message ReplyClientMessage {
-    repeated uint64 players = 1;    // 玩家列表
-    int32 msg_id = 2;               // 消息 ID
-    bytes msg = 3;    // 消息体
-}
-
-// TimeCheckInfo 时间检测信息
-message TimeCheckInfo {
-    uint64 duration = 1;            // 多久之后作检测
-    int32 type = 2;                 // 检测类型
-}
