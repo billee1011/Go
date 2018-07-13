@@ -52,6 +52,12 @@ func createState(stateID majongpb.StateID) interfaces.MajongState {
 		return new(common.MoPaiState)
 	case majongpb.StateID_state_gameover:
 		return new(common.GameOverState)
+	case majongpb.StateID_state_gamestart_buhua:
+		return new(common.GameStartBuhuaState)
+	case majongpb.StateID_state_xingpai_buhua:
+		return new(common.XingPaiBuhuaState)
+	case majongpb.StateID_state_chi:
+		return new(common.ChiState)
 	default:
 		return nil
 	}

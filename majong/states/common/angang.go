@@ -12,6 +12,7 @@ package common
 import (
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -34,7 +35,11 @@ var _ interfaces.MajongState = new(AnGangState)
 func (s *AnGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_angang_finish {
 		s.setMopaiPlayer(flow)
-		return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
+		xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
+		if xpOption.EnableGangSettle {
+			return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
+		}
+		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_angang), nil
 }

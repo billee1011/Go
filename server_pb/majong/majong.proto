@@ -38,31 +38,28 @@ enum HuType {
     hu_zimo = 6;               // 自摸
     hu_tianhu = 7;             // 天胡
     hu_dihu = 8;               // 地胡
-}
-
-// 牌组类型
-enum CardType{
-    PingHu  = 0;            //平胡
-    QingYiSe  = 1;          //清一色
-    QiDui  = 2;             //七对
-    QingQiDui  = 3;         //清七对
-    LongQiDui  = 4;         //龙七对
-    QingLongQiDui  = 5;     //清龙七对   
-    PengPengHu  = 6;        //碰碰胡
-    QingPeng  = 7;          //清碰
-    JingGouDiao  = 8;       //金钩钓
-    QingJingGouDiao  = 9;   //清金钩钓
-    ShiBaLuoHan   = 10;     //十八罗汉
-    QingShiBaLuoHan  = 11;  //清十八罗汉
+    hu_renhu = 9;              // 人胡
+    hu_miaoshouhuichun = 10;   // 妙手回春
+    hu_quanqiuren = 11;        // 全求人
+    hu_buqiuren = 12;          // 不求人
+    hu_juezhang = 13;          // 胡绝张
 }
 
 // 玩家行牌状态
 enum XingPaiState{
-    normal  = 0;   // 正常行牌,二进制: 0000
-    hu      = 1;   // 已胡牌,二进制: 0001
-    give_up = 2;   // 已认输, 二进制: 0010
-    hu_giveup = 3; // 已胡牌且认输, 二进制: 0011
+    normal  = 0x0;   // 正常行牌,二进制: 0000
+    hu      = 0x1;   // 已胡牌,二进制:   0001
+    give_up = 0x2;   // 已认输, 二进制:  0010
  }
+
+
+// 玩家胡牌对应的fanType
+message HuFanType{
+    Card hu_card = 1;
+    uint64 gen_count = 2;
+    uint64 hua_count = 3;
+    repeated int64 fan_types = 4;
+}
 
 // 胡牌数据
 message HuCard {
@@ -74,7 +71,7 @@ message HuCard {
 
 // 吃牌数据
 message ChiCard {
-    repeated Card cards = 1;    // 牌列表
+    Card card = 1;    // 最小牌
     Card opr_card = 2;  // 吃的牌
     uint64 src_player = 3; // 吃牌来源玩家
 }
@@ -91,8 +88,8 @@ message CanTingCardInfo{
     repeated TingCardInfo ting_card_info = 2; // 听的牌和倍数
 }
 
-// ZixunRecord 自询
-message ZixunRecord {
+// ZiXunRecord 记录
+message ZiXunRecord {
     repeated uint32 enable_angang_cards = 1;  // 能暗杠的牌
     repeated uint32 enable_bugang_cards = 2;  // 能补杠的牌
     bool enable_zimo = 3;          // 是否能自摸
@@ -100,6 +97,9 @@ message ZixunRecord {
     repeated CanTingCardInfo can_ting_card_info = 5; // 每张牌对应的听的牌和倍数
     bool enable_qi = 6; //是否可弃牌
     HuType hu_type = 7;  // 胡牌类型
+    bool enable_ting = 8;   //是否能听
+    TingType ting_type = 9; //听的类型
+    HuFanType hu_fan_type = 10; // 胡牌的番型
 }
 
 // Player 玩家数据
@@ -119,14 +119,25 @@ message Player {
     bool huansanzhang_sure = 13;            // 换三张是否已确认
     repeated Card huansanzhang_cards = 14;  // 换三张的牌
     int32 mopai_count = 15;                 // 已经摸牌的次数
-    ZixunRecord zixun_record = 16;          // 自询记录
+    ZiXunRecord zixun_record = 16;          // 自询记录
     XingPaiState xp_state = 17;             // 玩家牌局状态
     bool is_quit = 18;                       // 玩家是否退出牌局
     repeated TingCardInfo ting_card_info = 19;       // 听牌信息 
-    uint32 max_card_value = 20;              // 胡最大倍数（胡牌时）
-    repeated CardsGroup cards_group = 21;             // 胡最大倍数时的牌组（胡牌时）
+    repeated Card hua_cards = 20;           //补的花牌
+    TingStateInfo ting_state_info = 21;     //听的状态信息
+    int32 zixun_count = 22;                 // 进入自询的次数
+    repeated uint32 enble_chi_cards = 23;   //可以吃的牌組
+    repeated Card  design_chi_cards = 24;   //玩家請求指定吃的牌組
+    uint32 max_card_value = 25;              // 胡最大倍数（胡牌时）
+    repeated CardsGroup cards_group = 26;   // 胡最大倍数时的牌组（胡牌时）
     map<string, bytes> properties = 256;    // 其他的一些属性
-} 
+}
+
+message TingStateInfo{
+   bool is_ting = 1; //听
+   bool is_tianting = 2; //天听
+   bool is_baotingyifa = 3; //报听一发
+}
 
 // AutoEvent 自动事件
 message AutoEvent {
@@ -154,11 +165,12 @@ message SettleInfo {
     map<uint64, int64> scores = 2;     // 玩家结算分数
     SettleType settle_type = 3;        // 结算类型
     HuType hu_type =4;                 // 胡牌类型
-    repeated CardType card_type = 5;   // 牌组类型(胡牌时)
+    repeated int64 card_type = 5;      // 牌组类型(胡牌时)
     uint32 card_value = 6;             // 牌组倍数
     uint32 gen_count=7;                // 根的数目
-    bool call_transfer = 8;            // 结算是否被呼叫转移
-    repeated uint64 group_id = 9;      // 一炮多响相关联的结算 id
+    uint32 hua_count = 8;              // 花的数目
+    bool call_transfer = 9;            // 结算是否被呼叫转移
+    repeated uint64 group_id = 10;      // 一炮多响相关联的结算 id
 }
 
 // 玩家操作
@@ -172,6 +184,7 @@ enum Action {
     // action_bugang       = 4;  // 补杠
     // action_minggang     = 5;  // 明杠
     // action_angang       = 6;  // 暗杠
+    action_chi = 4; //吃
     action_qi           = 7;  // 弃
 }
 
@@ -185,6 +198,7 @@ enum MopaiType {
 enum ZixunType {
     ZXT_NORMAL = 0; // 普通自询
     ZXT_PENG = 1;   // 碰后的自询
+    ZXT_CHI = 2;    // 吃后的自询
 }
 
 // 麻将组类型
@@ -226,6 +240,7 @@ message MajongContext {
     repeated uint32 dices = 22; // 骰子
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
+    uint64 last_chi_player = 25; // 最近一次执行吃操作的玩家
 
     uint32 xingpai_option_id = 251; // 行牌选项 ID 
     uint32 cardtype_option_id = 252;    // 牌型选项 ID 

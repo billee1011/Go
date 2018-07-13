@@ -14,6 +14,12 @@ const (
 
 	// XingPaiTimeOut 行牌超时时间，单位为second，默认值为 10
 	XingPaiTimeOut = "xp_timeout"
+
+	// MaxFapaiCartoonTime 发牌的动画时间
+	MaxFapaiCartoonTime = "fp_cartoontime"
+
+	// MaxHuansanzhangCartoonTime 换三张动画时间
+	MaxHuansanzhangCartoonTime = "hsz_cartoontime"
 )
 
 func init() {
@@ -21,4 +27,6 @@ func init() {
 	viper.SetDefault(ListenClientPort, 36001)
 	viper.SetDefault(ListenPeipaiAddr, "")
 	viper.SetDefault(XingPaiTimeOut, 10)
+	viper.SetDefault(MaxFapaiCartoonTime, 10*1000)
+	viper.SetDefault(MaxHuansanzhangCartoonTime, 10*1000)
 }

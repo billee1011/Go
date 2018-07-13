@@ -74,9 +74,9 @@ func Test_SCXZ_Hued_NotMopai(t *testing.T) {
 	// 庄家自摸
 	assert.Nil(t, utils.WaitZixunNtf(deskData, banker))
 	assert.Nil(t, utils.SendHuReq(deskData, banker))
-	var Int2W uint32 = 12
+	var Int1B uint32 = 31
 	// 检测所有玩家收到天胡通知
-	utils.CheckHuNotify(t, deskData, []int{banker}, banker, Int2W, room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, deskData, []int{banker}, banker, Int1B, room.HuType_HT_TIANHU)
 
 	// 庄下家即1玩家出牌
 	var Int5t uint32 = 25

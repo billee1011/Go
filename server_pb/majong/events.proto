@@ -36,8 +36,13 @@ enum EventID {
 
     event_huansanzhang_finish = 27;     // 换三张完成事件
     event_cartoon_finish_request = 28;  // 动画完成请求事件
-
+    
     event_settle_finish = 29;           // 结算完成事件
+    event_gamestart_buhua_finish = 30;  // 开局补花
+    event_xingpai_buhua_finish = 31;  // 行牌补花
+    event_chi_finish = 32;              //吃牌完成事件
+    event_chi_request = 33;             //吃的請求
+
 }
 
 // RequestEventHead 请求事件通用头
@@ -78,6 +83,7 @@ message BugangRequestEvent{
 message ChupaiRequestEvent{
      RequestEventHead head = 1;  // 请求头
      Card cards = 2;    // 出的牌
+     TingAction ting_action = 3; // 听牌动作
 }
 
 
@@ -100,6 +106,11 @@ message HuRequestEvent {
 // QiRequestEvent 弃请求事件
 message QiRequestEvent {
     RequestEventHead head = 1; // 请求头
+}
+
+message ChiRequestEvent {
+    RequestEventHead head = 1; // 请求头
+    repeated Card cards = 2; //吃的牌組
 }
 
 // CartoonFinishRequestEvent 动画完成时间

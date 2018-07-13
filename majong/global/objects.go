@@ -4,18 +4,17 @@ import (
 	"steve/majong/interfaces"
 )
 
-var gCardTypeCalculator interfaces.CardTypeCalculator
+var gFanTypeCalculator interfaces.FantypeCalculator
 var gStateFactory interfaces.MajongStateFactory
-var gGameSettlerFactory interfaces.GameSettlerFactory
 
-// SetCardTypeCalculator set global card type calculator
-func SetCardTypeCalculator(ctc interfaces.CardTypeCalculator) {
-	gCardTypeCalculator = ctc
+// SetFanTypeCalculator set global fan type calculator
+func SetFanTypeCalculator(ctc interfaces.FantypeCalculator) {
+	gFanTypeCalculator = ctc
 }
 
-// GetCardTypeCalculator get global card type calc
-func GetCardTypeCalculator() interfaces.CardTypeCalculator {
-	return gCardTypeCalculator
+// GetFanTypeCalculator get global fan type calc
+func GetFanTypeCalculator() interfaces.FantypeCalculator {
+	return gFanTypeCalculator
 }
 
 // SetMajongStateFacotry set majong state factory
@@ -26,13 +25,4 @@ func SetMajongStateFacotry(f interfaces.MajongStateFactory) {
 // GetMajongStateFactory get majong state factory
 func GetMajongStateFactory() interfaces.MajongStateFactory {
 	return gStateFactory
-}
-
-// SetGameSettlerFactory 设置游戏结算器工厂
-func SetGameSettlerFactory(f interfaces.GameSettlerFactory) {
-	gGameSettlerFactory = f
-}
-
-func GetGameSettlerFactory() interfaces.GameSettlerFactory {
-	return gGameSettlerFactory
 }

@@ -11,33 +11,45 @@ import (
 
 // XingPaiOption 行牌选项
 type XingPaiOption struct {
-	ID            int            `yaml:"id"`             // 选项 ID
-	WallCards     []int          `yaml:"wall_cards"`     //墙牌
-	HuGameOver    bool           `yaml:"hu_gameover"`    // 胡牌后是否触发游戏结束
-	Hnz           Hnz            `yaml:"hnz"`            //是否需要换N张
-	NeedDingque   bool           `yaml:"need_dingque"`   //是否需要定缺
-	NeedAddflower bool           `yaml:"need_addflower"` //是否需要补花
-	NeedChi       bool           `yaml:"need_chi"`       //是否可以吃牌
-	PlayerStates  []XingpaiState `yaml:"player_states"`  //玩家不参与游戏的状态
+	ID                   int            `yaml:"id"`                      // 选项 ID
+	WallCards            []int          `yaml:"wall_cards"`              // 墙牌
+	HuGameOver           bool           `yaml:"hu_gameover"`             // 胡牌后是否触发游戏结束
+	Hnz                  Hnz            `yaml:"hnz"`                     // 是否开启换N张
+	EnableDingque        bool           `yaml:"enable_dingque"`          // 是否开启定缺
+	EnableAddflower      bool           `yaml:"enable_addflower"`        // 是否开启补花
+	EnableChi            bool           `yaml:"enable_chi"`              // 是否可以吃牌
+	EnableKaijuAddflower bool           `yaml:"enable_kaiju_addflower"`  //是否开局补花
+	PlayerNoNormalStates int32          `yaml:"player_no_normal_states"` // 玩家不参与游戏的不正常状态
+	PlayerNum            int            `yaml:"player_num"`              //玩家人数
+	FapaiType            FapaiType      `yaml:"fapai_type"`              //发牌方式
+	TianhuCardType       TianhuCardType `yaml:"tianhu_card_type"`        //天胡胡哪张牌
+	EnableGangSettle     bool           `yaml:"enable_gang_settle"`      //是否需要杠结算
 	// Zhuang        int            `yaml:"zhuang"`         //选庄的方式
 }
 
-// XingpaiState 行牌状态
-type XingpaiState uint32
+// FapaiType 发牌类型
+type FapaiType int
+
+// TianhuCardType 天胡胡哪张牌
+type TianhuCardType int
 
 const (
-	//Run 正常行牌状态
-	Run XingpaiState = 0
-	//Hu 胡牌状态
-	Hu XingpaiState = 1
-	//Giveup 认输状态
-	Giveup XingpaiState = 2
+	// NomarlFapai 正常发牌，庄家14张，闲家13张
+	NomarlFapai FapaiType = 1
+	// ErrenFapai 二人麻将类型的发牌，所有人都只发13张
+	ErrenFapai FapaiType = 2
+	// MostTingsCard 听牌最多的那张牌
+	MostTingsCard TianhuCardType = 1
+	// RightCard 最右边的牌
+	RightCard TianhuCardType = 2
+	// MoCard 摸上来的牌
+	MoCard TianhuCardType = 3
 )
 
 // Hnz 换n张
 type Hnz struct {
-	Need bool `yaml:"need"` //是否需要换n张
-	Num  int  `yaml:"num"`  //换的张数
+	Enable bool `yaml:"enable"` //是否开启换n张
+	Num    int  `yaml:"num"`    //换的张数
 }
 
 // XingPaiOptionManager 选项管理器

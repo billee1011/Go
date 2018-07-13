@@ -13,27 +13,30 @@ import (
 )
 
 // calcHuTimes 计算胡牌倍数
-func calcHuTimes(card Card, player *majongpb.Player, gameID int) uint32 {
-	calcor := global.GetCardTypeCalculator()
+func calcHuTimes(card *majongpb.Card, player *majongpb.Player, mjContext *majongpb.MajongContext) uint32 {
+	calcor := global.GetFanTypeCalculator()
 	pengCards := []*majongpb.Card{}
-	gangCards := []*majongpb.Card{}
+	gangCards := []*majongpb.GangCard{}
 	for _, pcard := range player.GetPengCards() {
 		pengCards = append(pengCards, pcard.GetCard())
 	}
 	for _, gcard := range player.GetGangCards() {
-		gangCards = append(gangCards, gcard.GetCard())
+		gangCards = append(gangCards, gcard)
 	}
-	huCard, _ := IntToCard(int32(card))
 
-	params := interfaces.CardCalcParams{
-		HandCard: player.GetHandCards(),
-		PengCard: pengCards,
-		GangCard: gangCards,
-		HuCard:   huCard,
-		GameID:   gameID,
+	params := interfaces.FantypeParams{
+		PlayerID:  player.GetPalyerId(),
+		MjContext: mjContext,
+		HandCard:  player.GetHandCards(),
+		PengCard:  pengCards,
+		GangCard:  gangCards,
+		HuCard: &majongpb.HuCard{
+			Card: card,
+			Type: majongpb.HuType_hu_dianpao,
+		},
 	}
-	value, _ := facade.CalculateCardValue(calcor, params)
-	return value
+	value, _, _ := facade.CalculateCardValue(calcor, mjContext, params)
+	return uint32(value)
 }
 
 // NotifyTingCards 通知玩家当前听的牌
@@ -51,11 +54,12 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	tingCards, _ := GetTingCards(playerCards, nil) // TODO, 目前没有包括特殊牌型
 
 	ntf := room.RoomTingInfoNtf{}
-	for _, card := range tingCards {
+	for _, utilscard := range tingCards {
+		card, _ := IntToCard(int32(utilscard))
 		// 胡提示不能是定缺牌
 		if card.GetColor() != player.GetDingqueColor() {
 			newCard, _ := CardToInt(*card)
-			times := calcHuTimes(Card(*newCard), player, int(mjContext.GetGameId()))
+			times := calcHuTimes(card, player, mjContext)
 			tingCardInfo := &room.TingCardInfo{
 				TingCard: proto.Uint32(uint32(*newCard)),
 				Times:    proto.Uint32(times),

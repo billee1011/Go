@@ -98,12 +98,25 @@ func (f *FapaiState) fapai(flow interfaces.MajongFlow) {
 	if zjIndex >= playerCount {
 		logrus.WithField("index", zjIndex).Panic("庄家索引越界")
 	}
+	xpOption := mjoption.GetXingpaiOption(int(majongContext.GetXingpaiOptionId()))
 	zjPlayer := majongContext.Players[zjIndex]
-	f.fapaiToPlayer(flow, zjPlayer, 1)
+	switch xpOption.FapaiType {
+	case mjoption.NomarlFapai:
+		{
+			f.fapaiToPlayer(flow, zjPlayer, 1)
 
-	for i := 0; i < playerCount; i++ {
-		player := majongContext.Players[(i+zjIndex)%playerCount]
-		f.fapaiToPlayer(flow, player, initHandCardCount)
+			for i := 0; i < playerCount; i++ {
+				player := majongContext.Players[(i+zjIndex)%playerCount]
+				f.fapaiToPlayer(flow, player, initHandCardCount)
+			}
+		}
+	case mjoption.ErrenFapai:
+		{
+			for i := 0; i < playerCount; i++ {
+				player := majongContext.Players[(i+zjIndex)%playerCount]
+				f.fapaiToPlayer(flow, player, initHandCardCount)
+			}
+		}
 	}
 	majongContext.LastMopaiPlayer = zjPlayer.GetPalyerId()
 	zjHandCards := zjPlayer.GetHandCards()
@@ -139,7 +152,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	//先要判断游戏有没有换三张的玩法，有换三张的玩法，再判断需不需要配置换三张
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	if xpOption.Hnz.Need {
+	if xpOption.Hnz.Enable {
 		isHsz := mjContext.GetOption().GetHasHuansanzhang()
 		logrus.WithFields(logrus.Fields{
 			"func_name": "FapaiState.getNextState",
@@ -150,11 +163,12 @@ func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.St
 			return majongpb.StateID_state_huansanzhang
 		}
 	}
-	if xpOption.NeedDingque {
+	if xpOption.EnableDingque {
 		return majongpb.StateID_state_dingque
 	}
-	if xpOption.NeedAddflower {
-		//TODO：有全局补花的话，跳转到全局补花（二人麻将暂时不考虑，先将血流血战代码选项化）
+	if xpOption.EnableKaijuAddflower {
+		//TODO：有开局补花的话，跳转到全局补花（二人麻将暂时不考虑，先将血流血战代码选项化）
+		return majongpb.StateID_state_gamestart_buhua
 	}
 	return majongpb.StateID_state_zixun
 }

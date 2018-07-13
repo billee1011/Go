@@ -3,6 +3,7 @@ package gutils
 import (
 	"fmt"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -18,7 +19,7 @@ func RoomCard2UInt32(card *room.Card) uint32 {
 		color = 2
 	} else if *card.Color == room.CardColor_CC_TONG {
 		color = 3
-	} else if *card.Color == room.CardColor_CC_FENG {
+	} else if *card.Color == room.CardColor_CC_ZI {
 		color = 4
 	}
 	value := color*10 + uint32(*card.Point)
@@ -131,10 +132,24 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 		}
 	case majongpb.CardColor_ColorFeng:
 		{
-			return room.CardColor_CC_FENG
+			return room.CardColor_CC_ZI
 		}
 	}
 	return room.CardColor(-1)
+}
+
+// ServerFanType2ClientHuType fanType获取hutype
+func ServerFanType2ClientHuType(cardTypeOptionID int, fanTypes []int) int32 {
+	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
+	if len(cardTypeOption.FanType2HuType) == 0 {
+		return -1
+	}
+	for _, fanType := range fanTypes {
+		if _, ok := cardTypeOption.FanType2HuType[fanType]; ok {
+			return int32(cardTypeOption.FanType2HuType[fanType].ID)
+		}
+	}
+	return -1
 }
 
 // MakeRoomCards 构造牌切片
@@ -185,6 +200,18 @@ func HuTypeSvr2Client(recordHuType majongpb.HuType) *room.HuType {
 		return nil
 	}
 	return &huType
+}
+
+// TingTypeSvr2Client 听类型转换，server_pb-->client_pb
+func TingTypeSvr2Client(recordTingType majongpb.TingType) *room.TingType {
+	var tingType room.TingType
+	switch recordTingType {
+	case majongpb.TingType_TT_NORMAL_TING:
+		tingType = room.TingType_TT_NORMAL_TING
+	case majongpb.TingType_TT_TIAN_TING:
+		tingType = room.TingType_TT_TIAN_TING
+	}
+	return &tingType
 }
 
 // CanTingCardInfoSvr2Client 玩家停牌信息转换，server_pb-->client_pb
@@ -334,6 +361,12 @@ func getColor(srcColor majongpb.CardColor) string {
 	if srcColor == majongpb.CardColor_ColorTong {
 		return "b"
 	}
+	if srcColor == majongpb.CardColor_ColorFeng {
+		return "z"
+	}
+	if srcColor == majongpb.CardColor_ColorHua {
+		return "h"
+	}
 	return "none"
 }
 
@@ -406,15 +439,18 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		Cards: cards,
 	}
 	cardsGroupList = append(cardsGroupList, cardsGroup)
-	// 胡牌
-	for _, huCard := range player.HuCards {
-		card := ServerCard2Number((*huCard).Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  room.CardsGroupType_CGT_HU.Enum(),
-			Cards: []uint32{uint32(card)},
+	// 胡牌组
+	var huCardGroups []*room.CardsGroup
+	for _, huCard := range player.GetHuCards() {
+		srcPlayerID := huCard.GetSrcPlayer()
+		huCardGroup := &room.CardsGroup{
+			Cards:  []uint32{ServerCard2Number(huCard.GetCard())},
+			Type:   room.CardsGroupType_CGT_HU.Enum(),
+			Pid:    &srcPlayerID,
+			IsReal: proto.Bool(huCard.GetIsReal()),
 		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
+		huCardGroups = append(huCardGroups, huCardGroup)
 	}
+	cardsGroupList = append(cardsGroupList, huCardGroups...)
 	return cardsGroupList
 }

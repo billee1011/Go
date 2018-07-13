@@ -28,7 +28,7 @@ func TestHuQuit(t *testing.T) {
 	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	//庄家选择天胡,并且退出游戏
 	assert.Nil(t, utils.SendHuReq(deskData, params.BankerSeat))
-	utils.CheckHuNotify(t, deskData, []int{params.BankerSeat}, params.BankerSeat, 11, room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, deskData, []int{params.BankerSeat}, params.BankerSeat, 14, room.HuType_HT_TIANHU)
 	utils.SendQuitReq(deskData, params.BankerSeat)
 	//此时离开的玩家可以加入新的队列,等待新的游戏
 	time.Sleep(time.Second * 1)

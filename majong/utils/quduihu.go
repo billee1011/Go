@@ -18,7 +18,7 @@ func FastCheckQiDuiHu(cards []Card) bool {
 //FastCheckQiDuiTing 七小对查听，当手牌为13张牌时，遍历牌墙所有牌是否可胡
 func FastCheckQiDuiTing(cards []Card, avalibleCards []Card) []Card {
 	if len(cards) != (gMaxSize - 1) {
-		return nil
+		return []Card{}
 	}
 	tingCards := make([]Card, 0)
 	for _, avalibleCard := range avalibleCards {

@@ -6,7 +6,6 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	"steve/room/peipai/handle"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -78,20 +77,10 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 		back = true
 	}
 	s.notifyMopai(flow, context.GetMopaiPlayer(), back, card)
+	if card.GetColor() == majongpb.CardColor_ColorHua {
+		return majongpb.StateID_state_xingpai_buhua, nil
+	}
 	return majongpb.StateID_state_zixun, nil
-}
-
-func (s *MoPaiState) checkGameOver(flow interfaces.MajongFlow) bool {
-	context := flow.GetMajongContext()
-	if len(context.WallCards) == 0 {
-		return true
-	}
-	//TODO 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
-	length := handle.GetLensOfWallCards(int(context.GetGameId()))
-	if utils.GetAllMopaiCount(context) == length-53 {
-		return true
-	}
-	return false
 }
 
 // OnEntry 进入状态

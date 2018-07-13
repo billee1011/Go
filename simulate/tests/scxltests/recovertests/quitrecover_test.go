@@ -58,4 +58,5 @@ func Test_QuitRecover(t *testing.T) {
 	}
 	assert.True(t, player.GetIsTuoguan())
 	assert.Equal(t, room.XingPaiState_XP_STATE_NORMAL, player.GetXpState())
+	assert.Equal(t, room.GameId_GAMEID_XUELIU, ntf3.GetGameInfo().GetGameId())
 }

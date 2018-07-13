@@ -41,7 +41,7 @@ func Test_SCXZ_ZiMo_GiveUp_GameOver(t *testing.T) {
 	assert.Nil(t, utils.WaitZixunNtf(deskData, banker))
 	assert.Nil(t, utils.SendHuReq(deskData, banker))
 	// 检测所有玩家收到天胡通知
-	utils.CheckHuNotify(t, deskData, []int{banker}, banker, 11, room.HuType_HT_TIANHU)
+	utils.CheckHuNotify(t, deskData, []int{banker}, banker, 14, room.HuType_HT_TIANHU)
 
 	// 游戏结束
 	utils.WaitGameOverNtf(t, deskData)
