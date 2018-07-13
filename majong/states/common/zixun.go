@@ -419,6 +419,13 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 	}
 	record.HuFanType.FanTypes = HfanTypes
 	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
+	logrus.WithFields(logrus.Fields{
+		"calcHandCard": calcHandCard,
+		"calcHuCard":   calcHuCard,
+		"fanTypes":     fanTypes,
+		"genCount":     genCount,
+		"huaCount":     huaCount,
+	}).Infoln("自询查番")
 
 }
 
@@ -603,14 +610,12 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player, xpOption *mjopti
 			continue
 		}
 		if num == 4 {
-			if len(huCards) > 0 {
+			if gutils.IsHu(player) || gutils.IsTing(player) {
 				newCards := []*majongpb.Card{}
 				newCards = append(newCards, handCard...)
 				newCards, _ = utils.RemoveCards(newCards, &k, 4)
-				utilCards := utils.CardsToUtilCards(newCards)
-
-				tingCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
-				if utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
+				tingCards, _ := utils.GetTingCards(newCards, map[utils.Card]bool{})
+				if len(tingCards) != 0 && utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
 					result = append(result, utils.ServerCard2Uint32(&k))
 				}
 			} else {
