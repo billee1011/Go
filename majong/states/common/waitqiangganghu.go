@@ -2,7 +2,7 @@ package common
 
 import (
 	"errors"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"

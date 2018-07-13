@@ -1,7 +1,7 @@
 package facade
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
 

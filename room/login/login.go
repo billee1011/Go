@@ -2,7 +2,7 @@ package login
 
 import (
 	"fmt"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"

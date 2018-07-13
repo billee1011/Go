@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"time"
 
 	"github.com/golang/protobuf/proto"
