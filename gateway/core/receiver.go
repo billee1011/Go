@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	"errors"
-	 "steve/client_pb/msgId"
+	 "steve/client_pb/msgid"
 	"steve/gateway/msgrange"
 	"steve/structs"
 	"steve/structs/net"

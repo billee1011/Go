@@ -2,7 +2,6 @@ package fantype
 
 import (
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 )
 
 // checkLianQiDui 连七对:由一种花色序数牌组成序数相连的 7 个对子组成的胡牌;
@@ -22,8 +21,7 @@ func checkLianQiDui(tc *typeCalculator) bool {
 		if card.GetColor() != cardColor {
 			return false
 		}
-		if card.GetColor() != majongpb.CardColor_ColorWan ||
-			card.GetColor() != majongpb.CardColor_ColorTiao || card.GetColor() != majongpb.CardColor_ColorTong {
+		if !IsXuShuCard(card) {
 			return false
 		}
 		c := utils.ServerCard2Number(card)

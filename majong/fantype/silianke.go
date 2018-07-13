@@ -17,11 +17,14 @@ func checkSiLianKe(tc *typeCalculator) bool {
 	for _, keCombine := range keCombines {
 		colorCount, cardCount, minValue := getPengCardsDetails(tc.getPengCards())
 		for _, ke := range keCombine.kes {
-			cardCount[ke] = cardCount[ke] + 1
-			kcolor := ke / 10
-			colorCount[kcolor] = colorCount[kcolor] + 1
-			if minValue == 0 || ke < minValue {
-				minValue = ke
+			keCard := intToCard(ke)
+			if IsXuShuCard(keCard) {
+				cardCount[ke] = cardCount[ke] + 1
+				kcolor := ke / 10
+				colorCount[kcolor] = colorCount[kcolor] + 1
+				if minValue == 0 || ke < minValue {
+					minValue = ke
+				}
 			}
 		}
 		if len(colorCount) > 1 {
@@ -44,12 +47,14 @@ func getPengCardsDetails(pengCards []*majongpb.PengCard) (colorCount map[int]int
 		minValue = utils.ServerCard2Number(pengCards[0].Card)
 	}
 	for _, pengCard := range pengCards {
-		pengValue := utils.ServerCard2Number(pengCard.Card)
-		pengColor := pengValue / 10
-		cardCount[pengValue] = cardCount[pengValue] + 1
-		colorCount[pengColor] = colorCount[pengColor] + 1
-		if pengValue < minValue {
-			minValue = pengValue
+		if IsXuShuCard(pengCard.Card) {
+			pengValue := utils.ServerCard2Number(pengCard.Card)
+			pengColor := pengValue / 10
+			cardCount[pengValue] = cardCount[pengValue] + 1
+			colorCount[pengColor] = colorCount[pengColor] + 1
+			if pengValue < minValue {
+				minValue = pengValue
+			}
 		}
 	}
 	return

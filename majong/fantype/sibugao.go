@@ -18,7 +18,7 @@ func checkSiBuGao(tc *typeCalculator) bool {
 		colorPointMap := make(map[majongpb.CardColor][]int32)
 		// 吃
 		for _, chi := range tc.getChiCards() {
-			chiCard := chi.GetOprCard()
+			chiCard := chi.GetCard()
 			colorPointMap[chiCard.GetColor()] = append(colorPointMap[chiCard.GetColor()], chiCard.GetPoint())
 		}
 		for _, shun := range combine.shuns {

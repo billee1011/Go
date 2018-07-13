@@ -43,7 +43,7 @@ func chiToCards(chis []*majongpb.ChiCard) []*majongpb.Card {
 	cards := make([]*majongpb.Card, 0)
 	for _, chi := range chis {
 		// min
-		cardMin := chi.GetOprCard()
+		cardMin := chi.GetCard()
 		cards = append(cards, cardMin)
 		//mid
 		cardmid := &majongpb.Card{
@@ -148,8 +148,8 @@ func intsToCards(cardInts []int) []*majongpb.Card {
 	return newCard
 }
 
-//IsFlowerCard 判断是否是花牌（万，条，筒）
-func IsFlowerCard(card *majongpb.Card) bool {
+//IsXuShuCard 判断是否是序数牌（万，条，筒）
+func IsXuShuCard(card *majongpb.Card) bool {
 	currColor := card.GetColor()
 	return currColor == majongpb.CardColor_ColorWan || currColor == majongpb.CardColor_ColorTiao || currColor == majongpb.CardColor_ColorTong
 }
