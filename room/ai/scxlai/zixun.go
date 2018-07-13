@@ -71,7 +71,7 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 		{
 			zxRecord := player.GetZixunRecord()
 			canHu := zxRecord.GetEnableZimo()
-			if len(player.GetHuCards()) > 0 && canHu && !gutils.CheckHasDingQueCard(handCards, player.GetDingqueColor()) {
+			if gutils.IsHu(player) && canHu && !gutils.CheckHasDingQueCard(mjContext, player) {
 				aiEvent = h.hu(player)
 			} else {
 				//先判断是否有定缺牌，有的话，先出定缺牌

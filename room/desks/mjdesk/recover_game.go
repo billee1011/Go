@@ -3,6 +3,7 @@ package mjdesk
 import (
 	"steve/client_pb/room"
 	"steve/gutils"
+	"steve/room/interfaces/facade"
 	server_pb "steve/server_pb/majong"
 	"time"
 
@@ -84,8 +85,11 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 			PlayerInfo:    &roomPlayerInfo,
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
-			IsTuoguan:     proto.Bool(deskPlayer.IsTuoguan()),
+			IsTuoguan:     proto.Bool(facade.GetDeskPlayerByID(d, playerID).IsTuoguan()),
+			IsTing:        proto.Bool(player.GetTingStateInfo().GetIsTing()),
+			TingType:      getTingType(player),
 		}
+
 		xpState := room.XingPaiState(player.GetXpState())
 		gamePlayerInfo.XpState = &xpState
 		if (gamePlayerInfo.GetXpState() | room.XingPaiState_XP_STATE_HU) != 0 {
@@ -104,7 +108,19 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 			gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, handCardGroup)
 		}
 		// 吃牌组
-
+		var chiCardGroups []*room.CardsGroup
+		for _, chiCard := range player.GetChiCards() {
+			srcPlayerID := chiCard.GetSrcPlayer()
+			card := gutils.ServerCard2Number(chiCard.GetCard())
+			cards := []uint32{card, card + 1, card + 2}
+			chiCardGroup := &room.CardsGroup{
+				Cards: cards,
+				Type:  room.CardsGroupType_CGT_CHI.Enum(),
+				Pid:   proto.Uint64(srcPlayerID),
+			}
+			chiCardGroups = append(chiCardGroups, chiCardGroup)
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, chiCardGroups...)
 		// 碰牌组,每一次碰牌填1张还是三张
 		var pengCardGroups []*room.CardsGroup
 		for _, pengCard := range player.GetPengCards() {
@@ -146,7 +162,12 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huCardGroups...)
 		// 花牌组
-
+		huaGroup := &room.CardsGroup{
+			Cards: gutils.ServerCards2Numbers(player.GetHuaCards()),
+			Type:  room.CardsGroupType_CGT_HUA.Enum(),
+			Pid:   proto.Uint64(player.GetPalyerId()),
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huaGroup)
 		// 出牌组
 		outCardGroup := &room.CardsGroup{
 			Cards: gutils.ServerCards2Numbers(player.GetOutCards()),
@@ -157,6 +178,15 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		recoverPlayerInfo = append(recoverPlayerInfo, gamePlayerInfo)
 	}
 	return
+}
+
+func getTingType(player *server_pb.Player) *room.TingType {
+	state := player.GetTingStateInfo()
+	if state.GetIsTianting() {
+		return room.TingType_TT_TIAN_TING.Enum()
+	}
+	return room.TingType_TT_NORMAL_TING.Enum()
+
 }
 
 func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomZixunNtf) {
@@ -198,7 +228,8 @@ func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, 
 			wenXunInfo.EnableQi = proto.Bool(true)
 		case server_pb.Action_action_chi:
 			wenXunInfo.ChiInfo = &room.RoomChiInfo{
-				Cards: player.GetEnbleChiCards(),
+				ChiCard: proto.Uint32(gutils.ServerCard2Number(mjContext.GetLastOutCard())),
+				Cards:   player.GetEnbleChiCards(),
 			}
 		}
 	}

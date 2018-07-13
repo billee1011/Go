@@ -10,7 +10,7 @@ func checkYiBangGao(tc *typeCalculator) bool {
 	cards := make([]*majongpb.Card, 0)
 	// 吃
 	for _, chi := range tc.getChiCards() {
-		cards = append(cards, chi.GetOprCard())
+		cards = append(cards, chi.GetCard())
 	}
 	for _, combine := range tc.combines {
 		shunCards := intsToCards(combine.shuns)

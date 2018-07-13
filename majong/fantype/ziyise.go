@@ -29,7 +29,7 @@ func checkZiYiSe(tc *typeCalculator) bool {
 	checkCards = append(checkCards, huCard.Card)
 
 	for _, checkCard := range checkCards {
-		if IsFlowerCard(checkCard) {
+		if IsXuShuCard(checkCard) {
 			return false
 		}
 	}

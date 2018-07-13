@@ -130,6 +130,7 @@ message Player {
     repeated Card  design_chi_cards = 24;   //玩家請求指定吃的牌組
     uint32 max_card_value = 25;              // 胡最大倍数（胡牌时）
     repeated CardsGroup cards_group = 26;   // 胡最大倍数时的牌组（胡牌时）
+    bool selected_ting = 27;                //玩家出牌请求时，是否请求了听
     map<string, bytes> properties = 256;    // 其他的一些属性
 }
 

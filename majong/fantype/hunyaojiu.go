@@ -9,20 +9,27 @@ func checkHunYaoJiu(tc *typeCalculator) bool {
 	if chiGangNum != 0 {
 		return false
 	}
-	// 幺九只能是刻子和将
-	for _, combine := range tc.combines {
-		if len(combine.shuns) != 0 {
-			continue
-		}
-		jiang := combine.jiang
-		if !isYaoJiuByInt(jiang) {
+	existOne, existNine, existZi := false, false, false
+	cardAll := getPlayerCardAll(tc)
+	for _, card := range cardAll {
+		// 不能存在序数2-8
+		if !isYaoJiuByCard(card) {
 			return false
 		}
-		for _, ke := range combine.kes {
-			if !isYaoJiuByInt(ke) {
-				return false
+		cardValue := gutils.ServerCard2Number(card)
+		if cardValue >= uint32(gutils.Dong) {
+			existZi = true
+		} else {
+			if card.GetPoint() == 9 {
+				existNine = true
+			}
+			if card.GetPoint() == 1 {
+				existOne = true
 			}
 		}
+	}
+	// 必须存在1,9和字牌
+	if existOne && existNine && existZi {
 		return true
 	}
 	return false

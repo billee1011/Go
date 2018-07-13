@@ -45,7 +45,7 @@ func getChiCardsDetails(chiCards []*majongpb.ChiCard) (colorCount map[int]int, c
 	colorCount = make(map[int]int, 0)
 	cardCount = make(map[int]int, 0)
 	for _, chiCard := range chiCards {
-		chiValue := utils.ServerCard2Number(chiCard.OprCard)
+		chiValue := utils.ServerCard2Number(chiCard.Card)
 		chiColor := chiValue / 10
 		cardCount[chiValue] = cardCount[chiValue] + 1
 		colorCount[chiColor] = colorCount[chiColor] + 1
