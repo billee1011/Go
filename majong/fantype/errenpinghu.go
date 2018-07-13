@@ -4,7 +4,7 @@ package fantype
 func checkErrRenPingHe(tc *typeCalculator) bool {
 	for _, combine := range tc.combines {
 		jiangCard := intToCard(combine.jiang)
-		if !IsFlowerCard(jiangCard) {
+		if !IsXuShuCard(jiangCard) {
 			continue
 		}
 		if len(combine.kes) == 0 && len(combine.shuns) == 4 {

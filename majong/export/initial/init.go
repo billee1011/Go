@@ -25,6 +25,7 @@ func initPlayers(players []uint64) []*server_pb.Player {
 			HuansanzhangSure:  false,
 			HuansanzhangCards: []*server_pb.Card{},
 			Properties:        make(map[string][]byte, 0),
+			TingStateInfo:     &server_pb.TingStateInfo{},
 		})
 	}
 	return result

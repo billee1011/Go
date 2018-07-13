@@ -68,9 +68,7 @@ func (s *overState) OnEnter(m machine.Machine) {
 		playerId := player.PalyerId
 		roomPlayer := global.GetPlayerMgr().GetPlayer(playerId)
 		billPlayer := room.DDZBillPlayerInfo{}
-		playerName := "" //roomPlayer.GetUserName() TODO
 		billPlayer.PlayerId = &playerId
-		billPlayer.PlayerName = &playerName
 		billPlayer.Base = proto.Int32(int32(base))
 		billPlayer.Multiple = proto.Int32(int32(multiple))
 		originCoin := roomPlayer.GetCoin()

@@ -2,7 +2,7 @@ package facade
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/structs/proto/gate_rpc"

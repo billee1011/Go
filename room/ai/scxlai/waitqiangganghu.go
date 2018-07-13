@@ -43,7 +43,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 		return result, fmt.Errorf("玩家%v手牌不符合查胡要求", player.GetPalyerId())
 	}
 
-	if gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
+	if gutils.CheckHasDingQueCard(mjContext, player) {
 		return result, fmt.Errorf("")
 	}
 	canhu := false

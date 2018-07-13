@@ -115,7 +115,6 @@ func (t *translator) addTranslators() {
 	t.addTranslator(msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ, ddz.TranslateGrabRequest)
 	t.addTranslator(msgid.MsgID_ROOM_DDZ_DOUBLE_REQ, ddz.TranslateDoubleRequest)
 	t.addTranslator(msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ, ddz.TranslatePlayCardRequest)
-	t.addTranslator(msgid.MsgID_ROOM_DDZ_TUOGUAN_REQ, ddz.TranslateTuoGuanRequest)
 	t.addTranslator(msgid.MsgID_ROOM_DDZ_RESUME_REQ, ddz.TranslateResumeRequest)
 }
 

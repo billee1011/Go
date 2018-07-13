@@ -97,14 +97,12 @@ It has these top-level messages:
 	DDZPlayCardReq
 	DDZPlayCardRsp
 	DDZPlayCardNtf
-	DDZGameOverNtf
 	DDZBillPlayerInfo
-	DDZTuoGuanReq
-	DDZTuoGuanNtf
+	DDZGameOverNtf
 	DDZResumeGameReq
-	DDZResumeGameRsp
-	DDZDeskInfo
 	DDZPlayerInfo
+	DDZDeskInfo
+	DDZResumeGameRsp
 	RoomBuHuaInfo
 	RoomBuHuaNtf
 	RoomGiveUpReq

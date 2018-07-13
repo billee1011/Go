@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"steve/client_pb/msgid"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"testing"
@@ -12,24 +12,55 @@ import (
 
 // erRenHuChiFanMap 番型对应互斥的番型  room.FanType_FT_
 var erRenHuChiFanMap = map[room.FanType][]room.FanType{
-	room.FanType_FT_DASIXI: []room.FanType{room.FanType_FT_PENGPENGHU, room.FanType_FT_QUANFENGKE, room.FanType_FT_MENFENGKE, room.FanType_FT_DASANFENG, room.FanType_FT_XIAOSANFENG, room.FanType_FT_SIZIKE},
-	room.FanType_FT_DASANYUAN: []room.FanType{
-		room.FanType_FT_SHUANGJIANKE, room.FanType_FT_JIANKE,
-	},
+	room.FanType_FT_DASIXI:          []room.FanType{room.FanType_FT_PENGPENGHU, room.FanType_FT_QUANFENGKE, room.FanType_FT_MENFENGKE, room.FanType_FT_DASANFENG, room.FanType_FT_XIAOSANFENG, room.FanType_FT_SIZIKE},
+	room.FanType_FT_DASANYUAN:       []room.FanType{room.FanType_FT_SHUANGJIANKE, room.FanType_FT_JIANKE},
+	room.FanType_FT_JIULIANBAODENG:  []room.FanType{room.FanType_FT_QINGYISE, room.FanType_FT_MENQIANQING, room.FanType_FT_ZIMO},
+	room.FanType_FT_DAYUWU:          []room.FanType{},
+	room.FanType_FT_XIAOYUWU:        []room.FanType{},
+	room.FanType_FT_XIAOSIXI:        []room.FanType{room.FanType_FT_DASANFENG, room.FanType_FT_XIAOSANFENG, room.FanType_FT_QUANFENGKE, room.FanType_FT_MENFENGKE},
+	room.FanType_FT_XIAOSANYUAN:     []room.FanType{room.FanType_FT_SHUANGJIANKE, room.FanType_FT_JIANKE},
+	room.FanType_FT_SIANKE:          []room.FanType{room.FanType_FT_SANANKE, room.FanType_FT_SHUANGANKE, room.FanType_FT_PENGPENGHU, room.FanType_FT_MENQIANQING, room.FanType_FT_ZIMO},
+	room.FanType_FT_SITONGSHUN:      []room.FanType{room.FanType_FT_SANLIANKE, room.FanType_FT_SANTONGSHUN, room.FanType_FT_QIDUI, room.FanType_FT_SIGUIYI, room.FanType_FT_YIBANGAO},
+	room.FanType_FT_SANYUANQIDUI:    []room.FanType{room.FanType_FT_QIDUI, room.FanType_FT_MENQIANQING, room.FanType_FT_DANDIAOJIANG, room.FanType_FT_ZIMO},
+	room.FanType_FT_SIBUGAO:         []room.FanType{room.FanType_FT_SANBUGAO, room.FanType_FT_LIANLIU, room.FanType_FT_LAOSHAOFU},
+	room.FanType_FT_HUNYAOJIU:       []room.FanType{room.FanType_FT_PENGPENGHU, room.FanType_FT_QUANDAIYAO},
+	room.FanType_FT_SIZIKE:          []room.FanType{room.FanType_FT_PENGPENGHU},
+	room.FanType_FT_DASANFENG:       []room.FanType{room.FanType_FT_XIAOSANFENG},
+	room.FanType_FT_QINGLONG:        []room.FanType{room.FanType_FT_LIANLIU, room.FanType_FT_LAOSHAOFU},
+	room.FanType_FT_SANBUGAO:        []room.FanType{},
+	room.FanType_FT_MIAOSHOUHUICHUN: []room.FanType{room.FanType_FT_ZIMO},
+	room.FanType_FT_HAIDILAOYUE:     []room.FanType{},
+	room.FanType_FT_XIAOSANFENG:     []room.FanType{},
+	room.FanType_FT_LAOSHAOFU:       []room.FanType{},
 }
 
 // erRenFanMulMap 番型对应的倍数
 var erRenFanMulMap = map[room.FanType]int32{
-	room.FanType_FT_TIANHU:          88,
-	room.FanType_FT_DIHU:            88,
 	room.FanType_FT_DASIXI:          88,
 	room.FanType_FT_DASANYUAN:       88,
-	room.FanType_FT_DAQIXING:        88,
+	room.FanType_FT_JIULIANBAODENG:  88,
+	room.FanType_FT_DAYUWU:          88,
+	room.FanType_FT_XIAOYUWU:        88,
+	room.FanType_FT_XIAOSIXI:        64,
+	room.FanType_FT_XIAOSANYUAN:     64,
+	room.FanType_FT_SIANKE:          64,
+	room.FanType_FT_SITONGSHUN:      48,
+	room.FanType_FT_SANYUANQIDUI:    48,
+	room.FanType_FT_SIBUGAO:         32,
+	room.FanType_FT_HUNYAOJIU:       32,
+	room.FanType_FT_SIZIKE:          24,
+	room.FanType_FT_DASANFENG:       24,
+	room.FanType_FT_QINGLONG:        16,
+	room.FanType_FT_SANBUGAO:        16,
+	room.FanType_FT_MIAOSHOUHUICHUN: 8,
+	room.FanType_FT_HAIDILAOYUE:     8,
+	room.FanType_FT_XIAOSANFENG:     6,
+	room.FanType_FT_LAOSHAOFU:       1,
+	room.FanType_FT_TIANHU:          88,
+	room.FanType_FT_DIHU:            88,
 	room.FanType_FT_LIANQIDUI:       88,
 	room.FanType_FT_RENHU:           64,
 	room.FanType_FT_ZIYISE:          64,
-	room.FanType_FT_XIAOSANYUAN:     64,
-	room.FanType_FT_SIANKE:          64,
 	room.FanType_FT_QINGYISE:        16,
 	room.FanType_FT_HUNYISE:         6,
 	room.FanType_FT_GANGSHANGKAIHUA: 2,
@@ -42,16 +73,16 @@ var erRenFanMulMap = map[room.FanType]int32{
 	room.FanType_FT_BIANZHANG:       1,
 	room.FanType_FT_KANZHANG:        1,
 	room.FanType_FT_ZIMO:            1,
+	room.FanType_FT_DAQIXING:        88,
 }
 
 //GetHuChiValueByGameID 根据游戏ID获取互斥番型数组
-func GetHuChiValueByGameID(gameID room.GameId, currFan room.FanType) ([]room.FanType, bool) {
+func GetHuChiValueByGameID(gameID room.GameId, currFan room.FanType) []room.FanType {
 	switch gameID {
 	case room.GameId_GAMEID_ERRENMJ:
-		fans, isExist := erRenHuChiFanMap[currFan]
-		return fans, isExist
+		return erRenHuChiFanMap[currFan]
 	default:
-		return []room.FanType{}, false
+		return []room.FanType{}
 	}
 }
 
@@ -97,16 +128,13 @@ func IsExistAssignFan(currFan room.FanType, Fans []*room.Fan) bool {
 
 //IsExistHuChiFan 是否存在互斥的牌
 func IsExistHuChiFan(gameID room.GameId, currFan room.FanType, Fans []*room.Fan) (bool, string) {
-	fanTyps, isExist := GetHuChiValueByGameID(gameID, currFan)
-	if isExist {
-		for _, fanTyp := range fanTyps {
-			if IsExistAssignFan(fanTyp, Fans) {
-				return true, fmt.Sprintf("存在互斥番型")
-			}
+	fanTyps := GetHuChiValueByGameID(gameID, currFan)
+	for _, fanTyp := range fanTyps {
+		if IsExistAssignFan(fanTyp, Fans) {
+			return true, fmt.Sprintf("存在互斥番型")
 		}
-		return false, ""
 	}
-	return false, fmt.Sprintf("当前番型不存在：%v", currFan)
+	return false, "当前番型不存在互斥番型"
 }
 
 //IsAssignFanMulRight 判断指定番型倍数是否正确

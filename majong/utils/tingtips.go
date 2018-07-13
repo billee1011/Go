@@ -47,7 +47,7 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	//清除上一次听牌记录
 	player.TingCardInfo = nil
 	// 不存在定缺牌
-	if gutils.CheckHasDingQueCard(playerCards, player.GetDingqueColor()) {
+	if gutils.CheckHasDingQueCard(mjContext, player) {
 		return
 	}
 	// wuhongwei 增加七对提示

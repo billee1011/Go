@@ -26,7 +26,7 @@ func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 		message := &majongpb.SettleFinishEvent{}
 		err := proto.Unmarshal(eventContext, message)
 		if err != nil {
-			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
+			return majongpb.StateID_state_zimo_settle, global.ErrInvalidEvent
 		}
 		utils.SettleOver(flow, message)
 		nextState := s.nextState(flow.GetMajongContext())
@@ -39,7 +39,7 @@ func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []
 		}).Infoln("自摸结算下个状态")
 		return nextState, nil
 	}
-	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent
+	return majongpb.StateID(majongpb.StateID_state_zimo_settle), global.ErrInvalidEvent
 }
 
 // OnEntry 进入状态

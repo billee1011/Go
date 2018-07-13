@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"runtime/debug"
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
