@@ -52,8 +52,8 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	if card.Color.String() == room.CardColor_CC_TONG.String() {
 		color = room.CardColor_CC_TONG
 	}
-	if card.Color.String() == room.CardColor_CC_FENG.String() {
-		color = room.CardColor_CC_FENG
+	if card.Color.String() == room.CardColor_CC_HUA.String() {
+		color = room.CardColor_CC_HUA
 	}
 	return &room.Card{
 		Color: color.Enum(),
