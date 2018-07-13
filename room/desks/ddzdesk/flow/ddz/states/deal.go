@@ -9,6 +9,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
+	"time"
 )
 
 type dealState struct{}
@@ -38,7 +39,9 @@ func (s *dealState) OnEnter(m machine.Machine) {
 		})
 	}
 	context.WallCards = wallCards[51:]
-	setMachineAutoEvent(m, machine.Event{EventID: int(ddz.EventID_event_deal_finish), EventData: nil}, 0)
+	delay := StageTime[room.DDZStage_DDZ_STAGE_DEAL]
+	duration := time.Second * time.Duration(delay)
+	setMachineAutoEvent(m, machine.Event{EventID: int(ddz.EventID_event_deal_finish), EventData: nil}, duration)
 }
 
 func (s *dealState) OnExit(m machine.Machine) {
