@@ -2,7 +2,7 @@ package core
 
 import (
 	"context"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/structs/proto/base"
 	"steve/structs/proto/gate_rpc"
 

@@ -1,7 +1,7 @@
 package common
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
@@ -68,7 +68,7 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 	isReal := true
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
-		s.addHuCard(card, player, playerID, isReal)
+		s.addHuCard(card, player, srcPlayerID, isReal)
 		isReal = false
 		// 玩家胡状态
 		player.XpState = player.GetXpState() | majongpb.XingPaiState_hu

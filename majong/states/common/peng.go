@@ -9,7 +9,7 @@ package common
 //状态进入行为：处理碰逻辑，并广播通知客户端碰牌消息通知，该消息包含出的牌和来自的玩家，去的玩家
 //约束条件：无
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"

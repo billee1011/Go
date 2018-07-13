@@ -872,8 +872,7 @@ func TestSantongshun(t *testing.T) {
 		HandCard: handCards,
 		ChiCard: []*majongpb.ChiCard{
 			&majongpb.ChiCard{
-				Card:    chiCards[0],
-				OprCard: chiCards[0],
+				Card: chiCards[0],
 			},
 		},
 		HuCard:           &majongpb.HuCard{Card: HuCard},
@@ -925,7 +924,7 @@ func TestQinglong(t *testing.T) {
 		HandCard: handCards,
 		ChiCard: []*majongpb.ChiCard{
 			&majongpb.ChiCard{
-				OprCard: chiCards[0],
+				Card: chiCards[0],
 			},
 		},
 		HuCard:           &majongpb.HuCard{Card: HuCard},
@@ -950,7 +949,7 @@ func TestSanbugao(t *testing.T) {
 	playerParams := CardCalcParams{
 		HandCard: handCards,
 		ChiCard: []*majongpb.ChiCard{
-			&majongpb.ChiCard{OprCard: chiCards[0]},
+			&majongpb.ChiCard{Card: chiCards[0]},
 		},
 		HuCard:           &majongpb.HuCard{Card: HuCard},
 		CardtypeOptionID: 4,

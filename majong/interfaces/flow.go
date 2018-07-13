@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"

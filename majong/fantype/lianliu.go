@@ -11,7 +11,7 @@ func checkLianLiu(tc *typeCalculator) bool {
 	colorPointMap := make(map[majongpb.CardColor][]int32)
 	for _, card := range cardAll {
 		// 不字牌
-		if IsFlowerCard(card) {
+		if IsXuShuCard(card) {
 			color := card.GetColor()
 			colorPointMap[color] = append(colorPointMap[color], card.GetPoint())
 		}

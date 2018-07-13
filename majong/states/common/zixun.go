@@ -2,7 +2,7 @@ package common
 
 import (
 	"fmt"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/gutils"
