@@ -178,6 +178,15 @@ type PlayStates struct {
 	RoomAddr string // 所在的 Room 服地址
 }
 
+// SetPlayerPlayState 仅设置玩家状态
+func SetPlayerPlayState(playerID uint64, state int) error {
+	logrus.WithFields(logrus.Fields{
+		"player_id": playerID,
+		"state":     state,
+	}).Debugln("设置玩家游戏状态")
+	return setPlayerUint64Field(playerID, playerGameStateField, uint64(state))
+}
+
 // SetPlayerPlayStates 设置玩家状态
 func SetPlayerPlayStates(playerID uint64, states PlayStates) error {
 	entry := logrus.WithFields(logrus.Fields{
@@ -197,11 +206,16 @@ func SetPlayerPlayStates(playerID uint64, states PlayStates) error {
 		entry.WithError(cmd.Err()).Errorln(errRedisOperation)
 		return errRedisOperation
 	}
+	entry.Debugln("设置玩家状态成功")
 	return nil
 }
 
 // GetPlayerPlayStates 获取玩家游戏状态
 func GetPlayerPlayStates(playerID uint64, def PlayStates) (PlayStates, error) {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "GetPlayerPlayStates",
+		"player_id": playerID,
+	})
 	redis := redis.GetRedisClient()
 	key := fmtPlayerKey(playerID)
 	cmds := redis.HMGet(key, playerGameStateField, playerGameIDField, playerRoomAddrField)
@@ -217,5 +231,6 @@ func GetPlayerPlayStates(playerID uint64, def PlayStates) (PlayStates, error) {
 	if vals[2] != nil {
 		states.RoomAddr = vals[2].(string)
 	}
+	entry.WithField("states", states).Debugln("获取玩家状态")
 	return states, nil
 }

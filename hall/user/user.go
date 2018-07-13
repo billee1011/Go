@@ -25,7 +25,7 @@ func getPlayerState(playerID uint64) (common.PlayerState, int) {
 		entry.Errorln("获取玩家状态失败")
 		return common.PlayerState_PS_IDLE, 0
 	}
-	return common.PlayerState(states.State), 0
+	return common.PlayerState(states.State), states.GameID
 }
 
 // HandleGetPlayerInfoReq 处理获取玩家信息请求
@@ -58,5 +58,11 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 	state, gameID := getPlayerState(playerID)
 	response.PlayerState = state.Enum()
 	response.GameId = common.GameId(gameID).Enum()
+
+	logrus.WithFields(logrus.Fields{
+		"func_name": "HandleGetPlayerStateReq",
+		"player_id": playerID,
+		"response":  response,
+	}).Infoln("获取玩家状态")
 	return
 }

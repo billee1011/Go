@@ -353,11 +353,13 @@ func (d *desk) processEvents(ctx context.Context) {
 			debug.PrintStack()
 		}
 	}()
+	defer d.consumeAllEnterQuit() // 消费完所有的退出进入数据
 
 	for {
 		select {
 		case <-ctx.Done():
 			{
+
 				logEntry.Infoln("done")
 				return
 			}
@@ -373,6 +375,19 @@ func (d *desk) processEvents(ctx context.Context) {
 				d.processEvent(event.event.ID, event.event.Context)
 				d.recordTuoguanOverTimeCount(event.event)
 			}
+		}
+	}
+}
+
+func (d *desk) consumeAllEnterQuit() {
+	for {
+		select {
+		case enterQuitInfo := <-d.PlayerEnterQuitChannel():
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}
+		default:
+			return
 		}
 	}
 }
@@ -395,6 +410,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		"quit":      eqi.Quit,
 	})
 	deskPlayer := facade.GetDeskPlayerByID(d, eqi.PlayerID)
+	defer close(eqi.FinishChannel)
 
 	if deskPlayer == nil {
 		logEntry.Errorln("玩家不在牌桌上")
@@ -405,7 +421,6 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.setMjPlayerQuitDesk(eqi.PlayerID, true)
 		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
 		d.handleQuitByPlayerState(eqi.PlayerID, xpOption.PlayerStates)
-		d.deskQuitRsp(eqi.PlayerID)
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
 		logEntry.Debugln("玩家退出")
 	} else {
@@ -420,6 +435,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.recoverGameForPlayer(eqi.PlayerID)
 		d.setMjPlayerQuitDesk(eqi.PlayerID, false)
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
+		eqi.FinishChannel <- struct{}{}
 		logEntry.Debugln("玩家进入")
 	}
 }
@@ -597,20 +613,6 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 			Msg:     rsp,
 		},
 	})
-}
-
-func (d *desk) deskQuitRsp(playerID uint64) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "handleEnterQuit",
-		"player_id": playerID,
-	})
-	msg := room.RoomDeskQuitRsp{
-		ErrCode: room.RoomError_SUCCESS.Enum(),
-	}
-	err := facade.BroadCastDeskMessage(d, []uint64{playerID}, msgid.MsgID_ROOM_DESK_QUIT_RSP, &msg, false)
-	if err != nil {
-		logEntry.WithError(err).Errorln("退出应答发送失败")
-	}
 }
 
 func (d *desk) playerQuitEnterDeskNtf(playerID uint64, qeType room.QuitEnterType) {

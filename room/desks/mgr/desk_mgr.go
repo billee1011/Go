@@ -93,11 +93,7 @@ func (dm *deskMgr) unbindPlayerRoomAddr(players []uint64) {
 		"players":   players,
 	})
 	for _, playerID := range players {
-		if err := player.SetPlayerPlayStates(playerID, player.PlayStates{
-			GameID:   0,
-			State:    int(common.PlayerState_PS_IDLE),
-			RoomAddr: "",
-		}); err != nil {
+		if err := player.SetPlayerPlayState(playerID, int(common.PlayerState_PS_IDLE)); err != nil {
 			entry.WithError(err).Errorln("设置玩家游戏状态失败")
 		}
 	}
@@ -113,9 +109,12 @@ func (dm *deskMgr) finishDesk(deskUID uint64, players []uint64) {
 	dm.deskMap.Delete(deskUID)
 	dm.deskCount--
 	for _, playerID := range players {
-		dm.playerDeskMap.Delete(playerID)
+		// TODO 并发待优化
+		if _, ok := dm.playerDeskMap.Load(playerID); ok {
+			dm.playerDeskMap.Delete(playerID)
+			dm.unbindPlayerRoomAddr([]uint64{playerID})
+		}
 	}
-	dm.unbindPlayerRoomAddr(players)
 }
 
 func (dm *deskMgr) deskFinish(desk interfaces.Desk) func() {
@@ -181,8 +180,11 @@ func (dm *deskMgr) GetRunDeskByPlayerID(playerID uint64) (desk interfaces.Desk, 
 func (dm *deskMgr) RemoveDeskPlayerByPlayerID(playerID uint64) {
 	dm.mu.Lock()
 	defer dm.mu.Unlock()
-	dm.playerDeskMap.Delete(playerID)
-	dm.unbindPlayerRoomAddr([]uint64{playerID})
+	// TODO 并发待优化
+	if _, ok := dm.playerDeskMap.Load(playerID); ok {
+		dm.playerDeskMap.Delete(playerID)
+		dm.unbindPlayerRoomAddr([]uint64{playerID})
+	}
 }
 
 func (dm *deskMgr) GetDeskCount() int {

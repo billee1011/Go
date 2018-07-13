@@ -4,14 +4,23 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
+	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // HandleRoomDeskQuitReq 处理玩家退出桌面请求
 // 失败先不回复
 func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
+	response := room.RoomDeskQuitRsp{
+		UserData: proto.Uint32(req.GetUserData()),
+		ErrCode:  room.RoomError_DESK_NO_GAME_PLAYING.Enum(),
+	}
+	defer facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
+
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayer(playerID)
 	if player == nil {
@@ -22,7 +31,8 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	if err != nil {
 		return
 	}
-	desk.PlayerQuit(playerID)
+	response.ErrCode = room.RoomError_SUCCESS.Enum()
+	<-desk.PlayerQuit(playerID) // 等到退出完成后返回
 	return
 }
 

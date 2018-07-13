@@ -56,9 +56,13 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	// 检测所有玩家收到自摸结算通知
 	utils.CheckZiMoSettleNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_DIHU)
 
+	quitRspExpector := zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_QUIT_RSP]
 	assert.Nil(t, utils.SendQuitReq(deskData, quitSeat))
 	// 其他玩家收到该玩家退出通知
 	utils.RecvQuitNtf(t, deskData, []int{0, 2, 3})
+	quitResponse := room.RoomDeskQuitRsp{}
+	assert.Nil(t, quitRspExpector.Recv(global.DefaultWaitMessageTime, &quitResponse))
+	assert.Equal(t, room.RoomError_SUCCESS, quitResponse.GetErrCode())
 
 	playerState, err := utils.GetDeskPlayerState(zimoPlayer.Player)
 	assert.Nil(t, err)
