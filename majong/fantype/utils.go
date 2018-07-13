@@ -128,7 +128,7 @@ func intToCard(cardInt int) *majongpb.Card {
 	case 3:
 		color = majongpb.CardColor_ColorTong
 	case 4:
-		color = majongpb.CardColor_ColorFeng
+		color = majongpb.CardColor_ColorZi
 	case 5:
 		color = majongpb.CardColor_ColorHua
 	}

@@ -140,10 +140,11 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		context.LastChupaiPlayer = pid
 		return majongpb.StateID_state_chupai, nil
 	}
-	logrus.WithFields(logrus.Fields{
+	logEntry := logrus.WithFields(logrus.Fields{
+		"player":   activePlayer.GetPalyerId(),
 		"reqCard":  card,
 		"hanCards": gutils.FmtMajongpbCards(activePlayer.GetHandCards()),
-	}).Infof("玩家%v出牌请求", activePlayer.GetPalyerId())
+	})
 	if activePlayer.GetTingStateInfo().GetIsBaotingyifa() {
 		activePlayer.GetTingStateInfo().IsBaotingyifa = false
 	}
@@ -155,6 +156,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 			if !gutils.IsTing(activePlayer) {
 				TingAction := message.GetTingAction()
 				if TingAction.GetEnableTing() {
+					activePlayer.SelectedTing = true
 					switch TingAction.GetTingType() {
 					case majongpb.TingType_TT_NORMAL_TING:
 						activePlayer.GetTingStateInfo().IsTing = true
@@ -164,6 +166,11 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 					activePlayer.GetTingStateInfo().IsBaotingyifa = true
 				}
 			}
+			logEntry = logEntry.WithFields(logrus.Fields{
+				"selectTing": gutils.IsTing(activePlayer),
+				"tingType":   gutils.GetTingType(activePlayer),
+			})
+			logEntry.Infoln("玩家出牌请求")
 			return majongpb.StateID_state_chupai, nil
 		}
 	}

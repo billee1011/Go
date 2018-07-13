@@ -1,7 +1,8 @@
 package common
 
 import (
-	 "steve/client_pb/msgId"
+	"fmt"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -19,14 +20,14 @@ func (bh *GameStartBuhuaState) ProcessEvent(eventID majongpb.EventID, eventConte
 	switch eventID {
 	case majongpb.EventID_event_gamestart_buhua_finish:
 		{
-			return majongpb.StateID_state_mopai, nil
+			return bh.doBuhua(flow), nil
 		}
 	}
 	return majongpb.StateID_state_gamestart_buhua, nil
 }
 
 // doBuhua 执行
-func (bh *GameStartBuhuaState) doBuhua(flow interfaces.MajongFlow) {
+func (bh *GameStartBuhuaState) doBuhua(flow interfaces.MajongFlow) majongpb.StateID {
 	mjContext := flow.GetMajongContext()
 	players := mjContext.GetPlayers()
 	//初始化第一个实际补花的玩家
@@ -37,7 +38,10 @@ func (bh *GameStartBuhuaState) doBuhua(flow interfaces.MajongFlow) {
 	buhuaNum := 0
 	//当所有人都没有花牌的时候，结束补花循环
 	for continueBuhua {
-		nextBuhuaPlayerID := bh.ntfBuhua(flow, buhuaPlayerID, buhuaNum)
+		nextBuhuaPlayerID, err := bh.decidedBuhuaType(flow, buhuaPlayerID, buhuaNum)
+		if err != nil {
+			return majongpb.StateID_state_gameover
+		}
 		buhuaNum++
 		if nextBuhuaPlayerID == 0 {
 			continueBuhua = false
@@ -47,9 +51,10 @@ func (bh *GameStartBuhuaState) doBuhua(flow interfaces.MajongFlow) {
 	}
 	//所有人补花完成后，设置庄家为摸牌玩家
 	mjContext.MopaiPlayer = mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId()
+	return majongpb.StateID_state_mopai
 }
 
-func (bh *GameStartBuhuaState) devlopNextBuhuaPlayer(players []*majongpb.Player, curBuhuaPlayerID uint64, mjContext *majongpb.MajongContext) uint64 {
+func (bh *GameStartBuhuaState) decideNextBuhuaPlayer(players []*majongpb.Player, curBuhuaPlayerID uint64, mjContext *majongpb.MajongContext) uint64 {
 	player := utils.GetPlayerByID(players, curBuhuaPlayerID)
 	//先判断当前补完花的玩家时候还有花牌，如果有花牌，则继续补花，没有的话，下家补花
 	if len(player.GetHandCards()) < 13 || len(bh.getHuaCards(player)) != 0 {
@@ -65,17 +70,18 @@ func (bh *GameStartBuhuaState) devlopNextBuhuaPlayer(players []*majongpb.Player,
 	return 0
 }
 
-func (bh *GameStartBuhuaState) ntfBuhua(flow interfaces.MajongFlow, buhuaPlayerID uint64, buhuaNum int) uint64 {
+func (bh *GameStartBuhuaState) decidedBuhuaType(flow interfaces.MajongFlow, buhuaPlayerID uint64, buhuaNum int) (uint64, error) {
 	var nextBuhuaPlayerID uint64
+	var err error
 	if buhuaNum == 0 {
-		nextBuhuaPlayerID = bh.ntfFirstBuhua(flow, buhuaPlayerID)
+		nextBuhuaPlayerID, err = bh.firstBuhua(flow, buhuaPlayerID)
 	} else {
-		nextBuhuaPlayerID = bh.ntfOtherBuhua(flow, buhuaPlayerID)
+		nextBuhuaPlayerID, err = bh.otherBuhua(flow, buhuaPlayerID)
 	}
-	return nextBuhuaPlayerID
+	return nextBuhuaPlayerID, err
 }
 
-func (bh *GameStartBuhuaState) ntfFirstBuhua(flow interfaces.MajongFlow, buhuaPlayerID uint64) uint64 {
+func (bh *GameStartBuhuaState) firstBuhua(flow interfaces.MajongFlow, buhuaPlayerID uint64) (uint64, error) {
 	// 第一次补花需要广播所有人的花牌，并且移除所有人的花牌,且庄家需要摸补牌
 	mjContext := flow.GetMajongContext()
 	players := mjContext.GetPlayers()
@@ -108,6 +114,9 @@ func (bh *GameStartBuhuaState) ntfFirstBuhua(flow interfaces.MajongFlow, buhuaPl
 			//从墙牌中摸牌
 			wallCards := mjContext.GetWallCards()
 			l := len(huaCards)
+			if utils.GetAvailableWallCardsNum(flow) < l {
+				return 0, fmt.Errorf("墙牌不够,不能补花")
+			}
 			for _, info := range infos {
 				if info.GetPlayerId() == player.GetPalyerId() {
 					player.HandCards = append(player.HandCards, wallCards[0:l]...)
@@ -130,10 +139,10 @@ func (bh *GameStartBuhuaState) ntfFirstBuhua(flow interfaces.MajongFlow, buhuaPl
 		}).Info("开局首次补花，全员亮花牌")
 		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
 	}
-	return bh.devlopNextBuhuaPlayer(players, buhuaPlayerID, mjContext)
+	return bh.decideNextBuhuaPlayer(players, buhuaPlayerID, mjContext), nil
 }
 
-func (bh *GameStartBuhuaState) ntfOtherBuhua(flow interfaces.MajongFlow, buhuaPlayerID uint64) uint64 {
+func (bh *GameStartBuhuaState) otherBuhua(flow interfaces.MajongFlow, buhuaPlayerID uint64) (uint64, error) {
 	// 由指定玩家摸补牌，如果补上的牌是花牌，继续补完，如果补完后则下家开始补
 	mjContext := flow.GetMajongContext()
 	players := mjContext.GetPlayers()
@@ -146,9 +155,13 @@ func (bh *GameStartBuhuaState) ntfOtherBuhua(flow interfaces.MajongFlow, buhuaPl
 	huaCards := bh.getHuaCards(buhuaPlayer)
 	num := len(huaCards)
 	if num > 0 {
-		bh.ntf(flow, players, buhuaPlayerID, huaCards, num)
+		if utils.GetAvailableWallCardsNum(flow) >= num {
+			bh.ntf(flow, players, buhuaPlayerID, huaCards, num)
+		} else {
+			return 0, fmt.Errorf("墙牌数不够补花")
+		}
 	}
-	return bh.devlopNextBuhuaPlayer(players, buhuaPlayerID, mjContext)
+	return bh.decideNextBuhuaPlayer(players, buhuaPlayerID, mjContext), nil
 }
 
 func (bh *GameStartBuhuaState) getHuaCards(player *majongpb.Player) []*majongpb.Card {
@@ -208,7 +221,6 @@ func (bh *GameStartBuhuaState) ntf(flow interfaces.MajongFlow, players []*majong
 
 // OnEntry 进入状态前需要一个补花完成的自动事件
 func (bh *GameStartBuhuaState) OnEntry(flow interfaces.MajongFlow) {
-	bh.doBuhua(flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_gamestart_buhua_finish,
 		EventContext: nil,

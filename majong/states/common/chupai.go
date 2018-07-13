@@ -66,7 +66,7 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
 	context := flow.GetMajongContext()
 	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
-	canMingGang := s.checkMingGang(flow, player, card, xpOption)
+	canMingGang := s.checkMingGang(flow, player, card)
 	if canMingGang {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_gang)
 	}
@@ -75,7 +75,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 		context.LastHuPlayers = append(context.LastHuPlayers, player.GetPalyerId())
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 	}
-	canPeng := s.checkPeng(context, player, card, xpOption)
+	canPeng := s.checkPeng(context, player, card)
 	if canPeng {
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_peng)
 	}
@@ -106,7 +106,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 }
 
 //checkMingGang 查明杠
-func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card, xpOption *mjoption.XingPaiOption) bool {
+func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb.Player, card *majongpb.Card) bool {
 	// 没有墙牌 或者 听状态 不能明杠
 	context := flow.GetMajongContext()
 	if gutils.IsTing(player) || !utils.HasAvailableWallCards(flow) {
@@ -115,7 +115,7 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 	outCard := context.GetLastOutCard()
 	color := player.GetDingqueColor()
 	//定缺牌不查
-	if gutils.IsDingQueCard(xpOption.EnableDingque, color, outCard) {
+	if gutils.IsDingQueCard(context, color, outCard) {
 		return false
 	}
 	num := utils.GetCardNum(outCard, player.GetHandCards())
@@ -129,10 +129,10 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 }
 
 //checkPeng 查碰
-func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card, xpOption *mjoption.XingPaiOption) bool {
+func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) bool {
 	color := player.GetDingqueColor()
 	//胡牌 听牌 定缺牌 不查碰
-	if gutils.IsHu(player) || gutils.IsTing(player) || gutils.IsDingQueCard(xpOption.EnableDingque, color, card) {
+	if gutils.IsHu(player) || gutils.IsTing(player) || gutils.IsDingQueCard(context, color, card) {
 		return false
 	}
 	num := 0
@@ -179,7 +179,7 @@ func (s *ChupaiState) checkChi(context *majongpb.MajongContext, player *majongpb
 	//只有万条筒可以进行吃的操作
 	color := card.GetColor()
 	point := card.GetPoint()
-	if color == majongpb.CardColor_ColorFeng || card.GetColor() == majongpb.CardColor_ColorHua {
+	if color == majongpb.CardColor_ColorZi || card.GetColor() == majongpb.CardColor_ColorHua {
 		return chicards
 	}
 	handCards := player.GetHandCards()
@@ -221,14 +221,23 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	card := context.GetLastOutCard()
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
-	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &room.RoomChupaiNtf{
+	ntf := room.RoomChupaiNtf{
 		Player: proto.Uint64(activePlayer.GetPalyerId()),
 		Card:   proto.Uint32(utils.ServerCard2Uint32(card)),
 		TingAction: &room.TingAction{
 			EnableTing: proto.Bool(gutils.IsTing(activePlayer)),
 			TingType:   gutils.GetTingType(activePlayer).Enum(),
 		},
-	})
+	}
+	logrus.WithFields(
+		logrus.Fields{
+			"chupaiPlayer": *ntf.Player,
+			"outCard":      *ntf.Card,
+			"enableTing":   *ntf.TingAction.EnableTing,
+			"tingType":     *ntf.TingAction.TingType,
+		}).Infoln("出牌通知")
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &ntf)
+	activePlayer.SelectedTing = false
 
 }
 

@@ -15,8 +15,9 @@ func translateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
 
 	card := translateCard(req.GetCard())
 	eventContext = &server_pb.ChupaiRequestEvent{
-		Head:  &eventHeader,
-		Cards: &card,
+		Head:       &eventHeader,
+		Cards:      &card,
+		TingAction: translateTingAction(req.GetTingAction()),
 	}
 	eventID = server_pb.EventID_event_chupai_request
 	return

@@ -68,8 +68,10 @@ func ServerCard2Number(card *majongpb.Card) uint32 {
 		color = 2
 	} else if card.Color == majongpb.CardColor_ColorTong {
 		color = 3
-	} else if card.Color == majongpb.CardColor_ColorFeng {
+	} else if card.Color == majongpb.CardColor_ColorZi {
 		color = 4
+	} else if card.Color == majongpb.CardColor_ColorHua {
+		color = 5
 	}
 	value := color*10 + uint32(card.Point)
 	return value
@@ -130,7 +132,7 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 		{
 			return room.CardColor_CC_TONG
 		}
-	case majongpb.CardColor_ColorFeng:
+	case majongpb.CardColor_ColorZi:
 		{
 			return room.CardColor_CC_ZI
 		}
@@ -305,7 +307,7 @@ func getColor(srcColor majongpb.CardColor) string {
 	if srcColor == majongpb.CardColor_ColorTong {
 		return "b"
 	}
-	if srcColor == majongpb.CardColor_ColorFeng {
+	if srcColor == majongpb.CardColor_ColorZi {
 		return "z"
 	}
 	if srcColor == majongpb.CardColor_ColorHua {
@@ -332,8 +334,11 @@ func FmtMajongContxt(context *majongpb.MajongContext) logrus.Fields {
 func CheckHasDingQueCard(context *majongpb.MajongContext, player *majongpb.Player) bool {
 	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
 	cards, color, hasDq := player.GetHandCards(), player.GetDingqueColor(), xpOption.EnableDingque
+	if !hasDq {
+		return false
+	}
 	for _, card := range cards {
-		if IsDingQueCard(hasDq, color, card) {
+		if card.GetColor() == color {
 			return true
 		}
 	}
@@ -341,8 +346,9 @@ func CheckHasDingQueCard(context *majongpb.MajongContext, player *majongpb.Playe
 }
 
 //IsDingQueCard 当前的牌是不是定缺牌
-func IsDingQueCard(hasDq bool, dqColor majongpb.CardColor, card *majongpb.Card) bool {
-	if hasDq && card.GetColor() == dqColor {
+func IsDingQueCard(context *majongpb.MajongContext, dqColor majongpb.CardColor, card *majongpb.Card) bool {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	if xpOption.EnableDingque && card.GetColor() == dqColor {
 		return true
 	}
 	return false

@@ -1,11 +1,13 @@
 package ermjtest
 
 import (
+	msgid "steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,6 +30,24 @@ func TestTing(t *testing.T) {
 	utils.CheckZixunNtfWithTing(t, deskData, 0, false, true, true, true)
 	//等補花結束
 	// time.Sleep(time.Second * 2)
-	assert.Nil(t, utils.SendChupaiReq(deskData, 0, uint32(14)))
-	utils.CheckChuPaiNotifyWithSeats(t, deskData, uint32(14), 0, []int{0, 1})
+	player := utils.GetDeskPlayerBySeat(0, deskData)
+	client := player.Player.GetClient()
+	_, err = client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_CHUPAI_REQ), &room.RoomChupaiReq{
+		Card: proto.Uint32(14),
+		TingAction: &room.TingAction{
+			EnableTing: proto.Bool(true),
+			TingType:   room.TingType_TT_TIAN_TING.Enum(),
+		},
+	})
+	for _, s := range []int{0, 1} {
+		p := utils.GetDeskPlayerBySeat(s, deskData)
+		messageExpector := p.Expectors[msgid.MsgID_ROOM_CHUPAI_NTF]
+		ntf := &room.RoomChupaiNtf{}
+		assert.Nil(t, messageExpector.Recv(global.DefaultWaitMessageTime, ntf))
+		assert.Equal(t, uint32(14), ntf.GetCard())
+		assert.Equal(t, player.Player.GetID(), ntf.GetPlayer())
+		assert.Equal(t, true, ntf.GetTingAction().GetEnableTing())
+	}
+
+	// utils.CheckChuPaiNotifyWithSeats(t, deskData, uint32(14), 0, []int{0, 1})
 }

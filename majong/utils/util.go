@@ -150,7 +150,7 @@ func IntToCard(cardValue int32) (*majongpb.Card, error) {
 	case 3:
 		color = majongpb.CardColor_ColorTong
 	case 4:
-		color = majongpb.CardColor_ColorFeng
+		color = majongpb.CardColor_ColorZi
 	case 5:
 		color = majongpb.CardColor_ColorHua
 	default:
@@ -225,7 +225,7 @@ func ServerCard2Number(card *majongpb.Card) int {
 		color = 2
 	} else if card.Color == majongpb.CardColor_ColorTong {
 		color = 3
-	} else if card.Color == majongpb.CardColor_ColorFeng {
+	} else if card.Color == majongpb.CardColor_ColorZi {
 		color = 4
 	} else if card.Color == majongpb.CardColor_ColorHua {
 		color = 5
@@ -542,22 +542,27 @@ func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
 
 // HasAvailableWallCards 判断是否有墙牌可摸
 func HasAvailableWallCards(flow interfaces.MajongFlow) bool {
-	context := flow.GetMajongContext()
-	if len(context.WallCards) == 0 {
-		return false
-	}
 	// 由配牌控制是否gameover,配牌长度为0走正常gameover,配牌长度不为0走配牌长度流局
+	if GetAvailableWallCardsNum(flow) > 0 {
+		return true
+	}
+	return false
+}
+
+// GetAvailableWallCardsNum 获取可用的墙牌数量
+func GetAvailableWallCardsNum(flow interfaces.MajongFlow) int {
+	context := flow.GetMajongContext()
 	length := context.GetOption().GetWallcardsLength()
-	maxCount := 0
+	if length == 0 {
+		return len(context.GetWallCards())
+	}
+	fapaiCards := 0
 	if mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId())).EnableKaijuAddflower {
-		maxCount = int(length) - (len(context.GetPlayers()) * 13)
+		fapaiCards = (len(context.GetPlayers()) * 13)
 	} else {
-		maxCount = int(length) - (len(context.GetPlayers())*13 + 1)
+		fapaiCards = (len(context.GetPlayers())*13 + 1)
 	}
-	if GetAllMopaiCount(context) == maxCount {
-		return false
-	}
-	return true
+	return int(length) - (GetAllMopaiCount(context) + fapaiCards)
 }
 
 // CardsToInt card 转换
