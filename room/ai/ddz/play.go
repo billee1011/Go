@@ -26,6 +26,11 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 
 	ddzContext := params.DDZContext
 
+	// 没到自己打牌
+	if ddzContext.GetCurrentPlayerId() != params.PlayerID {
+		return result, nil
+	}
+
 	// 当前玩家
 	var curPlayer *ddz.Player
 	for _, player := range ddzContext.GetPlayers() {
@@ -34,15 +39,10 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 		}
 	}
 
-	// 找不到玩家
+	// 无效玩家
 	if curPlayer == nil {
-		logEntry.Errorf("找不到玩家%d", params.PlayerID)
-		return result, fmt.Errorf("找不到玩家%d", params.PlayerID)
-	}
-
-	// 没到自己打牌
-	if ddzContext.GetCurrentPlayerId() != curPlayer.GetPalyerId() {
-		return result, nil
+		logEntry.Errorf("无效玩家%d", params.PlayerID)
+		return result, fmt.Errorf("无效玩家%d", params.PlayerID)
 	}
 
 	// 没有牌型时说明是主动打牌

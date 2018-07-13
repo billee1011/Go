@@ -67,14 +67,8 @@ func getPlayerIds(m machine.Machine) []uint64 {
 	return players
 }
 
-// IsAllAbandon 判断是否三家都弃地主
-func IsAllAbandon(players []*ddz.Player) bool {
-	for _, player := range players {
-		if player.Grab {
-			return false
-		}
-	}
-	return true
+func isValidPlayer(context *ddz.DDZContext, id uint64) bool {
+	return GetPlayerByID(context.GetPlayers(), id) != nil
 }
 
 //GetPlayerByID 根据玩家id获取玩家

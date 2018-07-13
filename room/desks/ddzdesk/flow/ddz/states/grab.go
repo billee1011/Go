@@ -45,6 +45,10 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	if !isValidPlayer(context, playerId) {
+		logrus.Error("玩家不在本牌桌上!")
+		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
+	}
 	if context.CurrentPlayerId != playerId {
 		logrus.WithField("expected player:", context.CurrentPlayerId).WithField("fact player", playerId).Error("未到本玩家抢地主")
 		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
@@ -90,11 +94,15 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 	}
 
-	//更新当前操作用户并产生超时事件
-	context.CurrentPlayerId = nextPlayerId
-	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
-	context.StartTime, _ = time.Now().MarshalBinary()
-	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
+	if nextPlayerId == 0 {
+		context.Duration = 0 //清除倒计时
+	} else {
+		//更新当前操作用户并产生超时事件
+		context.CurrentPlayerId = nextPlayerId
+		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
+		context.StartTime, _ = time.Now().MarshalBinary()
+		context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
+	}
 
 	if lordPlayerId != 0 {
 		context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE

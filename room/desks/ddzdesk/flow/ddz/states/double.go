@@ -40,6 +40,11 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	if !isValidPlayer(context, playerId) {
+		logrus.Error("玩家不在本牌桌上!")
+		return int(ddz.StateID_state_double), global.ErrInvalidRequestPlayer
+	}
+
 	isDouble := message.IsDouble
 	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble //记录该玩家加倍
 	if isDouble {

@@ -31,6 +31,5 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 	result.Events = append(result.Events, event)
 
 	logrus.WithField("player", playerId).WithField("result", result).Debug("double timeout event")
-	params.DDZContext.Duration = 0
 	return
 }

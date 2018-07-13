@@ -264,13 +264,6 @@ func (d *desk) processEvent(e *deskEvent) {
 
 func (d *desk) getMessageSender() ddzmachine.MessageSender {
 	return func(players []uint64, msgID msgid.MsgID, body proto.Message) error {
-		//logEntry := logrus.WithFields(logrus.Fields{
-		//	"func_name":       "deskPlayerMgr.BroadcastMessage",
-		//	"dest_player_ids": players,
-		//	"msg_id":          msgID,
-		//	"msg":             body,
-		//})
-		//logEntry.Debug("斗地主广播")
 		return facade.BroadCastDeskMessage(d, players, msgID, body, true)
 	}
 }

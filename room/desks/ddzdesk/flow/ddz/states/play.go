@@ -45,6 +45,11 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	if !isValidPlayer(context, playerId) {
+		logrus.Error("玩家不在本牌桌上!")
+		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
+	}
+
 	outCards := ToDDZCards(message.GetCards())
 	logrus.WithField("playerId", playerId).WithField("outCards", outCards).Debug("玩家出牌")
 	if context.CurrentPlayerId != playerId {
@@ -194,6 +199,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	if len(player.HandCards) == 0 {
 		context.WinnerId = playerId
+		context.Duration = 0 //清除倒计时
 		return int(ddz.StateID_state_over), nil
 	} else {
 		return int(ddz.StateID_state_playing), nil

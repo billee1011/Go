@@ -28,7 +28,13 @@ func (h *grabStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (
 		Events: []interfaces.AIEvent{},
 	}, nil
 
+	context := params.DDZContext
 	playerId := params.PlayerID
+	// 没到自己抢庄
+	if context.GetCurrentPlayerId() != playerId {
+		return result, nil
+	}
+
 	request := ddz.GrabRequestEvent{Head: &ddz.RequestEventHead{
 		PlayerId: playerId,
 	}, Grab: false,
@@ -40,6 +46,5 @@ func (h *grabStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (
 	}
 	result.Events = append(result.Events, event)
 	logrus.WithField("player", playerId).WithField("result", result).Debug("grab timeout event")
-	params.DDZContext.Duration = 0
 	return
 }
