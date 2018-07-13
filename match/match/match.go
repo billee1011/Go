@@ -42,7 +42,7 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 		ErrDesc: proto.String("成功"),
 	}
 	ret = []exchanger.ResponseMsg{{
-		MsgID: uint32(msgid.MsgID_MATCH_RSP),
+		MsgID: uint32(msgid.MsgID_MATCH_CONTINUE_RSP),
 		Body:  response,
 	}}
 

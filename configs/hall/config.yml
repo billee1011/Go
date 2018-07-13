@@ -1,0 +1,21 @@
+log_level: debug 
+log_dir: ./log
+log_prefix: hall
+log_stderr: true 
+
+rpc_addr: 127.0.0.1
+rpc_port: 36301
+rpc_server_name: hall
+
+# redis 
+redis_addr: 127.0.0.1:6379
+redis_passwd: 
+
+
+# nsq 
+nsqd_addr: 127.0.0.1:4150
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161
+
+# consul 
+consul_addr: 127.0.0.1:8500
