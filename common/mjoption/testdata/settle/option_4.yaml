@@ -1,0 +1,44 @@
+id: 4 # 选项 ID
+
+# 单局结算
+enable_gang: false           # 是否开启杠结算
+enable_chahuazhu: false      # 是否开启查花猪
+enable_chadajiao: false      # 是否开启查大叫
+enable_tuisui: false         # 是否开启退税
+
+# 总结算记录
+need_bill_deatils: false # 单局结算详情 
+
+# 胡牌倍数
+hu_type_value:
+  hu_ganghoupao: 2     # 杠后炮2倍
+  hu_qiangganghu: 2    # 枪杠胡2倍
+  hu_dianpao: 1        # 点炮1倍
+  hu_gangkai: 4        # 杠开4倍
+  hu_haidilao: 2       # 海底捞2倍
+  hu_gangshanghaidilao: 4 # 杠上海底捞4倍
+  hu_zimo: 2              # 自摸2倍
+  hu_tianhu: 64           # 天胡64倍
+  hu_dihu: 64             # 地胡64倍 
+
+# 已胡牌玩家(未退出)可参与的结算
+huPlayer_settle:
+  huPlayer_gang_settle: false #杠结算
+  huPlayer_hu_settle: false  #胡结算
+  huPlayer_round_settele: false #单局结算
+
+# 已胡牌玩家(退出)可参与的结算
+huquit_player_settle:
+  huquit_player_gang_settle: false #杠结算
+  huquit_playe_hu_settle: false  #胡结算
+  huquit_player_round_settele: false #单局结算
+
+# 认输玩家可参与的结算
+giveup_player_settle:
+  giveup_player_gang_settle: false #杠结算
+  giveup_player_hu_settle: false  #胡结算
+  giveup_player_round_settele: false #单局结算
+
+# 结算时刻
+gang_instant_settle: false  #杠立即结算
+hu_instant_settle: true    #胡立即结算

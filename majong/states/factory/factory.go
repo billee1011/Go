@@ -1,7 +1,6 @@
 package factory
 
 import (
-	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
@@ -10,28 +9,20 @@ import (
 type createGameStateFunc func(majongpb.StateID) interfaces.MajongState
 
 type factory struct {
-	creators map[int]createGameStateFunc
+	creators createGameStateFunc
 }
 
 var _ interfaces.MajongStateFactory = new(factory)
 
 // newFactory 创建状态工厂
 func newFactory() interfaces.MajongStateFactory {
-	creators := map[int]createGameStateFunc{
-		gutils.SCXLGameID: createState,
-		gutils.SCXZGameID: createState,
-	}
 	return &factory{
-		creators: creators,
+		creators: createState,
 	}
 }
 
 func (f *factory) CreateState(gameID int, stateID majongpb.StateID) interfaces.MajongState {
-	creator, exists := f.creators[gameID]
-	if !exists {
-		return nil
-	}
-	return creator(stateID)
+	return f.creators(stateID)
 }
 
 func init() {

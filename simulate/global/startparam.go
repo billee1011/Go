@@ -24,6 +24,7 @@ func NewCommonStartGameParams() structs.StartGameParams {
 		HszDir:     room.Direction_AntiClockWise,
 		BankerSeat: 0,
 
+		IsDq:  true,
 		IsHsz: true,
 		HszCards: [][]uint32{
 			{11, 11, 11},
@@ -31,6 +32,7 @@ func NewCommonStartGameParams() structs.StartGameParams {
 			{21, 21, 21},
 			{25, 25, 25},
 		},
+		PlayerNum:      4,
 		DingqueColor:   []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO},
 		PlayerSeatGold: map[int]uint64{0: 100000, 1: 100000, 2: 100000, 3: 100000},
 		PeiPaiGame:     "scxl",

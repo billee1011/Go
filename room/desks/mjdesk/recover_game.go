@@ -196,6 +196,10 @@ func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, 
 			wenXunInfo.EnableDianpao = proto.Bool(true)
 		case server_pb.Action_action_qi:
 			wenXunInfo.EnableQi = proto.Bool(true)
+		case server_pb.Action_action_chi:
+			wenXunInfo.ChiInfo = &room.RoomChiInfo{
+				Cards: player.GetEnbleChiCards(),
+			}
 		}
 	}
 	return proto.Bool(true), wenXunInfo
@@ -222,13 +226,18 @@ func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *ro
 	return proto.Bool(true), qghInfo
 }
 
-func zixunTransform(record *server_pb.ZixunRecord) *room.RoomZixunNtf {
+func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 	zixunNtf := &room.RoomZixunNtf{}
 	zixunNtf.EnableAngangCards = record.GetEnableAngangCards()
 	zixunNtf.EnableBugangCards = record.GetEnableBugangCards()
 	zixunNtf.EnableChupaiCards = record.GetEnableChupaiCards()
 	zixunNtf.EnableQi = proto.Bool(record.GetEnableQi())
 	zixunNtf.EnableZimo = proto.Bool(record.GetEnableZimo())
+	zixunNtf.EnableTing = proto.Bool(record.GetEnableTing())
+	TingType := gutils.TingTypeSvr2Client(record.GetTingType())
+	if TingType != nil {
+		zixunNtf.TingType = TingType
+	}
 	huType := gutils.HuTypeSvr2Client(record.GetHuType())
 	if huType != nil {
 		zixunNtf.HuType = huType

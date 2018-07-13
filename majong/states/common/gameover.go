@@ -7,6 +7,7 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -99,7 +100,7 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	}
 	tingPlayersInfo, _ = getTingPlayerInfo(mjContext)
 	params := interfaces.RoundSettleParams{
-		GameID:           mjContext.GetGameId(),
+		SettleOptionID:   int(mjContext.GetSettleOptionId()),
 		FlowerPigPlayers: flowerPigPlayers,
 		HuPlayers:        huPlayers,
 		TingPlayersInfo:  tingPlayersInfo,
@@ -109,7 +110,8 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		SettleInfos:      mjContext.SettleInfos,
 		SettleID:         mjContext.CurrentSettleId,
 	}
-	settleInfos, raxbeatIds := facade.SettleRound(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
+	settlerFactory := majong.SettlerFactory{}
+	settleInfos, raxbeatIds := settlerFactory.CreateRoundSettle().Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 	}
@@ -167,17 +169,23 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 			if err != nil {
 				return nil, err
 			}
-			for j := 0; j < len(tingCards); j++ {
-				// 获取最大番型*根数
-				cardParams := interfaces.CardCalcParams{
-					HandCard: players[i].HandCards,
-					PengCard: utils.TransPengCard(players[i].PengCards),
-					GangCard: utils.TransGangCard(players[i].GangCards),
-					HuCard:   tingCards[j],
-					GameID:   int(context.GetGameId()),
+			for _, card := range tingCards {
+				hCard, _ := utils.IntToCard(int32(card))
+				//获取最大番型 * 根数
+				cardParams := interfaces.FantypeParams{
+					PlayerID:  players[i].GetPalyerId(),
+					MjContext: context,
+					HandCard:  players[i].HandCards,
+					PengCard:  utils.TransPengCard(players[i].PengCards),
+					GangCard:  players[i].GangCards,
+					HuCard: &majongpb.HuCard{
+						Card: hCard,
+						Type: majongpb.HuType_hu_dianpao,
+					},
+					GameID: int(context.GetGameId()),
 				}
-				calculator := global.GetCardTypeCalculator()
-				total, _ := facade.CalculateCardValue(calculator, cardParams)
+				calculator := global.GetFanTypeCalculator()
+				total, _, _ := facade.CalculateCardValue(calculator, context, cardParams)
 				if maxMulti < int64(total) {
 					maxMulti = int64(total)
 				}

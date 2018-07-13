@@ -3,6 +3,7 @@ package common
 import (
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -76,8 +77,7 @@ func (s *ZimoState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) majongpb.HuType {
 	mjContext := flow.GetMajongContext()
 	afterGang := s.isAfterGang(mjContext)
-	// isLast := (len(mjContext.WallCards) == 0)
-	isLast := s.noCardsToTake(flow)
+	isLast := !utils.HasAvailableWallCards(flow)
 	if afterGang && isLast {
 		return majongpb.HuType_hu_gangshanghaidilao
 	} else if afterGang {
@@ -87,7 +87,7 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) ma
 	}
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
 	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
-		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
 			return majongpb.HuType_hu_tianhu
 		}
 		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
@@ -95,18 +95,6 @@ func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) ma
 		}
 	}
 	return majongpb.HuType_hu_zimo
-}
-
-func (s *ZimoState) noCardsToTake(flow interfaces.MajongFlow) bool {
-	context := flow.GetMajongContext()
-	length := context.GetOption().GetWallcardsLength()
-	if utils.GetAllMopaiCount(context) == int(length)-53 {
-		return true
-	}
-	if len(context.WallCards) == 0 {
-		return true
-	}
-	return false
 }
 
 // notifyHu 广播胡
@@ -129,8 +117,16 @@ func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majo
 	player = utils.GetPlayerByID(players, playerID)
 
 	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
-	if player.GetMopaiCount() == 0 {
-		_, card = utils.CalcTianHuCardNum(mjContext, playerID)
+	if player.GetZixunCount() == 1 && player.GetPalyerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId() {
+		xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+		switch xpOption.TianhuCardType {
+		case mjoption.MostTingsCard:
+			_, card = utils.CalcTianHuCardNum(mjContext, playerID)
+		case mjoption.RightCard:
+			card = player.HandCards[len(player.GetHandCards())-1]
+		case mjoption.MoCard:
+			card = mjContext.GetLastMopaiCard()
+		}
 	} else {
 		card = mjContext.GetLastMopaiCard()
 	}

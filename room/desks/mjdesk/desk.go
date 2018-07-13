@@ -6,10 +6,10 @@ import (
 	"runtime/debug"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/common/mjoption"
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
 	majong_process "steve/majong/export/process"
+	"steve/room/config"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
@@ -21,6 +21,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"github.com/spf13/viper"
 
 	_ "steve/room/ai" // 加载 AI 包
 )
@@ -218,8 +219,8 @@ func (d *desk) initMajongContext() error {
 		GameId:  int32(d.GetGameID()),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
-			MaxFapaiCartoonTime:        10 * 1000,
-			MaxHuansanzhangCartoonTime: 10 * 1000,
+			MaxFapaiCartoonTime:        uint32(viper.GetInt(config.MaxFapaiCartoonTime)),
+			MaxHuansanzhangCartoonTime: uint32(viper.GetInt(config.MaxHuansanzhangCartoonTime)),
 			HasHuansanzhang:            handle.GetHsz(d.GetGameID()),                     //设置玩家是否开启换三张
 			Cards:                      handle.GetPeiPai(d.GetGameID()),                  //设置是否配置墙牌
 			WallcardsLength:            uint32(handle.GetLensOfWallCards(d.GetGameID())), //设置墙牌长度
@@ -419,15 +420,14 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 	if eqi.Quit {
 		deskPlayer.QuitDesk()
 		d.setMjPlayerQuitDesk(eqi.PlayerID, true)
-		xpOption := mjoption.GetXingpaiOption(int(d.dContext.mjContext.GetXingpaiOptionId()))
-		d.handleQuitByPlayerState(eqi.PlayerID, xpOption.PlayerStates)
+		d.handleQuitByPlayerState(eqi.PlayerID)
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
 		logEntry.Debugln("玩家退出")
 	} else {
 		// 判断行牌状态, 选项化后需修改
 		mjPlayer := gutils.GetMajongPlayer(eqi.PlayerID, &d.dContext.mjContext)
 		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
-		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌
+		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌,重新进入后把托管取消
 		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
 			deskPlayer.SetTuoguan(false, false)
 		}
@@ -440,17 +440,11 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 	}
 }
 
-func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates []mjoption.XingpaiState) {
+func (d *desk) handleQuitByPlayerState(playerID uint64) {
 	mjContext := d.dContext.mjContext
 	player := gutils.GetMajongPlayer(playerID, &mjContext)
-	//判断当前状态是否与行牌option中的状态列表一致
-	needQuit := false
-	for _, xpState := range xpStates {
-		if uint32(xpState)&uint32(player.GetXpState()) != 0 {
-			needQuit = true
-		}
-	}
-	if needQuit {
+
+	if !gutils.IsPlayerContinue(player.GetXpState(), &mjContext) {
 		deskMgr := global.GetDeskMgr()
 		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
 	}
@@ -458,7 +452,6 @@ func (d *desk) handleQuitByPlayerState(playerID uint64, xpStates []mjoption.Xing
 		"funcName":    "handleQuitByPlayerState",
 		"gameID":      mjContext.GetGameId(),
 		"playerState": player.GetXpState(),
-		"needQuit":    needQuit,
 	}).Infof("玩家:%v退出后的相关处理", playerID)
 }
 
@@ -579,8 +572,9 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	bankerSeat := mjContext.GetZhuangjiaIndex()
 	totalCardsNum := mjContext.GetCardTotalNum()
 	gameStage := getGameStage(mjContext.GetCurState())
-
+	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
+		GameId:      &gameID,
 		GameStage:   &gameStage,
 		Players:     getRecoverPlayerInfo(playerID, d),
 		Dices:       mjContext.GetDices(),
@@ -600,8 +594,8 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
 	})
-	logEntry.Errorln("恢复数据")
-	logEntry.Errorln(gameDeskInfo)
+	logEntry.Infoln("恢复数据")
+	logEntry.Infoln(gameDeskInfo)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
 		return

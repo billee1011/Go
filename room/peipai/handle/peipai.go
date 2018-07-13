@@ -117,10 +117,10 @@ func Peipai(w http.ResponseWriter, r *http.Request) {
 			respMSG(w, "墙牌长度应为纯数字", 404)
 			return
 		}
-		if lenNum < 54 || lenNum > 108 {
-			respMSG(w, "墙牌长度不能少于54且不能大于108", 404)
-			return
-		}
+		// if lenNum < 54 {
+		// 	respMSG(w, "墙牌长度不能少于54", 404)
+		// 	return
+		// }
 		lens = lenNum
 	}
 
@@ -160,12 +160,10 @@ func Peipai(w http.ResponseWriter, r *http.Request) {
 
 		cards = append(cards, ca)
 	}
-	if len(cards) > 108 {
-		respMSG(w, "配牌越界，您的配牌超过了108张", 404)
-		return
-	}
-
-	// 牌的个数（Key : 牌值，Value : 牌的个数）
+	// if len(cards) > 108 {
+	// 	respMSG(w, "配牌越界，您的配牌超过了108张", 404)
+	// 	return
+	// }
 	cardsNum := make(map[int]int)
 
 	for _, c1 := range cards {
@@ -198,8 +196,8 @@ func Peipai(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			// 不能是10的整数倍
-			// 不能超过30
-			if c%10 == 0 || c/10 > 3 {
+			// 不能超过40
+			if c%10 == 0 || c/10 > 5 {
 				data := "牌：" + strconv.Itoa(c) + "不存在墙牌中，请检查配牌"
 				respMSG(w, data, 404)
 				return

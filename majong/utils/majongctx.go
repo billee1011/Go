@@ -108,3 +108,45 @@ func GetCardsGroup(player *majongpb.Player, huCard *majongpb.Card) []*majongpb.C
 	cardsGroupList = append(cardsGroupList, cardsGroup)
 	return cardsGroupList
 }
+
+// GetAllPlayers 所有玩家
+func GetAllPlayers(mjContext *majongpb.MajongContext) (allPlayers []uint64) {
+	allPlayers = make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		allPlayers = append(allPlayers, player.GetPalyerId())
+	}
+	return
+}
+
+// GetHuPlayers 已胡牌玩家
+func GetHuPlayers(mjContext *majongpb.MajongContext) (huPlayers []uint64) {
+	huPlayers = make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		if player.XpState == majongpb.XingPaiState_hu {
+			huPlayers = append(huPlayers, player.GetPalyerId())
+		}
+	}
+	return
+}
+
+// GetQuitPlayers 退出玩家
+func GetQuitPlayers(mjContext *majongpb.MajongContext) (quitPalyers []uint64) {
+	quitPalyers = make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		if player.IsQuit {
+			quitPalyers = append(quitPalyers, player.GetPalyerId())
+		}
+	}
+	return
+}
+
+// GetGiveupPlayers 认输玩家
+func GetGiveupPlayers(mjContext *majongpb.MajongContext) (giveupPlayers []uint64) {
+	giveupPlayers = make([]uint64, 0)
+	for _, player := range mjContext.Players {
+		if player.XpState == majongpb.XingPaiState_give_up {
+			giveupPlayers = append(giveupPlayers, player.GetPalyerId())
+		}
+	}
+	return
+}

@@ -30,7 +30,7 @@ func translateClientCardColor(color room.CardColor) server_pb.CardColor {
 		{
 			return server_pb.CardColor_ColorTong
 		}
-	case room.CardColor_CC_FENG:
+	case room.CardColor_CC_ZI:
 		{
 			return server_pb.CardColor_ColorFeng
 		}

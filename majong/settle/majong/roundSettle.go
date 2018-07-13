@@ -16,7 +16,7 @@ type RoundSettle struct {
 func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":       "roundSettle",
-		"gameId":          params.GameID,
+		"settleOptionID":  params.SettleOptionID,
 		"flowPigPlayers":  params.FlowerPigPlayers,
 		"huPlayers":       params.HuPlayers,
 		"quitPlayers":     params.QuitPlayers,
@@ -27,7 +27,7 @@ func (roundSettle *RoundSettle) Settle(params interfaces.RoundSettleParams) ([]*
 	logEntry.Debugln("单局结算信息")
 
 	// 游戏结算玩法
-	settleOption := GetSettleOption(int(params.GameID))
+	settleOption := mjoption.GetSettleOption(params.SettleOptionID)
 	// 结算信息
 	setletInfos := make([]*majongpb.SettleInfo, 0)
 	// 查花猪
@@ -98,7 +98,7 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 	// 查花猪信息
 	flowwePigSettleInfos := make([]*majongpb.SettleInfo, 0)
 	for _, flowerPig := range params.FlowerPigPlayers {
-		if !roundSettle.canRoundSettle(flowerPig, params.HuPlayers, params.QuitPlayers, settleOption) {
+		if !roundSettle.canRoundSettle(flowerPig, params.GiveupPlayers, params.HuPlayers, params.QuitPlayers, settleOption) {
 			continue
 		}
 		if isGiveUpPlayer(flowerPig, params.GiveupPlayers) {
@@ -109,7 +109,7 @@ func (roundSettle *RoundSettle) flowerPigSettle(params *interfaces.RoundSettlePa
 		groupflowerSettles := make([]*majongpb.SettleInfo, 0)
 		// 胡玩家结算处理
 		for j := 0; j < len(params.HuPlayers); j++ {
-			if !roundSettle.canRoundSettle(params.HuPlayers[j], params.HuPlayers, params.QuitPlayers, settleOption) {
+			if !roundSettle.canRoundSettle(params.HuPlayers[j], params.GiveupPlayers, params.HuPlayers, params.QuitPlayers, settleOption) {
 				continue
 			}
 			if isGiveUpPlayer(params.HuPlayers[j], params.GiveupPlayers) {
@@ -202,22 +202,24 @@ func newRoundSettleInfo(params *interfaces.RoundSettleParams, scoreMap map[uint6
 }
 
 // canRoundSettle 玩家能否参与总结算
-func (roundSettle *RoundSettle) canRoundSettle(playerID uint64, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
-	for _, hasHupalyer := range hasHuPlayers {
-		if hasHupalyer == playerID {
-			for _, quitPlayer := range quitPlayers {
-				if quitPlayer == playerID {
-					if _, ok := settleOption.HuQuitPlayerCanSettle["huQuitPlayer_can_round_settele"]; !ok {
-						return true
-					}
-					return settleOption.HuQuitPlayerCanSettle["huQuitPlayer_can_round_settele"]
-				}
-			}
-			if _, ok := settleOption.HuQuitPlayerCanSettle["huPlayer_can_round_settele"]; !ok {
-				return true
-			}
-			return settleOption.HuPlayerCanSettle["huPlayer_can_round_settele"]
+func (roundSettle *RoundSettle) canRoundSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
+	for _, giveupPlayer := range givePlayers {
+		if giveupPlayer != playerID {
+			break
 		}
+		return settleOption.GiveUpPlayerSettle.GiveUpPlayerRoundSettle
+	}
+	for _, hasHupalyer := range hasHuPlayers {
+		if hasHupalyer != playerID {
+			break
+		}
+		for _, quitPlayer := range quitPlayers {
+			if quitPlayer != playerID {
+				break
+			}
+			return settleOption.HuQuitPlayerSettle.HuQuitPlayerRoundSettle
+		}
+		return settleOption.HuPlayerSettle.HuPlayerRoundSettle
 	}
 	return true
 }

@@ -24,35 +24,30 @@ func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, mjConte
 	return nextPalyer
 }
 
-//GetXpPlayers 获取行牌玩家数组
-func GetXpPlayers(players []*majongpb.Player, mjContext *majongpb.MajongContext) []*majongpb.Player {
+//GetCanXpPlayers 获取能行牌玩家数组
+func GetCanXpPlayers(players []*majongpb.Player, mjContext *majongpb.MajongContext) []*majongpb.Player {
 	newPlalyers := make([]*majongpb.Player, 0)
 	for _, player := range players {
 		// 不是正常行牌的玩家，不能检查胡，碰，杠，摸牌。。。
 		if !gutils.IsPlayerContinue(player.GetXpState(), mjContext) {
+			logrus.WithFields(logrus.Fields{"PlayerIDs": player.GetPalyerId(), "PlayerState": player.GetXpState()}).Info("不正常玩家")
 			continue
 		}
 		newPlalyers = append(newPlalyers, player)
 	}
-	// 正常的玩家ID
-	playerID := make([]uint64, 0)
-	for _, player := range newPlalyers {
-		playerID = append(playerID, player.GetPalyerId())
-	}
-	logrus.WithFields(logrus.Fields{"PlayerIDs": playerID}).Info("获取正常玩家数组")
 	return newPlalyers
 }
 
-//IsXpPlayerInsufficient 判断能行牌人数是否足够
-func IsXpPlayerInsufficient(players []*majongpb.Player, mjContext *majongpb.MajongContext) bool {
-	conut := 0
+//IsAreThereEnoughpeople 判断是否有足够多的人数
+func IsAreThereEnoughpeople(players []*majongpb.Player, mjContext *majongpb.MajongContext) bool {
+	count := 0
 	for _, player := range players {
 		if gutils.IsPlayerContinue(player.GetXpState(), mjContext) {
-			conut++
+			count++
 		}
 	}
-	logrus.WithFields(logrus.Fields{"NormalPlayerConut": conut}).Infoln("正常状态玩家数量")
-	return conut <= 1
+	logrus.WithFields(logrus.Fields{"NormalPlayerConut": count}).Infoln("正常状态玩家数量")
+	return count <= 1
 }
 
 //SettleOver 结算完成
@@ -75,10 +70,10 @@ func SettleOver(flow interfaces.MajongFlow, message *majongpb.SettleFinishEvent)
 
 }
 
-// GetNextState 下一状态获取
-func GetNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
+// IsGameOverReturnState 判断游戏是否结束返回状态
+func IsGameOverReturnState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	// 正常玩家<=1,游戏结束
-	if IsXpPlayerInsufficient(mjContext.GetPlayers(), mjContext) {
+	if IsAreThereEnoughpeople(mjContext.GetPlayers(), mjContext) {
 		return majongpb.StateID_state_gameover
 	}
 	return majongpb.StateID_state_mopai

@@ -4,9 +4,15 @@ wall_cards: [11,11,11,11,12,12,12,12,13,13,13,13,14,14,14,14,15,15,15,15,16,16,1
              31,31,31,31,32,32,32,32,33,33,33,33,34,34,34,34,35,35,35,35,36,36,36,36,37,37,37,37,38,38,38,38,39,39,39,39] # 墙牌
 hu_gameover: false  # 胡牌之后是否结束游戏
 hnz:
-  need: true
+  enable: true
   num: 3  # 是否需要换三张
-need_dingque: true # 是否需要定缺
-need_addflower: false # 是否需要补花
-need_chi: false # 是否需要吃
-player_states: []
+
+enable_dingque: true # 是否需要定缺
+enable_addflower: false # 是否需要补花
+enable_chi: false # 是否需要吃
+enable_kaiju_addflower: false # 是否需要开局补花
+player_no_normal_states: 2 #玩家不参与游戏的不正常状态 XingPaiState_hu | XingPaiState_give_up
+player_num: 4
+fapai_type: 1 # 1：正常发牌，庄家14张，闲家13张；2：二人麻将类型的发牌，所有人都只发13张
+tianhu_card_type: 1 # 1:血流方式的天胡牌，听牌数量最多的牌 2：血战方式的,手牌中最右边的牌 3：二人方式的，摸上来的那张牌
+enable_gang_settle: true # 是否需要杠结算

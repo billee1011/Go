@@ -1,7 +1,6 @@
 package majong
 
 import (
-	"errors"
 	"steve/client_pb/room"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
@@ -17,7 +16,12 @@ func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 	switch req.GetActionId() {
 	case room.XingpaiAction_XA_CHI:
 		{
-			err = errors.New("未实现")
+			eventID = int(server_pb.EventID_event_chi_request)
+			cards := translateCards(req.GetChiCards())
+			eventContext = &server_pb.ChiRequestEvent{
+				Head:  &eventHeader,
+				Cards: cards,
+			}
 		}
 	case room.XingpaiAction_XA_PENG:
 		{

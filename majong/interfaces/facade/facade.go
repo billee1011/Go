@@ -23,29 +23,8 @@ func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgid.MsgID, msg proto.M
 }
 
 // CalculateCardValue 计算牌型倍数,根数
-func CalculateCardValue(ctc interfaces.CardTypeCalculator, cardParams interfaces.CardCalcParams) (cardValue, genCount uint32) {
-	types, gen := ctc.Calculate(cardParams)
-	cardValue, genCount = ctc.CardTypeValue(cardParams.GameID, types, gen)
+func CalculateCardValue(ctc interfaces.FantypeCalculator, context *majongpb.MajongContext, fanParams interfaces.FantypeParams) (cardValue uint64, gen, hua int) {
+	types, gen, hua := ctc.Calculate(fanParams)
+	cardValue = ctc.CardTypeValue(context, types, gen, hua)
 	return
-}
-
-// SettleGang 作杠结算
-func SettleGang(factory interfaces.GameSettlerFactory, gameID int, params interfaces.GangSettleParams) *majongpb.SettleInfo {
-	f := factory.CreateSettlerFactory(gameID)
-	settler := f.CreateGangSettler()
-	return settler.Settle(params)
-}
-
-// SettleHu 作胡结算
-func SettleHu(factory interfaces.GameSettlerFactory, gameID int, params interfaces.HuSettleParams) []*majongpb.SettleInfo {
-	f := factory.CreateSettlerFactory(gameID)
-	settler := f.CreateHuSettler()
-	return settler.Settle(params)
-}
-
-// SettleRound 作单局结算
-func SettleRound(factory interfaces.GameSettlerFactory, gameID int, params interfaces.RoundSettleParams) ([]*majongpb.SettleInfo, []uint64) {
-	f := factory.CreateSettlerFactory(gameID)
-	settler := f.CreateRoundSettle()
-	return settler.Settle(params)
 }

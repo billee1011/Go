@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
+	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -54,7 +56,6 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 			return s.gang(flow, message)
 
 		}
-		//TODO:需要加一个对补花请求的处理
 	default:
 		{
 			return majongpb.StateID_state_zixun, nil
@@ -67,10 +68,14 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 func (s *ZiXunState) getZixunPlayer(flow interfaces.MajongFlow) uint64 {
 	mjContext := flow.GetMajongContext()
 	zxType := mjContext.GetZixunType()
-	if zxType == majongpb.ZixunType_ZXT_PENG {
+	switch zxType {
+	case majongpb.ZixunType_ZXT_PENG:
 		return mjContext.GetLastPengPlayer()
+	case majongpb.ZixunType_ZXT_CHI:
+		return mjContext.GetLastChiPlayer()
+	default:
+		return mjContext.GetLastMopaiPlayer()
 	}
-	return mjContext.GetLastMopaiPlayer()
 }
 
 //angang 决策杠
@@ -102,6 +107,7 @@ func (s *ZiXunState) gang(flow interfaces.MajongFlow, message *majongpb.GangRequ
 //zimo 决策自摸
 func (s *ZiXunState) zimo(flow interfaces.MajongFlow, message *majongpb.HuRequestEvent) (majongpb.StateID, error) {
 	can, err := s.canZiMo(flow, message)
+
 	if err != nil {
 		return majongpb.StateID_state_zixun, err
 	}
@@ -119,6 +125,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	if s.getZixunPlayer(flow) != pid {
 		return majongpb.StateID_state_zixun, fmt.Errorf("未到玩家：%v 出牌，当前应该出牌的玩家是：%v", pid, s.getZixunPlayer(flow))
 	}
+
 	//检查玩家是否胡过牌,胡过牌的话,摸啥打啥,能胡不让打
 	card := message.GetCards()
 	activePlayer := utils.GetPlayerByID(context.GetPlayers(), pid)
@@ -137,10 +144,26 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		"reqCard":  card,
 		"hanCards": gutils.FmtMajongpbCards(activePlayer.GetHandCards()),
 	}).Infof("玩家%v出牌请求", activePlayer.GetPalyerId())
+	if activePlayer.GetTingStateInfo().GetIsBaotingyifa() {
+		activePlayer.GetTingStateInfo().IsBaotingyifa = false
+	}
 	for _, c := range activePlayer.GetHandCards() {
 		if utils.CardEqual(c, card) {
 			context.LastOutCard = card
 			context.LastChupaiPlayer = pid
+			//出牌后标志听的状态
+			if !activePlayer.GetTingStateInfo().GetIsTing() && !activePlayer.GetTingStateInfo().GetIsTianting() {
+				TingAction := message.GetTingAction()
+				if TingAction.GetEnableTing() {
+					switch TingAction.GetTingType() {
+					case majongpb.TingType_TT_NORMAL_TING:
+						activePlayer.GetTingStateInfo().IsTing = true
+					case majongpb.TingType_TT_TIAN_TING:
+						activePlayer.GetTingStateInfo().IsTianting = true
+					}
+					activePlayer.GetTingStateInfo().IsBaotingyifa = true
+				}
+			}
 			return majongpb.StateID_state_chupai, nil
 		}
 	}
@@ -244,18 +267,16 @@ func (s *ZiXunState) canPlayerZimo(flow interfaces.MajongFlow) bool {
 	mjContext := flow.GetMajongContext()
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
 	handCard := player.GetHandCards()
-	if gutils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+	if xpOption.EnableDingque && gutils.CheckHasDingQueCard(handCard, player.GetDingqueColor()) {
 		return false
 	}
 	l := len(handCard)
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	if !flag {
-		return false
-	}
-	return true
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
 // canZiMo 检查自摸 (判断当前事件是否可行)
@@ -269,14 +290,17 @@ func (s *ZiXunState) canZiMo(flow interfaces.MajongFlow, message *majongpb.HuReq
 func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	ctx := flow.GetMajongContext()
 	card := ctx.GetGangCard()
-	cardI, _ := utils.CardToInt(*card)
+	cardI := utils.ServerCard2Uint32(card)
+	xpOption := mjoption.GetXingpaiOption(int(ctx.GetXingpaiOptionId()))
 	var hasQGanghu bool
-	for _, player := range utils.GetXpPlayers(ctx.GetPlayers(), ctx) {
+	for _, player := range utils.GetCanXpPlayers(ctx.GetPlayers(), ctx) {
 		player.PossibleActions = []majongpb.Action{}
-		if player.GetPalyerId() != ctx.GetLastGangPlayer() &&
-			!gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
-			flag := utils.CheckHu(player.HandCards, uint32(*cardI))
-			if flag {
+		if player.GetPalyerId() != ctx.GetLastGangPlayer() {
+			if xpOption.EnableDingque && gutils.CheckHasDingQueCard(player.GetHandCards(), player.GetDingqueColor()) {
+				continue
+			}
+			result := utils.CheckHu(player.HandCards, cardI, false)
+			if result.Can {
 				hasQGanghu = true
 				player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 			}
@@ -299,12 +323,12 @@ func (s *ZiXunState) canQi(canAngang bool, canBugang bool, canZimo bool, hasHu b
 func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	context := flow.GetMajongContext()
 	zixunNtf := &room.RoomZixunNtf{}
-	isPengZixun := context.GetZixunType() == majongpb.ZixunType_ZXT_PENG
+	isNomarlZixun := context.GetZixunType() != majongpb.ZixunType_ZXT_PENG && context.GetZixunType() != majongpb.ZixunType_ZXT_CHI
 	playerID := s.getZixunPlayer(flow)
 	player := utils.GetPlayerByID(context.Players, playerID)
-	player.ZixunRecord = &majongpb.ZixunRecord{}
+	player.ZixunRecord = &majongpb.ZiXunRecord{}
 	record := player.GetZixunRecord()
-	if !isPengZixun {
+	if isNomarlZixun {
 		zixunNtf.EnableAngangCards = s.checkAnGang(flow)
 		zixunNtf.EnableBugangCards = s.checkBuGang(flow)
 		canZimo := s.checkZiMo(flow)
@@ -332,15 +356,32 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		roomHuType, majongHuType := s.getHuType(playerID, context)
 		zixunNtf.HuType = &roomHuType
 		record.HuType = majongHuType
+		s.checkFanType(record, context, playerID, player.GetHandCards(), context.GetLastMopaiCard())
+	}
+	//TODO:检查是否需要发送听按钮，以及听按钮的类型
+	tingStateInfo := player.GetTingStateInfo()
+	if len(zixunNtf.GetCanTingCardInfo()) != 0 && (!tingStateInfo.GetIsTing() || !tingStateInfo.GetIsTianting()) {
+		zixunNtf.EnableTing = proto.Bool(true)
+		if *zixunNtf.EnableTing {
+			if player.GetZixunCount() == int32(1) {
+				zixunNtf.TingType = room.TingType_TT_TIAN_TING.Enum()
+				record.TingType = majongpb.TingType_TT_TIAN_TING
+			} else {
+				zixunNtf.TingType = room.TingType_TT_NORMAL_TING.Enum()
+				record.TingType = majongpb.TingType_TT_NORMAL_TING
+			}
+		}
 	}
 	s.recordZixunMsg(record, zixunNtf)
 	logrus.WithFields(logrus.Fields{
 		"EnableAngangCards": record.GetEnableAngangCards(),
 		"EnableBugangCards": record.GetEnableBugangCards(),
+		"EnableTing":        record.GetEnableTing(),
 		"EnableZimo":        record.GetEnableZimo(),
 		"EnableQi":          record.GetEnableQi(),
 		"EnableChupaiCards": record.GetEnableChupaiCards(),
 		"HuType":            record.GetHuType(),
+		"TingType":          record.GetTingType(),
 		"CanTingCardInfo":   record.GetCanTingCardInfo(),
 	}).Infoln("自询记录")
 	playerIDs := make([]uint64, 0, 0)
@@ -361,19 +402,40 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}).Infoln("自询通知")
 }
 
-func (s *ZiXunState) recordZixunMsg(record *majongpb.ZixunRecord, ntf *room.RoomZixunNtf) {
+func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongpb.MajongContext, huPlayerID uint64, handCards []*majongpb.Card, huCard *majongpb.Card) {
+	calcHandCard, _ := utils.RemoveCards(handCards, huCard, 1)
+	calcHuCard := &majongpb.HuCard{
+		Card:      huCard,
+		SrcPlayer: huPlayerID,
+		Type:      majongpb.HuType_hu_zimo,
+	}
+	fanTypes, genCount, huaCount := fantype.CalculateFanTypes(context, huPlayerID, calcHandCard, calcHuCard)
+	record.HuFanType = new(majongpb.HuFanType)
+	record.HuFanType.GenCount = uint64(genCount)
+	record.HuFanType.HuaCount = uint64(huaCount)
+	HfanTypes := make([]int64, 0)
+	for _, fanType := range fanTypes {
+		HfanTypes = append(HfanTypes, int64(fanType))
+	}
+	record.HuFanType.FanTypes = HfanTypes
+	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
+
+}
+
+func (s *ZiXunState) recordZixunMsg(record *majongpb.ZiXunRecord, ntf *room.RoomZixunNtf) {
 	record.EnableAngangCards = ntf.GetEnableAngangCards()
 	record.EnableBugangCards = ntf.GetEnableBugangCards()
 	record.EnableChupaiCards = ntf.GetEnableChupaiCards()
 	record.EnableQi = ntf.GetEnableQi()
 	record.EnableZimo = ntf.GetEnableZimo()
+	record.EnableTing = ntf.GetEnableTing()
 }
 
 // getHuType 计算胡牌类型
 func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) (room.HuType, majongpb.HuType) {
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
 	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
-		if huPlayer.MopaiCount == 0 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
 			return room.HuType_HT_TIANHU, majongpb.HuType_hu_tianhu
 		}
 		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
@@ -401,42 +463,52 @@ func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Ca
 
 // checkTing 查听
 func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
-	dqnum := 0
-	for _, card := range player.GetHandCards() {
-		if card.Color == player.DingqueColor {
-			dqnum++
-		}
-	}
-	logrus.WithFields(logrus.Fields{
-		"手中定缺牌的个数": dqnum,
-	}).Info("查听")
-	switch dqnum {
-	//没有定缺牌的时候正常查听
-	case 0:
-		{
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-			s.addTingInfo(zixunNtf, player, context, tingInfos)
-		}
-	// 当定缺牌为1的时候,只有定缺牌才有听牌提示
-	case 1:
-		{
-			newTingInfos := map[utils.Card][]utils.Card{}
-			tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-			for outCard, tingCard := range tingInfos {
-				card, _ := utils.IntToCard(int32(outCard))
-				if card.GetColor() == player.DingqueColor {
-					newTingInfos[outCard] = tingCard
-				}
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+
+	dingqueCards, checkCards := s.getDingqueCardNum(player, xpOption.EnableDingque)
+	dqnum := len(dingqueCards)
+	if player.GetTingStateInfo().GetIsTing() || player.GetTingStateInfo().GetIsTianting() {
+		// 当玩家已经是听牌状态，只有摸上来的牌才有听牌提示
+		moCard := context.GetLastMopaiCard()
+		newTingInfos := map[utils.Card][]utils.Card{}
+		tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
+		for outCard, tingCard := range tingInfos {
+			card, _ := utils.IntToCard(int32(outCard))
+			if card.GetColor() == moCard.GetColor() && card.GetPoint() == moCard.GetPoint() {
+				newTingInfos[outCard] = tingCard
 			}
-			//满足条件说明,打出这张定缺牌可以进入听牌状态
-			s.addTingInfo(zixunNtf, player, context, newTingInfos)
 		}
-	// 玩家的定缺牌数量超过1张的时候,不查听
-	default:
-		{
-			return
+		//满足条件说明,打出这张定缺牌可以进入听牌状态
+		s.addTingInfo(zixunNtf, player, context, newTingInfos)
+	} else if dqnum == 0 {
+		//没有定缺牌的时候正常查听
+		tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
+		s.addTingInfo(zixunNtf, player, context, tingInfos)
+	} else if dqnum == 1 {
+		tingInfos, err := utils.GetTingCards(checkCards, nil)
+		if err == nil && len(tingInfos) > 0 {
+			dingqueCard := utils.Card(utils.ServerCard2Number(dingqueCards[0]))
+			s.addTingInfo(zixunNtf, player, context, map[utils.Card][]utils.Card{dingqueCard: tingInfos})
 		}
 	}
+	// 玩家的定缺牌数量超过1张的时候,不查听
+}
+
+func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player, hasDingqueOption bool) (dingqueCards []*majongpb.Card, checkCards []*majongpb.Card) {
+	dingqueCards = []*majongpb.Card{}
+	checkCards = []*majongpb.Card{}
+	if hasDingqueOption {
+		for _, card := range player.GetHandCards() {
+			if card.GetColor() == player.DingqueColor {
+				dingqueCards = append(dingqueCards, card)
+			} else {
+				checkCards = append(checkCards, card)
+			}
+		}
+	} else {
+		checkCards = player.GetHandCards()
+	}
+	return
 }
 
 // addTingInfo 自询通知添加听牌信息
@@ -449,7 +521,9 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		outCard0, err := utils.IntToCard(int32(outCard))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"func_name": "utils.IntToCard",
+				"func_name":   "utils.IntToCard",
+				"failed_card": outCard,
+				"tingInfo":    tingInfo,
 			}).Error("牌型转换失败")
 		}
 		newHand, success := utils.RemoveCards(player.GetHandCards(), outCard0, 1)
@@ -459,21 +533,25 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 			}).Error("牌型移除失败")
 		}
 		for _, tt := range tingInfo {
-			huCard, _ := utils.IntToCard(int32(tt))
-			times, _ := facade.CalculateCardValue(global.GetCardTypeCalculator(), interfaces.CardCalcParams{
-				HandCard: newHand,
-				PengCard: s.getPengCards(player.GetPengCards()),
-				GangCard: s.getGangCards(player.GetGangCards()),
-				HuCard:   huCard,
-				GameID:   int(context.GetGameId()),
+			hCard, _ := utils.IntToCard(int32(tt))
+			times, _, _ := facade.CalculateCardValue(global.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+				PlayerID:  player.GetPalyerId(),
+				MjContext: context,
+				HandCard:  newHand,
+				PengCard:  s.getPengCards(player.GetPengCards()),
+				GangCard:  player.GetGangCards(),
+				HuCard: &majongpb.HuCard{
+					Card: hCard,
+					Type: majongpb.HuType_hu_dianpao,
+				},
 			})
 			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
 				TingCard: proto.Uint32(uint32(tt)),
-				Times:    proto.Uint32(times),
+				Times:    proto.Uint32(uint32(times)),
 			})
 			recordTingCardInfo = append(recordTingCardInfo, &majongpb.TingCardInfo{
 				TingCard: uint32(tt),
-				Times:    times,
+				Times:    uint32(times),
 			})
 		}
 		canTingInfos = append(canTingInfos, &room.CanTingCardInfo{
@@ -486,7 +564,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		})
 	}
 	zixunNtf.CanTingCardInfo = canTingInfos
-	player.ZixunRecord.CanTingCardInfo = recordCanTingInfos
+	player.GetZixunRecord().CanTingCardInfo = recordCanTingInfos
 }
 
 // checkZiMo 查自摸
@@ -495,18 +573,19 @@ func (s *ZiXunState) checkZiMo(flow interfaces.MajongFlow) bool {
 	activePlayerID := s.getZixunPlayer(flow)
 	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
 	handCard := activePlayer.GetHandCards()
-	if gutils.CheckHasDingQueCard(handCard, activePlayer.GetDingqueColor()) {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	if xpOption.EnableDingque && gutils.CheckHasDingQueCard(handCard, activePlayer.GetDingqueColor()) {
 		return false
 	}
 	l := len(handCard)
 	if l%3 != 2 {
 		return false
 	}
-	flag := utils.CheckHu(handCard, 0)
-	return flag
+	result := utils.CheckHu(handCard, 0, false)
+	return result.Can
 }
 
-func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
+func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player, xpOption *mjoption.XingPaiOption) []uint32 {
 	result := make([]uint32, 0, 0)
 
 	//分两种情况查暗杠，一种是胡牌前，一种胡牌后
@@ -521,12 +600,16 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 	}
 	color := player.GetDingqueColor()
 	for k, num := range cardNum {
-		if k.Color != color && num == 4 {
+		if xpOption.EnableDingque && k.Color == color {
+			continue
+		}
+		if num == 4 {
 			if len(huCards) > 0 {
 				newCards := []*majongpb.Card{}
 				newCards = append(newCards, handCard...)
 				newCards, _ = utils.RemoveCards(newCards, &k, 4)
 				utilCards := utils.CardsToUtilCards(newCards)
+
 				tingCards := utils.FastCheckTingV2(utilCards, map[utils.Card]bool{})
 				if utils.ContainHuCards(tingCards, utils.HuCardsToUtilCards(huCards)) {
 					result = append(result, utils.ServerCard2Uint32(&k))
@@ -546,6 +629,18 @@ func (s *ZiXunState) checkPlayerAngang(player *majongpb.Player) []uint32 {
 	return result
 }
 
+// canTing 是否可以听
+func (s *ZiXunState) canTing(flow interfaces.MajongFlow) bool {
+	context := flow.GetMajongContext()
+	activePlayerID := s.getZixunPlayer(flow)
+	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
+	tingState := activePlayer.GetTingStateInfo()
+	if tingState.GetIsTing() || tingState.GetIsTianting() {
+		return false
+	}
+	return true
+}
+
 // checkAnGang 查暗杠
 func (s *ZiXunState) checkAnGang(flow interfaces.MajongFlow) (enableAngangCards []uint32) {
 	enableAngangCards = make([]uint32, 0, 0)
@@ -556,7 +651,8 @@ func (s *ZiXunState) checkAnGang(flow interfaces.MajongFlow) (enableAngangCards 
 	}
 	activePlayerID := s.getZixunPlayer(flow)
 	activePlayer := utils.GetPlayerByID(context.Players, activePlayerID)
-	return s.checkPlayerAngang(activePlayer)
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	return s.checkPlayerAngang(activePlayer, xpOption)
 }
 
 //checkBuGang 查补杠
@@ -577,21 +673,21 @@ func (s *ZiXunState) checkBuGang(flow interfaces.MajongFlow) []uint32 {
 	for _, touchCard := range activePlayer.HandCards {
 		for _, pengCard := range pengCards {
 			if *pengCard.Card == *touchCard {
-				removeCard, _ := utils.CardToInt(*touchCard)
+				removeCard := utils.ServerCard2Uint32(touchCard)
 				if hasHu {
 					//创建副本，移除相应的杠牌进行查胡
 					cardsI, _ := utils.CardsToInt(activePlayer.HandCards)
 					newcardsI := make([]int32, 0, len(cardsI))
 					newcardsI = append(newcardsI, cardsI...)
-					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, *removeCard)
+					newcardsI, _ = utils.DeleteIntCardFromLast(newcardsI, int32(removeCard))
 					utilCards := utils.IntToUtilCard(newcardsI)
 					laizi := make(map[utils.Card]bool)
 					huCards := utils.FastCheckTingV2(utilCards, laizi)
 					if utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
-						enableBugangCards = append(enableBugangCards, uint32(*removeCard))
+						enableBugangCards = append(enableBugangCards, removeCard)
 					}
 				} else {
-					enableBugangCards = append(enableBugangCards, uint32(*removeCard))
+					enableBugangCards = append(enableBugangCards, removeCard)
 				}
 			}
 		}
@@ -610,8 +706,17 @@ func (s *ZiXunState) checkflowerCards() bool {
 	return false
 }
 
+//AddZiXunCount 自询次数递增1
+func (s *ZiXunState) AddZiXunCount(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	playerID := s.getZixunPlayer(flow)
+	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
+	player.ZixunCount++
+}
+
 // OnEntry 进入状态
 func (s *ZiXunState) OnEntry(flow interfaces.MajongFlow) {
+	s.AddZiXunCount(flow)
 	s.sortCards(flow)
 	//TODO：有补花选项，优先查补花，可以补花的话，注入补花的自动事件，进入补花的状态
 	if !s.checkflowerCards() {

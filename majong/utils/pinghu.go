@@ -22,6 +22,14 @@ func (cm countMap) addAll(cards ...Card) {
 	}
 }
 
+func (cm countMap) clone() countMap {
+	tmp := make(countMap, len(cm))
+	for c, v := range cm {
+		tmp[c] = v
+	}
+	return tmp
+}
+
 func (cm countMap) removeAll(cards ...Card) {
 	for _, card := range cards {
 		cm[card]--
@@ -387,7 +395,7 @@ out:
 	}
 }
 
-// 牌组类型
+// GroupType 牌组类型
 type GroupType int
 
 const (
@@ -396,27 +404,49 @@ const (
 	TypeShun  GroupType = 2
 )
 
-// 牌组，将刻顺等
+// CardGroup 牌组，将刻顺等
 type CardGroup struct {
-	GroupType GroupType
-	Cards     []Card
+	GroupType  GroupType
+	Cards      []Card
+	Replaces   []Card // 癞子所替换的牌
+	ReplaceAll bool   // 癞子是否可以替换所有的牌，此时不用理会 Replaces
 }
 
-// 赖子牌标识，一手牌的赖子可能有多个，而且牌值都不一样，
-// 为了避免由赖子造成没必要的排列组合，计算过程中赖子都采用这个常量，
-var Laizi Card = 0
+// Combine 牌组列表
+type Combine []CardGroup
 
-func FastCheckHuV2(cards []Card, laizis map[Card]bool) bool {
+// Combines Combine 列表
+type Combines []Combine
+
+// Laizi 赖子牌标识，一手牌的赖子可能有多个，而且牌值都不一样，
+// 为了避免由赖子造成没必要的排列组合，计算过程中赖子都采用这个常量，
+var Laizi Card // = 0
+
+// makeJiangGroups 构建能组成将的组合
+func makeJiangGroups(cm countMap, laiziCount int) []CardGroup {
+	jiangGroups := make([]CardGroup, 0, gMaxSize)
+	for card, count := range cm {
+		if count >= 2 {
+			jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{card, card}})
+		}
+		if count >= 1 && laiziCount > 0 {
+			jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{card, Laizi}, Replaces: []Card{card}})
+		}
+	}
+	// 癞子数大于2，可以单独组成将
+	if laiziCount >= 2 {
+		jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{Laizi, Laizi}, ReplaceAll: true})
+	}
+	return jiangGroups
+}
+
+// makeCountMap 所有的牌构建乘 countMap
+func makeCountMap(cards []Card, laizis map[Card]bool) (cm countMap, laiziCount int) {
+	cm = make(countMap, len(cards))
 	if laizis == nil {
 		laizis = make(map[Card]bool)
 	}
-	//构造计算所需参数
-	l := len(cards)
-	if l%3 != 2 {
-		panic(fmt.Errorf("FastCheckHuV2 wrong cards size %v,%v", l, cards))
-	}
-	var cm countMap = make(map[Card]int, l)
-	laiziCount := 0
+	laiziCount = 0
 	for _, card := range cards {
 		if isLaizi := laizis[card]; isLaizi || card == Laizi {
 			laiziCount++
@@ -424,127 +454,222 @@ func FastCheckHuV2(cards []Card, laizis map[Card]bool) bool {
 			cm[card]++
 		}
 	}
+	return
+}
 
-	//将
-	jiangGroups := make([]CardGroup, 0, gMaxSize)
-	for card, count := range cm {
-		if count >= 2 {
-			jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{card, card}})
-		}
-		if count >= 1 && laiziCount > 0 {
-			jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{card, Laizi}})
+func min(v ...int) int {
+	tmp := v[0]
+	for i := 1; i < len(v); i++ {
+		if v[i] < tmp {
+			tmp = v[i]
 		}
 	}
-	if len(jiangGroups) == 0 && laiziCount >= 2 {
-		jiangGroups = append(jiangGroups, CardGroup{GroupType: TypeJiang, Cards: []Card{Laizi, Laizi}})
-	}
+	return tmp
+}
 
-	//刻
+// appendMultiGroup 同一种 group 添加多次
+func appendMultiGroup(groups []CardGroup, group CardGroup, count int) []CardGroup {
+	for j := 0; j < count; j++ {
+		groups = append(groups, group)
+	}
+	return groups
+}
+
+// makeSpecialShunGroup 针对于某个顺建立 groups
+func makeSpecialShunGroup(groups []CardGroup, s, m, l Card, sc, mc, lc int, laiziCount int) []CardGroup {
+	groups = appendMultiGroup(groups, CardGroup{
+		GroupType: TypeShun,
+		Cards:     []Card{s, m, l},
+	}, min(sc, mc, lc))
+
+	if laiziCount >= 1 {
+		groups = appendMultiGroup(groups, CardGroup{
+			GroupType: TypeShun,
+			Cards:     []Card{s, m, Laizi},
+			Replaces:  []Card{l},
+		}, min(sc, mc, laiziCount))
+		groups = appendMultiGroup(groups, CardGroup{
+			GroupType: TypeShun,
+			Cards:     []Card{s, Laizi, l},
+			Replaces:  []Card{m},
+		}, min(sc, laiziCount, lc))
+		groups = appendMultiGroup(groups, CardGroup{
+			GroupType: TypeShun,
+			Cards:     []Card{Laizi, m, l},
+			Replaces:  []Card{s},
+		}, min(laiziCount, mc, lc))
+	}
+	if laiziCount >= 2 {
+		groups = appendMultiGroup(groups, CardGroup{
+			GroupType: TypeShun,
+			Cards:     []Card{s, Laizi, Laizi},
+			Replaces:  []Card{m, l},
+		}, min(laiziCount/2, sc))
+		groups = appendMultiGroup(groups, CardGroup{
+			GroupType: TypeShun,
+			Cards:     []Card{Laizi, m, Laizi},
+			Replaces:  []Card{s, l},
+		}, min(laiziCount/2, mc))
+		groups = appendMultiGroup(groups, CardGroup{
+			GroupType: TypeShun,
+			Cards:     []Card{Laizi, Laizi, l},
+			Replaces:  []Card{s, m},
+		}, min(laiziCount/2, lc))
+	}
+	return groups
+}
+
+// makeShunGroups 构建顺的组合
+func makeShunGroups(cm countMap, laiziCount int) []CardGroup {
+	result := make([]CardGroup, 0, len(cm)/3)
+	maked := map[Card]struct{}{} // 已经构建了的顺, Card为该顺中的最小的值
+	for card := range cm {
+		if card/10 == 4 || card == Laizi { // 风牌不能作顺
+			continue
+		}
+		for i := Card(-2); i <= 0; i++ {
+			s, m, l := card+i, card+i+1, card+i+2       // 最小的牌， 中间的牌，最大的牌
+			if s/10 != l/10 || s%10 == 0 || l%10 == 0 { // 花色不同，不能组成顺
+				continue
+			}
+			if _, ok := maked[s]; ok { // 已经构建过了，不重复构建
+				continue
+			}
+			osc, omc, olc := cm[s], cm[m], cm[l] // 牌的数量
+			result = makeSpecialShunGroup(result, s, m, l, osc, omc, olc, laiziCount)
+			maked[s] = struct{}{}
+		}
+	}
+	if laiziCount >= 3 {
+		result = appendMultiGroup(result, CardGroup{
+			GroupType:  TypeShun,
+			Cards:      []Card{Laizi, Laizi, Laizi},
+			ReplaceAll: true,
+		}, laiziCount/3)
+	}
+	return result
+}
+
+// makeKeGroups 构建刻的组合
+func makeKeGroups(cm countMap, laiziCount int) []CardGroup {
 	keGroups := make([]CardGroup, 0, gMaxSize/3)
 	for card, count := range cm {
 		if count >= 3 {
 			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, card, card}})
 		}
-		if count >= 2 && laiziCount > 0 {
-			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, card, Laizi}})
+		if count >= 2 && laiziCount >= 1 {
+			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, card, Laizi}, Replaces: []Card{card}})
 		}
-		if count >= 1 && laiziCount > 1 {
-			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, Laizi, Laizi}})
+		if count >= 1 && laiziCount >= 2 {
+			keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{card, Laizi, Laizi}, Replaces: []Card{card}})
 		}
-	}
-	if len(keGroups) == 0 && laiziCount > 2 {
-		keGroups = append(keGroups, CardGroup{GroupType: TypeKe, Cards: []Card{Laizi, Laizi, Laizi}})
 	}
 
-	groupCount := (l + 1) / 3
-	stop := false
-	//遍历将
-	for _, jGroup := range jiangGroups {
-		//遍历刻
-		kl := len(keGroups)
-		for kSum := groupCount - 1; kSum > 0; kSum-- { //从大到小开始，在较好的情况下会更快
-			//刻的排列组合
-			combineFuncWithStop(kSum, kl, func(ints []int) {
-				var usedCM countMap = make(map[Card]int, len(cards))
-				usedCM.addAll(jGroup.Cards...)
-				for index, ok := range ints {
-					if ok == 1 {
-						usedCM.addAll(keGroups[index].Cards...)
-					}
-				}
-				for card, count := range usedCM {
-					if card == Laizi {
-						if count > laiziCount {
-							return
-						}
-						continue
-					}
-					if cm[card] < count {
-						return
-					}
-				}
-				var unusedCM countMap = make(map[Card]int, len(cards))
-				for card, count := range cm {
-					unusedCM[card] = count - usedCM[card]
-				}
-				lastLaiziCount := laiziCount - usedCM[Laizi]
-				//delete(usedCM,Laizi)
-				if matchShun(unusedCM, lastLaiziCount) {
-					stop = true
-				}
-			}, &stop)
-			if stop {
-				return true
-			}
-		}
-		//0刻的情况
-		var usedCM countMap = make(map[Card]int, len(cards))
-		usedCM.addAll(jGroup.Cards...)
-		var unusedCM countMap = make(map[Card]int, len(cards))
-		for card, count := range cm {
-			unusedCM[card] = count - usedCM[card]
-		}
-		if matchShun(unusedCM, laiziCount) {
-			return true
-		}
+	if laiziCount >= 3 {
+		keGroups = appendMultiGroup(keGroups, CardGroup{
+			GroupType:  TypeKe,
+			Cards:      []Card{Laizi, Laizi, Laizi},
+			ReplaceAll: true,
+		}, laiziCount/3)
 	}
-	return false
+	return keGroups
 }
 
-func matchShun(unusedCM countMap, laiziCount int) bool {
-	for unusedCM.len() > 0 {
-		s := unusedCM.minValueCard() //TODO 优先队列?
-		m := s + 1
-		l := s + 2
-		mCount := unusedCM[m]
-		lCount := unusedCM[l]
-		if mCount > 0 && lCount > 0 {
-			unusedCM[s]--
-			unusedCM[m]--
-			unusedCM[l]--
-		} else if mCount > 0 && laiziCount > 0 {
-			unusedCM[s]--
-			unusedCM[m]--
-			laiziCount--
-		} else if lCount > 0 && laiziCount > 0 {
-			unusedCM[s]--
-			unusedCM[l]--
-			laiziCount--
-		} else if laiziCount > 1 {
-			unusedCM[s]--
-			laiziCount -= 2
-		} else {
-			return false
+func getLeft(cm countMap, laiziCount int, groups ...CardGroup) (bool, int, countMap) {
+	used := make(countMap, len(cm))
+	for _, group := range groups {
+		for _, card := range group.Cards {
+			if card == Laizi {
+				if laiziCount > 0 {
+					laiziCount--
+				} else {
+					return false, 0, nil
+				}
+			} else {
+				if used[card] < cm[card] {
+					used[card]++
+				} else {
+					return false, 0, nil
+				}
+			}
 		}
 	}
-	return true
+	unused := make(countMap, len(cm))
+	for card, count := range cm {
+		if count > used[card] {
+			unused[card] = count - used[card]
+		}
+	}
+	return true, laiziCount, unused
+}
+
+// FastCheckHuV2 查胡，
+// cards : 所有的牌
+// laizis: 哪些牌是癞子
+// needAll: 是否需要查出所有的胡牌组合
+// TODO : 优化算法，按照不同花色分组查询
+// TODO : 查胡方法另外建一个包
+func FastCheckHuV2(cards []Card, laizis map[Card]bool, needAll bool) (bool, []Combine) {
+	combines := []Combine{}
+	cardsCount := len(cards)
+	if cardsCount%3 != 2 {
+		return false, combines
+	}
+	groupCount := cardsCount/3 + 1
+	cm, laiziCount := makeCountMap(cards, laizis)
+	jiangGroups := makeJiangGroups(cm, laiziCount)
+
+	for _, jGroup := range jiangGroups {
+		stop := false
+		// 算出剩余的
+		_, leftLaizi, unused := getLeft(cm, laiziCount, jGroup)
+		keGroups := makeKeGroups(unused, leftLaizi)
+
+		for kecount := groupCount - 1; kecount >= 0; kecount-- {
+			combineFuncWithStop(kecount, len(keGroups), func(indexs []int) {
+				useKeGroups := make([]CardGroup, 0, kecount)
+				for index, ok := range indexs {
+					if ok == 1 {
+						useKeGroups = append(useKeGroups, keGroups[index])
+					}
+				}
+				ok1, leftLaizi1, unused1 := getLeft(unused, leftLaizi, useKeGroups...)
+				if !ok1 {
+					return
+				}
+				shunGroups := makeShunGroups(unused1, leftLaizi1)
+				useShunCount := groupCount - kecount - 1
+				combineFuncWithStop(useShunCount, len(shunGroups), func(indexs []int) {
+					useShunGroups := make([]CardGroup, 0, useShunCount)
+					for index, ok := range indexs {
+						if ok == 1 {
+							useShunGroups = append(useShunGroups, shunGroups[index])
+						}
+					}
+					if ok2, _, _ := getLeft(unused1, leftLaizi1, useShunGroups...); !ok2 {
+						return
+					}
+					groups := append([]CardGroup{jGroup}, useKeGroups...)
+					groups = append(groups, useShunGroups...)
+					combines = append(combines, groups)
+					if !needAll {
+						stop = true
+					}
+				}, &stop)
+			}, &stop)
+		}
+		if !needAll && len(combines) > 0 {
+			return true, combines
+		}
+	}
+	return len(combines) > 0, combines
 }
 
 // 带stop变量的 combineFunc ，避免没必要的排列组合的搜索
 // 这个方法的设计是stop变量的值只会在 f 里改变，所以每次在调用 f 后才会判断一次stop
 // TODO 这样做可以降低平均时间界，但是最坏情况等同于普通的 combineFunc
 func combineFuncWithStop(m, n int, f func([]int), stop *bool) {
-	if n < m || m == 0 {
+	if n < m {
 		return
 	}
 	a := make([]int, n)
@@ -579,130 +704,98 @@ func combineFuncWithStop(m, n int, f func([]int), stop *bool) {
 	}
 }
 
-// 13张牌查听，检索出听哪些牌
-// 赖子牌也会参与考虑
+// FastCheckTingV2 检查当前可以听哪些牌
+// 返回所有正在听的牌与对应的组合
+// TODO: 需要优化
 func FastCheckTingV2(cards []Card, laizis map[Card]bool) []Card {
-	if laizis == nil {
-		laizis = make(map[Card]bool, 0)
+	checkCards := make([]Card, 0, len(cards)+1)
+	checkCards = append(checkCards, cards...)
+	checkCards = append(checkCards, Laizi) // 加一张癞子牌查胡，然后从组合中取出癞子可以替换的牌
+
+	resultMap := map[Card]struct{}{}
+
+	ok, combines := FastCheckHuV2(checkCards, laizis, true)
+	if !ok {
+		return []Card{}
 	}
-	l := len(cards)
-	if l%3 != 1 {
-		panic(fmt.Errorf("FastCheckTingV2 wrong cards size %v", l))
+	for _, combine := range combines {
+		tingCards := getLaiziCanReplaceCards(combine)
+		for _, card := range tingCards {
+			resultMap[card] = struct{}{}
+		}
 	}
-	var cm countMap = make(map[Card]int, l)
-	for _, card := range cards {
-		cm[card]++
+	result := []Card{}
+	for card := range resultMap {
+		result = append(result, card)
 	}
-	tingCards := make([]Card, 0)
-	availableCards := availableCards(cards, laizis)
-	for _, availableCard := range availableCards {
-		if cm[availableCard] == 4 {
+
+	return result
+}
+
+// getLaiziCanReplaceCards 获取癞子可以替换的牌列表
+// 以及替换每张牌后的 Combine
+func getLaiziCanReplaceCards(combine Combine) []Card {
+	resultMap := map[Card]struct{}{}
+	result := []Card{}
+	for _, group := range combine {
+		if group.ReplaceAll {
+			return allCards
+		}
+		if group.Replaces == nil {
 			continue
 		}
-		cards = append(cards, availableCard)
-		if FastCheckHuV2(cards, laizis) {
-			tingCards = append(tingCards, availableCard)
-		}
-		cards = cards[:len(cards)-1]
-	}
-	return tingCards
-}
-
-// 赖子也是可用牌
-func availableCards(cards []Card, laizis map[Card]bool) []Card {
-	l := len(cards)
-	var cm countMap = make(map[Card]int, l)
-	for _, card := range cards {
-		cm[card]++
-		if !laizis[card] {
-			y := card % 10
-			if y > 2 {
-				cm[card-2]++
-			}
-			if y > 1 {
-				cm[card-1]++
-			}
-			if y < 8 {
-				cm[card+2]++
-			}
-			if y < 9 {
-				cm[card+1]++
-			}
+		for _, card := range group.Replaces {
+			resultMap[card] = struct{}{}
 		}
 	}
-	ret := make([]Card, 0, len(cm))
-	for card := range cm {
-		ret = append(ret, card)
+	for card := range resultMap {
+		result = append(result, card)
 	}
-	for card := range laizis {
-		ret = append(ret, card)
-	}
-	return ret
+	return result
 }
 
-// 14张牌查听,检索出分别打掉哪张牌可以听哪些牌
+var allCards = []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47}
+
+// CardCombines Card->Combines 的映射
+type CardCombines map[Card]Combines
+
+func isLaizi(card Card, laizis map[Card]bool) bool {
+	if laizis == nil {
+		return card == Laizi
+	}
+	_, ok := laizis[card]
+	return ok
+}
+
+// FastCheckTingInfoV2 14张牌查听,检索出分别打掉哪张牌可以听哪些牌以及对应的组合
 func FastCheckTingInfoV2(cards []Card, laizis map[Card]bool) map[Card][]Card {
-	if laizis == nil {
-		laizis = make(map[Card]bool, 0)
-	}
-	l := len(cards)
-	if l%3 != 2 {
-		panic(fmt.Errorf("FastCheckTingInfoV2 wrong cards size %v", l))
-	}
-	checkCards := make([]Card, 0, 14)
-	tingInfos := make(map[Card][]Card)
-	var cm countMap = make(map[Card]int, l)
-	for _, card := range cards {
-		cm[card]++
-	}
-	var cache countMap = make(map[Card]int, l)
-	var laiziTingCards = make([]Card, 0)
-	availableCards := availableCards(cards, laizis)
-	for i, card := range cards {
-		isLaizi := laizis[card]
-		//已经遍历过的牌不重复
-		if cache[card] > 0 {
+	result := make(map[Card][]Card)
+	// 打出癞子的听牌结果
+	var laiziCache []Card
+	checked := map[Card]bool{} // 已经查过的牌
+
+	for index, card := range cards {
+		laizi := isLaizi(card, laizis)
+		// 癞子结果复用
+		if laizi && laiziCache != nil {
+			result[card] = laiziCache
 			continue
-		} else if isLaizi && cache[Laizi] > 0 {
-			//赖子的牌值不一样，但是结果可以复用
-			if len(laiziTingCards) > 0 {
-				tingInfos[card] = laiziTingCards
-			}
+		}
+		if _, ok := checked[card]; ok { // 已经查过了不再查
 			continue
-		} else {
-			if isLaizi {
-				cache[Laizi]++
-			} else {
-				cache[card]++
-			}
 		}
-		//开始检查
-		checkCards = append(checkCards, cards[:i]...)
-		checkCards = append(checkCards, cards[i+1:]...)
-		//剪枝
-		checkCards = append(checkCards, Laizi)
-		if FastCheckHuV2(checkCards, laizis) {
-			checkCards = checkCards[:len(checkCards)-1]
-			//细化搜索 TODO 时间级过大
-			tingCards := make([]Card, 0)
-			for _, availableCard := range availableCards {
-				// if cm[availableCard] == 4 && card != availableCard {
-				// 	continue
-				// }
-				checkCards = append(checkCards, availableCard)
-				if FastCheckHuV2(checkCards, laizis) {
-					tingCards = append(tingCards, availableCard)
-				}
-				checkCards = checkCards[:len(checkCards)-1]
-			}
-			if len(tingCards) > 0 {
-				tingInfos[card] = tingCards
-				if isLaizi {
-					laiziTingCards = tingCards
-				}
-			}
+		checkCards := make([]Card, 0, len(cards)-1)
+		checkCards = append(checkCards, cards[:index]...)
+		checkCards = append(checkCards, cards[index+1:]...)
+
+		ting := FastCheckTingV2(checkCards, laizis)
+		if ting != nil && len(ting) > 0 {
+			result[card] = ting
 		}
-		checkCards = checkCards[:0]
+		checked[card] = true
+		if laizi {
+			laiziCache = ting
+		}
 	}
-	return tingInfos
+	return result
 }

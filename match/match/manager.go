@@ -43,6 +43,7 @@ func NewManager() *Manager {
 	queues[int(room.GameId_GAMEID_XUELIU)] = createMatchData(room.GameId_GAMEID_XUELIU, 4)
 	queues[int(room.GameId_GAMEID_XUEZHAN)] = createMatchData(room.GameId_GAMEID_XUEZHAN, 4)
 	queues[int(room.GameId_GAMEID_DOUDIZHU)] = createMatchData(room.GameId_GAMEID_DOUDIZHU, 3)
+	queues[int(room.GameId_GAMEID_ERRENMJ)] = createMatchData(room.GameId_GAMEID_ERRENMJ, 2)
 
 	m := &Manager{
 		matchDataMap: queues,

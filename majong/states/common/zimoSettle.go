@@ -2,9 +2,10 @@ package common
 
 import (
 	"steve/gutils"
+	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
+	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -79,58 +80,39 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 
 	huPlayerID := mjContext.GetLastMopaiPlayer()
-
-	allPlayers := make([]uint64, 0)
-	hasHuPlayers := make([]uint64, 0)
-	quitPalyers := make([]uint64, 0)
-	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
-		if len(player.HuCards) != 0 {
-			hasHuPlayers = append(hasHuPlayers, player.GetPalyerId())
-		}
-		if player.IsQuit {
-			quitPalyers = append(quitPalyers, player.GetPalyerId())
-		}
-	}
-
-	cardValues := make(map[uint64]uint32, 0)
-	cardTypes := make(map[uint64][]majongpb.CardType, 0)
-	genCount := make(map[uint64]uint32, 0)
-	gameID := int(mjContext.GetGameId())
 	huPlayer := utils.GetPlayerByID(mjContext.Players, huPlayerID)
 	huCard := huPlayer.HuCards[len(huPlayer.HuCards)-1]
-	cardParams := interfaces.CardCalcParams{
-		HandCard: append(huPlayer.HandCards, huCard.GetCard()),
-		PengCard: utils.TransPengCard(huPlayer.PengCards),
-		GangCard: utils.TransGangCard(huPlayer.GangCards),
-		HuCard:   nil,
-		GameID:   gameID,
-	}
-	calculator := global.GetCardTypeCalculator()
-	cardType, gen := calculator.Calculate(cardParams)
-	cardValue, _ := calculator.CardTypeValue(gameID, cardType, gen)
 
-	cardTypes[huPlayerID] = cardType
-	cardValues[huPlayerID] = cardValue
-	genCount[huPlayerID] = gen
+	cardValues := make(map[uint64]uint64, 0)
+	cardTypes := make(map[uint64][]int64, 0)
+	genCount := make(map[uint64]uint64, 0)
+	huaCount := make(map[uint64]uint64, 0)
+
+	record := huPlayer.GetZixunRecord()
+	cardTypes[huPlayerID] = record.GetHuFanType().GetFanTypes()
+	cardValues[huPlayerID] = s.calculateScore(mjContext, record)
+	genCount[huPlayerID] = record.GetHuFanType().GetGenCount()
+	huaCount[huPlayerID] = record.GetHuFanType().GetHuaCount()
 
 	params := interfaces.HuSettleParams{
-		GameID:       mjContext.GetGameId(),
-		HuPlayers:    []uint64{huPlayerID},
-		SrcPlayer:    huPlayerID,
-		AllPlayers:   allPlayers,
-		HasHuPlayers: hasHuPlayers,
-		QuitPlayers:  quitPalyers,
-		SettleType:   majongpb.SettleType_settle_zimo,
-		HuType:       huCard.GetType(),
-		CardTypes:    cardTypes,
-		CardValues:   cardValues,
-		GenCount:     genCount,
-		SettleID:     mjContext.CurrentSettleId,
+		SettleOptionID: int(mjContext.GetSettleOptionId()),
+		HuPlayers:      []uint64{huPlayerID},
+		SrcPlayer:      huPlayerID,
+		AllPlayers:     utils.GetAllPlayers(mjContext),
+		HasHuPlayers:   utils.GetHuPlayers(mjContext),
+		QuitPlayers:    utils.GetQuitPlayers(mjContext),
+		GiveupPlayers:  utils.GetGiveupPlayers(mjContext),
+		SettleType:     majongpb.SettleType_settle_zimo,
+		HuType:         huCard.GetType(),
+		CardTypes:      cardTypes,
+		CardValues:     cardValues,
+		GenCount:       genCount,
+		HuaCount:       huaCount,
+		SettleID:       mjContext.CurrentSettleId,
 	}
-	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
 	totalValue := uint32(0)
-
+	settlerFactory := majong.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++
@@ -142,7 +124,16 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	}
 }
 
+func (s *ZiMoSettleState) calculateScore(mjcontext *majongpb.MajongContext, record *majongpb.ZiXunRecord) uint64 {
+	hufanType := record.GetHuFanType()
+	fanTypes := make([]int, 0)
+	for _, fType := range hufanType.GetFanTypes() {
+		fanTypes = append(fanTypes, int(fType))
+	}
+	return fantype.CalculateScore(mjcontext, fanTypes, int(hufanType.GetGenCount()), int(hufanType.GetHuaCount()))
+}
+
 // nextState 下个状态
 func (s *ZiMoSettleState) nextState(mjcontext *majongpb.MajongContext) majongpb.StateID {
-	return utils.GetNextState(mjcontext)
+	return utils.IsGameOverReturnState(mjcontext)
 }

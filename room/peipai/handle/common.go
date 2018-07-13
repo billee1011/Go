@@ -20,4 +20,6 @@ const (
 	SCXZ = "scxz"
 	//DDZ 斗地主
 	DDZ = "doudizhu"
+	//ERMJ 二人麻将
+	ERMJ = "ermj"
 )
