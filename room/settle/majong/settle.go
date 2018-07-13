@@ -10,7 +10,6 @@ import (
 	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -142,14 +141,9 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			sinfo := contextSInfos[0]
 			cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
 			fans := make([]*room.Fan, 0)
-			fans, totalValue = makeFanType(sinfo.CardType, cardOption)
-			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, fans, mjContext)
-
-			logrus.WithFields(logrus.Fields{
-				"sinfo":                      "sinfo",
-				"totalValue":                 totalValue,
-				"balanceRsp.BillPlayersInfo": balanceRsp.BillPlayersInfo,
-			}).Errorln("记录该玩家单局结算信息")
+			fans = makeFanType(sinfo.CardType, sinfo.HuaCount, cardOption)
+			wiiners, _ := getWinners(sinfo.Scores)
+			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(wiiners[0], int32(sinfo.CardValue), fans, mjContext)
 		}
 		// 通知该玩家单局结算信息
 		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)

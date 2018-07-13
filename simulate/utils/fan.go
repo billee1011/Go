@@ -106,13 +106,14 @@ func CheckFanSettle(t *testing.T, deskData *DeskData, gameID room.GameId, winSea
 		fmt.Println(info.GetFan())
 		if winPlayer.Player.GetID() == info.GetPid() {
 			assert.Equal(t, winScore, info.GetScore())
+			assert.True(t, IsExistAssignFan(currFan, info.GetFan()))
+			flag, str := IsExistHuChiFan(gameID, currFan, info.GetFan())
+			assert.Falsef(t, flag, str)
+			assert.True(t, IsAssignFanMulRight(gameID, currFan, info.GetFan()))
 		} else {
 			assert.Equal(t, -winScore, info.GetScore())
 		}
-		assert.True(t, IsExistAssignFan(currFan, info.GetFan()))
-		flag, str := IsExistHuChiFan(gameID, currFan, info.GetFan())
-		assert.Falsef(t, flag, str)
-		assert.True(t, IsAssignFanMulRight(gameID, currFan, info.GetFan()))
+
 	}
 }
 
