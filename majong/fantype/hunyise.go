@@ -4,31 +4,15 @@ import majongpb "steve/server_pb/majong"
 
 // checkHunYiSe 检测混一色
 func checkHunYiSe(tc *typeCalculator) bool {
-	gangCards := tc.getGangCards()
-	pengCards := tc.getPengCards()
-	chiCards := tc.getChiCards()
-	handCards := tc.getHandCards()
-	huCard := tc.getHuCard()
+	checkCards := getPlayerCardAll(tc)
 
-	checkCards := make([]*majongpb.Card, 0)
-
-	for _, gangCard := range gangCards {
-		checkCards = append(checkCards, gangCard.Card)
-	}
-	for _, pengCard := range pengCards {
-		checkCards = append(checkCards, pengCard.Card)
-	}
-	for _, chiCards := range chiCards {
-		checkCards = append(checkCards, chiCards.OprCard)
-	}
-	for _, handCard := range handCards {
-		checkCards = append(checkCards, handCard)
-	}
-	checkCards = append(checkCards, huCard.Card)
-
+	//存在字牌
+	existZi := false
+	existXuShu := false
 	cardColor := majongpb.CardColor(-1)
 	for _, card := range checkCards {
-		if !IsFlowerCard(card) {
+		if card.GetColor() == majongpb.CardColor_ColorFeng {
+			existZi = true
 			continue
 		}
 		if cardColor == -1 {
@@ -36,6 +20,7 @@ func checkHunYiSe(tc *typeCalculator) bool {
 		} else if cardColor != card.Color {
 			return false
 		}
+		existXuShu = true
 	}
-	return true
+	return existZi && existXuShu
 }

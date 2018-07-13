@@ -15,24 +15,18 @@ type GangSettle struct {
 // Settle  杠结算方法
 func (gangSettle *GangSettle) Settle(params interfaces.GangSettleParams) *majongpb.SettleInfo {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":    "GangSettle",
-		"gameId":       params.GameID,
-		"gangType":     params.GangType,
-		"gangPlayer":   params.GangPlayer,
-		"srcPlayer":    params.SrcPlayer,
-		"allPlayers":   params.AllPlayers,
-		"hasHuPlayers": params.HasHuPlayers,
-		"quitPlayers":  params.QuitPlayers,
+		"func_name":      "GangSettle",
+		"settleOptionID": params.SettleOptionID,
+		"gangType":       params.GangType,
+		"gangPlayer":     params.GangPlayer,
+		"srcPlayer":      params.SrcPlayer,
+		"allPlayers":     params.AllPlayers,
+		"hasHuPlayers":   params.HasHuPlayers,
+		"quitPlayers":    params.QuitPlayers,
 	})
 	logEntry.Debugln("杠结算信息")
 	// 游戏结算玩法
-	settleOption := GetSettleOption(int(params.GameID))
-	logEntry2 := logrus.WithFields(logrus.Fields{
-		"params.GameID":           params.GameID,
-		"settleOption":            settleOption,
-		"settleOption.EnableGang": settleOption.EnableGang,
-	})
-	logEntry2.Debugln("杠结算信息")
+	settleOption := mjoption.GetSettleOption(params.SettleOptionID)
 	if !settleOption.EnableGang {
 		return nil
 	}
@@ -114,9 +108,4 @@ func CanGangSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uin
 		return settleOption.HuPlayerSettle.HuPlayerGangSettle
 	}
 	return true
-}
-
-// GetSettleOption 获取游戏的结算配置
-func GetSettleOption(gameID int) *mjoption.SettleOption {
-	return mjoption.GetSettleOption(mjoption.GetGameOptions(gameID).SettleOptionID)
 }

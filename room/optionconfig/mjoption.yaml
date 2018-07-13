@@ -5,8 +5,8 @@
   xingpai_option: 1
 - 
   game_id: 2
-  settle_option: 1
-  cardtype_option: 1
+  settle_option: 2
+  cardtype_option: 2
   xingpai_option: 2
 -
   game_id: 4

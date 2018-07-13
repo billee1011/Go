@@ -17,21 +17,21 @@ type HuSettle struct {
 // 胡牌分=番型*底分
 func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.SettleInfo {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":    "HuSettle",
-		"GameID":       params.GameID,
-		"winnersID":    params.HuPlayers,
-		"settleType":   params.SettleType,
-		"huType":       params.HuType,
-		"allPlayers":   params.HuPlayers,
-		"hasHuPlayers": params.HasHuPlayers,
-		"quitPlayers":  params.QuitPlayers,
-		"cardTypes":    params.CardTypes,
-		"cardValues":   params.CardValues,
-		"genCount":     params.GenCount,
+		"func_name":      "HuSettle",
+		"settleOptionID": params.SettleOptionID,
+		"winnersID":      params.HuPlayers,
+		"settleType":     params.SettleType,
+		"huType":         params.HuType,
+		"allPlayers":     params.HuPlayers,
+		"hasHuPlayers":   params.HasHuPlayers,
+		"quitPlayers":    params.QuitPlayers,
+		"cardTypes":      params.CardTypes,
+		"cardValues":     params.CardValues,
+		"genCount":       params.GenCount,
 	})
 	logEntry.Debugln("胡结算信息")
 	// 游戏结算玩法
-	settleOption := GetSettleOption(int(params.GameID))
+	settleOption := mjoption.GetSettleOption(params.SettleOptionID)
 	// 结算信息
 	settleInfos := make([]*majongpb.SettleInfo, 0)
 	// 底数

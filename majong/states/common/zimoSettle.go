@@ -5,7 +5,7 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
+	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -95,22 +95,23 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	huaCount[huPlayerID] = record.GetHuFanType().GetHuaCount()
 
 	params := interfaces.HuSettleParams{
-		GameID:        int32(mjContext.GetGameId()),
-		HuPlayers:     []uint64{huPlayerID},
-		SrcPlayer:     huPlayerID,
-		AllPlayers:    utils.GetAllPlayers(mjContext),
-		HasHuPlayers:  utils.GetHuPlayers(mjContext),
-		QuitPlayers:   utils.GetQuitPlayers(mjContext),
-		GiveupPlayers: utils.GetGiveupPlayers(mjContext),
-		SettleType:    majongpb.SettleType_settle_zimo,
-		HuType:        huCard.GetType(),
-		CardTypes:     cardTypes,
-		CardValues:    cardValues,
-		GenCount:      genCount,
-		HuaCount:      huaCount,
-		SettleID:      mjContext.CurrentSettleId,
+		SettleOptionID: int(mjContext.GetSettleOptionId()),
+		HuPlayers:      []uint64{huPlayerID},
+		SrcPlayer:      huPlayerID,
+		AllPlayers:     utils.GetAllPlayers(mjContext),
+		HasHuPlayers:   utils.GetHuPlayers(mjContext),
+		QuitPlayers:    utils.GetQuitPlayers(mjContext),
+		GiveupPlayers:  utils.GetGiveupPlayers(mjContext),
+		SettleType:     majongpb.SettleType_settle_zimo,
+		HuType:         huCard.GetType(),
+		CardTypes:      cardTypes,
+		CardValues:     cardValues,
+		GenCount:       genCount,
+		HuaCount:       huaCount,
+		SettleID:       mjContext.CurrentSettleId,
 	}
-	settleInfos := facade.SettleHu(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
+	settlerFactory := majong.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++

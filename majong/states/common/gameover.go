@@ -1,11 +1,12 @@
 package common
 
 import (
-	 "steve/client_pb/msgId"
+	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
+	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -94,7 +95,7 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	tingPlayersInfo, _ = getTingPlayerInfo(mjContext)
 
 	params := interfaces.RoundSettleParams{
-		GameID:           mjContext.GetGameId(),
+		SettleOptionID:   int(mjContext.GetSettleOptionId()),
 		FlowerPigPlayers: flowerPigPlayers,
 		HuPlayers:        huPlayers,
 		TingPlayersInfo:  tingPlayersInfo,
@@ -103,7 +104,8 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		SettleInfos:      mjContext.SettleInfos,
 		SettleID:         mjContext.CurrentSettleId,
 	}
-	settleInfos, raxbeatIds := facade.SettleRound(global.GetGameSettlerFactory(), int(mjContext.GetGameId()), params)
+	settlerFactory := majong.SettlerFactory{}
+	settleInfos, raxbeatIds := settlerFactory.CreateRoundSettle().Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 	}
