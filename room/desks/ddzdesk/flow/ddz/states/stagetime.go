@@ -10,7 +10,7 @@ var StageTime = map[room.DDZStage]uint32{
 	room.DDZStage_DDZ_STAGE_GRAB:    15,
 	room.DDZStage_DDZ_STAGE_DOUBLE:  15,
 	room.DDZStage_DDZ_STAGE_PLAYING: 15,
-	room.DDZStage_DDZ_STAGE_OVER:    4,
+	room.DDZStage_DDZ_STAGE_OVER:    0,
 }
 
 func GenNextStage(stage room.DDZStage) *room.NextStage {
