@@ -1,7 +1,7 @@
 package common
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -21,14 +21,13 @@ var _ interfaces.MajongState = new(XipaiState)
 func (s *XingPaiBuhuaState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_xingpai_buhua_finish:
-		return majongpb.StateID_state_zixun, nil
+		return s.doBuhua(flow), nil
 	}
 	return majongpb.StateID_state_xingpai_buhua, nil
 }
 
 // OnEntry 进入状态
 func (s *XingPaiBuhuaState) OnEntry(flow interfaces.MajongFlow) {
-	s.doBuhua(flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_xingpai_buhua_finish,
 		EventContext: nil,
@@ -40,7 +39,7 @@ func (s *XingPaiBuhuaState) OnEntry(flow interfaces.MajongFlow) {
 func (s *XingPaiBuhuaState) OnExit(flow interfaces.MajongFlow) {
 }
 
-func (s *XingPaiBuhuaState) doBuhua(flow interfaces.MajongFlow) {
+func (s *XingPaiBuhuaState) doBuhua(flow interfaces.MajongFlow) majongpb.StateID {
 	//补到没花可补，进入自询
 	stop := false
 	mjContext := flow.GetMajongContext()
@@ -49,11 +48,16 @@ func (s *XingPaiBuhuaState) doBuhua(flow interfaces.MajongFlow) {
 	for !stop {
 		huaCards := s.getHuaCards(activePlayer)
 		if len(huaCards) > 0 {
-			s.ntf(flow, players, mjContext.GetLastMopaiPlayer(), huaCards, len(huaCards))
+			if utils.HasAvailableWallCards(flow) {
+				s.ntf(flow, players, mjContext.GetLastMopaiPlayer(), huaCards, len(huaCards))
+			} else {
+				return majongpb.StateID_state_gameover
+			}
 		} else {
 			stop = true
 		}
 	}
+	return majongpb.StateID_state_zixun
 }
 func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.Player, curPlayerID uint64, huaCards []*majongpb.Card, buCardNum int) {
 	mjContext := flow.GetMajongContext()

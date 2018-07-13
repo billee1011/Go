@@ -29,5 +29,8 @@ func TestGameOver(t *testing.T) {
 	assert.Nil(t, utils.SendChupaiReq(deskData, 0, uint32(14)))
 	utils.CheckChuPaiNotifyWithSeats(t, deskData, uint32(14), 0, []int{0, 1})
 	assert.Nil(t, utils.SendQiReq(deskData, 1))
+	utils.WaitZixunNtf(deskData, 1)
 	assert.Nil(t, utils.SendChupaiReq(deskData, 1, uint32(18)))
+	utils.CheckChuPaiNotifyWithSeats(t, deskData, uint32(18), 1, []int{0, 1})
+	utils.WaitGameOverNtf(t, deskData)
 }

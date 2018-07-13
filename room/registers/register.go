@@ -1,7 +1,7 @@
 package registers
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/room/chat"
 	"steve/room/desks"
 	"steve/room/login"

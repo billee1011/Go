@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 )
-
+ 
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家
 func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
 	return gutils.GetMajongPlayer(playerID, mjContext)

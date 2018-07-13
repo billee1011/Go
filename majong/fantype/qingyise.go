@@ -24,7 +24,7 @@ func checkQingyise(tc *typeCalculator) bool {
 		if card.Color != color {
 			return false
 		}
-		if !IsFlowerCard(card) {
+		if !IsXuShuCard(card) {
 			return false
 		}
 	}

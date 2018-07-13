@@ -32,7 +32,7 @@ func translateClientCardColor(color room.CardColor) server_pb.CardColor {
 		}
 	case room.CardColor_CC_ZI:
 		{
-			return server_pb.CardColor_ColorFeng
+			return server_pb.CardColor_ColorZi
 		}
 	}
 	return server_pb.CardColor(-1)
@@ -55,7 +55,7 @@ func translateCardColor(cardVal uint32) server_pb.CardColor {
 		}
 	case 4:
 		{
-			return server_pb.CardColor_ColorFeng
+			return server_pb.CardColor_ColorZi
 		}
 	}
 	return server_pb.CardColor(-1)
@@ -78,4 +78,21 @@ func translateCards(cards []uint32) []*server_pb.Card {
 		result = append(result, &serverCard)
 	}
 	return result
+}
+
+func translateTingAction(tingAction *room.TingAction) *server_pb.TingAction {
+	serTingAction := &server_pb.TingAction{}
+	serTingAction.EnableTing = tingAction.GetEnableTing()
+	serTingAction.TingType = translateTingType(tingAction.GetTingType())
+	return serTingAction
+}
+
+func translateTingType(tingType room.TingType) server_pb.TingType {
+	switch tingType {
+	case room.TingType_TT_NORMAL_TING:
+		return server_pb.TingType_TT_NORMAL_TING
+	case room.TingType_TT_TIAN_TING:
+		return server_pb.TingType_TT_TIAN_TING
+	}
+	return server_pb.TingType_TT_NORMAL_TING
 }

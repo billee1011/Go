@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/config"
 	"steve/simulate/connect"

@@ -84,6 +84,8 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
 			IsTuoguan:     proto.Bool(d.getDeskPlayer(playerID).IsQuit()),
+			IsTing:        proto.Bool(player.GetTingStateInfo().GetIsTing()),
+			TingType:      getTingType(player),
 		}
 		xpState := room.XingPaiState(player.GetXpState())
 		gamePlayerInfo.XpState = &xpState
@@ -107,10 +109,11 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		for _, chiCard := range player.GetChiCards() {
 			srcPlayerID := chiCard.GetSrcPlayer()
 			card := gutils.ServerCard2Number(chiCard.GetCard())
+			cards := []uint32{card, card + 1, card + 2}
 			chiCardGroup := &room.CardsGroup{
-				Cards: []uint32{card, card + 1, card + 2},
+				Cards: cards,
 				Type:  room.CardsGroupType_CGT_CHI.Enum(),
-				Pid:   &srcPlayerID,
+				Pid:   proto.Uint64(srcPlayerID),
 			}
 			chiCardGroups = append(chiCardGroups, chiCardGroup)
 		}
@@ -156,16 +159,12 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huCardGroups...)
 		// 花牌组
-		var huaCardGroups []*room.CardsGroup
-		for _, huaCard := range player.GetHuaCards() {
-			cards := []uint32{gutils.ServerCard2Number(huaCard)}
-			huaCardGroup := &room.CardsGroup{
-				Cards: append(cards, cards[0], cards[0], cards[0]),
-				Type:  room.CardsGroupType_CGT_HUA.Enum(),
-			}
-			huaCardGroups = append(huaCardGroups, huaCardGroup)
+		huaGroup := &room.CardsGroup{
+			Cards: gutils.ServerCards2Numbers(player.GetHuaCards()),
+			Type:  room.CardsGroupType_CGT_HUA.Enum(),
+			Pid:   proto.Uint64(player.GetPalyerId()),
 		}
-		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huaCardGroups...)
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huaGroup)
 		// 出牌组
 		outCardGroup := &room.CardsGroup{
 			Cards: gutils.ServerCards2Numbers(player.GetOutCards()),
@@ -176,6 +175,15 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		recoverPlayerInfo = append(recoverPlayerInfo, gamePlayerInfo)
 	}
 	return
+}
+
+func getTingType(player *server_pb.Player) *room.TingType {
+	state := player.GetTingStateInfo()
+	if state.GetIsTianting() {
+		return room.TingType_TT_TIAN_TING.Enum()
+	}
+	return room.TingType_TT_NORMAL_TING.Enum()
+
 }
 
 func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomZixunNtf) {
@@ -217,7 +225,8 @@ func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, 
 			wenXunInfo.EnableQi = proto.Bool(true)
 		case server_pb.Action_action_chi:
 			wenXunInfo.ChiInfo = &room.RoomChiInfo{
-				Cards: player.GetEnbleChiCards(),
+				ChiCard: proto.Uint32(gutils.ServerCard2Number(mjContext.GetLastOutCard())),
+				Cards:   player.GetEnbleChiCards(),
 			}
 		}
 	}

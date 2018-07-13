@@ -45,7 +45,11 @@ var transitionCfg = `
         # 开局补花完成事件 转移到 摸牌状态
           events: 
             - event_gamestart_buhua_finish
-          next_state: state_mopai  
+          next_state: state_mopai
+        - 
+          events: 
+            - event_gamestart_buhua_finish
+          next_state: state_gameover
     - 
       # 补花状态
       state: state_xingpai_buhua
@@ -56,6 +60,10 @@ var transitionCfg = `
           events: 
             - event_xingpai_buhua_finish
           next_state: state_zixun  
+        - 
+          events: 
+            - event_xingpai_buhua_finish
+          next_state: state_gameover 
     - 
       # 出牌状态
       state: state_chupai

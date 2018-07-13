@@ -10,7 +10,7 @@ package common
 //并设置杠玩家Properties["gang"]为[]byte("true")，最后进行暗杠结算
 //约束条件：无
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/majong/interfaces"
@@ -36,10 +36,10 @@ func (s *AnGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte
 	if eventID == majongpb.EventID_event_angang_finish {
 		s.setMopaiPlayer(flow)
 		xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
-		if xpOption.EnableGangSettle{
+		if xpOption.EnableGangSettle {
 			return majongpb.StateID(majongpb.StateID_state_gang_settle), nil
 		}
-		return majongpb.StateID_state_mopai,nil
+		return majongpb.StateID_state_mopai, nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_angang), nil
 }

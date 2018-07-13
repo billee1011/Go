@@ -3,7 +3,7 @@ package rtoet
 import (
 	"errors"
 	"reflect"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/room/interfaces/global"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"

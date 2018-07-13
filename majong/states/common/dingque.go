@@ -18,7 +18,7 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 
 	"github.com/Sirupsen/logrus"

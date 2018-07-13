@@ -128,6 +128,7 @@ message Player {
     int32 zixun_count = 22;                 // 进入自询的次数
     repeated uint32 enble_chi_cards = 23;   //可以吃的牌組
     repeated Card  design_chi_cards = 24;   //玩家請求指定吃的牌組
+    bool selected_ting = 25;                //玩家出牌请求时，是否请求了听
     map<string, bytes> properties = 256;    // 其他的一些属性
 }
 

@@ -6,7 +6,7 @@ func checkDaYuWu(tc *typeCalculator) bool {
 	cardAll := getPlayerCardAll(tc)
 	for _, card := range cardAll {
 		// 只能有序数牌并且序数牌>5
-		if !IsFlowerCard(card) || card.GetPoint() <= 5 {
+		if !IsXuShuCard(card) || card.GetPoint() <= 5 {
 			return false
 		}
 	}
