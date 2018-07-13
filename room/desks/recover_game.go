@@ -103,7 +103,18 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 			gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, handCardGroup)
 		}
 		// 吃牌组
-
+		var chiCardGroups []*room.CardsGroup
+		for _, chiCard := range player.GetChiCards() {
+			srcPlayerID := chiCard.GetSrcPlayer()
+			card := gutils.ServerCard2Number(chiCard.GetCard())
+			chiCardGroup := &room.CardsGroup{
+				Cards: []uint32{card, card + 1, card + 2},
+				Type:  room.CardsGroupType_CGT_CHI.Enum(),
+				Pid:   &srcPlayerID,
+			}
+			chiCardGroups = append(chiCardGroups, chiCardGroup)
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, chiCardGroups...)
 		// 碰牌组,每一次碰牌填1张还是三张
 		var pengCardGroups []*room.CardsGroup
 		for _, pengCard := range player.GetPengCards() {
@@ -145,7 +156,16 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huCardGroups...)
 		// 花牌组
-
+		var huaCardGroups []*room.CardsGroup
+		for _, huaCard := range player.GetHuaCards() {
+			cards := []uint32{gutils.ServerCard2Number(huaCard)}
+			huaCardGroup := &room.CardsGroup{
+				Cards: append(cards, cards[0], cards[0], cards[0]),
+				Type:  room.CardsGroupType_CGT_HUA.Enum(),
+			}
+			huaCardGroups = append(huaCardGroups, huaCardGroup)
+		}
+		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huaCardGroups...)
 		// 出牌组
 		outCardGroup := &room.CardsGroup{
 			Cards: gutils.ServerCards2Numbers(player.GetOutCards()),

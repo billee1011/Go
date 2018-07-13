@@ -128,8 +128,9 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			sinfo := contextSInfos[0]
 			cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
 			fans := make([]*room.Fan, 0)
-			fans, totalValue = makeFanType(sinfo.CardType, cardOption)
-			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, fans, mjContext)
+			fans = makeFanType(sinfo.CardType, sinfo.HuaCount, cardOption)
+			wiiners, _ := getWinners(sinfo.Scores)
+			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(wiiners[0], int32(sinfo.CardValue), fans, mjContext)
 		}
 		// 通知该玩家单局结算信息
 		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
@@ -367,11 +368,11 @@ func (majongSettle *majongSettle) makeBillPlayerInfo(currentPid uint64, cardValu
 			Score:        proto.Int64(majongSettle.roundScore[playerID]),
 			CardValue:    proto.Int32(cardValue),
 			BillType:     room.BillType(-1).Enum(),
-			Fan:          fans,
 			CurrentScore: proto.Int64(coin),
 		}
 		if playerID == currentPid {
 			billPlayerInfo.CardsGroup = gutils.GetCardsGroup(player)
+			billPlayerInfo.Fan = fans
 		}
 		billPlayerInfos = append(billPlayerInfos, billPlayerInfo)
 	}

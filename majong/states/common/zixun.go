@@ -419,6 +419,13 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 	}
 	record.HuFanType.FanTypes = HfanTypes
 	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
+	logrus.WithFields(logrus.Fields{
+		"calcHandCard": calcHandCard,
+		"calcHuCard":   calcHuCard,
+		"fanTypes":     fanTypes,
+		"genCount":     genCount,
+		"huaCount":     huaCount,
+	}).Infoln("自询查番")
 
 }
 
