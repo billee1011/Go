@@ -55,19 +55,6 @@ func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Heade
 	return
 }
 
-// TranslateTuoGuanRequest 转换取消托管请求
-func TranslateTuoGuanRequest(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.DDZTuoGuanReq) (eventID int, eventContext proto.Message, err error) {
-
-	head := translateHeader(playerID, header, &req)
-	eventContext = &ddz.TuoGuanRequestEvent{
-		Head:    &head,
-		Tuoguan: *req.Tuoguan,
-	}
-	eventID = int(ddz.EventID_event_tuoguan_request)
-	return
-}
-
 // TranslateResumeRequest 转换恢复对局请求
 func TranslateResumeRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	req room.DDZResumeGameReq) (eventID int, eventContext proto.Message, err error) {

@@ -10,7 +10,7 @@ package common
 //并设置杠玩家Properties["gang"]为[]byte("true")，最后进行暗杠结算
 //约束条件：无
 import (
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/majong/interfaces"

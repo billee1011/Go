@@ -64,19 +64,19 @@ var (
 	Card9B = majongpb.Card{Color: majongpb.CardColor_ColorTong, Point: 9}
 
 	// Card1Z 东
-	Card1Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 1}
+	Card1Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 1}
 	// Card2Z 南
-	Card2Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 2}
+	Card2Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 2}
 	// Card3Z 西
-	Card3Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 3}
+	Card3Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 3}
 	// Card4Z 北
-	Card4Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 4}
+	Card4Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 4}
 	// Card5Z 中
-	Card5Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 5}
+	Card5Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 5}
 	// Card6Z 发
-	Card6Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 6}
+	Card6Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 6}
 	// Card7Z 白
-	Card7Z = majongpb.Card{Color: majongpb.CardColor_ColorFeng, Point: 7}
+	Card7Z = majongpb.Card{Color: majongpb.CardColor_ColorZi, Point: 7}
 
 	// Card1H 春
 	Card1H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 1}

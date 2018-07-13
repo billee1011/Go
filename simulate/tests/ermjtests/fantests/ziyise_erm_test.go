@@ -53,7 +53,5 @@ func TestFan_ZiYiSe_Zimo_ERM(t *testing.T) {
 	assert.Nil(t, utils.SendHuReq(deskData, 0))
 
 	// 检测分数
-	winScro := 201 * (len(deskData.Players) - 1)
-
-	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_ZIYISE)
+	utils.CheckFanSettle(t, deskData, 4, 0, 209, room.FanType_FT_ZIYISE)
 }
