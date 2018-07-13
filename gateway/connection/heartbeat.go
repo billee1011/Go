@@ -2,7 +2,7 @@ package connection
 
 import (
 	"steve/client_pb/gate"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 

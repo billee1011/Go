@@ -1,7 +1,7 @@
 package register
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/gateway/connection"
 	"steve/structs/exchanger"
 )

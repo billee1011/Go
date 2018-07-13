@@ -7,7 +7,7 @@ import (
 )
 
 // CreateDDZDesk 创建斗地主房间
-func CreateDDZDesk(players []uint64, gameID int, opt interfaces.CreateDeskOptions, alloc interfaces.DeskIDAllocator) (result interfaces.CreateDeskResult, err error) {
+func CreateDDZDesk(deskPlayers []interfaces.DeskPlayer, gameID int, opt interfaces.CreateDeskOptions, alloc interfaces.DeskIDAllocator) (result interfaces.CreateDeskResult, err error) {
 	id, err := alloc.AllocDeskID()
 	if err != nil {
 		err = fmt.Errorf("分配牌桌 ID 失败")
@@ -15,7 +15,7 @@ func CreateDDZDesk(players []uint64, gameID int, opt interfaces.CreateDeskOption
 	}
 	return interfaces.CreateDeskResult{
 		Desk: &desk{
-			DeskBase: deskbase.NewDeskBase(id, gameID, players),
+			DeskBase: deskbase.NewDeskBase(id, gameID, deskPlayers),
 		},
 	}, nil
 }

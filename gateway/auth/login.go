@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"steve/client_pb/login"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/common/data/player"
 	"steve/gateway/config"
 	"steve/gateway/connection"

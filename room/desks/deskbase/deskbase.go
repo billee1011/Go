@@ -10,9 +10,9 @@ type DeskBase struct {
 }
 
 // NewDeskBase 创建房间基类对象
-func NewDeskBase(uid uint64, gameID int, players []uint64) *DeskBase {
+func NewDeskBase(uid uint64, gameID int, deskPlayers []interfaces.DeskPlayer) *DeskBase {
 	deskPlayerMgr := createDeskPlayerMgr()
-	deskPlayerMgr.setPlayers(players)
+	deskPlayerMgr.setPlayers(deskPlayers)
 	return &DeskBase{
 		DeskPlayerMgr: deskPlayerMgr,
 		uid:           uid,

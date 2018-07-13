@@ -8,7 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"steve/majong/global"
 	"steve/client_pb/room"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"math/rand"
 )
 

@@ -2,7 +2,7 @@ package logintests
 
 import (
 	"steve/client_pb/hall"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"

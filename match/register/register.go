@@ -1,9 +1,9 @@
 package register
 
 import (
-	"steve/structs/exchanger"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/match/match"
+	"steve/structs/exchanger"
 )
 
 // RegisterHandles 注册消息处理
@@ -15,7 +15,8 @@ func RegisterHandles(e exchanger.Exchanger) error {
 		}
 	}
 
-	register(msgid.MsgID_MATCH_REQ, match.HandleMatchReq) // 匹配请求消息
+	register(msgid.MsgID_MATCH_REQ, match.HandleMatchReq)             // 匹配请求消息
+	register(msgid.MsgID_MATCH_CONTINUE_REQ, match.HandleContinueReq) // 续局请求
 
 	return nil
 }

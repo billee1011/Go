@@ -1,7 +1,7 @@
 package deskbase
 
 import (
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
@@ -18,19 +18,26 @@ type deskPlayer struct {
 	overTime    int    // 超时计数
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
+	robotLv     int    // 机器人等级
 
 	mu sync.RWMutex
 }
 
-// createDeskPlayer 创建牌桌玩家
+// CreateDeskPlayer 创建牌桌玩家
 // maxOverTime : 最大超时次数，超过此次数将会被自动托管
-func createDeskPlayer(playerID uint64, seat uint32, coin uint64, maxOverTime int) interfaces.DeskPlayer {
+func CreateDeskPlayer(playerID uint64, seat uint32, coin uint64, maxOverTime int, robotLv int) interfaces.DeskPlayer {
 	return &deskPlayer{
 		playerID:    playerID,
 		seat:        seat,
 		ecoin:       coin,
 		maxOverTime: maxOverTime,
+		robotLv:     robotLv,
 	}
+}
+
+// GetRobotLv 获取机器人等级
+func (dp *deskPlayer) GetRobotLv() int {
+	return dp.robotLv
 }
 
 // GetPlayerID 获取玩家 ID

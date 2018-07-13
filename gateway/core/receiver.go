@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	"errors"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/common/data/player"
 	"steve/gateway/auth"
 	"steve/gateway/connection"

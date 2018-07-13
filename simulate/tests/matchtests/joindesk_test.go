@@ -1,7 +1,8 @@
 package matchtests
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/match"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -65,4 +66,39 @@ func TestRobotMatch(t *testing.T) {
 
 	startExpector := player.GetExpector(msgid.MsgID_ROOM_START_GAME_NTF)
 	assert.Nil(t, startExpector.Recv(global.DefaultWaitMessageTime, nil))
+}
+
+// TestContinueMatch 测试续局匹配
+func TestContinueMatch(t *testing.T) {
+	createNtfExpectors := map[int]interfaces.MessageExpector{}
+	gameStartNtfExpectors := map[int]interfaces.MessageExpector{}
+	for i := 0; i < 4; i++ {
+		// 登录用户
+		player, err := utils.LoginNewPlayer()
+		assert.Nil(t, err)
+		assert.NotNil(t, player)
+		client := player.GetClient()
+
+		createNtfExpector, err := client.ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+		assert.Nil(t, err)
+		createNtfExpectors[i] = createNtfExpector
+
+		gameStartNtfExpector, err := client.ExpectMessage(msgid.MsgID_ROOM_START_GAME_NTF)
+		assert.Nil(t, err)
+		gameStartNtfExpectors[i] = gameStartNtfExpector
+
+		request := match.MatchDeskContinueReq{}
+		client.SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &request)
+		assert.Nil(t, err)
+	}
+
+	for _, e := range createNtfExpectors {
+		ntf := &room.RoomDeskCreatedNtf{}
+		assert.Nil(t, e.Recv(global.DefaultWaitMessageTime, ntf))
+		assert.Equal(t, 4, len(ntf.GetPlayers()))
+	}
+	for _, e := range gameStartNtfExpectors {
+		ntf := &room.RoomStartGameNtf{}
+		assert.Nil(t, e.Recv(global.DefaultWaitMessageTime, ntf))
+	}
 }

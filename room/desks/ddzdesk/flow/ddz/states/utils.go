@@ -2,7 +2,7 @@ package states
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"

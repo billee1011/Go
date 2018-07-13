@@ -8,7 +8,7 @@ import (
 	"steve/majong/global"
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/room"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"errors"
 )
 

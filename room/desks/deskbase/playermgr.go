@@ -1,10 +1,9 @@
 package deskbase
 
 import (
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
-	"steve/room/interfaces/global"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -23,18 +22,11 @@ func createDeskPlayerMgr() *deskPlayerMgr {
 }
 
 // SetPlayers 设置玩家列表
-func (dpm *deskPlayerMgr) setPlayers(players []uint64) {
-	playerMgr := global.GetPlayerMgr()
-	dpm.players = make(map[uint32]interfaces.DeskPlayer, len(players))
-	var seat uint32
-	for _, playerID := range players {
-		player := playerMgr.GetPlayer(playerID)
-		var coin uint64
-		if player == nil {
-			coin = player.GetCoin()
-		}
-		dpm.players[seat] = createDeskPlayer(playerID, seat, coin, 2) // TODO， 最大超时次数
-		seat++
+func (dpm *deskPlayerMgr) setPlayers(deskPlayers []interfaces.DeskPlayer) {
+	dpm.players = make(map[uint32]interfaces.DeskPlayer, len(deskPlayers))
+	for _, deskPlayer := range deskPlayers {
+		seat := deskPlayer.GetSeat()
+		dpm.players[uint32(seat)] = deskPlayer
 	}
 }
 
@@ -48,19 +40,25 @@ func (dpm *deskPlayerMgr) GetDeskPlayers() []interfaces.DeskPlayer {
 }
 
 // PlayerQuit 玩家退出
-func (dpm *deskPlayerMgr) PlayerQuit(playerID uint64) {
+func (dpm *deskPlayerMgr) PlayerQuit(playerID uint64) chan struct{} {
+	finishChannel := make(chan struct{})
 	dpm.enterQuits <- interfaces.PlayerEnterQuitInfo{
-		PlayerID: playerID,
-		Quit:     true,
+		PlayerID:      playerID,
+		Quit:          true,
+		FinishChannel: finishChannel,
 	}
+	return finishChannel
 }
 
 // PlayerEnter 玩家进入
-func (dpm *deskPlayerMgr) PlayerEnter(playerID uint64) {
+func (dpm *deskPlayerMgr) PlayerEnter(playerID uint64) chan struct{} {
+	finishChannel := make(chan struct{})
 	dpm.enterQuits <- interfaces.PlayerEnterQuitInfo{
-		PlayerID: playerID,
-		Quit:     false,
+		PlayerID:      playerID,
+		Quit:          false,
+		FinishChannel: finishChannel,
 	}
+	return finishChannel
 }
 
 // PlayerEnterQuitChannel 获取玩家进入退出信息通道

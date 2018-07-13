@@ -7,7 +7,7 @@ rpc_addr: 127.0.0.1
 rpc_port: 36002
 rpc_server_name: gate
 
-lis_client_addr: 127.0.0.1
+lis_client_addr: 0.0.0.0
 lis_client_port: 36001
 
 # 客户端监听地址，需要返回给客户端用以发起连接

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"steve/client_pb/gate"
 	"steve/client_pb/login"
-	msgid "steve/client_pb/msgId"
+	msgid "steve/client_pb/msgid"
 	"steve/simulate/config"
 	"steve/simulate/connect"
 	"steve/simulate/facade"

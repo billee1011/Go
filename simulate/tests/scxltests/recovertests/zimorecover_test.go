@@ -1,7 +1,8 @@
 package recovertests
 
 import (
-	msgid "steve/client_pb/msgId"
+	"steve/client_pb/common"
+	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -56,13 +57,17 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	assert.Nil(t, utils.SendQuitReq(deskData, quitSeat))
 	// 其他玩家收到该玩家退出通知
 	utils.RecvQuitNtf(t, deskData, []int{0, 2, 3})
-	assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
+	// assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
 
-	// 需要恢复对局
-	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
-	rsp1 := room.RoomDeskNeedReusmeRsp{}
-	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
-	assert.True(t, rsp1.GetIsNeed())
+	// // 需要恢复对局
+	// expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
+	// rsp1 := room.RoomDeskNeedReusmeRsp{}
+	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
+	// assert.True(t, rsp1.GetIsNeed())
+
+	playerState, err := utils.GetDeskPlayerState(zimoPlayer.Player)
+	assert.Nil(t, err)
+	assert.Equal(t, playerState, common.PlayerState_PS_GAMEING)
 
 	// 请求加入失败  新架构匹配服务没有识别 在游戏中
 	// rsp2, err := utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUEZHAN)

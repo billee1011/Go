@@ -1,6 +1,6 @@
 package interfaces
 
-import msgid "steve/client_pb/msgId"
+import msgid "steve/client_pb/msgid"
 
 // ClientPlayer 客户端玩家
 type ClientPlayer interface {

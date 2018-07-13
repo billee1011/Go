@@ -1,7 +1,7 @@
 package settle
 
 // import (
-// 	"steve/client_pb/msgId"
+// 	"steve/client_pb/msgid"
 // 	"steve/client_pb/room"
 // 	"steve/gutils"
 // 	"steve/room/interfaces"
