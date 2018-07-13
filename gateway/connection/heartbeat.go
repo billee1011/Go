@@ -24,7 +24,9 @@ func HandleHeartBeat(clientID uint64, header *steve_proto_gaterpc.Header, req ga
 	}
 	logrus.WithFields(logrus.Fields{
 		"client_id": clientID,
-		"response":  response,
+		"player_id": connection.GetPlayerID(),
+		"response":  response.String(),
+		"request":   req.String(),
 	}).Debugln("心跳")
 	return []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{

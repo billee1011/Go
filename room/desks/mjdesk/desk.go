@@ -435,7 +435,6 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.recoverGameForPlayer(eqi.PlayerID)
 		d.setMjPlayerQuitDesk(eqi.PlayerID, false)
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
-		eqi.FinishChannel <- struct{}{}
 		logEntry.Debugln("玩家进入")
 	}
 }

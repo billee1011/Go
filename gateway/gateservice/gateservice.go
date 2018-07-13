@@ -62,11 +62,13 @@ func AnotherLogin(playerID uint64) {
 		"player_id": playerID,
 	})
 	connMgr := connection.GetConnectionMgr()
-	connectionID := connMgr.GetPlayerConnectionID(playerID)
-	if connectionID == 0 {
+	connection := connMgr.GetPlayerConnection(playerID)
+	if connection == nil {
+		entry.Infoln("玩家不在本网关")
 		return
 	}
-	connMgr.SetPlayerConnectionID(playerID, 0)
+	connection.DetachPlayer()
+	connectionID := connection.GetClientID()
 
 	notify := gate.GateAnotherLoginNtf{}
 	data, err := proto.Marshal(&notify)

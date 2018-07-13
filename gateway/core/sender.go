@@ -42,7 +42,7 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 			logEntry.WithError(err).Warningln("广播消息失败")
 			result.Ok = false
 		} else {
-			// logEntry.Debugln("广播消息完成")
+			logEntry.Debugln("广播消息完成")
 			result.Ok = true
 		}
 	}
@@ -54,9 +54,9 @@ func (mss *sender) fetchConnectionIDs(playerIDs []uint64) []uint64 {
 
 	connMgr := connection.GetConnectionMgr()
 	for _, playerID := range playerIDs {
-		cid := connMgr.GetPlayerConnectionID(playerID)
-		if cid != 0 {
-			result = append(result, cid)
+		connection := connMgr.GetPlayerConnection(playerID)
+		if connection != nil {
+			result = append(result, connection.GetClientID())
 		}
 	}
 	return result

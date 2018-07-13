@@ -153,11 +153,20 @@ func GetPlayerNickName(playerID uint64) string {
 
 // GetPlayerGateAddr 获取玩家所在的网关地址
 func GetPlayerGateAddr(playerID uint64) string {
-	return getPlayerStringField(playerID, playerGatewayAddrField)
+	gateAddr := getPlayerStringField(playerID, playerGatewayAddrField)
+	logrus.WithFields(logrus.Fields{
+		"player_id": playerID,
+		"addr":      gateAddr,
+	}).Debugln("获取玩家所在网关服")
+	return gateAddr
 }
 
 // SetPlayerGateAddr 设置玩家所在网关地址
 func SetPlayerGateAddr(playerID uint64, addr string) error {
+	logrus.WithFields(logrus.Fields{
+		"player_id": playerID,
+		"addr":      addr,
+	}).Debugln("设置玩家所在网关服")
 	return setPlayerStringField(playerID, playerGatewayAddrField, addr)
 }
 
