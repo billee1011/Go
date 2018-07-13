@@ -145,11 +145,14 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 	}
 	result = aeg.handleTuoGuan(params.TuoGuanPlayers, AI, params.CurTime, params.StateTime, mjContext)
 
-	players := mjContext.GetPlayers()
-	for _, player := range players {
-		playerID := player.GetPalyerId()
-		if lv, exist := params.RobotLv[playerID]; exist && lv != 0 {
-			aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.RobotAI, lv)
+	// 超过 1s 处理机器人事件
+	if params.CurTime.Sub(params.StateTime) > 1*time.Second {
+		players := mjContext.GetPlayers()
+		for _, player := range players {
+			playerID := player.GetPalyerId()
+			if lv, exist := params.RobotLv[playerID]; exist && lv != 0 {
+				aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.RobotAI, lv)
+			}
 		}
 	}
 	return result
