@@ -6,6 +6,8 @@ import (
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/Sirupsen/logrus"
+
 	"github.com/golang/protobuf/proto"
 )
 
@@ -20,6 +22,10 @@ func HandleHeartBeat(clientID uint64, header *steve_proto_gaterpc.Header, req ga
 	response := gate.GateHeartBeatRsp{
 		TimeStamp: proto.Uint64(req.GetTimeStamp()),
 	}
+	logrus.WithFields(logrus.Fields{
+		"client_id": clientID,
+		"response":  response,
+	}).Debugln("心跳")
 	return []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
 			MsgID: uint32(msgid.MsgID_GATE_HEART_BEAT_RSP),
