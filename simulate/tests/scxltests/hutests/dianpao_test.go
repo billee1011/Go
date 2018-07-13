@@ -35,7 +35,7 @@ func Test_Dianpao(t *testing.T) {
 
 	// 1 号玩家收到出牌问询通知， 可以胡
 	huPlayer := utils.GetDeskPlayerBySeat(huSeat, deskData)
-	expector, _ := huPlayer.Expectors[msgId.MsgID_ROOM_CHUPAIWENXUN_NTF]
+	expector, _ := huPlayer.Expectors[msgid.MsgID_ROOM_CHUPAIWENXUN_NTF]
 	ntf := room.RoomChupaiWenxunNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 	assert.True(t, ntf.GetEnableDianpao())

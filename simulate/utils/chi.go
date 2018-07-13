@@ -13,7 +13,7 @@ import (
 func SendChiReq(t *testing.T, deskData *DeskData, card []uint32, seat int) error {
 	deskPlayer := GetDeskPlayerBySeat(seat, deskData)
 	client := deskPlayer.Player.GetClient()
-	_, err := client.SendPackage(CreateMsgHead(msgId.MsgID_ROOM_XINGPAI_ACTION_REQ), &room.RoomXingpaiActionReq{
+	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ), &room.RoomXingpaiActionReq{
 		ActionId: room.XingpaiAction_XA_CHI.Enum(),
 		ChiCards: card,
 	})
@@ -26,7 +26,7 @@ func CheckChiNtfWithSeats(t *testing.T, deskData *DeskData, card []uint32, to in
 	chupaiPlayer := GetDeskPlayerBySeat(from, deskData)
 	for _, seat := range expectedSeats {
 		deskPlayer := GetDeskPlayerBySeat(seat, deskData)
-		expector := deskPlayer.Expectors[msgId.MsgID_ROOM_CHI_NTF]
+		expector := deskPlayer.Expectors[msgid.MsgID_ROOM_CHI_NTF]
 		ntf := room.RoomChiNtf{}
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf))
 		assert.Equal(t, card, ntf.Cards)

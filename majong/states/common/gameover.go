@@ -55,10 +55,10 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 		GameFlow:         proto.Bool(gameflow),
 	}
 	// 广播牌局结束消息
-	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)
 	// 日志
 	logrus.WithFields(logrus.Fields{
-		"msgID":           msgId.MsgID_ROOM_GAMEOVER_NTF,
+		"msgID":           msgid.MsgID_ROOM_GAMEOVER_NTF,
 		"roomGameOverNtf": roomGameOverNtf,
 	}).Info("-----牌局结束-推倒牌墙")
 }

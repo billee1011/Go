@@ -137,7 +137,7 @@ func (jam *joinApplyManager) replicateApplyProc(applyPlayers []uint64, newPlayer
 	for _, playerID := range applyPlayers {
 		if playerID == newPlayerID {
 			header := &steve_proto_gaterpc.Header{
-				MsgId: uint32(msgId.MsgID_ROOM_JOIN_DESK_RSP),
+				MsgId: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
 			}
 			rsp := &room.RoomJoinDeskRsp{
 				ErrCode: room.RoomError_DESK_ALREADY_APPLIED.Enum(),
@@ -170,7 +170,7 @@ func notifyDeskCreate(desk interfaces.Desk) {
 		GameId:  &gameID,
 	}
 	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgId.MsgID_ROOM_DESK_CREATED_NTF)}
+		MsgId: uint32(msgid.MsgID_ROOM_DESK_CREATED_NTF)}
 	ms := global.GetMessageSender()
 
 	ms.BroadcastPackage(clientIDs, head, &ntf)
@@ -192,7 +192,7 @@ func HandleRoomJoinDeskReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgId.MsgID_ROOM_JOIN_DESK_RSP),
+			MsgID: uint32(msgid.MsgID_ROOM_JOIN_DESK_RSP),
 			Body:  rsp,
 		},
 	}
@@ -218,7 +218,7 @@ func HandleRoomContinueReq(clientID uint64, header *steve_proto_gaterpc.Header, 
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgId.MsgID_ROOM_DESK_CONTINUE_RSP),
+			MsgID: uint32(msgid.MsgID_ROOM_DESK_CONTINUE_RSP),
 			Body:  rsp,
 		},
 	}
@@ -273,7 +273,7 @@ func HandleResumeGameReq(clientID uint64, header *steve_proto_gaterpc.Header, re
 		}
 		return []exchanger.ResponseMsg{
 			exchanger.ResponseMsg{
-				MsgID: uint32(msgId.MsgID_ROOM_RESUME_GAME_RSP),
+				MsgID: uint32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
 				Body:  body,
 			},
 		}
@@ -288,7 +288,7 @@ func SendMessageByPlayerID(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":   "sendMessageFromRoom",
 		"newPlayerID": playerID,
-		"head":        msgId.MsgID_name[int32(head.MsgId)],
+		"head":        msgid.MsgID_name[int32(head.MsgId)],
 	})
 	playerMgr := global.GetPlayerMgr()
 	p := playerMgr.GetPlayer(playerID)
@@ -319,7 +319,7 @@ func HandleRoomNeedResumeReq(clientID uint64, header *steve_proto_gaterpc.Header
 	}
 	return []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgId.MsgID_ROOM_DESK_NEED_RESUME_RSP),
+			MsgID: uint32(msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP),
 			Body:  body,
 		},
 	}
@@ -333,7 +333,7 @@ func HandleRoomChangePlayerReq(clientID uint64, header *steve_proto_gaterpc.Head
 	playerID := player.GetID()
 	msgs := []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgId.MsgID_ROOM_CHANGE_PLAYERS_RSP),
+			MsgID: uint32(msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP),
 		},
 	}
 	body := room.RoomChangePlayersRsp{

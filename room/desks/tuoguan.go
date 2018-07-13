@@ -85,7 +85,7 @@ func (tg *tuoGuanMgr) OnPlayerTimeOut(playerID uint64) {
 
 // notifyTuoguan 通知玩家托管状态
 func (tg *tuoGuanMgr) notifyTuoguan(playerID uint64, tuoguan bool) {
-	facade.SendMessageToPlayer(playerID, msgId.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
+	facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
 }

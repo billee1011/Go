@@ -270,7 +270,7 @@ func (d *desk) Stop() error {
 
 	ntf := room.RoomDeskDismissNtf{}
 	head := &steve_proto_gaterpc.Header{
-		MsgId: uint32(msgId.MsgID_ROOM_DESK_DISMISS_NTF)}
+		MsgId: uint32(msgid.MsgID_ROOM_DESK_DISMISS_NTF)}
 	ms := global.GetMessageSender()
 	err := ms.BroadcastPackage(clientIDs, head, &ntf)
 	if err != nil {
@@ -650,7 +650,7 @@ func (d *desk) reply(replyMsgs []server_pb.ReplyClientMessage) {
 		return
 	}
 	for _, msg := range replyMsgs {
-		d.BroadcastMessage(msg.GetPlayers(), msgId.MsgID(msg.GetMsgId()), msg.GetMsg(), true)
+		d.BroadcastMessage(msg.GetPlayers(), msgid.MsgID(msg.GetMsgId()), msg.GetMsg(), true)
 	}
 }
 
@@ -700,7 +700,7 @@ loop:
 }
 
 // BroadcastMessage 向玩家广播消息
-func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgId.MsgID, body []byte, exceptQuit bool) {
+func (d *desk) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":       "BroadcastMessage",
 		"dest_player_ids": playerIDs,
@@ -762,7 +762,7 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	d.reply([]server_pb.ReplyClientMessage{
 		server_pb.ReplyClientMessage{
 			Players: []uint64{playerID},
-			MsgId:   int32(msgId.MsgID_ROOM_RESUME_GAME_RSP),
+			MsgId:   int32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
 			Msg:     rsp,
 		},
 	})
@@ -784,7 +784,7 @@ func (d *desk) deskQuitRsp(playerID uint64) {
 	msgs := []server_pb.ReplyClientMessage{
 		server_pb.ReplyClientMessage{
 			Players: []uint64{playerID},
-			MsgId:   int32(msgId.MsgID_ROOM_DESK_QUIT_RSP),
+			MsgId:   int32(msgid.MsgID_ROOM_DESK_QUIT_RSP),
 			Msg:     body,
 		},
 	}
@@ -809,7 +809,7 @@ func (d *desk) playerQuitEnterDeskNtf(playerID uint64, qeType room.QuitEnterType
 	msgs := []server_pb.ReplyClientMessage{
 		server_pb.ReplyClientMessage{
 			Players: d.allPlayerIDsWithExcept([]uint64{playerID}),
-			MsgId:   int32(msgId.MsgID_ROOM_DESK_QUIT_ENTER_NTF),
+			MsgId:   int32(msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF),
 			Msg:     body,
 		},
 	}

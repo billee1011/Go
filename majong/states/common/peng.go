@@ -52,7 +52,7 @@ func (s *PengState) OnExit(flow interfaces.MajongFlow) {
 }
 
 func (s *PengState) notifyPeng(flow interfaces.MajongFlow, card *majongpb.Card, from uint64, to uint64) {
-	facade.BroadcaseMessage(flow, msgId.MsgID_ROOM_PENG_NTF, &room.RoomPengNtf{
+	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_PENG_NTF, &room.RoomPengNtf{
 		Card:         proto.Uint32(utils.ServerCard2Uint32(card)),
 		FromPlayerId: proto.Uint64(from),
 		ToPlayerId:   proto.Uint64(to),

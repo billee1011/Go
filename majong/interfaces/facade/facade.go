@@ -9,7 +9,7 @@ import (
 )
 
 // BroadcaseMessage 将消息广播给牌桌所有玩家
-func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgId.MsgID, msg proto.Message) {
+func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgid.MsgID, msg proto.Message) {
 	mjContext := flow.GetMajongContext()
 	players := []uint64{}
 

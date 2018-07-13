@@ -85,7 +85,7 @@ func (e *exchangerImpl) BroadcastPackage(clientIDs []uint64, head *steve_proto_g
 	entry := logrus.WithFields(logrus.Fields{
 		"name":      "exchangerImpl.BroadcastPackage",
 		"client_id": clientIDs,
-		"msg_id":    msgId.MsgID(head.GetMsgId()),
+		"msg_id":    msgid.MsgID(head.GetMsgId()),
 	})
 	bodyData := []byte{}
 	var err error

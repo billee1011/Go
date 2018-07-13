@@ -329,11 +329,21 @@ func FmtMajongContxt(context *majongpb.MajongContext) logrus.Fields {
 }
 
 //CheckHasDingQueCard 检查牌里面是否含有定缺的牌
-func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool {
+func CheckHasDingQueCard(context *majongpb.MajongContext, player *majongpb.Player) bool {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	cards, color, hasDq := player.GetHandCards(), player.GetDingqueColor(), xpOption.EnableDingque
 	for _, card := range cards {
-		if card.Color == color {
+		if IsDingQueCard(hasDq, color, card) {
 			return true
 		}
+	}
+	return false
+}
+
+//IsDingQueCard 当前的牌是不是定缺牌
+func IsDingQueCard(hasDq bool, dqColor majongpb.CardColor, card *majongpb.Card) bool {
+	if hasDq && card.GetColor() == dqColor {
+		return true
 	}
 	return false
 }

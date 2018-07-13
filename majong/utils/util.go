@@ -353,7 +353,7 @@ func SeekCardSum(cards []*majongpb.Card, targetCard *majongpb.Card) int {
 }
 
 //GetTingPlayerIDAndMultiple 获取所有听玩家,和返回每个听玩家最大倍数
-func GetTingPlayerIDAndMultiple(players []*majongpb.Player, laizi map[Card]bool) (map[uint64]int64, error) {
+func GetTingPlayerIDAndMultiple(mjContext *majongpb.MajongContext, players []*majongpb.Player, laizi map[Card]bool) (map[uint64]int64, error) {
 	tingPlayers := make(map[uint64]int64, 0)
 	for i := 0; i < len(players); i++ {
 		// 胡过的不算
@@ -361,7 +361,7 @@ func GetTingPlayerIDAndMultiple(players []*majongpb.Player, laizi map[Card]bool)
 			continue
 		}
 		// 查能不能听，能听，返回返回最大番型，及ID
-		isTing, multiple, err := IsCanTingAndGetMultiple(players[i], laizi)
+		isTing, multiple, err := IsCanTingAndGetMultiple(mjContext, players[i], laizi)
 		if err != nil {
 			return nil, err
 		}
@@ -375,11 +375,11 @@ func GetTingPlayerIDAndMultiple(players []*majongpb.Player, laizi map[Card]bool)
 //IsCanTingAndGetMultiple 判断玩家是否能听,和返回能听玩家的最大倍数 TODO
 //未上听者需赔上听者最大可能番数（杠后炮、杠上开花、抢杠胡、海底捞、海底炮不参与）的牌型钱。注：查大叫时，
 //若上听者牌型中有根，则根也要未上听者包给上听者。
-func IsCanTingAndGetMultiple(player *majongpb.Player, laizi map[Card]bool) (bool, int64, error) {
+func IsCanTingAndGetMultiple(mjContext *majongpb.MajongContext, player *majongpb.Player, laizi map[Card]bool) (bool, int64, error) {
 	var max int64
 	handCardSum := len(player.HandCards)
 	//只差1张牌就能胡，并且玩家手牌不存在花牌
-	if handCardSum%3 == 1 && !gutils.CheckHasDingQueCard(player.HandCards, player.DingqueColor) {
+	if handCardSum%3 == 1 && !gutils.CheckHasDingQueCard(mjContext, player) {
 		tingCards, err := GetTingCards(player.HandCards, laizi)
 		if err != nil {
 			return false, 0, err

@@ -24,7 +24,7 @@ func Test_Xipai(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, player)
 
-		expector, err := client.ExpectMessage(msgId.MsgID_ROOM_XIPAI_NTF)
+		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_XIPAI_NTF)
 		assert.Nil(t, err)
 		xipaiExpectors[i] = expector
 		gameID := room.GameId(1)

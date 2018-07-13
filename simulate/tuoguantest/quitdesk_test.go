@@ -30,7 +30,7 @@ func Test_QuitDesk(t *testing.T) {
 
 	player := utils.GetDeskPlayerBySeat(quitSeat, deskData)
 	assert.Nil(t, utils.SendQuitReq(deskData, quitSeat))
-	expector := player.Expectors[msgId.MsgID_ROOM_DESK_QUIT_RSP]
+	expector := player.Expectors[msgid.MsgID_ROOM_DESK_QUIT_RSP]
 	rsp := room.RoomDeskQuitRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp))
 	assert.Equal(t, room.RoomError_SUCCESS, rsp.GetErrCode())

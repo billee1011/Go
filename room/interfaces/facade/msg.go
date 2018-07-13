@@ -11,7 +11,7 @@ import (
 )
 
 // SendMessageToPlayer 发送消息给玩家
-func SendMessageToPlayer(playerID uint64, msgID msgId.MsgID, body proto.Message) error {
+func SendMessageToPlayer(playerID uint64, msgID msgid.MsgID, body proto.Message) error {
 	playerMgr := global.GetPlayerMgr()
 	player := playerMgr.GetPlayer(playerID)
 	clientID := player.GetClientID()
@@ -25,7 +25,7 @@ func SendMessageToPlayer(playerID uint64, msgID msgId.MsgID, body proto.Message)
 }
 
 // BroadCastMessageBare 向玩家广播消息
-func BroadCastMessageBare(playerIDs []uint64, msgID msgId.MsgID, body []byte) error {
+func BroadCastMessageBare(playerIDs []uint64, msgID msgid.MsgID, body []byte) error {
 	playerMgr := global.GetPlayerMgr()
 
 	clientIDs := []uint64{}
@@ -46,7 +46,7 @@ func BroadCastMessageBare(playerIDs []uint64, msgID msgId.MsgID, body []byte) er
 }
 
 // BroadCastDeskMessage 广播消息给牌卓玩家
-func BroadCastDeskMessage(desk interfaces.Desk, playerIDs []uint64, msgID msgId.MsgID, body proto.Message, exceptQuit bool) error {
+func BroadCastDeskMessage(desk interfaces.Desk, playerIDs []uint64, msgID msgid.MsgID, body proto.Message, exceptQuit bool) error {
 	msgBody, err := proto.Marshal(body)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func find(datas []uint64, data uint64) bool {
 }
 
 // BroadCastDeskMessageExcept 广播消息给牌桌玩家
-func BroadCastDeskMessageExcept(desk interfaces.Desk, expcetPlayers []uint64, exceptQuit bool, msgID msgId.MsgID, body proto.Message) error {
+func BroadCastDeskMessageExcept(desk interfaces.Desk, expcetPlayers []uint64, exceptQuit bool, msgID msgid.MsgID, body proto.Message) error {
 	playerIDs := []uint64{}
 	deskPlayers := desk.GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {
