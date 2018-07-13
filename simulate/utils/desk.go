@@ -43,7 +43,7 @@ type DDZData struct {
 // StartGame 启动一局游戏
 // 开始后停留在等待庄家出牌状态
 func StartGame(params structs.StartGameParams) (*DeskData, error) {
-	players, err := CreateAndLoginUsers(4)
+	players, err := CreateAndLoginUsers(params.PlayerNum)
 	if err != nil {
 		return nil, err
 	}
