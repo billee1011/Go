@@ -200,7 +200,10 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if len(player.HandCards) == 0 {
 		context.WinnerId = playerId
 		context.Duration = 0 //清除倒计时
-		return int(ddz.StateID_state_over), nil
+		delay := StageTime[room.DDZStage_DDZ_STAGE_OVER]
+		duration := time.Second * time.Duration(delay)
+		setMachineAutoEvent(m, machine.Event{EventID: int(ddz.EventID_event_showhand_finish), EventData: nil}, duration)
+		return int(ddz.StateID_state_settle), nil
 	} else {
 		return int(ddz.StateID_state_playing), nil
 	}
