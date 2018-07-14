@@ -96,7 +96,7 @@ func HandleEvent(params Params) (result Result) {
 			errDesc := ""
 
 			// 发送游戏信息
-			m.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_REQ, &room.DDZResumeGameRsp{
+			m.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
 				Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
 				GameInfo: &room.DDZDeskInfo{
 					Players: playersInfo,
@@ -105,6 +105,7 @@ func HandleEvent(params Params) (result Result) {
 			})
 		}
 
+		result.Succeed = true
 		return
 	}
 
