@@ -9,11 +9,11 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// peipai 配牌
+// Peipai 配牌
 // step 1. 将手牌和墙牌转换成接口可识别的字符串， 参数： cards = 11,12,13,,...  len=xxx
 // step 2. 将换三张方向转换成接口可识别的字符串 ， hszfx=dui, shun, ni
 // step 3. 庄家位置   zhuang= number
-func peipai(game string, seatCards [][]uint32, wallCards []uint32, hszDir room.Direction, bankerSeat int) error {
+func Peipai(game string, seatCards [][]uint32, wallCards []uint32, hszDir room.Direction, bankerSeat int) error {
 
 	// url 基本字符串 + 牌数据
 	url := fmt.Sprintf("%s?game=%s&%s", config.MaJongConfigURL, game, translatePeipaiCards(seatCards, wallCards))

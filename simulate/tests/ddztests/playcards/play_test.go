@@ -25,8 +25,9 @@ func TestPlay(t *testing.T) {
 		"func_name": "TestPlay()",
 	})
 
-	// 正常开始游戏
-	params := global.NewStartDDZGameParams()
+	// 配牌1
+	params := doudizhu.NewStartDDZGameParamsTest1()
+
 	deskData, err := utils.StartDDZGame(params)
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)

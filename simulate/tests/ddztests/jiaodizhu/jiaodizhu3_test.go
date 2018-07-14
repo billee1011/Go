@@ -1,7 +1,6 @@
 package jiaodizhu
 
 import (
-	"steve/simulate/global"
 	"steve/simulate/utils"
 	"steve/simulate/utils/doudizhu"
 	"testing"
@@ -20,7 +19,7 @@ func TestJiaodizhu3(t *testing.T) {
 	})
 
 	// 正常开始游戏
-	params := global.NewStartDDZGameParams()
+	params := doudizhu.NewStartDDZGameParamsTest1()
 	deskData, err := utils.StartDDZGame(params)
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)

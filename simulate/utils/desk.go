@@ -50,7 +50,7 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 		return nil, err
 	}
 	// TODO : game name
-	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
+	if err := Peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
 	// 配置麻将选项
@@ -115,7 +115,7 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	}
 
 	// 通知服务器：配牌
-	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
+	if err := Peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
 
@@ -165,7 +165,7 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		// 下一状态信息
 		deskData.DDZData.NextState = stntf.GetNextStage()
 
-		logEntry.Infof("玩家%d收到了斗地主游戏开始的通知,叫地主玩家 = %d，当前状态 = %v, 进入下一状态等待时间 = %d",
+		logEntry.Infof("玩家%d收到了斗地主游戏开始的通知,叫地主玩家 = %d，下一状态 = %v, 进入下一状态等待时间 = %d",
 			player.GetID(), stntf.GetPlayerId(), deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 	}
 
@@ -529,7 +529,10 @@ func checkDDZFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskDa
 		//}
 	}
 
-	logEntry.Infof("当前状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
+	// 暂停2秒（因为2秒之后才进入叫地主状态）
+	time.Sleep(time.Second * 2)
+
+	logEntry.Infof("发牌处理中，下一状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 
 	// 通知服务器，每个玩家的发牌动画播放完成
 	//return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData)
