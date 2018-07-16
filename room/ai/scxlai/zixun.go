@@ -145,5 +145,8 @@ func (h *zixunStateAI) getZixunPlayer(mjContext *majong.MajongContext) uint64 {
 	if zxType == majong.ZixunType_ZXT_PENG {
 		return mjContext.GetLastPengPlayer()
 	}
+	if zxType == majong.ZixunType_ZXT_CHI {
+		return mjContext.GetLastChiPlayer()
+	}
 	return mjContext.GetLastMopaiPlayer()
 }
