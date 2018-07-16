@@ -246,54 +246,11 @@ func TingCardInfoSvr2Client(minfos []*majongpb.TingCardInfo) []*room.TingCardInf
 func CardsGroupSvr2Client(cardsGroups []*majongpb.CardsGroup) (cardsGroupList []*room.CardsGroup) {
 	cardsGroupList = make([]*room.CardsGroup, 0)
 	for _, cardsGroup := range cardsGroups {
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_PENG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_PENG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_ANGANG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_ANGANG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_BUGANG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_BUGANG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_MINGGANG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_MINGGANG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_HU {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_HU.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_HAND {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_HAND.Enum(),
-				Cards: cardsGroup.Cards,
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
+		cardsGroupList = append(cardsGroupList, &room.CardsGroup{
+			Pid:   proto.Uint64(cardsGroup.Pid),
+			Type:  room.CardsGroupType(int32(cardsGroup.GetType())).Enum(),
+			Cards: cardsGroup.Cards,
+		})
 	}
 	return
 }
@@ -435,7 +392,7 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		chiCardGroups = append(chiCardGroups, chiCardGroup)
 	}
 	cardsGroupList = append(cardsGroupList, chiCardGroups...)
-	// 碰牌组,每一次碰牌填1张还是三张
+	// 碰牌组
 	var pengCardGroups []*room.CardsGroup
 	for _, pengCard := range player.GetPengCards() {
 		srcPlayerID := pengCard.GetSrcPlayer()
@@ -485,12 +442,5 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		huaCardGroups = append(huaCardGroups, huaCardGroup)
 	}
 	cardsGroupList = append(cardsGroupList, huaCardGroups...)
-	// 出牌组
-	// outCardGroup := &room.CardsGroup{
-	// 	Cards: ServerCards2Numbers(player.GetOutCards()),
-	// 	Type:  room.CardsGroupType_CGT_OUT.Enum(),
-	// 	Pid:   proto.Uint64(player.GetPalyerId()),
-	// }
-	//cardsGroupList = append(cardsGroupList, outCardGroup)
 	return cardsGroupList
 }

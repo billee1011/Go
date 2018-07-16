@@ -98,7 +98,7 @@ func settleType2BillType(settleType majongpb.SettleType) room.BillType {
 	}[settleType]
 }
 
-func makeFanType(fanTypes []int64, huaCount uint32, cardOption *mjoption.CardTypeOption) (fan []*room.Fan) {
+func getFans(fanTypes []int64, huaCount uint32, cardOption *mjoption.CardTypeOption) (fan []*room.Fan) {
 	fan = make([]*room.Fan, 0)
 	for _, fanType := range fanTypes {
 		rfan := &room.Fan{
