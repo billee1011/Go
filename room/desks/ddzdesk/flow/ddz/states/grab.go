@@ -141,6 +141,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			Dipai:     context.WallCards,
 			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
+		context.Dipai = context.WallCards
 		context.WallCards = []uint32{}
 		return int(ddz.StateID_state_double), nil
 	} else {

@@ -61,8 +61,9 @@ message DDZContext {
     uint64 call_player_id = 24;     //开局叫地主玩家id
     repeated uint64 grabbed_players = 25;//已操作(抢/不抢)玩家id，不包括叫地主
     repeated uint64 doubled_players = 26;//已操作(加倍/不加倍)玩家id
+    repeated uint32 dipai = 27;     //底牌
     //倒计时
-    repeated uint64 count_down_players = 27;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
-    bytes startTime = 28;           //开始倒计时时间
-    uint32 duration = 29;           //倒计时时间
+    repeated uint64 count_down_players = 28;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
+    bytes startTime = 29;           //开始倒计时时间
+    uint32 duration = 30;           //倒计时时间
 }
