@@ -34,7 +34,7 @@ func (s *dealState) OnEnter(m machine.Machine) {
 	for i := range players {
 		players[i].HandCards = DDZSortDescend(wallCards[i*17 : (i+1)*17])
 		players[i].OutCards = make([]uint32, 0)
-		sendToPlayer(m, players[i].PalyerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{
+		sendToPlayer(m, players[i].PlayerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{
 			Cards:     players[i].HandCards,
 			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_CALL),
 		})

@@ -8,7 +8,7 @@ import "events.proto";
 
 // Player 玩家数据
 message Player {
-    uint64 palyer_id = 1;                   // 玩家 ID
+    uint64 player_id = 1;                   // 玩家 ID
     bool lord = 2;                          // 是否是庄家
     bool grab = 3;                          // 是否抢庄
     bool is_double = 4;                     // 是否加倍

@@ -60,7 +60,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
 
-	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PalyerId
+	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId
 	if len(outCards) == 0 { //pass
 		if context.CurCardType == ddz.CardType_CT_NONE { //该你出牌时不出牌，报错
 			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{

@@ -34,7 +34,7 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 	// 当前玩家
 	var curPlayer *ddz.Player
 	for _, player := range ddzContext.GetPlayers() {
-		if player.GetPalyerId() == params.PlayerID {
+		if player.GetPlayerId() == params.PlayerID {
 			curPlayer = player
 		}
 	}
@@ -176,7 +176,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 
 	request := ddz.PlayCardRequestEvent{
 		Head: &ddz.RequestEventHead{
-			PlayerId: player.GetPalyerId()},
+			PlayerId: player.GetPlayerId()},
 		Cards:    resultCards,    // 打出去的牌
 		CardType: resultCardType, // 打出去的牌型
 	}
@@ -212,7 +212,7 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 	// 下面是回复消息
 	request := ddz.PlayCardRequestEvent{
 		Head: &ddz.RequestEventHead{
-			PlayerId: player.GetPalyerId()},
+			PlayerId: player.GetPlayerId()},
 		Cards:    resultCards,    // 打出去的牌
 		CardType: resultCardType, // 打出去的牌型
 	}

@@ -62,7 +62,7 @@ func getPlayerIds(m machine.Machine) []uint64 {
 
 	players := []uint64{}
 	for _, player := range dm.GetDDZContext().GetPlayers() {
-		players = append(players, player.GetPalyerId())
+		players = append(players, player.GetPlayerId())
 	}
 	return players
 }
@@ -74,7 +74,7 @@ func isValidPlayer(context *ddz.DDZContext, id uint64) bool {
 //GetPlayerByID 根据玩家id获取玩家
 func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 	for _, player := range players {
-		if player.PalyerId == id {
+		if player.PlayerId == id {
 			return player
 		}
 	}
@@ -84,7 +84,7 @@ func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 //GetNextPlayerByID 根据玩家id获取下个玩家
 func GetNextPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 	for k, player := range players {
-		if player.PalyerId == id {
+		if player.PlayerId == id {
 			index := (k + 1) % len(players)
 			return players[index]
 		}

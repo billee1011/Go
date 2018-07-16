@@ -47,7 +47,7 @@ func (s *settleState) settle(m machine.Machine) {
 	//找出每个人最大输赢金币
 	maxScores := make(map[uint64]uint64)
 	for _, player := range context.GetPlayers() {
-		playerId := player.PalyerId
+		playerId := player.PlayerId
 		coin := global.GetPlayerMgr().GetPlayer(playerId).GetCoin()
 		s := If(playerId == lordId, score*2, score).(uint64)
 		maxScores[playerId] = If(s > coin, coin, s).(uint64)
@@ -59,7 +59,7 @@ func (s *settleState) settle(m machine.Machine) {
 	score = lordMax / 2
 	lordScore := uint64(0)
 	for _, player := range context.GetPlayers() {
-		playerId := player.PalyerId
+		playerId := player.PlayerId
 		if playerId == lordId {
 			continue
 		}
@@ -79,7 +79,7 @@ func (s *settleState) settle(m machine.Machine) {
 
 	var billPlayers []*room.DDZBillPlayerInfo
 	for _, player := range context.GetPlayers() {
-		playerId := player.PalyerId
+		playerId := player.PlayerId
 		roomPlayer := global.GetPlayerMgr().GetPlayer(playerId)
 		billPlayer := room.DDZBillPlayerInfo{}
 		billPlayer.PlayerId = &playerId

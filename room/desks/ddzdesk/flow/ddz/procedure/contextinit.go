@@ -32,7 +32,7 @@ func createDDZPlayers(players []uint64) []*ddz.Player {
 	result := make([]*ddz.Player, 0, len(players))
 	for _, playerID := range players {
 		result = append(result, &ddz.Player{
-			PalyerId:  playerID,
+			PlayerId:  playerID,
 			HandCards: []uint32{},
 		})
 	}

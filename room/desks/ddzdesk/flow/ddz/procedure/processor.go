@@ -64,7 +64,7 @@ func HandleEvent(params Params) (result Result) {
 
 		// 找到这个玩家
 		for _, player := range cloneContext.GetPlayers() {
-			if player.GetPalyerId() == reqPlayerID {
+			if player.GetPlayerId() == reqPlayerID {
 				bExist = true
 			}
 		}
@@ -134,7 +134,7 @@ func HandleEvent(params Params) (result Result) {
 // TranslateDDZPlayerToRoomPlayer 将 ddzPlayer 转换成 RoomPlayerInfo
 func TranslateDDZPlayerToRoomPlayer(ddzPlayer ddz.Player) room.RoomPlayerInfo {
 	playerMgr := global.GetPlayerMgr()
-	playerID := ddzPlayer.GetPalyerId()
+	playerID := ddzPlayer.GetPlayerId()
 	player := playerMgr.GetPlayer(playerID)
 	var coin uint64
 	if player != nil {

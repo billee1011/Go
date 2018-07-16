@@ -67,7 +67,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.LastGrabPlayerId = playerId
 	}
 
-	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PalyerId
+	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId
 	lordPlayerId := uint64(0)      //不为0时确定地主
 	if context.GrabbedCount == 3 { //三个玩家操作完毕
 		if context.FirstGrabPlayerId == 0 { //没人叫地主
@@ -122,7 +122,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.AllAbandonCount >= 3 { //三轮发牌没人叫地主，随机确定庄家
 		context.AllAbandonCount = 0
 		i := rand.Intn(3)
-		lordPlayerId = context.GetPlayers()[i+1].PalyerId
+		lordPlayerId = context.GetPlayers()[i+1].PlayerId
 	}
 
 	if lordPlayerId != 0 {
