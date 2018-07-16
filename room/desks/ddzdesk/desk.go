@@ -13,9 +13,10 @@ import (
 	"time"
 
 	"context"
+	"runtime/debug"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"runtime/debug"
 )
 
 // deskEvent 牌桌事件
@@ -83,8 +84,11 @@ func (d *desk) timerTask(ctx context.Context) {
 		}
 	}()
 
+	// 200毫秒的定时器
 	t := time.NewTicker(time.Millisecond * 200)
+
 	defer t.Stop()
+
 	for {
 		select {
 		case <-t.C:
@@ -99,18 +103,25 @@ func (d *desk) timerTask(ctx context.Context) {
 	}
 }
 
-// genTimerEvent 生成计时事件
+// genTimerEvent 生成计时事件，定时器触发时调用
 func (d *desk) genTimerEvent() {
 	g := global.GetDeskAutoEventGenerator()
 	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
 	dContext := d.ddzContext
+
+	// 牌桌的所有托管玩家
 	tuoGuanPlayers := facade.GetTuoguanPlayers(d)
+
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":       "desk.genTimerEvent",
 		"tuoguan_players": tuoGuanPlayers,
 	})
+
+	// 开始时间
 	startTime := time.Time{}
 	startTime.UnmarshalBinary(dContext.StartTime)
+
+	// 产生AI事件
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
 		Desk:       d,
 		DDZContext: dContext,
@@ -119,6 +130,8 @@ func (d *desk) genTimerEvent() {
 		Duration:   dContext.Duration,
 		RobotLv:    map[uint64]int{},
 	})
+
+	// 把AI事件转换为斗地主的牌桌事件
 	for _, event := range result.Events {
 		logEntry.WithFields(logrus.Fields{
 			"event_id":     event.ID,

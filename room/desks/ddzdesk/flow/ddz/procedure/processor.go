@@ -50,63 +50,10 @@ func HandleEvent(params Params) (result Result) {
 
 	// 处理恢复对局的请求
 	if params.EventID == int(ddz.EventID_event_resume_request) {
-		message := &ddz.ResumeRequestEvent{}
-		err := proto.Unmarshal(params.EventContext, message)
-		if err != nil {
-			logEntry.WithError(err).Errorln("处理恢复对局事件失败")
+		if dealResumeRequest(params.EventContext, m, &cloneContext) == false {
+			logEntry.Errorln("处理恢复对局失败")
 			return
 		}
-
-		// 请求的玩家ID
-		reqPlayerID := message.GetHead().GetPlayerId()
-
-		bExist := false
-
-		// 找到这个玩家
-		for _, player := range cloneContext.GetPlayers() {
-			if player.GetPlayerId() == reqPlayerID {
-				bExist = true
-			}
-		}
-
-		// 存在的话则发送游戏信息
-		if bExist {
-			playersInfo := []*room.DDZPlayerInfo{}
-
-			for _, player := range cloneContext.GetPlayers() {
-
-				// Player转为RoomPlayer
-				roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
-				lord := player.GetLord()
-				double := player.GetIsDouble()
-				tuoguan := false // TODO
-
-				ddzPlayerInfo := room.DDZPlayerInfo{}
-				ddzPlayerInfo.PlayerInfo = &roomPlayerInfo
-				ddzPlayerInfo.OutCards = player.GetOutCards()
-				ddzPlayerInfo.HandCards = player.GetHandCards()
-				ddzPlayerInfo.Lord = &lord
-				ddzPlayerInfo.IsDouble = &double
-				ddzPlayerInfo.Tuoguan = &tuoguan
-
-				playersInfo = append(playersInfo, &ddzPlayerInfo)
-			}
-
-			var errCode uint32 = 0
-			errDesc := ""
-
-			// 发送游戏信息
-			m.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
-				Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
-				GameInfo: &room.DDZDeskInfo{
-					Players: playersInfo,
-					Stage:   states.GenNextStage(room.DDZStage(int32(cloneContext.CurStage))),
-				},
-			})
-		}
-
-		result.Succeed = true
-		return
 	}
 
 	err := m.ProcessEvent(machine.Event{
@@ -129,6 +76,95 @@ func HandleEvent(params Params) (result Result) {
 	}
 	result.Succeed = true
 	return
+}
+
+// 处理恢复对局的请求
+// eventContext : 事件体
+// machine		: 状态机
+// ddzContext	: 斗地主牌局信息
+// bool 		: 成功/失败
+func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzContext *ddz.DDZContext) bool {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "dealResumeRequest",
+	})
+
+	message := &ddz.ResumeRequestEvent{}
+	err := proto.Unmarshal(eventContext, message)
+	if err != nil {
+		logEntry.WithError(err).Errorln("处理恢复对局事件失败")
+		return false
+	}
+
+	// 请求的玩家ID
+	reqPlayerID := message.GetHead().GetPlayerId()
+
+	bExist := false
+
+	// 找到这个玩家
+	for _, player := range ddzContext.GetPlayers() {
+		if player.GetPlayerId() == reqPlayerID {
+			bExist = true
+		}
+	}
+
+	// 存在的话则发送游戏信息
+	if bExist {
+		playersInfo := []*room.DDZPlayerInfo{}
+
+		for _, player := range ddzContext.GetPlayers() {
+
+			// Player转为RoomPlayer
+			roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
+			lord := player.GetLord()
+			//double := player.GetIsDouble()
+			tuoguan := false // TODO
+
+			ddzPlayerInfo := room.DDZPlayerInfo{}
+
+			ddzPlayerInfo.PlayerInfo = &roomPlayerInfo
+			ddzPlayerInfo.OutCards = player.GetOutCards()
+
+			// 只发送自己的手牌，其他人的手牌为空
+			if player.GetPlayerId() == reqPlayerID {
+				ddzPlayerInfo.HandCards = player.GetHandCards()
+			} else {
+				ddzPlayerInfo.HandCards = []uint32{}
+			}
+
+			ddzPlayerInfo.Lord = &lord
+			ddzPlayerInfo.Tuoguan = &tuoguan
+			//ddzPlayerInfo.Grablord =
+			//ddzPlayerInfo.DoubleType
+
+			playersInfo = append(playersInfo, &ddzPlayerInfo)
+		}
+
+		var errCode uint32 = 0
+		errDesc := ""
+
+		// 开始时间
+		startTime := time.Time{}
+		startTime.UnmarshalBinary(ddzContext.StartTime)
+
+		// 限制时间
+		duration := time.Second * time.Duration(ddzContext.Duration)
+
+		// 剩余时间
+		leftTime := uint32(duration - time.Now().Sub(startTime))
+
+		// 发送游戏信息
+		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
+			Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
+			GameInfo: &room.DDZDeskInfo{
+				Players:           playersInfo,                                                    // 每个人的信息
+				Stage:             states.GenNextStage(room.DDZStage(int32(ddzContext.CurStage))), // 当前状态
+				CurPlayerID:       proto.Uint64(ddzContext.GetCurrentPlayerId()),                  // 当前操作的玩家
+				CurPlayerLeftTime: proto.Uint32(leftTime),                                         // 剩余操作的时间
+			},
+		})
+	}
+
+	return true
 }
 
 // TranslateDDZPlayerToRoomPlayer 将 ddzPlayer 转换成 RoomPlayerInfo
