@@ -167,6 +167,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.CurOutCards = message.GetCards()
 	context.CurCardType = cardType
 	context.CardTypePivot = (*pivot).ToInt()
+	context.PassCount = 0 //清空过牌数
 	if cardType == ddz.CardType_CT_BOMB || cardType == ddz.CardType_CT_KINGBOMB {
 		context.TotalBomb = context.TotalBomb * 2
 	}
