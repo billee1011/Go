@@ -530,14 +530,14 @@ func checkDDZFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskDa
 	}
 
 	// 暂停2秒（因为2秒之后才进入叫地主状态）
-	time.Sleep(time.Second * 2)
+	//time.Sleep(time.Second * 2)
 
 	logEntry.Infof("发牌处理中，下一状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 
-	// 通知服务器，每个玩家的发牌动画播放完成
-	//return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData)
+	logEntry.Infof("发送发牌动画播放完成的请求")
 
-	return nil
+	// 通知服务器，每个玩家的发牌动画播放完成
+	return sendCartoonFinish(room.CartoonType_CTNT_DDZ_FAPAI, deskData)
 }
 
 // executeHSZ 执行换三张
