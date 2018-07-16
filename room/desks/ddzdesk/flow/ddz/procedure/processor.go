@@ -255,6 +255,7 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 				Stage:             states.GenNextStage(room.DDZStage(int32(ddzContext.CurStage))), // 当前状态
 				CurPlayerId:       proto.Uint64(ddzContext.GetCurrentPlayerId()),                  // 当前操作的玩家
 				CurPlayerLeftTime: proto.Uint32(uint32(leftTime)),                                 // 剩余操作的时间
+				Dipai:             ddzContext.GetDipai(),                                          // 底牌
 			},
 		})
 	}
