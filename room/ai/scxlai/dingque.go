@@ -39,22 +39,7 @@ func (h *dingqueStateAI) allColor() []majong.CardColor {
 
 // getColor 获取定缺花色
 func (h *dingqueStateAI) getColor(player *majong.Player) majong.CardColor {
-	cards := player.GetHandCards()
-	colorMap := map[majong.CardColor]int{}
-
-	for _, card := range cards {
-		colorMap[card.GetColor()] = colorMap[card.GetColor()] + 1
-	}
-	colors := h.allColor()
-	leastColor := colors[0]
-	leastCount := colorMap[leastColor]
-	for _, color := range h.allColor() {
-		if colorMap[color] < leastCount {
-			leastCount = colorMap[color]
-			leastColor = color
-		}
-	}
-	return leastColor
+	return player.GetDingqueColor() // 在进入定缺状态时，会设置推荐定缺颜色
 }
 
 // dingque 生成定缺请求事件
