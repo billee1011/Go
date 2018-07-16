@@ -44,7 +44,7 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
 	handCards := player.GetHandCards()
-	if h.getZixunPlayer(mjContext) != params.PlayerID {
+	if gutils.GetZixunPlayer(mjContext) != params.PlayerID {
 		return result, fmt.Errorf("当前玩家不允许进行自动操作")
 	}
 	if len(handCards) < 2 {
@@ -138,12 +138,4 @@ func (h *zixunStateAI) hu(player *majong.Player) interfaces.AIEvent {
 		ID:      majong.EventID_event_hu_request,
 		Context: data,
 	}
-}
-
-func (h *zixunStateAI) getZixunPlayer(mjContext *majong.MajongContext) uint64 {
-	zxType := mjContext.GetZixunType()
-	if zxType == majong.ZixunType_ZXT_PENG {
-		return mjContext.GetLastPengPlayer()
-	}
-	return mjContext.GetLastMopaiPlayer()
 }

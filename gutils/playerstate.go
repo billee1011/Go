@@ -35,3 +35,16 @@ func IsHu(player *majongpb.Player) bool {
 	}
 	return false
 }
+
+// GetZixunPlayer 获取当前自询的玩家
+func GetZixunPlayer(mjContext *majongpb.MajongContext) uint64 {
+	zxType := mjContext.GetZixunType()
+	switch zxType {
+	case majongpb.ZixunType_ZXT_PENG:
+		return mjContext.GetLastPengPlayer()
+	case majongpb.ZixunType_ZXT_CHI:
+		return mjContext.GetLastChiPlayer()
+	default:
+		return mjContext.GetLastMopaiPlayer()
+	}
+}

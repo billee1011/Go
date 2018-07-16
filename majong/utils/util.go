@@ -569,3 +569,17 @@ func GetAvailableWallCardsNum(flow interfaces.MajongFlow) int {
 func CardsToInt(cards []*majongpb.Card) ([]int32, error) {
 	return gutils.ServerCards2Int32(cards), nil
 }
+
+// CheckHuByRemoveGangCards 移除杠牌进行查胡
+func CheckHuByRemoveGangCards(player *majongpb.Player, gangCard *majongpb.Card, gangCardNum int) bool {
+	handCards := player.GetHandCards()
+	newcards := make([]*majongpb.Card, 0, len(handCards))
+	newcards = append(newcards, handCards...)
+	newcards, _ = RemoveCards(newcards, gangCard, gangCardNum)
+	laizi := make(map[Card]bool)
+	huCards, _ := GetTingCards(newcards, laizi)
+	if len(huCards) > 0 && ContainHuCards(huCards, HuCardsToUtilCards(player.HuCards)) {
+		return true
+	}
+	return false
+}
