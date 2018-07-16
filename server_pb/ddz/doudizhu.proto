@@ -57,10 +57,12 @@ message DDZContext {
     bool anti_spring = 22;          //反春天(地主只出了一次牌)
     //配牌
     string peipai = 23;             //测试配牌
-    repeated uint64 count_down_players = 24;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
-    bytes startTime = 25;           //开始倒计时时间
-    uint32 duration = 26;           //倒计时时间
     //恢复对局
-    repeated uint64 grabbed_players = 27;//已操作(抢/不抢)玩家id，不包括叫地主
-    repeated uint64 doubled_players = 28;//已操作(加倍/不加倍)玩家id
+    uint64 call_player_id = 24;     //开局叫地主玩家id
+    repeated uint64 grabbed_players = 25;//已操作(抢/不抢)玩家id，不包括叫地主
+    repeated uint64 doubled_players = 26;//已操作(加倍/不加倍)玩家id
+    //倒计时
+    repeated uint64 count_down_players = 27;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
+    bytes startTime = 28;           //开始倒计时时间
+    uint32 duration = 29;           //倒计时时间
 }

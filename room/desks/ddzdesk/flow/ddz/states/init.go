@@ -37,6 +37,7 @@ func (s *initState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	callPlayer := players[i] //叫地主玩家
 	context := getDDZContext(m)
 	context.CurrentPlayerId = callPlayer
+	context.CallPlayerId = callPlayer
 	broadcast(m, msgid.MsgID_ROOM_DDZ_START_GAME_NTF, &room.DDZStartGameNtf{
 		PlayerId:  &callPlayer,
 		NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DEAL),
