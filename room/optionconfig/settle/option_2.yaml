@@ -9,6 +9,9 @@ gang_value:
 # 总结算记录
 need_bill_deatils: true # 单局结算详情  
 
+# 总结算记录
+need_bill_deatils: true # 单局结算详情 
+
 # 已胡牌玩家(未退出)可参与的结算
 huPlayer_can_settle:
  huPlayer_can_gang_settle: false #杠结算
