@@ -65,6 +65,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	} else if context.FirstGrabPlayerId != 0 && grab { //抢地主
 		context.TotalGrab = context.TotalGrab * 2
 		context.LastGrabPlayerId = playerId
+		context.GrabbedPlayers = append(context.GrabbedPlayers, playerId)
 	}
 
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId

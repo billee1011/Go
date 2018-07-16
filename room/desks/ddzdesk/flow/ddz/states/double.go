@@ -47,6 +47,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 
 	isDouble := message.IsDouble
 	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble //记录该玩家加倍
+	context.DoubledPlayers = append(context.DoubledPlayers, playerId)
 	if isDouble {
 		context.TotalDouble = context.TotalDouble * 2
 	}
