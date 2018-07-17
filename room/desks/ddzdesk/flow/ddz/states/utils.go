@@ -11,6 +11,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"math/rand"
+	"steve/client_pb/room"
+	"steve/majong/global"
+	"steve/server_pb/majong"
 	"strconv"
 )
 
@@ -194,4 +197,26 @@ func If(judge bool, trueReturn interface{}, falseReturn interface{}) interface{}
 	} else {
 		return falseReturn
 	}
+}
+
+// TODO: 和麻将统一
+func OnCartoonFinish(curState int, nextState int, needCartoonType room.CartoonType, eventContext []byte) (newState int, err error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":         "OnCartoonFinish",
+		"cur_state":         curState,
+		"next_state":        nextState,
+		"need_cartoon_type": needCartoonType,
+	})
+
+	req := new(majong.CartoonFinishRequestEvent)
+	if marshalErr := proto.Unmarshal(eventContext, req); marshalErr != nil {
+		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
+		return curState, global.ErrUnmarshalEvent
+	}
+	reqCartoonType := req.GetCartoonType()
+	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
+	if reqCartoonType != int32(needCartoonType) {
+		return curState, nil
+	}
+	return nextState, nil
 }

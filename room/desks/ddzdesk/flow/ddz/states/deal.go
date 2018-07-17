@@ -30,13 +30,15 @@ func (s *dealState) OnEnter(m machine.Machine) {
 	PeiPai(wallCards, getDDZContext(m).Peipai)
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_DEAL
+	context.CurrentPlayerId = context.CallPlayerId
 	players := context.GetPlayers()
 	for i := range players {
 		players[i].HandCards = DDZSortDescend(wallCards[i*17 : (i+1)*17])
 		players[i].OutCards = make([]uint32, 0)
 		sendToPlayer(m, players[i].PlayerId, msgid.MsgID_ROOM_DDZ_DEAL_NTF, &room.DDZDealNtf{
-			Cards:     players[i].HandCards,
-			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_CALL),
+			Cards:        players[i].HandCards,
+			NextStage:    GenNextStage(room.DDZStage_DDZ_STAGE_CALL),
+			CallPlayerId: &context.CallPlayerId,
 		})
 	}
 	context.WallCards = wallCards[51:]
@@ -58,8 +60,7 @@ func (s *dealState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_grab), nil
 	}
 	if event.EventID == int(majong.EventID_event_cartoon_finish_request) { //TODO: Cartoon Finish should be common
-		setMachineAutoEvent(m, machine.Event{EventID: int(ddz.EventID_event_deal_finish), EventData: nil}, 0)
-		return int(ddz.StateID_state_deal), nil
+		return OnCartoonFinish(int(ddz.StateID_state_deal), int(ddz.StateID_state_grab), room.CartoonType_CTNT_DDZ_FAPAI, event.EventData)
 	}
 	return int(ddz.StateID_state_deal), global.ErrInvalidEvent
 }

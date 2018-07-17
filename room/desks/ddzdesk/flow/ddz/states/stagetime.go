@@ -5,7 +5,7 @@ import (
 )
 
 var StageTime = map[room.DDZStage]uint32{
-	room.DDZStage_DDZ_STAGE_DEAL:    2,
+	room.DDZStage_DDZ_STAGE_DEAL:    4,
 	room.DDZStage_DDZ_STAGE_CALL:    15,
 	room.DDZStage_DDZ_STAGE_GRAB:    15,
 	room.DDZStage_DDZ_STAGE_DOUBLE:  15,
