@@ -131,6 +131,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.AllAbandonCount > 3 { //三轮重新发牌没人叫地主，随机确定庄家
 		context.AllAbandonCount = 0
 		lordPlayerId = getRandPlayerId(context.GetPlayers())
+		context.TotalGrab = 1
 	}
 
 	if lordPlayerId != 0 {
