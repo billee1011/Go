@@ -1,7 +1,6 @@
-package mgr
+package room2
 
 import (
-	"steve/room2"
 	"sync"
 )
 
@@ -19,18 +18,18 @@ func GetRoomPlayerMgr() RoomPlayerMgr{
 	return roomPlayerMgr
 }
 
-func (pm *RoomPlayerMgr) GetPlayer(playerID uint64) *room2.RoomPlayer {
+func (pm *RoomPlayerMgr) GetPlayer(playerID uint64) *RoomPlayer {
 	result,ok  := pm.playerMap.Load(playerID)
 	if !ok {
 		return nil
 	}
-	player := result.(room2.RoomPlayer)
+	player := result.(RoomPlayer)
 	return &player
 }
 
 //TODO 第一次进入房间服初始化
 func (pm *RoomPlayerMgr) InitPlayer(playerID uint64) {
-	player := room2.RoomPlayer{
+	player := RoomPlayer{
 		PlayerID:playerID,
 	}
 	pm.playerMap.Store(playerID,player)
