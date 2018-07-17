@@ -109,32 +109,7 @@ func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) 
 
 // OnEntry 进入状态，进入定缺状态，发送到客户端，进入定缺tiao jian
 func (s *DingqueState) OnEntry(flow interfaces.MajongFlow) {
-	// 广播通知客户端进入定缺
-	for _, player := range flow.GetMajongContext().GetPlayers() {
-		// 获取推荐定缺
-		dqColor := utils.GetRecommedDingQueColor(player.GetHandCards())
-		if ok := checkDingQueReq(dqColor); !ok {
-			fmt.Errorf("定缺事件失败-定缺花色不存在: %v ", dqColor)
-			dqColor = majongpb.CardColor_ColorWan
-		}
-		// 先设置，用于超时AI
-		player.DingqueColor = dqColor
-		dingQueNtf := &room.RoomDingqueNtf{
-			PlayerId: proto.Uint64(player.GetPalyerId()),
-			Color:    gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
-		}
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-			MsgID: int(msgid.MsgID_ROOM_DINGQUE_NTF),
-			Msg:   dingQueNtf,
-		})
-		// 日志
-		logrus.WithFields(logrus.Fields{
-			"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
-			"dingQueNtf": dingQueNtf,
-		}).Info("-----定缺开始-进入定缺状态")
-	}
-	// dingQueNtf := room.RoomDingqueNtf{}
-	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_DINGQUE_NTF, &dingQueNtf)
+	s.notifyPlayerDingQue(flow)
 }
 
 // OnExit 退出状态，定缺完成，发送定缺完成通知，进入下一个状态
@@ -197,4 +172,31 @@ func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
 		"msgID":      msgid.MsgID_ROOM_DINGQUE_RSP,
 		"dingQueNtf": toClientRsq,
 	}).Info("-----定缺成功应答")
+}
+
+// notifyPlayerDingQueColor 通知玩家定缺
+func (s *DingqueState) notifyPlayerDingQue(flow interfaces.MajongFlow) {
+	// 广播通知客户端进入定缺
+	for _, player := range flow.GetMajongContext().GetPlayers() {
+		// 获取推荐定缺
+		dqColor := utils.GetRecommedDingQueColor(player.GetHandCards())
+		if ok := checkDingQueReq(dqColor); !ok {
+			fmt.Errorf("定缺事件失败-定缺花色不存在: %v ", dqColor)
+			dqColor = majongpb.CardColor_ColorWan
+		}
+		// 先设置，用于超时AI
+		player.DingqueColor = dqColor
+		dingQueNtf := &room.RoomDingqueNtf{
+			Color: gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
+		}
+		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_DINGQUE_NTF),
+			Msg:   dingQueNtf,
+		})
+		// 日志
+		logrus.WithFields(logrus.Fields{
+			"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
+			"dingQueNtf": dingQueNtf,
+		}).Info("-----定缺开始-进入定缺状态")
+	}
 }
