@@ -346,7 +346,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), mjContext.GetLastMopaiCard())
 	}
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	if len(zixunNtf.GetCanTingCardInfo()) != 0 && !gutils.IsTing(player) && xpOption.EnableTingButton && isNomarlZixun {
+	if len(zixunNtf.GetCanTingCardInfo()) != 0 && !gutils.IsTing(player) && xpOption.EnableTingButton {
 		s.addTingButton(mjContext, player, zixunNtf, record)
 	}
 	s.recordZixunMsg(record, zixunNtf)
@@ -382,7 +382,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 func (s *ZiXunState) addTingButton(mjContext *majongpb.MajongContext, player *majongpb.Player, zixunNtf *room.RoomZixunNtf, record *majongpb.ZiXunRecord) {
 	zixunNtf.EnableTing = proto.Bool(true)
 	if *zixunNtf.EnableTing {
-		if player.GetZixunCount() == int32(1) {
+		if int(player.GetZixunCount())-len(player.GetChiCards())-len(player.GetPengCards()) == 1 {
 			zixunNtf.TingType = room.TingType_TT_TIAN_TING.Enum()
 			record.TingType = majongpb.TingType_TT_TIAN_TING
 		} else {
