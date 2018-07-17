@@ -5,12 +5,12 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/majong/settle"
 )
 
 // HuSettleState 杠结算状态
@@ -123,8 +123,8 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		params.HuType = majongpb.HuType_hu_ganghoupao
 		params.GangCard = *GangCards[len(GangCards)-1]
 	}
-	settlerFactory := majong.SettlerFactory{}
-	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler(mjContext.GameId).Settle(params)
 	if s.isAfterGang(mjContext) {
 		lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
 		if lastSettleInfo.SettleType == majongpb.SettleType_settle_angang || lastSettleInfo.SettleType == majongpb.SettleType_settle_minggang || lastSettleInfo.SettleType == majongpb.SettleType_settle_bugang {
