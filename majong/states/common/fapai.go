@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 
@@ -153,16 +154,8 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.StateID {
 	//先要判断游戏有没有换三张的玩法，有换三张的玩法，再判断需不需要配置换三张
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	if xpOption.Hnz.Enable {
-		isHsz := mjContext.GetOption().GetHasHuansanzhang()
-		logrus.WithFields(logrus.Fields{
-			"func_name": "FapaiState.getNextState",
-			"isHsz":     isHsz,
-			"GameId":    mjContext.GetGameId(),
-		}).Infoln("下一状态获取")
-		if isHsz {
-			return majongpb.StateID_state_huansanzhang
-		}
+	if gutils.GameHasHszState(mjContext) {
+		return majongpb.StateID_state_huansanzhang
 	}
 	if xpOption.EnableDingque {
 		return majongpb.StateID_state_dingque

@@ -134,3 +134,12 @@ func GetPlayerSeat(renNum, playerIndex int) int {
 	}[renNum]
 	return indexs[playerIndex]
 }
+
+// GameHasHszState 当前游戏是否有换三张状态
+func GameHasHszState(mjContext *majongpb.MajongContext) bool {
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+	if xpOption.Hnz.Enable && mjContext.GetOption().GetHasHuansanzhang() {
+		return true
+	}
+	return false
+}
