@@ -1,12 +1,14 @@
 package desk
 
+import "steve/room2/common"
+
 type DeskEvent struct {
 	EventID  int
-	ParamLen int
-	Params   []interface{}
+	EventType int      // 事件类型
+	Params   common.EventParams
 	Desk     *Desk
 }
 
-func NewDeskEvent(id int, len int, desk *Desk, params ...interface{}) DeskEvent {
-	return DeskEvent{EventID: id, ParamLen: len, Params: params, Desk: desk}
+func NewDeskEvent(id int,eventType int, desk *Desk, params common.EventParams) DeskEvent {
+	return DeskEvent{EventID: id,EventType:eventType, Params: params, Desk: desk}
 }

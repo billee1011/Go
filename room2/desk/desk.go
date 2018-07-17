@@ -3,13 +3,15 @@ package desk
 import (
 	"steve/room2/desk/models"
 	"github.com/Sirupsen/logrus"
+	"steve/room2/desk/models/public"
+	"steve/room2"
 )
 
 type Desk struct {
 	uid            uint64
 	gameID         int
 	config *DeskConfig
-	models []models.DeskModel
+	models map[string]models.DeskModel
 }
 
 func NewDesk(uid uint64, gameId int,config *DeskConfig) Desk {
@@ -22,15 +24,39 @@ func NewDesk(uid uint64, gameId int,config *DeskConfig) Desk {
 }
 
 func (desk Desk) InitModel(){
-	desk.models = make([]models.DeskModel,len(desk.config.Models))
-	for index,name := range desk.config.Models{
+	desk.models = make(map[string]models.DeskModel,len(desk.config.Models))
+	for _,name := range desk.config.Models{
 		model := models.CreateModel(name,&desk)
 		if model == nil{
 			logrus.Error("创建Model失败["+name+"]")
 			continue
 		}
-		desk.models[index] = model
+		desk.models[name] = model
 	}
+}
+
+func (desk Desk) GetPlayer(playerId uint64) *room2.RoomPlayer{
+	players := desk.GetDeskPlayers()
+	for _,player := range players{
+		if player.GetPlayerID()==playerId {
+			return player
+		}
+	}
+	return nil
+}
+
+func (desk Desk) GetDeskPlayers() []*room2.RoomPlayer{
+	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayers()
+	return players
+}
+
+func (desk Desk) GetDeskPlayerIDs() []uint64{
+	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayerIDs()
+	return players
+}
+
+func (desk Desk) GetModel(name string) models.DeskModel{
+	return desk.models[name]
 }
 
 func (desk Desk) GetUid() uint64 {

@@ -3,6 +3,7 @@ package desk
 import (
 	"sync"
 	"sync/atomic"
+	"steve/room2/desk/contexts"
 )
 
 type DeskMgr struct {
@@ -34,14 +35,15 @@ func (mgr DeskMgr) CreateDesk(players []uint64, gameID int) Desk{
 	var context interface{}
 	switch gameID{
 	case GameId_GAMEID_DOUDIZHU:
-		config = NewMjDeskCreateConfig(context)
+		config = NewMjDeskCreateConfig(context,len(players))
 	default:
-		config = NewDDZMDeskCreateConfig(context)
+		config = NewDDZMDeskCreateConfig(context,len(players))
 	}
 
 	id,_ := mgr.allocDeskID()
-	desk := NewDesk(id,gameID,config)
+	desk := NewDesk(id,gameID,&config)
 	desk.InitModel()
+	contexts.CreateMajongContext(desk)
 	return desk
 }
 

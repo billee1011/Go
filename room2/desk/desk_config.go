@@ -8,28 +8,31 @@ import (
 type DeskConfig struct {
 	Models []string
 	Context interface{} //预留gameContext
+	Num int
 }
 
 //默认自带的
 var defaultModels = []string{models.Event,models.Message,models.Request,models.Player,models.Trusteeship}
 
 //麻将
-func NewMjDeskCreateConfig(context interface{}) DeskConfig {
+func NewMjDeskCreateConfig(context interface{},num int) DeskConfig {
 	merage := [][]string{defaultModels}
 	names := util.MergeStringArray(merage)
 	return DeskConfig{
-		Models:names,
+		Models:[]string{models.Event,models.Message,models.Request,models.Player,models.Trusteeship},
 		Context:context,
+		Num:num,
 	}
 }
 
 //斗地主
-func NewDDZMDeskCreateConfig(context interface{}) DeskConfig {
+func NewDDZMDeskCreateConfig(context interface{},num int) DeskConfig {
 	merage := [][]string{defaultModels}
 	names := util.MergeStringArray(merage)
 	return DeskConfig{
 		Models:names,
 		Context:context,
+		Num:num,
 	}
 }
 
