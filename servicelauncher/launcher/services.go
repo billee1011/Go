@@ -7,6 +7,7 @@ import (
 	roomcore "steve/room/core"
 	"steve/serviceloader/loader"
 	"steve/structs/service"
+	"github.com/Sirupsen/logrus"
 )
 
 func Init(args []string) {
@@ -36,5 +37,11 @@ func LoadService(name string, options ...loader.ServiceOption) {
 	case "gateway":
 		service = gatewaycore.NewService()
 	}
-	loader.Run(service, exposer, opt)
+	if service != nil {
+		service.Init(exposer)
+		loader.Run(service, exposer, opt)
+	}else{
+		logrus.Errorln("no service found")
+		panic("no service found")
+	}
 }
