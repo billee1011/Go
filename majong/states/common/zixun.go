@@ -346,7 +346,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), mjContext.GetLastMopaiCard())
 	}
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
-	if len(zixunNtf.GetCanTingCardInfo()) != 0 && !gutils.IsTing(player) && xpOption.EnableTingButton {
+	if len(zixunNtf.GetCanTingCardInfo()) != 0 && !gutils.IsTing(player) && xpOption.EnableTingButton && isNomarlZixun {
 		s.addTingButton(mjContext, player, zixunNtf, record)
 	}
 	s.recordZixunMsg(record, zixunNtf)
