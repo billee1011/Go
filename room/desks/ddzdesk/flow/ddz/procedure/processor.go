@@ -248,6 +248,7 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 		}
 
 		curStage := room.DDZStage(int32(ddzContext.CurStage))
+
 		// 发送游戏信息
 		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
 			Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
