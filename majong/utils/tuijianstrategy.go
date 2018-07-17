@@ -169,7 +169,7 @@ func GetPriorityByColorCard(colorCards []*majongpb.Card) int {
 	}
 	shuns := GetMinShuns(cardCountMap)
 	if len(shuns) >= 2 { //两顺
-		return 12 
+		return 12
 	}
 	if duiCount == 1 { //顺+对
 		return 11
@@ -249,6 +249,8 @@ func GetDuiNumByShunJiaDui(cardCountMap map[int32]int) int {
 			//除去对后，还能组成顺
 			if newShuns := GetMinShuns(newMap); len(newShuns) > 0 {
 				duiCount++
+			} else {
+				newMap[point] = newMap[point] + 2
 			}
 		}
 	}
