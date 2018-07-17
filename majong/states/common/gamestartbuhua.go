@@ -38,6 +38,10 @@ func (bh *GameStartBuhuaState) doBuhua(flow interfaces.MajongFlow) majongpb.Stat
 	buhuaNum := 0
 	//当所有人都没有花牌的时候，结束补花循环
 	for continueBuhua {
+		logrus.WithFields(logrus.Fields{
+			"func_name": "doBuhua",
+			"buhua_num": buhuaNum,
+		}).Info("执行补花")
 		nextBuhuaPlayerID, err := bh.decidedBuhuaType(flow, buhuaPlayerID, buhuaNum)
 		if err != nil {
 			return majongpb.StateID_state_gameover

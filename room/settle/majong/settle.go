@@ -10,6 +10,7 @@ import (
 	"steve/room/interfaces/global"
 	majongpb "steve/server_pb/majong"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -120,6 +121,10 @@ func (majongSettle *majongSettle) RoundSettle(desk interfaces.Desk, mjContext ma
 func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongpb.SettleInfo, desk interfaces.Desk, mjContext majongpb.MajongContext) {
 	// 牌局玩家
 	deskPlayers := desk.GetDeskPlayers()
+	// 结算配置
+	settleOption := mjoption.GetSettleOption(int(mjContext.SettleOptionId))
+	// 番型配置
+	cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
 
 	for i := 0; i < len(deskPlayers); i++ {
 		if deskPlayers[i].IsQuit() {
@@ -132,19 +137,33 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			BillDetail:      make([]*room.BillDetail, 0),
 			BillPlayersInfo: make([]*room.BillPlayerInfo, 0),
 		}
-		totalValue := int32(0)
-		needBillDetails := mjoption.GetSettleOption(int(mjContext.SettleOptionId)).NeedBillDetails
-		if needBillDetails {
-			balanceRsp.BillDetail, totalValue = majongSettle.makeBillDetails(pid, contextSInfos)
-			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(pid, totalValue, nil, mjContext)
-		} else if len(contextSInfos) != 0 {
+		if settleOption.NeedBillDetails {
+			billDetail, totalValue := majongSettle.makeBillDetails(pid, contextSInfos)
+			billPlayersInfo := majongSettle.makeBillPlayerInfo(pid, totalValue, nil, mjContext)
+
+			balanceRsp.BillDetail = append(balanceRsp.BillDetail, billDetail...)
+			balanceRsp.BillPlayersInfo = append(balanceRsp.BillPlayersInfo, billPlayersInfo...)
+		} else {
+			// 一条结算记录
+			if len(contextSInfos) != 1 {
+				// 通知该玩家单局结算信息
+				facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
+				return
+			}
 			sinfo := contextSInfos[0]
-			cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
-			fans := make([]*room.Fan, 0)
-			fans = makeFanType(sinfo.CardType, sinfo.HuaCount, cardOption)
-			wiiners, _ := getWinners(sinfo.Scores)
-			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(wiiners[0], int32(sinfo.CardValue), fans, mjContext)
+			winers, _ := getWinners(sinfo.Scores)
+			if len(winers) == 0 {
+				return
+			}
+			fans := getFans(sinfo.CardType, sinfo.HuaCount, cardOption)
+			billPlayersInfo := majongSettle.makeBillPlayerInfo(winers[0], int32(sinfo.CardValue), fans, mjContext)
+			balanceRsp.BillPlayersInfo = append(balanceRsp.BillPlayersInfo, billPlayersInfo...)
 		}
+		logrus.WithFields(logrus.Fields{
+			"func_name":  "sendRounSettleMessage",
+			"pid":        pid,
+			"balanceRsp": balanceRsp,
+		}).Debugln("通知玩家单局结算信息")
 		// 通知该玩家单局结算信息
 		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 	}

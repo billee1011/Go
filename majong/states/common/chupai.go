@@ -121,7 +121,7 @@ func (s *ChupaiState) checkMingGang(flow interfaces.MajongFlow, player *majongpb
 	num := utils.GetCardNum(outCard, player.GetHandCards())
 	if num == 3 {
 		if gutils.IsHu(player) {
-			return s.checkHuByRemoveGangCards(player, outCard, num)
+			return utils.CheckHuByRemoveGangCards(player, outCard, num)
 		}
 		return true
 	}
@@ -244,19 +244,6 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 func (s *ChupaiState) clearWenxunInfo(player *majongpb.Player) {
 	player.PossibleActions = player.PossibleActions[:0]
 	player.EnbleChiCards = player.EnbleChiCards[:0]
-}
-
-func (s *ChupaiState) checkHuByRemoveGangCards(player *majongpb.Player, gangCard *majongpb.Card, gangCardNum int) bool {
-	handCards := player.GetHandCards()
-	newcards := make([]*majongpb.Card, 0, len(handCards))
-	newcards = append(newcards, handCards...)
-	newcards, _ = utils.RemoveCards(newcards, gangCard, gangCardNum)
-	laizi := make(map[utils.Card]bool)
-	huCards, _ := utils.GetTingCards(newcards, laizi)
-	if len(huCards) > 0 && utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(player.HuCards)) {
-		return true
-	}
-	return false
 }
 
 // OnEntry 进入状态

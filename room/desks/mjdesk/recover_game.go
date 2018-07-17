@@ -86,7 +86,7 @@ func getRecoverPlayerInfo(reqPlayerID uint64, d *desk) (recoverPlayerInfo []*roo
 			Color:         gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
 			IsTuoguan:     proto.Bool(facade.GetDeskPlayerByID(d, playerID).IsTuoguan()),
-			IsTing:        proto.Bool(player.GetTingStateInfo().GetIsTing()),
+			IsTing:        proto.Bool(gutils.IsTing(player)),
 			TingType:      getTingType(player),
 		}
 

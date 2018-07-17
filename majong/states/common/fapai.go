@@ -104,23 +104,24 @@ func (f *FapaiState) fapai(flow interfaces.MajongFlow) {
 	case mjoption.NomarlFapai:
 		{
 			f.fapaiToPlayer(flow, zjPlayer, 1)
-
-			for i := 0; i < playerCount; i++ {
-				player := majongContext.Players[(i+zjIndex)%playerCount]
-				f.fapaiToPlayer(flow, player, initHandCardCount)
-			}
+			f.fapaiToPlayers(flow, zjIndex, playerCount)
 		}
 	case mjoption.ErrenFapai:
 		{
-			for i := 0; i < playerCount; i++ {
-				player := majongContext.Players[(i+zjIndex)%playerCount]
-				f.fapaiToPlayer(flow, player, initHandCardCount)
-			}
+			f.fapaiToPlayers(flow, zjIndex, playerCount)
 		}
 	}
 	majongContext.LastMopaiPlayer = zjPlayer.GetPalyerId()
 	zjHandCards := zjPlayer.GetHandCards()
 	majongContext.LastMopaiCard = zjHandCards[len(zjHandCards)-1]
+}
+
+func (f *FapaiState) fapaiToPlayers(flow interfaces.MajongFlow, zjIndex int, playerCount int) {
+	mjContext := flow.GetMajongContext()
+	for i := 0; i < playerCount; i++ {
+		player := mjContext.Players[(i+zjIndex)%playerCount]
+		f.fapaiToPlayer(flow, player, initHandCardCount)
+	}
 }
 
 // notifyPlayer 通知玩家发牌消息
@@ -167,7 +168,6 @@ func (f *FapaiState) getNextState(mjContext *majongpb.MajongContext) majongpb.St
 		return majongpb.StateID_state_dingque
 	}
 	if xpOption.EnableKaijuAddflower {
-		//TODO：有开局补花的话，跳转到全局补花（二人麻将暂时不考虑，先将血流血战代码选项化）
 		return majongpb.StateID_state_gamestart_buhua
 	}
 	return majongpb.StateID_state_zixun
