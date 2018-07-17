@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package match;
+
+// AddContinueDeskReq 添加续局牌桌请求
+message AddContinueDeskReq {
+    repeated uint64 players = 1;    // 玩家列表
+    int32 game_id = 2;              // 游戏 ID
+}
+
+// AddContinueDeskRsp 添加续局牌桌应答
+message AddContinueDeskRsp {
+}
+
+service Match {
+    rpc AddContinueDesk(AddContinueDeskReq) returns (AddContinueDeskRsp) {}
+}
