@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"math/rand"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
@@ -118,13 +117,13 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	if context.CurStage == ddz.DDZStage_DDZ_STAGE_DEAL {
 		context.GrabbedCount = 0
+		context.CallPlayerId = getRandPlayerId(context.GetPlayers())
 		return int(ddz.StateID_state_deal), nil //重新发牌
 	}
 
-	if context.AllAbandonCount >= 3 { //三轮发牌没人叫地主，随机确定庄家
+	if context.AllAbandonCount >= 3 { //三轮重新发牌没人叫地主，随机确定庄家
 		context.AllAbandonCount = 0
-		i := rand.Intn(3)
-		lordPlayerId = context.GetPlayers()[i+1].PlayerId
+		lordPlayerId = getRandPlayerId(context.GetPlayers())
 	}
 
 	if lordPlayerId != 0 {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"math/rand"
 	"strconv"
 )
 
@@ -69,6 +70,12 @@ func getPlayerIds(m machine.Machine) []uint64 {
 
 func isValidPlayer(context *ddz.DDZContext, id uint64) bool {
 	return GetPlayerByID(context.GetPlayers(), id) != nil
+}
+
+func getRandPlayerId(players []*ddz.Player) uint64 {
+	i := rand.Intn(len(players))
+	playerId := players[i].PlayerId
+	return playerId
 }
 
 //GetPlayerByID 根据玩家id获取玩家

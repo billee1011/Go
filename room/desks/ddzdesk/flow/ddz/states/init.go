@@ -4,7 +4,6 @@ import (
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 
-	"math/rand"
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 
@@ -27,15 +26,13 @@ func (s *initState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_init), nil
 	}
 	logrus.WithField("context", getDDZContext(m)).Debugln("开始游戏")
-	players := getPlayerIds(m)
-	if len(players) != 3 {
+	context := getDDZContext(m)
+	if len(context.GetPlayers()) != 3 {
 		return int(ddz.StateID_state_init), errors.New("玩家人数错误")
 	}
 
 	// 开局随即确定一个叫地主玩家,然后广播通知游戏开始
-	i := rand.Intn(len(players))
-	callPlayer := players[i] //叫地主玩家
-	context := getDDZContext(m)
+	callPlayer := getRandPlayerId(context.GetPlayers())
 	context.CurrentPlayerId = callPlayer
 	context.CallPlayerId = callPlayer
 	broadcast(m, msgid.MsgID_ROOM_DDZ_START_GAME_NTF, &room.DDZStartGameNtf{
