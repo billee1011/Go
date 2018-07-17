@@ -297,6 +297,12 @@ func GetMaxCard(cards []Poker) *Poker {
 	return &cards[len(cards)-1]
 }
 
+// GetMinCard 获取一组牌中最小的那张牌
+func GetMinCard(cards []Poker) *Poker {
+	DDZPokerSort(cards)
+	return &cards[0]
+}
+
 // 获取最大相同点数的牌, 如 444555533 返回 5555
 func GetMaxSamePointCards(cards []Poker) []Poker {
 	pointWeight, count := GetMaxSamePoint(cards)

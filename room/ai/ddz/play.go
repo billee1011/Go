@@ -465,13 +465,15 @@ func GetMinBiggerShunzi(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 顺子检测
-	for i := 0; i < lenSpecialPoke-1; i++ {
-		if speciPoke[i+1].PointWeight-speciPoke[i].PointWeight != 1 {
-			logEntry.Errorln("参数错误2")
-			return false, nil
-		}
+	// 是否是顺子
+	bSuc, _ := IsShunZi(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是顺子")
+		return false, nil
 	}
+
+	// 顺子最小牌的无花色权重
+	minPointWeight := GetMinCard(speciPoke).PointWeight
 
 	// 先排序，从小到大
 	DDZPokerSort(allPokes)
@@ -486,7 +488,7 @@ func GetMinBiggerShunzi(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	var resultStartPokePoint uint32 = 0
 
 	// 规则：若3-4-5-6-7的顺子，则从4-5-6-7-8开始判断，一直判断到10-11-12-13-14
-	for startPokePoint := speciPoke[0].PointWeight + 1; startPokePoint <= uint32(pointWeightA-lenSpecialPoke+1); startPokePoint++ {
+	for startPokePoint := minPointWeight + 1; startPokePoint <= uint32(pointWeightA-lenSpecialPoke+1); startPokePoint++ {
 
 		_, exist := counts[startPokePoint]
 
@@ -557,13 +559,15 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 连对检测
-	for i := 0; i < lenSpecialPoke; i += 2 {
-		if speciPoke[i+1].PointWeight != speciPoke[i].PointWeight {
-			logEntry.Errorln("参数错误2")
-			return false, nil
-		}
+	// 是否是连对
+	bSuc, _ := IsPairs(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是连对")
+		return false, nil
 	}
+
+	// 连对最小牌的无花色权重
+	minPointWeight := GetMinCard(speciPoke).PointWeight
 
 	// 先排序，从小到大
 	DDZPokerSort(allPokes)
@@ -578,7 +582,7 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	var resultStartPokePoint uint32 = 0
 
 	// 办法：若33-44-55-66的连对，则从44-55-66-77开始判断，一直判断到JJ-QQ-KK-AA
-	for startPokePoint := speciPoke[0].PointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpecialPoke/2)+1); startPokePoint++ {
+	for startPokePoint := minPointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpecialPoke/2)+1); startPokePoint++ {
 		count1, _ := counts[startPokePoint]
 		// 连对的起点牌个数要>=2
 		if count1 >= 2 {
