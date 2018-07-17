@@ -2,6 +2,7 @@ package ddz
 
 import (
 	"fmt"
+	"sort"
 	. "steve/room/desks/ddzdesk/flow/ddz/states"
 	"steve/room/interfaces"
 	"steve/server_pb/ddz"
@@ -230,9 +231,11 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 // GetPokeCount 统计各个牌的个数
 // @inparam 	pokes ： 需统计的牌
 // @outparam	map[uint32]uint32 :	key:牌的无花色权重，value:牌的个数
-func GetPokeCount(pokes []Poker) map[uint32]uint32 {
+// @outparam	[]int :	所有牌的无花色权重，已去重，已排序
+func GetPokeCount(pokes []Poker) (map[uint32]uint32, []int) {
 
 	counts := make(map[uint32]uint32)
+	keys := []int{}
 
 	for _, poke := range pokes {
 		pointWeight := poke.PointWeight
@@ -241,12 +244,16 @@ func GetPokeCount(pokes []Poker) map[uint32]uint32 {
 
 		if !exists {
 			counts[pointWeight] = 1
+			keys = append(keys, int(pointWeight))
 		} else {
 			counts[pointWeight] = count + 1
 		}
 	}
 
-	return counts
+	// 排序
+	sort.Ints(keys)
+
+	return counts, keys
 }
 
 // GetBoom 若有炸弹，返回炸弹;没有则返回false
@@ -266,11 +273,13 @@ func GetBoom(allPokes []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	// 统计各个牌的个数
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 炸弹的无花色权重
 	var boomPointWeight uint32 = 0
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if count == 4 {
 			boomPointWeight = pointWeight
 			break
@@ -351,13 +360,15 @@ func GetMinBiggerSingle(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	// 统计各个牌的个数
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=1，且无花色权重比speciPoke大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 1) && (pointWeight > speciPoke[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -397,13 +408,15 @@ func GetMinBiggerPair(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=2的，且无花色权重比speciPoke大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 2) && (pointWeight > speciPoke[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -464,7 +477,7 @@ func GetMinBiggerShunzi(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, _ := GetPokeCount(allPokes)
 
 	// A的无花色权重
 	pointWeightA := 14
@@ -556,7 +569,7 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, _ := GetPokeCount(allPokes)
 
 	// A的无花色权重
 	pointWeightA := 14
@@ -640,13 +653,15 @@ func GetMinBiggerTriple(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=3，且无花色权重比speciPoke大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 3) && (pointWeight > speciPoke[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -702,13 +717,15 @@ func GetMinBigger3And1(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=3，且无花色权重比speciPoke大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 3) && (pointWeight > speciPoke[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -795,13 +812,15 @@ func GetMinBigger3And2(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=3，且无花色权重比speciPoke大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 3) && (pointWeight > speciPoke[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -833,12 +852,14 @@ func GetMinBigger3And2(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			DDZPokerSort(lastPoke)
 
 			//Map<无花色权重点数, 牌的个数>
-			lastCounts := GetPokeCount(lastPoke)
+			lastCounts, keys := GetPokeCount(lastPoke)
 
 			var lastFindPointWeight uint32 = 0
 
 			// 找到个数>=2的即可
-			for pointWeight, count := range lastCounts {
+			for i := 0; i < len(keys); i++ {
+				pointWeight := (uint32)(keys[i])
+				count := lastCounts[pointWeight]
 				if count >= 2 {
 					lastFindPointWeight = pointWeight
 					break
@@ -904,7 +925,7 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, _ := GetPokeCount(allPokes)
 
 	// A的无花色权重
 	pointWeightA := 14
@@ -1026,7 +1047,7 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, _ := GetPokeCount(allPokes)
 
 	// A的无花色权重
 	pointWeightA := 14
@@ -1192,7 +1213,7 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, _ := GetPokeCount(allPokes)
 
 	// A的无花色权重
 	pointWeightA := 14
@@ -1273,12 +1294,14 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(lastPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts = GetPokeCount(lastPokes)
+	counts, keys := GetPokeCount(lastPokes)
 
 	// 存在的对子的无花色权重
 	pairPointWeight := []uint32{}
 
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if count >= 2 {
 			pairPointWeight = append(pairPointWeight, pointWeight)
 		}
@@ -1354,13 +1377,15 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=4，且无花色权重比speciPoke中主体牌大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 4) && (pointWeight > sameCards[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -1463,13 +1488,15 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=4，且无花色权重比speciPoke中主体牌大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 4) && (pointWeight > sameCards[0].PointWeight) {
 			findPointWeight = pointWeight
 			break
@@ -1500,7 +1527,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			DDZPokerSort(lastPoke)
 
 			//Map<无花色权重点数, 牌的个数>
-			lastCounts := GetPokeCount(lastPoke)
+			lastCounts, keys := GetPokeCount(lastPoke)
 
 			// 找到个数>=2的牌即可（不用再判断和主题牌是不是相等了）
 
@@ -1508,7 +1535,9 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			var pair1PointWeight uint32 = 0
 			var pair2PointWeight uint32 = 0
 
-			for pointWeight, count := range lastCounts {
+			for i := 0; i < len(keys); i++ {
+				pointWeight := (uint32)(keys[i])
+				count := lastCounts[pointWeight]
 				if count >= 2 {
 					// 先赋值第一个
 					if pair1PointWeight == 0 {
@@ -1584,13 +1613,15 @@ func GetMinBiggerBoom(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(allPokes)
 
 	//Map<无花色权重点数, 牌的个数>
-	counts := GetPokeCount(allPokes)
+	counts, keys := GetPokeCount(allPokes)
 
 	// 找到的符合条件的牌的无花色权重
 	var findPointWeight uint32 = 0
 
 	// 由于前面已经排序，所以找到个数>=4的，且无花色权重比speciPoke大的牌即可
-	for pointWeight, count := range counts {
+	for i := 0; i < len(keys); i++ {
+		pointWeight := (uint32)(keys[i])
+		count := counts[pointWeight]
 		if (count >= 4) && (pointWeight > speciPoke[0].PointWeight) {
 			findPointWeight = pointWeight
 			break

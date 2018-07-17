@@ -136,7 +136,6 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 
 			ddzPlayerInfo.Lord = &lord
 			ddzPlayerInfo.Tuoguan = &tuoguan
-			//ddzPlayerInfo.Grablord =
 
 			// 叫/抢地主
 			if ddzContext.CurState == ddz.StateID_state_grab {
@@ -254,6 +253,8 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 		if leftTime < 0 {
 			leftTime = 0
 		}
+		leftTimeInt32 := uint32(leftTime.Seconds())
+		logEntry.Debugf("leftTimeInt32 = %v", leftTimeInt32)
 
 		curStage := room.DDZStage(int32(ddzContext.CurStage))
 
@@ -264,7 +265,7 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 				Players: playersInfo, // 每个人的信息
 				Stage: &room.NextStage{
 					Stage: &curStage,
-					Time:  proto.Uint32(uint32(leftTime)),
+					Time:  proto.Uint32(leftTimeInt32),
 				},
 				CurPlayerId: proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
 				Dipai:       ddzContext.GetDipai(),
@@ -284,9 +285,10 @@ func TranslateDDZPlayerToRoomPlayer(ddzPlayer ddz.Player, seat uint32) room.Room
 	if player != nil {
 		coin = player.GetCoin()
 	}
+
 	return room.RoomPlayerInfo{
 		PlayerId: proto.Uint64(playerID),
-		Name:     proto.String(""), // TODO
+		Name:     proto.String("player" + string(playerID)),
 		Coin:     proto.Uint64(coin),
 		Seat:     proto.Uint32(seat),
 		// Location: TODO 没地方拿
