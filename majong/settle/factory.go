@@ -1,6 +1,8 @@
 package settle
 /*
-功能: 结算工厂类：实现所有麻将的结算实现
+功能:
+     结算工厂类：实现所有麻将的结算实现。
+     定义单独的子游戏目录(比如scxl, scxz,ermj)，然后在新建目录内实现自己的gangSettle.go(杠结算), huSettle.go(胡结算), roundSettle.go(单局结算)。
 作者: Sky
 日期: 2018-7-16
  */
@@ -10,6 +12,7 @@ import (
 	"steve/majong/settle/null"
 	"steve/majong/settle/majong"
 )
+// map[游戏Id]*结算管理器
 var mapSettle  map[int32] *settlerMgr
 
 func init() {
@@ -21,7 +24,6 @@ func init() {
 	}
 }
 
-
 // 结算管理器
 type settlerMgr struct {
 	gangSettle interfaces.GangSettle 		// 杠结算
@@ -29,7 +31,7 @@ type settlerMgr struct {
 	roundSettle interfaces.RoundSettle		// 单局结算
 }
 
-// Settle
+// 结算工厂类
 type SettlerFactory struct{}
 
 
