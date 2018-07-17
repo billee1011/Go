@@ -185,6 +185,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	var nextStage room.DDZStage
 	if len(player.HandCards) == 0 {
 		nextStage = room.DDZStage_DDZ_STAGE_OVER
+		nextPlayerId = 0
 	} else {
 		nextStage = room.DDZStage_DDZ_STAGE_PLAYING
 	}
