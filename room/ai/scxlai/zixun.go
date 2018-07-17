@@ -2,6 +2,7 @@ package scxlai
 
 import (
 	"fmt"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/server_pb/majong"
@@ -79,7 +80,8 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 				hasChuPai := false
 				for i := len(handCards) - 1; i >= 0; i-- {
 					hc := handCards[i]
-					if hc.GetColor() == player.GetDingqueColor() {
+					if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
+						hc.GetColor() == player.GetDingqueColor() {
 						aiEvent = h.chupai(player, hc)
 						hasChuPai = true
 						break
