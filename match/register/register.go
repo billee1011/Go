@@ -2,7 +2,7 @@ package register
 
 import (
 	"steve/client_pb/msgid"
-	"steve/match/match"
+	"steve/match/matchv2"
 	"steve/structs/exchanger"
 )
 
@@ -15,8 +15,8 @@ func RegisterHandles(e exchanger.Exchanger) error {
 		}
 	}
 
-	register(msgid.MsgID_MATCH_REQ, match.HandleMatchReq)             // 匹配请求消息
-	register(msgid.MsgID_MATCH_CONTINUE_REQ, match.HandleContinueReq) // 续局请求
+	register(msgid.MsgID_MATCH_REQ, matchv2.HandleMatchReq)             // 匹配请求消息
+	register(msgid.MsgID_MATCH_CONTINUE_REQ, matchv2.HandleContinueReq) // 续局请求
 
 	return nil
 }
