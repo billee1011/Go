@@ -2,10 +2,20 @@ syntax = "proto3";
 
 package match;
 
+// ContinuePlayer 牌桌续局玩家
+message ContinuePlayer {
+    uint64 player_id = 1; // 玩家 ID
+    int32 seat = 2; // 座位号
+    bool win = 3;   // 是否为赢家
+    int32 robot_level = 4;  // 机器人等级，非机器人为 0
+}
+
 // AddContinueDeskReq 添加续局牌桌请求
 message AddContinueDeskReq {
-    repeated uint64 players = 1;    // 玩家列表
+    repeated ContinuePlayer players = 1;    // 玩家列表
     int32 game_id = 2;              // 游戏 ID
+    bool fix_banker = 3;    // 续局后是否固定庄家位置（麻将）
+    int32 banker_seat = 4;  // 续局后庄家座号
 }
 
 // AddContinueDeskRsp 添加续局牌桌应答
