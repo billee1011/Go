@@ -76,7 +76,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.GrabbedCount == 3 { //三个玩家操作完毕
 		if context.FirstGrabPlayerId == 0 { //没人叫地主
 			context.AllAbandonCount++
-			if context.AllAbandonCount < 3 {
+			if context.AllAbandonCount <= 3 {
 				context.CurStage = ddz.DDZStage_DDZ_STAGE_DEAL
 			}
 			nextPlayerId = 0 //重新发牌，没有操作玩家
@@ -125,7 +125,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_deal), nil //重新发牌
 	}
 
-	if context.AllAbandonCount >= 3 { //三轮重新发牌没人叫地主，随机确定庄家
+	if context.AllAbandonCount > 3 { //三轮重新发牌没人叫地主，随机确定庄家
 		context.AllAbandonCount = 0
 		lordPlayerId = getRandPlayerId(context.GetPlayers())
 	}
