@@ -52,83 +52,12 @@ type autoEvent struct {
 
 type desk struct {
 	*deskbase.DeskBase
-	dContext *deskContext           // 牌桌现场
-	settler  interfaces.DeskSettler // 结算器
-	event    chan deskEvent         // 牌桌事件通道
-	cancel   context.CancelFunc     // 取消事件处理
+	dContext     *deskContext                 // 牌桌现场
+	settler      interfaces.DeskSettler       // 结算器
+	event        chan deskEvent               // 牌桌事件通道
+	cancel       context.CancelFunc           // 取消事件处理
+	createOption interfaces.CreateDeskOptions // 创建选项
 }
-
-// // GetUID 获取牌桌 UID
-// func (d *desk) GetUID() uint64 {
-// 	return d.deskUID
-// }
-
-// // GetGameID 获取游戏 ID
-// func (d *desk) GetGameID() int {
-// 	return d.gameID
-// }
-
-// // GetPlayers 获取牌桌玩家数据
-// func (d *desk) GetPlayers() []*room.RoomPlayerInfo {
-// 	logEntry := logrus.WithFields(logrus.Fields{
-// 		"func_name": "desk.GetPlayers",
-// 		"desk_uid":  d.deskUID,
-// 		"game_id":   d.gameID,
-// 	})
-// 	result := []*room.RoomPlayerInfo{}
-
-// 	playerMgr := global.GetPlayerMgr()
-
-// 	for seat, deskPlayer := range d.players {
-// 		player := playerMgr.GetPlayer(deskPlayer.playerID)
-// 		if player == nil {
-// 			logEntry.WithField("player_id", deskPlayer.playerID).Errorln("玩家不存在")
-// 			return nil
-// 		}
-// 		result = append(result, &room.RoomPlayerInfo{
-// 			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
-// 			Coin:     proto.Uint64(player.GetCoin()),
-// 			Seat:     proto.Uint32(uint32(seat)),
-// 		})
-// 	}
-// 	return result
-// }
-
-// // GetPlayers 获取牌桌玩家数据
-// func (d *desk) GetPlayerByPlayerID(palyerID uint64) *room.RoomPlayerInfo {
-// 	logEntry := logrus.WithFields(logrus.Fields{
-// 		"func_name": "desk.GetPlayers",
-// 		"desk_uid":  d.deskUID,
-// 		"game_id":   d.gameID,
-// 	})
-
-// 	playerMgr := global.GetPlayerMgr()
-
-// 	for seat, deskPlayer := range d.players {
-// 		if palyerID != deskPlayer.playerID {
-// 			continue
-// 		}
-// 		player := playerMgr.GetPlayer(deskPlayer.playerID)
-// 		if player == nil {
-// 			logEntry.WithField("player_id", deskPlayer.playerID).Errorln("玩家不存在")
-// 			return nil
-// 		}
-// 		return &room.RoomPlayerInfo{
-// 			PlayerId: proto.Uint64(deskPlayer.GetPlayerID()),
-// 			Coin:     proto.Uint64(player.GetCoin()),
-// 			Seat:     proto.Uint32(uint32(seat)),
-// 		}
-// 	}
-// 	return nil
-// }
-
-// // GetDeskPlayers 获取牌桌玩家
-// func (d *desk) GetDeskPlayers() []interfaces.DeskPlayer {
-// 	result := []interfaces.DeskPlayer{}
-// 	for _, deskPlayer := range d.players {
-// 		result = append(result, deskPlayer)
-// 	}
-// 	return result
 
 // Start 启动牌桌逻辑
 // finish : 当牌桌逻辑完成时调用
@@ -213,6 +142,13 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	})
 }
 
+func (d *desk) selectZhuang() uint32 {
+	if !d.createOption.FixBankerSeat {
+		return 0
+	}
+	return uint32(d.createOption.BankerSeat)
+}
+
 func (d *desk) initMajongContext() error {
 	players := facade.GetDeskPlayerIDs(d)
 	param := server_pb.InitMajongContextParams{
@@ -228,11 +164,8 @@ func (d *desk) initMajongContext() error {
 				NeedDeployFx:   handle.GetHSZFangXiang(d.GetGameID()) != -1,
 				HuansanzhangFx: int32(handle.GetHSZFangXiang(d.GetGameID())),
 			}, //设置换三张方向
-			Zhuang: &server_pb.Zhuang{
-				NeedDeployZhuang: handle.GetZhuangIndex(d.GetGameID()) != -1,
-				ZhuangIndex:      int32(handle.GetZhuangIndex(d.GetGameID())),
-			},
 		}, //设置庄家
+		ZhuangIndex:  d.selectZhuang(), // TODO
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
@@ -539,11 +472,27 @@ func (d *desk) processEvent(eventID server_pb.EventID, eventContext []byte) {
 	}
 }
 
+func (d *desk) getWinners() []uint64 {
+	statistics := d.settler.GetStatistics()
+	winners := make([]uint64, 0, len(statistics))
+	players := d.GetDeskPlayers()
+
+	for _, player := range players {
+		playerID := player.GetPlayerID()
+		val, ok := statistics[playerID]
+		if !ok || val >= 0 {
+			winners = append(winners, playerID)
+		}
+	}
+	return winners
+}
+
 // checkGameOver 检查游戏结束
 func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
 	mjContext := d.dContext.mjContext
 	// 游戏结束
 	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
+		d.ContinueDesk(true, int(mjContext.GetNextBankerSeat()), d.getWinners())
 		d.settler.RoundSettle(d, mjContext)
 		logEntry.Infoln("游戏结束状态")
 		d.cancel()

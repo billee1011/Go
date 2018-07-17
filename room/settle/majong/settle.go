@@ -41,6 +41,16 @@ func NewMajongSettle() *majongSettle {
 	}
 }
 
+func (majongSettle *majongSettle) GetStatistics() map[uint64]int64 {
+	statistics := make(map[uint64]int64, 4)
+	for _, settleMap := range majongSettle.settleMap {
+		for playerID, value := range settleMap {
+			statistics[playerID] = statistics[playerID] + value
+		}
+	}
+	return statistics
+}
+
 // Settle 单次结算
 func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongpb.MajongContext) {
 

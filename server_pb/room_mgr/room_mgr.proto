@@ -11,12 +11,15 @@ enum RoomError {
 message DeskPlayer {
     uint64 player_id = 1;   // 玩家 ID 
     int32 robot_level = 2;  // 机器人等级， 为0时则为普通玩家
+    uint32 seat = 3;        // 座号
 }
 
 // 创建桌子的请求
 message CreateDeskRequest {
     uint32 game_id = 1;
     repeated DeskPlayer players = 2;
+    bool fix_banker = 3;    // 是否固定庄家位置
+    uint32 banker_seat = 4; // 庄家位置
 }
 
 // 创建桌子的回复

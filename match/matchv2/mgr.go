@@ -3,6 +3,8 @@ package matchv2
 import (
 	"steve/client_pb/room"
 	"steve/common/data/player"
+	"steve/gutils"
+	"steve/match/web"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -48,17 +50,17 @@ func init() {
 }
 
 // addContinueDesk 添加续局牌桌
-// TODO: 机器人续局
-func (m *mgr) addContinueDesk(players []deskPlayer, gameID int) {
+func (m *mgr) addContinueDesk(players []deskPlayer, gameID int, fixBanker bool, bankerSeat int) {
 	m.maxDeskID++
 	// 有玩家在匹配中，不创建
 	for _, player := range players {
 		if _, ok := m.playerDesk[player.playerID]; ok {
+			logrus.WithField("player_id", player.playerID).Infoln("添加续局牌桌时玩家已经在匹配中了")
 			return
 		}
 	}
 	deskID := m.maxDeskID
-	desk := createContinueDesk(gameID, deskID, players)
+	desk := createContinueDesk(gameID, deskID, players, fixBanker, bankerSeat)
 	for _, player := range players {
 		m.playerDesk[player.playerID] = deskID
 	}
@@ -81,11 +83,10 @@ func (m *mgr) dismissContinueDesk(desk *desk) {
 	delete(m.desks, desk.deskID)
 	// 已准备的玩家重新入队
 	for _, player := range readyPlayers {
-		m.acceptApplyPlayer(&applyPlayer{
-			playerID:    player.playerID,
-			gameID:      desk.gameID,
-			isContinual: false,
-		})
+		if player.robotLv != 0 { // 机器人不入队
+			continue
+		}
+		m.acceptApplyPlayer(desk.gameID, player.playerID, false)
 	}
 }
 
@@ -107,7 +108,7 @@ func (m *mgr) run() {
 		select {
 		case ap := <-m.applyChannel:
 			{
-				m.acceptApplyPlayer(&ap)
+				m.acceptApplyPlayer(ap.gameID, ap.playerID, ap.isContinual)
 			}
 		case <-robotTick.C:
 			{
@@ -122,20 +123,21 @@ func (m *mgr) run() {
 }
 
 // acceptContinuePlayer 接收续局匹配玩家， 返回是否接收成功
-func (m *mgr) acceptContinuePlayer(ap *applyPlayer) bool {
+func (m *mgr) acceptContinuePlayer(gameID int, playerID uint64, robotLv int) bool {
 	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "mgr.acceptContinuePlayer",
-		"player_id": ap.playerID,
+		"func_name":   "mgr.acceptContinuePlayer",
+		"player_id":   playerID,
+		"robot_level": robotLv,
 	})
 
-	deskID, ok := m.playerDesk[ap.playerID]
+	deskID, ok := m.playerDesk[playerID]
 	if !ok {
 		return false
 	}
 	entry = entry.WithField("desk_id", deskID)
 	desk, ok := m.desks[deskID]
 	if !ok {
-		delete(m.playerDesk, ap.playerID)
+		delete(m.playerDesk, playerID)
 		entry.Errorln("牌桌不存在")
 		return false
 	}
@@ -143,29 +145,32 @@ func (m *mgr) acceptContinuePlayer(ap *applyPlayer) bool {
 	if !desk.isContinue {
 		return true
 	}
-	if _, ok := desk.continueWaitPlayers[ap.playerID]; !ok {
+	player, ok := desk.continueWaitPlayers[playerID]
+	if !ok {
 		return true
 	}
-	delete(desk.continueWaitPlayers, ap.playerID)
-	m.add2Desk(ap.gameID, ap.playerID, 0, desk)
+	entry.Debugln("接收续局玩家")
+	delete(desk.continueWaitPlayers, playerID)
+	m.addDeskPlayer2Desk(&player, desk)
 	return true
 }
 
 // acceptApplyPlayer 接收申请匹配玩家
-func (m *mgr) acceptApplyPlayer(ap *applyPlayer) {
-	logrus.WithFields(logrus.Fields{
-		"func_name":   "mgr.acceptApplyPlayer",
-		"player_id":   ap.playerID,
-		"game_id":     ap.gameID,
-		"is_continue": ap.isContinual,
-	}).Debugln("接收申请匹配玩家")
+func (m *mgr) acceptApplyPlayer(gameID int, playerID uint64, isContinue bool) {
 	// 续局匹配
-	if ap.isContinual {
-		if m.acceptContinuePlayer(ap) {
+	if isContinue {
+		if m.acceptContinuePlayer(gameID, playerID, 0) {
 			return
 		}
 	}
-	deskID, ok := m.playerDesk[ap.playerID]
+	deskID, ok := m.playerDesk[playerID]
+	logrus.WithFields(logrus.Fields{
+		"func_name":   "mgr.acceptApplyPlayer",
+		"player_id":   playerID,
+		"game_id":     gameID,
+		"is_continue": isContinue,
+		"old_desk_id": deskID,
+	}).Debugln("接收申请匹配玩家")
 	if ok {
 		// 等待续局中
 		if desk, exist := m.desks[deskID]; exist && desk.isContinue {
@@ -176,27 +181,28 @@ func (m *mgr) acceptApplyPlayer(ap *applyPlayer) {
 	}
 	// 加入到牌桌
 	for _, desk := range m.desks {
-		if desk.gameID != ap.gameID {
+		if desk.gameID != gameID || desk.isContinue {
 			continue
 		}
-		m.add2Desk(ap.gameID, ap.playerID, 0, desk)
+		m.addDeskPlayer2Desk(&deskPlayer{
+			playerID: playerID,
+		}, desk)
 		return
 	}
 	m.maxDeskID++
-	desk := createDesk(ap.gameID, m.maxDeskID)
+	desk := createDesk(gameID, m.maxDeskID)
 	m.desks[desk.deskID] = desk
-	m.add2Desk(ap.gameID, ap.playerID, 0, desk)
+	m.addDeskPlayer2Desk(&deskPlayer{
+		playerID: playerID,
+	}, desk)
 }
 
-// add2Desk 添加到牌桌
-func (m *mgr) add2Desk(gameID int, playerID uint64, robotLv int, desk *desk) {
-	desk.players = append(desk.players, deskPlayer{
-		playerID: playerID,
-		robotLv:  robotLv,
-	})
-	m.playerDesk[playerID] = desk.deskID
+// addDeskPlayer2Desk 将玩家添加到牌桌
+func (m *mgr) addDeskPlayer2Desk(player *deskPlayer, desk *desk) {
+	desk.players = append(desk.players, *player)
+	m.playerDesk[player.playerID] = desk.deskID
 	m.removeOfflines(desk)
-	config := m.gameConfig[gameID]
+	config := m.gameConfig[desk.gameID]
 	if len(desk.players) >= config.needPlayerCount {
 		m.onDeskFinish(desk)
 	}
@@ -212,15 +218,15 @@ func (m *mgr) fillRobots(desk *desk) {
 	}).Debugln("加入机器人")
 	curPlayerCount := len(desk.players)
 	for i := curPlayerCount; i < config.needPlayerCount; i++ {
-		m.add2Desk(desk.gameID, GetIdleRobot(1), 1, desk)
+		m.addDeskPlayer2Desk(&deskPlayer{
+			playerID: GetIdleRobot(1),
+			robotLv:  1,
+		}, desk)
 	}
 }
 
 // removeOfflines 移除 desk 中的离线玩家
 func (m *mgr) removeOfflines(desk *desk) {
-	// entry := logrus.WithFields(logrus.Fields{
-	// 	"desk": fmt.Sprintf("%#v", desk),
-	// })
 	newPlayers := make([]deskPlayer, 0, len(desk.players))
 	for _, deskPlayer := range desk.players {
 		// 机器人不移除
@@ -236,7 +242,6 @@ func (m *mgr) removeOfflines(desk *desk) {
 		}
 	}
 	desk.players = newPlayers
-	// entry.WithField("new_players", desk.players).Debugln("移除离线玩家")
 }
 
 // onDeskFinish 牌桌匹配完成
@@ -260,8 +265,7 @@ func (m *mgr) handleRobotTick() {
 	}
 	for _, deskID := range deskIDs {
 		desk := m.desks[deskID]
-		// 暂定 20s 加入机器人，后续更改为配置项
-		if time.Now().Sub(desk.createTime) >= time.Second*20 {
+		if !desk.isContinue && time.Now().Sub(desk.createTime) >= web.GetRobotJoinTime() {
 			m.fillRobots(desk)
 		}
 	}
@@ -280,9 +284,42 @@ func (m *mgr) checkContinueDesks() {
 		if !desk.isContinue {
 			continue
 		}
-		// 超过 20s 解散
-		if time.Now().Sub(desk.createTime) >= time.Second*20 {
+		interval := time.Now().Sub(desk.createTime)
+		// 超过解散时间
+		if interval >= web.GetContinueDismissTime() {
 			m.dismissContinueDesk(desk)
+			continue
 		}
+		// 超过机器人续局时间
+		if interval >= web.GetContinueRobotTime() {
+			m.robotContinue(desk)
+		}
+	}
+}
+
+// robotContinue 机器人作续局决策
+func (m *mgr) robotContinue(desk *desk) {
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "mgr.robotContinue",
+		"desk":      desk.String(),
+	})
+	robots := make([]uint64, 0, len(desk.continueWaitPlayers))
+
+	for playerID := range desk.continueWaitPlayers {
+		robots = append(robots, playerID)
+	}
+
+	for _, playerID := range robots {
+		player := desk.continueWaitPlayers[playerID]
+		if player.robotLv == 0 {
+			continue
+		}
+		rate := web.GetRobotContinueRate(player.winner)
+		if !gutils.Probability(rate) {
+			entry.Debugln("机器人不续局，解散")
+			m.dismissContinueDesk(desk)
+			return
+		}
+		m.acceptContinuePlayer(desk.gameID, playerID, player.robotLv)
 	}
 }

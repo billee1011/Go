@@ -1,16 +1,17 @@
 package contexts
 
 import (
-	"github.com/spf13/viper"
-	"time"
+	"errors"
+	"steve/common/mjoption"
 	"steve/room2/desk"
-	server_pb "steve/server_pb/majong"
 	"steve/room2/util"
+	"steve/server_pb/majong"
+	server_pb "steve/server_pb/majong"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"errors"
-	"steve/server_pb/majong"
-	"steve/common/mjoption"
+	"github.com/spf13/viper"
 )
 
 var errInitMajongContext = errors.New("初始化麻将现场失败")
@@ -55,8 +56,10 @@ func CreateMajongContext(desk desk.Desk) error {
 	}
 	return nil
 }
+
 var errCreateEmptyContextFailed = errors.New("创建空的麻将现场失败")
 var errInvalidParam = errors.New("参数错误")
+
 // InitMajongContext 初始化麻将现场
 func initMajongContext(param server_pb.InitMajongContextParams) (mjContext server_pb.MajongContext, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -80,7 +83,7 @@ func initMajongContext(param server_pb.InitMajongContextParams) (mjContext serve
 	mjContext.Players = initPlayers(param.GetPlayers())
 	mjContext.ActivePlayer = param.GetPlayers()[param.GetZhuangIndex()]
 	mjContext.ZhuangjiaIndex = param.GetZhuangIndex()
-	mjContext.FixZhuangjiaIndex = param.GetFixZhuangIndex()
+	// mjContext.FixZhuangjiaIndex = param.GetFixZhuangIndex()
 
 	mjContext.Option = param.GetOption()
 	mjContext.MajongOption = param.GetMajongOption()
@@ -109,7 +112,9 @@ func initPlayers(players []uint64) []*server_pb.Player {
 	}
 	return result
 }
+
 var errNoGameOption = errors.New("没有该游戏的游戏选项")
+
 // fillContextOptions 填充麻将现场的 options
 func fillContextOptions(gameID int, mjContext *majong.MajongContext) error {
 	entry := logrus.WithFields(logrus.Fields{

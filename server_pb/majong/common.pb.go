@@ -42,7 +42,6 @@ It has these top-level messages:
 	SettleInfo
 	MajongContext
 	MajongCommonOption
-	Zhuang
 	Huansanzhangfx
 	SichuanxueliuOption
 	SichuanxuezhanOption
