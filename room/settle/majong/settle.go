@@ -146,10 +146,15 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 		} else {
 			// 一条结算记录
 			if len(contextSInfos) != 1 {
+				// 通知该玩家单局结算信息
+				facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 				return
 			}
 			sinfo := contextSInfos[0]
 			winers, _ := getWinners(sinfo.Scores)
+			if len(winers) == 0 {
+				return
+			}
 			fans := getFans(sinfo.CardType, sinfo.HuaCount, cardOption)
 			billPlayersInfo := majongSettle.makeBillPlayerInfo(winers[0], int32(sinfo.CardValue), fans, mjContext)
 			balanceRsp.BillPlayersInfo = append(balanceRsp.BillPlayersInfo, billPlayersInfo...)
