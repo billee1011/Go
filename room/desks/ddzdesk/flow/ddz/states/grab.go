@@ -76,7 +76,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.GrabbedCount == 3 { //三个玩家操作完毕
 		if context.FirstGrabPlayerId == 0 { //没人叫地主
 			context.AllAbandonCount++
-			if context.AllAbandonCount < 3 {
+			if context.AllAbandonCount <= 3 {
 				context.CurStage = ddz.DDZStage_DDZ_STAGE_DEAL
 			}
 			nextPlayerId = 0 //重新发牌，没有操作玩家
@@ -111,6 +111,9 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if lordPlayerId != 0 {
 		context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
 	}
+	if context.AllAbandonCount > 3 {
+		context.CurStage = ddz.DDZStage_DDZ_STAGE_GRAB //应客户端要求，三次全弃地主广播前，返回grab阶段
+	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId:     &playerId,
 		Grab:         &grab,
@@ -125,7 +128,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_deal), nil //重新发牌
 	}
 
-	if context.AllAbandonCount >= 3 { //三轮重新发牌没人叫地主，随机确定庄家
+	if context.AllAbandonCount > 3 { //三轮重新发牌没人叫地主，随机确定庄家
 		context.AllAbandonCount = 0
 		lordPlayerId = getRandPlayerId(context.GetPlayers())
 	}
@@ -139,6 +142,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		lordPlayer.HandCards = DDZSortDescend(lordPlayer.HandCards)
 		context.LordPlayerId = lordPlayerId
 		context.Duration = 0 //清除倒计时
+		context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
 			PlayerId:  &lordPlayerId,
 			TotalGrab: &context.TotalGrab,
