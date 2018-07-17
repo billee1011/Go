@@ -16,7 +16,6 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	"steve/majong/utils/recommed"
 	majongpb "steve/server_pb/majong"
 
 	"steve/client_pb/room"
@@ -180,7 +179,7 @@ func (s *DingqueState) notifyPlayerDingQue(flow interfaces.MajongFlow) {
 	// 广播通知客户端进入定缺
 	for _, player := range flow.GetMajongContext().GetPlayers() {
 		// 获取推荐定缺
-		dqColor := recommed.GetRecommedDingQueColor(player.GetHandCards())
+		dqColor := utils.GetRecommedDingQueColor(player.GetHandCards())
 		if ok := checkDingQueReq(dqColor); !ok {
 			fmt.Errorf("定缺事件失败-定缺花色不存在: %v ", dqColor)
 			dqColor = majongpb.CardColor_ColorWan
