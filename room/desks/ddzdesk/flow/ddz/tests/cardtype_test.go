@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"steve/room/desks/ddzdesk/flow/ddz/states"
+	"steve/server_pb/ddz"
 )
 
 func Test_IsKingBomb(t *testing.T) {
@@ -123,4 +124,10 @@ func Test_IsSingle(t *testing.T) {
 	is, pivot := states.IsSingle(cards)
 	assert.Equal(t, true, is)
 	assert.Equal(t, &cards[0], pivot)
+}
+
+func Test_GetCardType(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x33, 0x28, 0x38, 0x48, 0x4B})
+	cardType, _ := states.GetCardType(cards)
+	assert.Equal(t, ddz.CardType_CT_NONE, cardType)
 }
