@@ -9,6 +9,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
+	"steve/room/peipai/handle"
 	"steve/server_pb/majong"
 	"time"
 )
@@ -27,7 +28,7 @@ func (s *dealState) OnEnter(m machine.Machine) {
 	rand.Shuffle(len(wallCards), func(i, j int) {
 		wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
 	})
-	PeiPai(wallCards, getDDZContext(m).Peipai)
+	PeiPai(wallCards, handle.GetPeiPai(int(room.GameId_GAMEID_DOUDIZHU)))
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_DEAL
 	context.CurrentPlayerId = context.CallPlayerId

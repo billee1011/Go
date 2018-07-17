@@ -2,7 +2,6 @@ package procedure
 
 import (
 	"steve/client_pb/room"
-	"steve/room/peipai/handle"
 	"steve/server_pb/ddz"
 )
 
@@ -24,7 +23,6 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 		TotalBomb:         1,
 		Spring:            true,
 		AntiSpring:        true,
-		Peipai:            handle.GetPeiPai(int(room.GameId_GAMEID_DOUDIZHU)),
 	}
 }
 
