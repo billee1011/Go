@@ -325,8 +325,8 @@ func TestJiaodizhu(t *testing.T) {
 
 	for i := 0; i < len(ntf.GetBills()); i++ {
 		playrInfo := ntf.GetBills()[i]
-		logEntry.Infof("玩家:%d，名字:%s，底分:%d，输赢倍数:%d，输赢分数:%d，当前分数:%d，是否为地主:%v，已出的牌:%v，手中的牌:%v",
-			playrInfo.GetPlayerId(), playrInfo.GetPlayerName(), playrInfo.GetBase(), playrInfo.GetMultiple(),
+		logEntry.Infof("玩家:%d，底分:%d，输赢倍数:%d，输赢分数:%d，当前分数:%d，是否为地主:%v，已出的牌:%v，手中的牌:%v",
+			playrInfo.GetPlayerId(), playrInfo.GetBase(), playrInfo.GetMultiple(),
 			playrInfo.GetScore(), playrInfo.GetCurrentScore(), playrInfo.GetLord(), playrInfo.GetOutCards(), playrInfo.GetHandCards())
 	}
 

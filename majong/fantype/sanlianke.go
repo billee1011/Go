@@ -12,9 +12,12 @@ func checkSanLianKe(tc *typeCalculator) bool {
 	for _, keCombine := range keCombines {
 		colorCount, cardCount, _ := getPengCardsDetails(tc.getPengCards())
 		for _, ke := range keCombine.kes {
-			cardCount[ke] = cardCount[ke] + 1
-			kcolor := ke / 10
-			colorCount[kcolor] = colorCount[kcolor] + 1
+			keCard := intToCard(ke)
+			if IsXuShuCard(keCard) {
+				cardCount[ke] = cardCount[ke] + 1
+				kcolor := ke / 10
+				colorCount[kcolor] = colorCount[kcolor] + 1
+			}
 		}
 		has3LianKe := false
 		for card := range cardCount {

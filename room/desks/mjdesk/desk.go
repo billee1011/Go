@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"runtime/debug"
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/gutils"
 	majong_initial "steve/majong/export/initial"
@@ -435,7 +435,6 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.recoverGameForPlayer(eqi.PlayerID)
 		d.setMjPlayerQuitDesk(eqi.PlayerID, false)
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
-		eqi.FinishChannel <- struct{}{}
 		logEntry.Debugln("玩家进入")
 	}
 }

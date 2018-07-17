@@ -58,17 +58,45 @@ func GetPalyerCloseFromTarget(index int, allPlayer, targets []uint64) uint64 {
 // GetCardsGroup 获取玩家牌组信息
 func GetCardsGroup(player *majongpb.Player, huCard *majongpb.Card) []*majongpb.CardsGroup {
 	cardsGroupList := make([]*majongpb.CardsGroup, 0)
-	// 碰牌
-	for _, pengCard := range player.PengCards {
-		card := gutils.ServerCard2Number(pengCard.Card)
-		cardsGroup := &majongpb.CardsGroup{
-			Pid:   player.PalyerId,
-			Type:  majongpb.CardsGroupType_CGT_PENG,
-			Cards: []uint32{card},
-		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
+	// 手牌组
+	handCards := ServerCards2Numbers(player.GetHandCards())
+	cltHandCard := make([]uint32, 0)
+	for _, handCard := range handCards {
+		cltHandCard = append(cltHandCard, uint32(handCard))
 	}
-	// 杠牌
+	handCardGroup := &majongpb.CardsGroup{
+		Cards: cltHandCard,
+		Type:  majongpb.CardsGroupType_CGT_HAND,
+	}
+	cardsGroupList = append(cardsGroupList, handCardGroup)
+	// 吃牌组
+	var chiCardGroups []*majongpb.CardsGroup
+	for _, chiCard := range player.GetChiCards() {
+		srcPlayerID := chiCard.GetSrcPlayer()
+		card := ServerCard2Number(chiCard.GetCard())
+		chiCardGroup := &majongpb.CardsGroup{
+			Cards: []uint32{uint32(card), uint32(card) + 1, uint32(card) + 2},
+			Type:  majongpb.CardsGroupType_CGT_PENG,
+			Pid:   srcPlayerID,
+		}
+		chiCardGroups = append(chiCardGroups, chiCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, chiCardGroups...)
+	// 碰牌组,每一次碰牌填1张还是三张
+	var pengCardGroups []*majongpb.CardsGroup
+	for _, pengCard := range player.GetPengCards() {
+		srcPlayerID := pengCard.GetSrcPlayer()
+		card := gutils.ServerCard2Number(pengCard.Card)
+		pengCardGroup := &majongpb.CardsGroup{
+			Cards: []uint32{card, card, card},
+			Type:  majongpb.CardsGroupType_CGT_PENG,
+			Pid:   srcPlayerID,
+		}
+		pengCardGroups = append(pengCardGroups, pengCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, pengCardGroups...)
+	// 杠牌组
+	var gangCardGroups []*majongpb.CardsGroup
 	var groupType majongpb.CardsGroupType
 	for _, gangCard := range player.GangCards {
 		if gangCard.Type == majongpb.GangType_gang_angang {
@@ -84,28 +112,29 @@ func GetCardsGroup(player *majongpb.Player, huCard *majongpb.Card) []*majongpb.C
 		cardsGroup := &majongpb.CardsGroup{
 			Pid:   player.PalyerId,
 			Type:  groupType,
-			Cards: []uint32{card},
+			Cards: []uint32{card, card, card, card},
 		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
+		gangCardGroups = append(gangCardGroups, cardsGroup)
 	}
-	// 胡牌
+	cardsGroupList = append(cardsGroupList, gangCardGroups...)
+
+	// 花牌组
+	huaCards := ServerCards2Numbers(player.GetHuaCards())
+	cltHuaCard := make([]uint32, 0)
+	for _, huaCard := range huaCards {
+		cltHuaCard = append(cltHuaCard, uint32(huaCard))
+	}
+	huaCardGroup := &majongpb.CardsGroup{
+		Cards: cltHuaCard,
+		Type:  majongpb.CardsGroupType_CGT_HUA,
+	}
+	cardsGroupList = append(cardsGroupList, huaCardGroup)
+	// 胡牌组
 	huCardGroup := &majongpb.CardsGroup{
 		Cards: []uint32{gutils.ServerCard2Number(huCard)},
 		Type:  majongpb.CardsGroupType_CGT_HU,
 	}
 	cardsGroupList = append(cardsGroupList, huCardGroup)
-	// 手牌
-	handCards := gutils.ServerCards2Numbers(player.HandCards)
-	cards := make([]uint32, 0)
-	for _, handCard := range handCards {
-		cards = append(cards, uint32(handCard))
-	}
-	cardsGroup := &majongpb.CardsGroup{
-		Pid:   player.PalyerId,
-		Type:  majongpb.CardsGroupType_CGT_HAND,
-		Cards: cards,
-	}
-	cardsGroupList = append(cardsGroupList, cardsGroup)
 	return cardsGroupList
 }
 

@@ -16,3 +16,4 @@ player_num: 4
 fapai_type: 1 # 1：正常发牌，庄家14张，闲家13张；2：二人麻将类型的发牌，所有人都只发13张
 tianhu_card_type: 1 # 1:血流方式的天胡牌，听牌数量最多的牌 2：血战方式的,手牌中最右边的牌 3：二人方式的，摸上来的那张牌
 enable_gang_settle: true # 是否需要杠结算
+enable_ting_button: false # 是否需要听按钮

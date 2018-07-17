@@ -3,7 +3,6 @@ package scxlai
 import (
 	"steve/gutils"
 	"steve/room/interfaces"
-	"steve/room/interfaces/global"
 	"steve/server_pb/majong"
 	"time"
 
@@ -13,24 +12,6 @@ import (
 
 type dingqueStateAI struct {
 	maxDingqueTime time.Duration // 最大定缺时间
-}
-
-// 注册 AI
-func init() {
-	g := global.GetDeskAutoEventGenerator()
-	// 血流
-	g.RegisterAI(scxlGameID, majong.StateID_state_dingque, &dingqueStateAI{})
-	g.RegisterAI(scxlGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
-	g.RegisterAI(scxlGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
-	g.RegisterAI(scxlGameID, majong.StateID_state_zixun, &zixunStateAI{})
-	g.RegisterAI(scxlGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
-	// 血战
-	g.RegisterAI(scxzGameID, majong.StateID_state_dingque, &dingqueStateAI{})
-	g.RegisterAI(scxzGameID, majong.StateID_state_huansanzhang, &huansanzhangStateAI{})
-	g.RegisterAI(scxzGameID, majong.StateID_state_chupaiwenxun, &chupaiWenxunStateAI{})
-	g.RegisterAI(scxzGameID, majong.StateID_state_zixun, &zixunStateAI{})
-	g.RegisterAI(scxzGameID, majong.StateID_state_waitqiangganghu, &waitQiangganghuStateAI{})
-
 }
 
 // GenerateAIEvent 生成 AI 事件
@@ -58,22 +39,7 @@ func (h *dingqueStateAI) allColor() []majong.CardColor {
 
 // getColor 获取定缺花色
 func (h *dingqueStateAI) getColor(player *majong.Player) majong.CardColor {
-	cards := player.GetHandCards()
-	colorMap := map[majong.CardColor]int{}
-
-	for _, card := range cards {
-		colorMap[card.GetColor()] = colorMap[card.GetColor()] + 1
-	}
-	colors := h.allColor()
-	leastColor := colors[0]
-	leastCount := colorMap[leastColor]
-	for _, color := range h.allColor() {
-		if colorMap[color] < leastCount {
-			leastCount = colorMap[color]
-			leastColor = color
-		}
-	}
-	return leastColor
+	return player.GetDingqueColor() // 在进入定缺状态时，会设置推荐定缺颜色
 }
 
 // dingque 生成定缺请求事件

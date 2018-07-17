@@ -24,13 +24,11 @@ type connectionWithCancelFunc struct {
 
 // ConnMgr 连接管理
 type ConnMgr struct {
-	*PlayerMgr
-	connections sync.Map // clientID: *connectionWithContext
+	connections         sync.Map // clientID: *connectionWithContext
+	playerConnectionMap sync.Map // playerID: clientID
 }
 
-var defaultConnectionMgr = &ConnMgr{
-	PlayerMgr: new(PlayerMgr),
-}
+var defaultConnectionMgr = &ConnMgr{}
 var _ net.ConnectObserver = defaultConnectionMgr
 
 // GetConnectionMgr 获取连接管理
@@ -56,6 +54,21 @@ func (cm *ConnMgr) OnClientConnect(clientID uint64) {
 		cm.removeConnection(clientID)
 		cm.kickClient(clientID)
 	})
+}
+
+// GetPlayerConnection 获取玩家的连接对象
+func (cm *ConnMgr) GetPlayerConnection(playerID uint64) *Connection {
+	_clientID, ok := cm.playerConnectionMap.Load(playerID)
+	if !ok {
+		return nil
+	}
+	clientID := _clientID.(uint64)
+	return cm.GetConnection(clientID)
+}
+
+// SetPlayerConnectionID 设置玩家的连接
+func (cm *ConnMgr) setPlayerConnectionID(playerID uint64, connectionID uint64) {
+	cm.playerConnectionMap.Store(playerID, connectionID)
 }
 
 // GetConnection 获取连接

@@ -43,7 +43,7 @@ func (c *Connection) run(ctx context.Context, finish func()) {
 		select {
 		case <-ctx.Done():
 			{
-				c.detachPlayerConnect()
+				c.DetachPlayer()
 				return
 			}
 		case <-c.heartBeatTimer.C:
@@ -58,10 +58,12 @@ func (c *Connection) run(ctx context.Context, finish func()) {
 	}()
 }
 
-func (c *Connection) detachPlayerConnect() {
+// DetachPlayer 解除和 player 的绑定
+func (c *Connection) DetachPlayer() {
 	if c.playerID != 0 {
 		player.SetPlayerGateAddr(c.playerID, "")
-		c.connMgr.SetPlayerConnectionID(c.playerID, 0)
+		c.connMgr.setPlayerConnectionID(c.playerID, 0)
+		c.playerID = 0
 	}
 }
 
@@ -72,7 +74,7 @@ func (c *Connection) kick(reason string, finish func()) {
 		"reason":    reason,
 	})
 	entry.Infoln("踢出玩家")
-	c.detachPlayerConnect()
+	c.DetachPlayer()
 	finish()
 }
 
@@ -97,7 +99,7 @@ func (c *Connection) AttachPlayer(playerID uint64) bool {
 	c.attachTimer.Stop()
 
 	player.SetPlayerGateAddr(playerID, c.getGatewayAddr())
-	c.connMgr.SetPlayerConnectionID(c.playerID, c.clientID)
+	c.connMgr.setPlayerConnectionID(c.playerID, c.clientID)
 	entry.Infoln("绑定成功")
 	return true
 }

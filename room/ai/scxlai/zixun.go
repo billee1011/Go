@@ -2,6 +2,7 @@ package scxlai
 
 import (
 	"fmt"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/server_pb/majong"
@@ -44,7 +45,7 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
 	handCards := player.GetHandCards()
-	if h.getZixunPlayer(mjContext) != params.PlayerID {
+	if gutils.GetZixunPlayer(mjContext) != params.PlayerID {
 		return result, fmt.Errorf("当前玩家不允许进行自动操作")
 	}
 	if len(handCards) < 2 {
@@ -71,7 +72,7 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 		{
 			zxRecord := player.GetZixunRecord()
 			canHu := zxRecord.GetEnableZimo()
-			if len(player.GetHuCards()) > 0 && canHu && !gutils.CheckHasDingQueCard(handCards, player.GetDingqueColor()) {
+			if gutils.IsHu(player) && canHu && !gutils.CheckHasDingQueCard(mjContext, player) {
 				aiEvent = h.hu(player)
 			} else {
 				//先判断是否有定缺牌，有的话，先出定缺牌
@@ -79,7 +80,8 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 				hasChuPai := false
 				for i := len(handCards) - 1; i >= 0; i-- {
 					hc := handCards[i]
-					if hc.GetColor() == player.GetDingqueColor() {
+					if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
+						hc.GetColor() == player.GetDingqueColor() {
 						aiEvent = h.chupai(player, hc)
 						hasChuPai = true
 						break
@@ -138,12 +140,4 @@ func (h *zixunStateAI) hu(player *majong.Player) interfaces.AIEvent {
 		ID:      majong.EventID_event_hu_request,
 		Context: data,
 	}
-}
-
-func (h *zixunStateAI) getZixunPlayer(mjContext *majong.MajongContext) uint64 {
-	zxType := mjContext.GetZixunType()
-	if zxType == majong.ZixunType_ZXT_PENG {
-		return mjContext.GetLastPengPlayer()
-	}
-	return mjContext.GetLastMopaiPlayer()
 }

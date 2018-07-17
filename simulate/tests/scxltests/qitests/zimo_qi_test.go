@@ -1,7 +1,7 @@
 package qitests
 
 import (
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"

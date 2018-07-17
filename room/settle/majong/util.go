@@ -98,17 +98,22 @@ func settleType2BillType(settleType majongpb.SettleType) room.BillType {
 	}[settleType]
 }
 
-func makeFanType(fanTypes []int64, cardOption *mjoption.CardTypeOption) (fan []*room.Fan, totalValue int32) {
+func getFans(fanTypes []int64, huaCount uint32, cardOption *mjoption.CardTypeOption) (fan []*room.Fan) {
 	fan = make([]*room.Fan, 0)
-	totalValue = int32(0)
 	for _, fanType := range fanTypes {
 		rfan := &room.Fan{
 			Name:  room.FanType(int32(fanType)).Enum(),
 			Value: proto.Int32(int32(cardOption.Fantypes[int(fanType)].Score)),
 			Type:  proto.Uint32(uint32(cardOption.Fantypes[int(fanType)].Type)),
 		}
-		totalValue = totalValue + int32(cardOption.Fantypes[int(fanType)].Score)
 		fan = append(fan, rfan)
+	}
+	if huaCount != 0 {
+		fan = append(fan, &room.Fan{
+			Name:  room.FanType_FT_HUAPAI.Enum(),
+			Value: proto.Int32(int32(huaCount)),
+			Type:  proto.Uint32(0),
+		})
 	}
 	return
 }

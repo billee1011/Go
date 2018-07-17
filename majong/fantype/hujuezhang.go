@@ -14,7 +14,7 @@ func checkHuJueZhang(tc *typeCalculator) bool {
 		wall := tc.mjContext.GetWallCards()
 		// 所有玩家手牌
 		players := tc.mjContext.GetPlayers()
-		cards := make([]*majongpb.Card, 0, len(wall))
+		cards := make([]*majongpb.Card, 0)
 		cards = append(cards, wall...)
 		for _, palyer := range players {
 			cards = append(cards, palyer.GetHandCards()...)

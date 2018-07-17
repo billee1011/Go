@@ -254,8 +254,6 @@ func createDDZPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfac
 		//msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP,  // 斗地主 出牌响应
 		//msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF,  // 斗地主 出牌通知
 		msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF, // 斗地主 结束通知
-		msgid.MsgID_ROOM_DDZ_TUOGUAN_RSP,   // 斗地主 托管响应
-		msgid.MsgID_ROOM_DDZ_TUOGUAN_NTF,   // 斗地主 托管通知
 		msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
 	}
 

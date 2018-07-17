@@ -52,7 +52,9 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	if card.Color.String() == room.CardColor_CC_TONG.String() {
 		color = room.CardColor_CC_TONG
 	}
-
+	if card.Color.String() == room.CardColor_CC_HUA.String() {
+		color = room.CardColor_CC_HUA
+	}
 	return &room.Card{
 		Color: color.Enum(),
 		Point: proto.Int32(card.Point),
@@ -68,8 +70,10 @@ func ServerCard2Number(card *majongpb.Card) uint32 {
 		color = 2
 	} else if card.Color == majongpb.CardColor_ColorTong {
 		color = 3
-	} else if card.Color == majongpb.CardColor_ColorFeng {
+	} else if card.Color == majongpb.CardColor_ColorZi {
 		color = 4
+	} else if card.Color == majongpb.CardColor_ColorHua {
+		color = 5
 	}
 	value := color*10 + uint32(card.Point)
 	return value
@@ -130,7 +134,7 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 		{
 			return room.CardColor_CC_TONG
 		}
-	case majongpb.CardColor_ColorFeng:
+	case majongpb.CardColor_ColorZi:
 		{
 			return room.CardColor_CC_ZI
 		}
@@ -242,54 +246,11 @@ func TingCardInfoSvr2Client(minfos []*majongpb.TingCardInfo) []*room.TingCardInf
 func CardsGroupSvr2Client(cardsGroups []*majongpb.CardsGroup) (cardsGroupList []*room.CardsGroup) {
 	cardsGroupList = make([]*room.CardsGroup, 0)
 	for _, cardsGroup := range cardsGroups {
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_PENG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_PENG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_ANGANG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_ANGANG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_BUGANG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_BUGANG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_MINGGANG {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_MINGGANG.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_HU {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_HU.Enum(),
-				Cards: []uint32{uint32(cardsGroup.Cards[0])},
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
-		if cardsGroup.Type == majongpb.CardsGroupType_CGT_HAND {
-			rCardsGroup := &room.CardsGroup{
-				Pid:   proto.Uint64(cardsGroup.Pid),
-				Type:  room.CardsGroupType_CGT_HAND.Enum(),
-				Cards: cardsGroup.Cards,
-			}
-			cardsGroupList = append(cardsGroupList, rCardsGroup)
-		}
+		cardsGroupList = append(cardsGroupList, &room.CardsGroup{
+			Pid:   proto.Uint64(cardsGroup.Pid),
+			Type:  room.CardsGroupType(int32(cardsGroup.GetType())).Enum(),
+			Cards: cardsGroup.Cards,
+		})
 	}
 	return
 }
@@ -361,7 +322,7 @@ func getColor(srcColor majongpb.CardColor) string {
 	if srcColor == majongpb.CardColor_ColorTong {
 		return "b"
 	}
-	if srcColor == majongpb.CardColor_ColorFeng {
+	if srcColor == majongpb.CardColor_ColorZi {
 		return "z"
 	}
 	if srcColor == majongpb.CardColor_ColorHua {
@@ -385,11 +346,25 @@ func FmtMajongContxt(context *majongpb.MajongContext) logrus.Fields {
 }
 
 //CheckHasDingQueCard 检查牌里面是否含有定缺的牌
-func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool {
+func CheckHasDingQueCard(context *majongpb.MajongContext, player *majongpb.Player) bool {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	cards, color, hasDq := player.GetHandCards(), player.GetDingqueColor(), xpOption.EnableDingque
+	if !hasDq {
+		return false
+	}
 	for _, card := range cards {
-		if card.Color == color {
+		if card.GetColor() == color {
 			return true
 		}
+	}
+	return false
+}
+
+//IsDingQueCard 当前的牌是不是定缺牌
+func IsDingQueCard(context *majongpb.MajongContext, dqColor majongpb.CardColor, card *majongpb.Card) bool {
+	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
+	if xpOption.EnableDingque && card.GetColor() == dqColor {
+		return true
 	}
 	return false
 }
@@ -397,48 +372,53 @@ func CheckHasDingQueCard(cards []*majongpb.Card, color majongpb.CardColor) bool 
 // GetCardsGroup 获取玩家牌组信息
 func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 	cardsGroupList := make([]*room.CardsGroup, 0)
-	// 碰牌
-	for _, pengCard := range player.PengCards {
-		card := ServerCard2Number((*pengCard).Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  room.CardsGroupType_CGT_PENG.Enum(),
-			Cards: []uint32{uint32(card)},
-		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
-	}
-	// 杠牌
-	var groupType *room.CardsGroupType
-	for _, gangCard := range player.GangCards {
-		if gangCard.Type == majongpb.GangType_gang_angang {
-			groupType = room.CardsGroupType_CGT_ANGANG.Enum()
-		}
-		if gangCard.Type == majongpb.GangType_gang_minggang {
-			groupType = room.CardsGroupType_CGT_MINGGANG.Enum()
-		}
-		if gangCard.Type == majongpb.GangType_gang_bugang {
-			groupType = room.CardsGroupType_CGT_BUGANG.Enum()
-		}
-		card := ServerCard2Number((*gangCard).Card)
-		cardsGroup := &room.CardsGroup{
-			Pid:   proto.Uint64(player.PalyerId),
-			Type:  groupType,
-			Cards: []uint32{uint32(card)},
-		}
-		cardsGroupList = append(cardsGroupList, cardsGroup)
-	}
-	// 手牌
-	handCards := ServerCards2Numbers(player.HandCards)
-	cards := make([]uint32, 0)
-	for _, handCard := range handCards {
-		cards = append(cards, uint32(handCard))
-	}
-	cardsGroup := &room.CardsGroup{
-		Pid:   proto.Uint64(player.PalyerId),
+	// 手牌组
+	cltHandCard := ServerCards2Numbers(player.GetHandCards())
+	handCardGroup := &room.CardsGroup{
+		Cards: cltHandCard,
 		Type:  room.CardsGroupType_CGT_HAND.Enum(),
-		Cards: cards,
 	}
-	cardsGroupList = append(cardsGroupList, cardsGroup)
+	cardsGroupList = append(cardsGroupList, handCardGroup)
+	// 吃牌组
+	var chiCardGroups []*room.CardsGroup
+	for _, chiCard := range player.GetChiCards() {
+		srcPlayerID := chiCard.GetSrcPlayer()
+		card := ServerCard2Number(chiCard.GetCard())
+		chiCardGroup := &room.CardsGroup{
+			Cards: []uint32{card, card + 1, card + 2},
+			Type:  room.CardsGroupType_CGT_CHI.Enum(),
+			Pid:   &srcPlayerID,
+		}
+		chiCardGroups = append(chiCardGroups, chiCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, chiCardGroups...)
+	// 碰牌组
+	var pengCardGroups []*room.CardsGroup
+	for _, pengCard := range player.GetPengCards() {
+		srcPlayerID := pengCard.GetSrcPlayer()
+		cards := []uint32{ServerCard2Number(pengCard.GetCard())}
+		pengCardGroup := &room.CardsGroup{
+			Cards: append(cards, cards[0], cards[0]),
+			Type:  room.CardsGroupType_CGT_PENG.Enum(),
+			Pid:   &srcPlayerID,
+		}
+		pengCardGroups = append(pengCardGroups, pengCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, pengCardGroups...)
+	// 杠牌组
+	var gangCardGroups []*room.CardsGroup
+	for _, gangCard := range player.GetGangCards() {
+		groupType := GangTypeSvr2Client(gangCard.GetType())
+		srcPlayerID := gangCard.GetSrcPlayer()
+		cards := []uint32{ServerCard2Number(gangCard.GetCard())}
+		gangCardGroup := &room.CardsGroup{
+			Cards: append(cards, cards[0], cards[0], cards[0]),
+			Type:  &groupType,
+			Pid:   &srcPlayerID,
+		}
+		gangCardGroups = append(gangCardGroups, gangCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, gangCardGroups...)
 	// 胡牌组
 	var huCardGroups []*room.CardsGroup
 	for _, huCard := range player.GetHuCards() {
@@ -452,5 +432,15 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 		huCardGroups = append(huCardGroups, huCardGroup)
 	}
 	cardsGroupList = append(cardsGroupList, huCardGroups...)
+	// 花牌组
+	var huaCardGroups []*room.CardsGroup
+	for _, huaCard := range player.GetHuaCards() {
+		huaCardGroup := &room.CardsGroup{
+			Cards: []uint32{ServerCard2Number(huaCard)},
+			Type:  room.CardsGroupType_CGT_HUA.Enum(),
+		}
+		huaCardGroups = append(huaCardGroups, huaCardGroup)
+	}
+	cardsGroupList = append(cardsGroupList, huaCardGroups...)
 	return cardsGroupList
 }

@@ -7,7 +7,7 @@ enum CardColor {
     ColorWan = 0;       // 万
     ColorTong = 1;      // 筒
     ColorTiao = 2;      // 条
-    ColorFeng = 3;      // 风
+    ColorZi = 3;      // 风
     ColorHua = 4;       // 花
 }
 

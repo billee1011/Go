@@ -47,8 +47,5 @@ func TestFan_DAQIXING_Zimo_ERM(t *testing.T) {
 	// 0玩家摸到46,自摸
 	assert.Nil(t, utils.SendHuReq(deskData, 0))
 
-	// 检测分数
-	winScro := 96 * (len(deskData.Players) - 1)
-
-	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_DAQIXING)
+	utils.CheckFanSettle(t, deskData, 4, 0, 104, room.FanType_FT_DAQIXING)
 }

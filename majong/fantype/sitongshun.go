@@ -18,7 +18,7 @@ func checkSiTongShun(tc *typeCalculator) bool {
 		cardMap := make(map[uint32]int)
 		// 吃
 		for _, chi := range tc.getChiCards() {
-			cardValue := gutils.ServerCard2Number(chi.GetOprCard())
+			cardValue := gutils.ServerCard2Number(chi.GetCard())
 			cardMap[cardValue] = cardMap[cardValue] + 1
 		}
 		for _, shun := range combine.shuns {

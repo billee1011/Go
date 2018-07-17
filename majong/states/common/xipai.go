@@ -2,14 +2,13 @@ package common
 
 import (
 	"math/rand"
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
-	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -51,33 +50,6 @@ func (s *XipaiState) xipai(flow interfaces.MajongFlow) []*majongpb.Card {
 	}).Debugln("洗牌")
 
 	return cards
-}
-
-// PeiPai 配牌工具
-func PeiPai(wallCards []*majongpb.Card, value string) (bool, []*majongpb.Card) {
-	if len(value) == 0 {
-		return false, wallCards
-	}
-	var cards []*majongpb.Card
-	for i := 0; i < len(value); i = i + 3 {
-		ca, err := strconv.Atoi(value[i : i+2])
-		if err != nil {
-			return false, wallCards
-		}
-		card, err := utils.IntToCard(int32(ca))
-		if err != nil {
-			return false, wallCards
-		}
-		cards = append(cards, card)
-	}
-	for i := 0; i < len(cards); i++ {
-		for j := len(wallCards) - 1; j >= 0; j-- {
-			if utils.CardEqual(cards[i], wallCards[j]) {
-				wallCards[i], wallCards[j] = wallCards[j], wallCards[i]
-			}
-		}
-	}
-	return true, wallCards
 }
 
 // randDices 随机筛子

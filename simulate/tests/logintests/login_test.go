@@ -44,3 +44,31 @@ func Test_AnotherLogin(t *testing.T) {
 	time.Sleep(time.Millisecond * 200) // 确保连接断开
 	assert.True(t, player.GetClient().Closed())
 }
+
+// func Test_AnotherLogin2(t *testing.T) {
+// 	player, err := utils.LoginNewPlayer()
+// 	assert.Nil(t, err)
+// 	assert.NotNil(t, player)
+// 	player.AddExpectors(msgid.MsgID_GATE_ANOTHER_LOGIN_NTF)
+
+// 	accountID := player.GetAccountID()
+// 	accountName := utils.GenerateAccountName(accountID)
+
+// 	newPlayer, err := utils.LoginPlayer(accountID, accountName)
+// 	assert.Nil(t, err)
+// 	assert.NotNil(t, newPlayer)
+
+// 	time.Sleep(time.Second * 3)
+// 	newPlayer2, err := utils.LoginPlayer(accountID, accountName)
+// 	assert.Nil(t, err)
+// 	assert.NotNil(t, newPlayer2)
+
+// 	// newPlayer2.AddExpectors(msgid.MsgID_HALL_GET_PLAYER_INFO_RSP)
+// 	// newPlayer2.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_HALL_GET_PLAYER_INFO_REQ), &hall.HallGetPlayerInfoReq{})
+// 	// expector := newPlayer2.GetExpector(msgid.MsgID_HALL_GET_PLAYER_INFO_RSP)
+
+// 	// response := hall.HallGetPlayerInfoRsp{}
+// 	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &response))
+// 	// assert.Zero(t, response.GetErrCode())
+// 	// assert.NotEmpty(t, response.GetNickName())
+// }

@@ -20,7 +20,7 @@ func checkQuanDaiYao(tc *typeCalculator) bool {
 		}
 	}
 	for _, chi := range tc.getChiCards() {
-		chiCard := chi.GetOprCard()
+		chiCard := chi.GetCard()
 		if chiCard.GetPoint() > 1 && chiCard.GetPoint() < 7 {
 			return false
 		}
@@ -52,7 +52,7 @@ Next:
 
 // isYaoJiuByCard 判断是否是幺九(1,9,字)
 func isYaoJiuByCard(card *majongpb.Card) bool {
-	if IsFlowerCard(card) {
+	if IsXuShuCard(card) {
 		//又不是1和9的序数牌
 		if card.GetPoint() > 1 && card.GetPoint() < 9 {
 			return false
