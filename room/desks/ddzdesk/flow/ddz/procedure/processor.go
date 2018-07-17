@@ -239,11 +239,13 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 		// 开始时间
 		startTime := time.Time{}
 		startTime.UnmarshalBinary(ddzContext.StartTime)
-		logEntry.Debugf("ddzContext.StartTime = %v", startTime)
+		logEntry.Debugf("ddzContext.StartTime = %v", ddzContext.StartTime)
+		logEntry.Debugf("startTime %v", startTime)
 
 		// 限制时间
 		duration := time.Second * time.Duration(ddzContext.Duration)
-		logEntry.Debugf("ddzContext.Duration = %v", duration)
+		logEntry.Debugf("ddzContext.Duration = %v", ddzContext.Duration)
+		logEntry.Debugf("duration = %v", duration)
 
 		// 剩余时间
 		leftTime := duration - time.Now().Sub(startTime)
