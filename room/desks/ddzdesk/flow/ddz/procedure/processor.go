@@ -247,14 +247,19 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 			leftTime = 0
 		}
 
+		curStage := room.DDZStage(int32(ddzContext.CurStage))
+
 		// 发送游戏信息
 		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
 			Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
 			GameInfo: &room.DDZDeskInfo{
-				Players:     playersInfo,                                                    // 每个人的信息
-				Stage:       states.GenNextStage(room.DDZStage(int32(ddzContext.CurStage))), // 当前状态
-				CurPlayerId: proto.Uint64(ddzContext.GetCurrentPlayerId()),                  // 当前操作的玩家
-				Dipai:       ddzContext.GetDipai(),                                          // 底牌
+				Players: playersInfo, // 每个人的信息
+				Stage: &room.NextStage{
+					Stage: &curStage,
+					Time:  proto.Uint32(uint32(leftTime)),
+				},
+				CurPlayerId: proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
+				Dipai:       ddzContext.GetDipai(),
 			},
 		})
 	}
