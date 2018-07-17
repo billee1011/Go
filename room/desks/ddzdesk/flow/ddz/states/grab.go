@@ -87,7 +87,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 	}
 
-	if context.GrabbedCount == 4 { //叫地主玩家第二次操作
+	if context.GrabbedCount >= 4 { //叫地主玩家第二次操作
 		if grab { //叫地主玩家抢庄
 			lordPlayerId = playerId
 		} else { //叫地主玩家弃庄
@@ -117,6 +117,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	})
 
 	if context.CurStage == ddz.DDZStage_DDZ_STAGE_DEAL {
+		context.GrabbedCount = 0
 		return int(ddz.StateID_state_deal), nil //重新发牌
 	}
 
