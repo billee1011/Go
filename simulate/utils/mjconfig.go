@@ -22,6 +22,7 @@ func majongPlayerGold(seatGold, seatID map[int]uint64) error {
 	for seat, playerID := range seatID {
 		if gold, isExist := seatGold[seat]; isExist {
 			url := fmt.Sprintf("%s/setgold/?player_id=%v&gold=%v", config.MaJongConfigURL, playerID, gold)
+			fmt.Println("mjconfig.go:majongPlayerGold() url = ", url)
 			if err := requestOpen(url); err != nil {
 				return err
 			}
