@@ -1,7 +1,7 @@
 #!/bin/bash
 
 go build -o bin/serviceloader steve/serviceloader 
-go intall steve/serviceloader
+go install steve/serviceloader
 
 go build -o bin/room/room.so -o room/room.so -buildmode=plugin steve/room
 cp room/config.yml configs/room/config.yml 
