@@ -111,10 +111,12 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 	if bExist {
 		playersInfo := []*room.DDZPlayerInfo{}
 
-		for _, player := range ddzContext.GetPlayers() {
+		players := ddzContext.GetPlayers()
+		for index := 0; index < len(players); index++ {
+			player := players[index]
 
 			// Player转为RoomPlayer
-			roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
+			roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player, uint32(index))
 			lord := player.GetLord()
 			//double := player.GetIsDouble()
 			tuoguan := false // TODO
@@ -130,6 +132,7 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 			} else {
 				ddzPlayerInfo.HandCards = []uint32{}
 			}
+			ddzPlayerInfo.HandCardsCount = proto.Uint32(uint32(len(player.GetHandCards())))
 
 			ddzPlayerInfo.Lord = &lord
 			ddzPlayerInfo.Tuoguan = &tuoguan
@@ -236,12 +239,15 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 		// 开始时间
 		startTime := time.Time{}
 		startTime.UnmarshalBinary(ddzContext.StartTime)
+		logEntry.Debugf("ddzContext.StartTime = %v", startTime)
 
 		// 限制时间
 		duration := time.Second * time.Duration(ddzContext.Duration)
+		logEntry.Debugf("ddzContext.Duration = %v", duration)
 
 		// 剩余时间
 		leftTime := duration - time.Now().Sub(startTime)
+		logEntry.Debugf("leftTime = %v", leftTime)
 
 		if leftTime < 0 {
 			leftTime = 0
@@ -268,7 +274,7 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 }
 
 // TranslateDDZPlayerToRoomPlayer 将 ddzPlayer 转换成 RoomPlayerInfo
-func TranslateDDZPlayerToRoomPlayer(ddzPlayer ddz.Player) room.RoomPlayerInfo {
+func TranslateDDZPlayerToRoomPlayer(ddzPlayer ddz.Player, seat uint32) room.RoomPlayerInfo {
 	playerMgr := global.GetPlayerMgr()
 	playerID := ddzPlayer.GetPlayerId()
 	player := playerMgr.GetPlayer(playerID)
@@ -280,7 +286,7 @@ func TranslateDDZPlayerToRoomPlayer(ddzPlayer ddz.Player) room.RoomPlayerInfo {
 		PlayerId: proto.Uint64(playerID),
 		Name:     proto.String(""), // TODO
 		Coin:     proto.Uint64(coin),
-		Seat:     proto.Uint32(0), // TODO
+		Seat:     proto.Uint32(seat),
 		// Location: TODO 没地方拿
 	}
 }
