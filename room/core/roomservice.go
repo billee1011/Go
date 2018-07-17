@@ -27,6 +27,7 @@ func notifyDeskCreate(desk interfaces.Desk) {
 		players = append(players, &roomPlayer)
 	}
 	ntf := room.RoomDeskCreatedNtf{
+		GameId:  room.GameId(desk.GetGameID()).Enum(),
 		Players: players,
 	}
 	facade.BroadCastDeskMessage(desk, nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
