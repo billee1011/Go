@@ -32,11 +32,9 @@ func (s *initState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	// 开局随即确定一个叫地主玩家,然后广播通知游戏开始
-	callPlayer := getRandPlayerId(context.GetPlayers())
-	context.CurrentPlayerId = callPlayer
-	context.CallPlayerId = callPlayer
+	context.CallPlayerId = getRandPlayerId(context.GetPlayers())
 	broadcast(m, msgid.MsgID_ROOM_DDZ_START_GAME_NTF, &room.DDZStartGameNtf{
-		PlayerId:  &callPlayer,
+		PlayerId:  &context.CallPlayerId,
 		NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DEAL),
 	})
 	return int(ddz.StateID_state_deal), nil

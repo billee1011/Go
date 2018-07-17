@@ -9,6 +9,7 @@ import (
 	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 	"steve/majong/global"
+	"steve/server_pb/majong"
 	"time"
 )
 
@@ -30,6 +31,9 @@ func (s *grabState) OnExit(m machine.Machine) {
 }
 
 func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error) {
+	if event.EventID == int(majong.EventID_event_cartoon_finish_request) {
+		return int(ddz.StateID_state_grab), nil
+	}
 	if event.EventID != int(ddz.EventID_event_grab_request) {
 		logrus.Error("grabState can only handle ddz.EventID_event_grab_request, invalid event")
 		return int(ddz.StateID_state_grab), global.ErrInvalidEvent
