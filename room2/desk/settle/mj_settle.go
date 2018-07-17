@@ -272,7 +272,7 @@ func (majongSettle *majongSettle) instantSettle(desk desk.Desk, sInfo *majongpb.
 }
 
 // getBillPlayerInfos 获得玩家结算账单
-func (majongSettle *majongSettle) getBillPlayerInfos(deskPlayers []*room2.RoomPlayer, settleInfo *majongpb.SettleInfo, costScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
+func (majongSettle *majongSettle) getBillPlayerInfos(deskPlayers []*room2.Player, settleInfo *majongpb.SettleInfo, costScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
 	billplayerInfos = make([]*room.BillPlayerInfo, 0)
 	for i := 0; i < len(deskPlayers); i++ {
 		pid := deskPlayers[i].GetPlayerID()
@@ -330,7 +330,7 @@ func (majongSettle *majongSettle) apartScore2Settle(groupSettleInfos []*majongpb
 }
 
 // getGiveupPlayers  获取认输的玩家id
-func getGiveupPlayers(dPlayers []*room2.RoomPlayer, mjContext majongpb.MajongContext) map[uint64]bool {
+func getGiveupPlayers(dPlayers []*room2.Player, mjContext majongpb.MajongContext) map[uint64]bool {
 	giveupPlayers := make(map[uint64]bool, 0)
 	for _, cPlayer := range mjContext.Players {
 		if cPlayer.GetXpState() == 2 {
@@ -341,7 +341,7 @@ func getGiveupPlayers(dPlayers []*room2.RoomPlayer, mjContext majongpb.MajongCon
 }
 
 // getHuQuitPlayers  获取牌局胡牌且退出房间后的玩家id
-func (majongSettle *majongSettle) getHuQuitPlayers(dPlayers []*room2.RoomPlayer, mjContext majongpb.MajongContext) map[uint64]bool {
+func (majongSettle *majongSettle) getHuQuitPlayers(dPlayers []*room2.Player, mjContext majongpb.MajongContext) map[uint64]bool {
 	huQuitPids := make(map[uint64]bool, 0)
 	for _, dPlayer := range dPlayers {
 		if dPlayer.IsQuit() {
@@ -550,7 +550,7 @@ func (majongSettle *majongSettle) makeBillDetail(pid uint64, sInfo *majongpb.Set
 }
 
 
-func (majongSettle *majongSettle) chargeCoin(players []*room2.RoomPlayer, payScore map[uint64]int64) {
+func (majongSettle *majongSettle) chargeCoin(players []*room2.Player, payScore map[uint64]int64) {
 	for _, player := range players {
 		pid := player.GetPlayerID()
 		// 玩家当前豆子数

@@ -13,8 +13,6 @@ import (
 	context2 "steve/room2/desk/contexts"
 	"time"
 	"steve/client_pb/msgid"
-	a "steve/room/interfaces"
-	b "steve/room/interfaces/global"
 	"github.com/golang/protobuf/proto"
 	"steve/structs/proto/gate_rpc"
 	"steve/room2/util"
@@ -96,7 +94,10 @@ func (model MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterpc
 		PlayerID:  playerID,
 	}
 */
-	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),common.NormalEvent,model.GetDesk(),common.CreateEventParams(model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber,eventConetxtByte,playerID))
+	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
+		common.NormalEvent,
+		model.GetDesk(),
+		common.CreateEventParams(model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber,eventConetxtByte,playerID))
 
 	model.PushEvent(event)
 }

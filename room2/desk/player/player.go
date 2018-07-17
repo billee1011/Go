@@ -1,4 +1,4 @@
-package room2
+package player
 
 import (
 	"sync"
@@ -10,7 +10,7 @@ import (
 	"steve/room2/desk"
 )
 
-type RoomPlayer struct {
+type Player struct {
 	PlayerID    uint64
 	seat        uint32 // 座号
 	ecoin       uint64 // 进牌桌金币数
@@ -23,45 +23,45 @@ type RoomPlayer struct {
 	mu sync.RWMutex
 }
 
-func (dp *RoomPlayer) GetDesk() *desk.Desk{
+func (dp *Player) GetDesk() *desk.Desk{
 	return dp.desk
 }
 
 // GetPlayerID 获取玩家 ID
-func (dp *RoomPlayer) GetPlayerID() uint64 {
+func (dp *Player) GetPlayerID() uint64 {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return dp.PlayerID
 }
 
 // GetSeat 获取座号
-func (dp *RoomPlayer) GetSeat() int {
+func (dp *Player) GetSeat() int {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return int(dp.seat)
 }
-func (dp *RoomPlayer) SetSeat(seat uint32) {
+func (dp *Player) SetSeat(seat uint32) {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	dp.seat = seat
 }
 
 // GetEcoin 获取进入时金币数
-func (dp *RoomPlayer) GetEcoin() int {
+func (dp *Player) GetEcoin() int {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return int(dp.ecoin)
 }
 
 // IsQuit 是否已经退出
-func (dp *RoomPlayer) IsQuit() bool {
+func (dp *Player) IsQuit() bool {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return dp.quit
 }
 
 // QuitDesk 退出房间
-func (dp *RoomPlayer) QuitDesk(desk *desk.Desk) {
+func (dp *Player) QuitDesk(desk *desk.Desk) {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.quit = true
@@ -70,7 +70,7 @@ func (dp *RoomPlayer) QuitDesk(desk *desk.Desk) {
 }
 
 // EnterDesk 进入房间
-func (dp *RoomPlayer) EnterDesk(desk *desk.Desk) {
+func (dp *Player) EnterDesk(desk *desk.Desk) {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.quit = false
@@ -79,7 +79,7 @@ func (dp *RoomPlayer) EnterDesk(desk *desk.Desk) {
 }
 
 // OnPlayerOverTime 玩家超时
-func (dp *RoomPlayer) OnPlayerOverTime() {
+func (dp *Player) OnPlayerOverTime() {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.overTime++
@@ -91,14 +91,14 @@ func (dp *RoomPlayer) OnPlayerOverTime() {
 }
 
 // IsTuoguan 玩家是否在托管中
-func (dp *RoomPlayer) IsTuoguan() bool {
+func (dp *Player) IsTuoguan() bool {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return dp.tuoguan
 }
 
 // SetTuoguan 设置托管
-func (dp *RoomPlayer) SetTuoguan(tuoguan bool, notify bool) {
+func (dp *Player) SetTuoguan(tuoguan bool, notify bool) {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.tuoguan = tuoguan
@@ -107,22 +107,22 @@ func (dp *RoomPlayer) SetTuoguan(tuoguan bool, notify bool) {
 	}
 }
 
-func (p *RoomPlayer) GetCoin() uint64 {
+func (p *Player) GetCoin() uint64 {
 	return playerdata.GetPlayerCoin(p.PlayerID)
 }
 
-func (p *RoomPlayer) SetCoin(coin uint64) {
+func (p *Player) SetCoin(coin uint64) {
 	playerdata.SetPlayerCoin(p.PlayerID, coin)
 }
 
 // GetUserName() string
 
 // 判断玩家是否在线
-func (p *RoomPlayer) IsOnline() bool {
+func (p *Player) IsOnline() bool {
 	return playerdata.GetPlayerGateAddr(p.PlayerID) != ""
 }
 
-func (dp *RoomPlayer) notifyTuoguan(playerID uint64, tuoguan bool) {
+func (dp *Player) notifyTuoguan(playerID uint64, tuoguan bool) {
 	facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
