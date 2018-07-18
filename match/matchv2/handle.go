@@ -32,7 +32,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		return
 	}
 
-	defaultMgr.addPlayer(playerID, int(req.GetGameId()), false)
+	defaultMgr.addPlayer(playerID, int(req.GetGameId()))
 	return
 }
 
@@ -48,7 +48,7 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 		Body:  response,
 	}}
 
-	defaultMgr.addPlayer(playerID, int(req.GetGameId()), true)
+	defaultMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
 	return
 }
 
