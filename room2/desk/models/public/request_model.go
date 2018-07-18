@@ -7,7 +7,8 @@ import (
 	b "steve/room/interfaces/global"
 	"github.com/golang/protobuf/proto"
 	"steve/structs/proto/gate_rpc"
-	"steve/room2"
+	"steve/room2/desk/models/mj"
+	player2 "steve/room2/desk/player"
 )
 
 type RequestModel struct {
@@ -32,12 +33,14 @@ func (model RequestModel) HandlePlayerRequest(playerID uint64, head *steve_proto
 	})
 
 	//iDeskID, ok := dm.playerDeskMap.Load(playerID)
-	player := room2.GetRoomPlayerMgr().GetPlayer(playerID)
-	if !player.get {
+	player := player2.GetRoomPlayerMgr().GetPlayer(playerID)
+	desk := player.GetDesk()
+	if !(desk==nil) {
 		logEntry.Infoln("玩家不在牌桌上")
 		return
 	}
-	deskID := iDeskID.(uint64)
+	desk.GetModel(models.Event).(mj.MjEventModel).
+	/*deskID := iDeskID.(uint64)
 	logEntry = logEntry.WithField("desk_id", deskID)
 
 	iDesk, ok := dm.deskMap.Load(deskID)
@@ -46,7 +49,8 @@ func (model RequestModel) HandlePlayerRequest(playerID uint64, head *steve_proto
 		return
 	}
 	desk := iDesk.(interfaces.Desk)
-	desk.PushRequest(playerID, head, bodyData)
+	desk.PushRequest(playerID, head, bodyData)*/
+
 }
 
 // PushRequest 压入玩家请求

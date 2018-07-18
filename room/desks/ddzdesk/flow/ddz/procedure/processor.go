@@ -78,7 +78,7 @@ func HandleEvent(params Params) (result Result) {
 				// Player转为RoomPlayer
 				roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
 				lord := player.GetLord()
-				double := player.GetIsDouble()
+				// double := player.GetIsDouble()
 				tuoguan := false // TODO
 
 				ddzPlayerInfo := room.DDZPlayerInfo{}
@@ -86,7 +86,7 @@ func HandleEvent(params Params) (result Result) {
 				ddzPlayerInfo.OutCards = player.GetOutCards()
 				ddzPlayerInfo.HandCards = player.GetHandCards()
 				ddzPlayerInfo.Lord = &lord
-				ddzPlayerInfo.IsDouble = &double
+				// ddzPlayerInfo.IsDouble = &double
 				ddzPlayerInfo.Tuoguan = &tuoguan
 
 				playersInfo = append(playersInfo, &ddzPlayerInfo)

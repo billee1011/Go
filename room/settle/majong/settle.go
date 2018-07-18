@@ -147,7 +147,7 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			// 一条结算记录
 			if len(contextSInfos) != 1 {
 				// 通知该玩家单局结算信息
-				facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
+				facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp)
 				return
 			}
 			sinfo := contextSInfos[0]
@@ -159,13 +159,13 @@ func (majongSettle *majongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			billPlayersInfo := majongSettle.makeBillPlayerInfo(winers[0], int32(sinfo.CardValue), fans, mjContext)
 			balanceRsp.BillPlayersInfo = append(balanceRsp.BillPlayersInfo, billPlayersInfo...)
 		}
+		// 通知该玩家单局结算信息
+		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 		logrus.WithFields(logrus.Fields{
 			"func_name":  "sendRounSettleMessage",
 			"pid":        pid,
 			"balanceRsp": balanceRsp,
 		}).Debugln("通知玩家单局结算信息")
-		// 通知该玩家单局结算信息
-		facade.BroadCastDeskMessage(desk, []uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 	}
 }
 

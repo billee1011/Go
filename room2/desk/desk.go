@@ -35,7 +35,7 @@ func (desk Desk) InitModel(){
 	}
 }
 
-func (desk Desk) GetPlayer(playerId uint64) *room2.RoomPlayer{
+func (desk Desk) GetPlayer(playerId uint64) *room2.Player {
 	players := desk.GetDeskPlayers()
 	for _,player := range players{
 		if player.GetPlayerID()==playerId {
@@ -45,7 +45,7 @@ func (desk Desk) GetPlayer(playerId uint64) *room2.RoomPlayer{
 	return nil
 }
 
-func (desk Desk) GetDeskPlayers() []*room2.RoomPlayer{
+func (desk Desk) GetDeskPlayers() []*room2.Player {
 	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayers()
 	return players
 }
