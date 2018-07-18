@@ -2,8 +2,6 @@ package registers
 
 import (
 	"steve/client_pb/msgid"
-	a "steve/room/chat"
-	b "steve/room/desks/deskbase"
 	"steve/structs/exchanger"
 )
 
@@ -19,7 +17,7 @@ func RegisterHandlers(e exchanger.Exchanger) {
 	// registe(msgid.MsgID_ROOM_JOIN_DESK_REQ, deskapply.HandleRoomJoinDeskReq)          // 加入牌桌请求
 	registe(msgid.MsgID_ROOM_DESK_QUIT_REQ, HandleRoomDeskQuitReq) // 退出牌桌请求
 	// registe(msgid.MsgID_ROOM_DESK_CONTINUE_REQ, deskapply.HandleRoomContinueReq)      // 续局请求
-	registe(msgid.MsgID_ROOM_CANCEL_TUOGUAN_REQ, deskbase.HandleCancelTuoGuanReq) // 取消托管请求
+	registe(msgid.MsgID_ROOM_CANCEL_TUOGUAN_REQ, HandleCancelTuoGuanReq) // 取消托管请求
 	registe(msgid.MsgID_ROOM_RESUME_GAME_REQ, HandleResumeGameReq)       // 恢复对局请求
 	registe(msgid.MsgID_ROOM_CHAT_REQ, HandleRoomChatReq)                       // 房间玩家聊天请求
 	// registe(msgid.MsgID_ROOM_DESK_NEED_RESUME_REQ, deskapply.HandleRoomNeedResumeReq) // 是否需要恢复对局请求

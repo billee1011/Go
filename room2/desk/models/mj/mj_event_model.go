@@ -16,6 +16,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"steve/structs/proto/gate_rpc"
 	"steve/room2/util"
+	"steve/room2/desk/settle"
+	"steve/room2/desk/ai"
 )
 
 type MjEventModel struct {
@@ -35,6 +37,13 @@ func (model MjEventModel) GetName() string {
 
 func (model MjEventModel) Start() {
 	model.event = make(chan desk.DeskEvent, 16)
+
+	go func() {
+		model.processEvents(model.GetDesk().Context)
+	}()
+	go func() {
+		model.timerTask(model.GetDesk().Context)
+	}()
 }
 
 func (model MjEventModel) Stop() {
@@ -180,18 +189,18 @@ func (model MjEventModel) processEvent(eventID int, eventContext []byte) {
 	}
 
 	// 发送消息给玩家
-	model.reply(result.ReplyMsgs)
-	d.settler.Settle(d, d.dContext.mjContext)
+	model.Reply(result.ReplyMsgs)
+	model.GetDesk().GetConfig().Settle.(settle.MajongSettle).Settle(model.GetDesk(), model.GetDesk().GetConfig())
 
-	if d.checkGameOver(logEntry) {
+	if model.checkGameOver(logEntry) {
 		return
 	}
 	// 自动事件不为空，继续处理事件
 	if result.AutoEvent != nil {
 		if result.AutoEvent.GetWaitTime() == 0 {
-			d.processEvent(result.AutoEvent.GetEventId(), result.AutoEvent.GetEventContext())
+			model.processEvent(int(result.AutoEvent.GetEventId()), result.AutoEvent.GetEventContext())
 		} else {
-			go d.pushAutoEvent(result.AutoEvent, d.dContext.stateNumber)
+			go model.pushAutoEvent(result.AutoEvent, model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber)
 		}
 	}
 }
@@ -201,9 +210,9 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	mjContext := model.GetDesk().GetConfig().Context.(context2.MjContext).MjContext
 	// 游戏结束
 	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
-		d.settler.RoundSettle(d, mjContext)
+		model.GetDesk().GetConfig().Settle.(settle.MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
 		logEntry.Infoln("游戏结束状态")
-		d.cancel()
+		model.GetDesk().Cancel()
 		return true
 	}
 	return false
@@ -257,4 +266,55 @@ func needCompareStateNumber(event *desk.DeskEvent) bool {
 		return false
 	}
 	return true
+}
+
+
+// timerTask 定时任务，产生自动事件
+func (model MjEventModel) timerTask(ctx context.Context) {
+	defer func() {
+		if x := recover(); x != nil {
+			debug.PrintStack()
+		}
+	}()
+
+	t := time.NewTicker(time.Millisecond * 200)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			{
+				model.genTimerEvent()
+			}
+		case <-ctx.Done():
+			{
+				return
+			}
+		}
+	}
+}
+
+// genTimerEvent 生成计时事件
+func (model MjEventModel) genTimerEvent() {
+	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
+	dContext := model.GetDesk().GetConfig().Context.(context2.MjContext)
+	tuoGuanPlayers := model.GetDesk().GetModel(models.Player).(public.PlayerModel).GetTuoguanPlayers()
+
+	deskPlayers := model.GetDesk().GetDeskPlayers()
+	robotLvs := make(map[uint64]int, len(deskPlayers))
+	for _, deskPlayer := range deskPlayers {
+		robotLv := deskPlayer.GetRobotLv()
+		if robotLv != 0 {
+			robotLvs[deskPlayer.GetPlayerID()] = robotLv
+		}
+	}
+	result := ai.GetAtEvent().GenerateV2(&ai.AutoEventGenerateParams{
+		MajongContext:  &dContext.MjContext,
+		CurTime:        time.Now(),
+		StateTime:      dContext.StateTime,
+		RobotLv:        robotLvs,
+		TuoGuanPlayers: tuoGuanPlayers,
+	})
+	for _, event := range result.Events {
+		model.GetDesk().GetModel(models.Event).(MjEventModel).PushEvent(event)
+	}
 }

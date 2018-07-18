@@ -23,13 +23,16 @@ func (model PlayerModel) GetName() string{
 }
 func (model PlayerModel) Start(){
 	model.players = make([]*player.Player,model.GetDesk().GetConfig().Num)
+	ids:=model.GetDesk().GetDeskPlayerIDs()
+	for i:=0;i<len(model.players);i++{
+		model.players[i] = player.GetRoomPlayerMgr().GetPlayer(ids[i])
+	}
 }
 func (model PlayerModel) Stop(){
 
 }
 
-func (model PlayerModel) PlayerEnter(player *player.Player,seat uint32){
-	player.SetSeat(seat)
+func (model PlayerModel) PlayerEnter(player *player.Player){
 	player.EnterDesk(model.GetDesk())
 
 	// 判断行牌状态, 选项化后需修改
@@ -138,6 +141,18 @@ func (model PlayerModel) GetDeskPlayerIDs() []uint64 {
 	result := make([]uint64, len(players))
 	for _, player := range players {
 		result[player.GetSeat()] = player.GetPlayerID()
+	}
+	return result
+}
+
+// GetTuoguanPlayers 获取牌桌所有托管玩家
+func (model PlayerModel) GetTuoguanPlayers() []uint64 {
+	players := model.GetDesk().GetDeskPlayers()
+	result := make([]uint64, 0, len(players))
+	for _, player := range players {
+		if player.IsTuoguan() {
+			result = append(result, player.GetPlayerID())
+		}
 	}
 	return result
 }

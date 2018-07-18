@@ -131,10 +131,6 @@ func init() {
 	tran = t
 }
 
-func TranslateToRoomPlayer(player *player.Player) room.RoomPlayerInfo {
-	return TranslateToRoomPlayer(player)
-}
-
 // TranslateToRoomPlayer 将 deskPlayer 转换成 RoomPlayerInfo
 func translateToRoomPlayer(player *player.Player) room.RoomPlayerInfo {
 	coin := player.GetCoin()
