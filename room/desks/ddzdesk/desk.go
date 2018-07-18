@@ -271,6 +271,7 @@ func (d *desk) processEvent(e *deskEvent) {
 	d.ddzContext = &result.Context
 	// 游戏结束
 	if d.ddzContext.GetCurState() == ddz.StateID_state_over {
+		d.ContinueDesk(false, 0, d.getWinners())
 		go func() { d.Stop() }()
 		return
 	}
@@ -291,6 +292,18 @@ func (d *desk) processEvent(e *deskEvent) {
 			}()
 		}
 	}
+}
+
+func (d *desk) getWinners() []uint64 {
+	players := d.ddzContext.GetPlayers()
+	winners := make([]uint64, 0, len(players))
+
+	for _, player := range players {
+		if player.GetWin() {
+			winners = append(winners, player.GetPlayerId())
+		}
+	}
+	return winners
 }
 
 func (d *desk) getMessageSender() ddzmachine.MessageSender {

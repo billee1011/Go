@@ -92,6 +92,7 @@ func (s *settleState) settle(m machine.Machine) {
 			isWin = !lordWin
 			mul = int32(multiple)
 		}
+		player.Win = isWin
 		billPlayer.Win = &isWin
 		billPlayer.Base = proto.Int32(int32(base))
 		billPlayer.Multiple = &mul

@@ -15,6 +15,7 @@ message Player {
     repeated uint32 hand_cards = 5;         // 玩家手牌
     repeated uint32 out_cards = 6;          // 上次打出的牌
     repeated uint32 all_out_cards = 7;      // 所有打出的牌(保留给记牌器需求)
+    bool win = 8;                           // 是否赢家
 }
 
 enum DDZStage{
