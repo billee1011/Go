@@ -38,7 +38,12 @@ type desk struct {
 
 // initDDZContext 初始化斗地主现场
 func (d *desk) initDDZContext() {
-	d.ddzContext = procedure.CreateInitDDZContext(facade.GetDeskPlayerIDs(d))
+
+	// 牌桌所有玩家的playerID
+	// index:座位号 value:playerID
+	playersID := facade.GetDeskPlayerIDs(d)
+
+	d.ddzContext = procedure.CreateInitDDZContext(playersID)
 }
 
 // Start 启动牌桌逻辑
@@ -47,7 +52,10 @@ func (d *desk) Start(finish func()) error {
 	d.eventChannel = make(chan deskEvent, 4)
 	d.closingChannel = make(chan struct{})
 
+	// 初始化操作
 	d.initDDZContext()
+
+	// 逻辑线程
 	go func() {
 		defer func() {
 			if x := recover(); x != nil {
@@ -55,10 +63,15 @@ func (d *desk) Start(finish func()) error {
 				debug.PrintStack()
 			}
 		}()
+
+		// 开始运行
 		d.run()
+
+		// 执行结束时的函数
 		finish()
 	}()
 
+	// 定时器线程
 	var ctx context.Context
 	ctx, d.cancel = context.WithCancel(context.Background())
 	go func() {
@@ -68,11 +81,16 @@ func (d *desk) Start(finish func()) error {
 				debug.PrintStack()
 			}
 		}()
+
+		// 定时器
 		d.timerTask(ctx)
 	}()
+
+	// 游戏开始事件
 	d.pushEvent(&deskEvent{
 		eventID: int(ddz.EventID_event_start_game),
 	})
+
 	return nil
 }
 

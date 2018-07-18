@@ -1,9 +1,10 @@
 package states
 
 import (
-	"github.com/Sirupsen/logrus"
 	"sort"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var (
@@ -40,13 +41,13 @@ type Poker struct {
 
 func (c Poker) String() string {
 	if c.Suit == sDiamond {
-		return "♦" + c.getPointString()
+		return "♦ " + c.getPointString()
 	} else if c.Suit == sClub {
-		return "♣" + c.getPointString()
+		return "♣ " + c.getPointString()
 	} else if c.Suit == sHeart {
-		return "♥" + c.getPointString()
+		return "♥ " + c.getPointString()
 	} else if c.Suit == sSpade {
-		return "♠" + c.getPointString()
+		return "♠ " + c.getPointString()
 	} else {
 		return c.getPointString()
 	}

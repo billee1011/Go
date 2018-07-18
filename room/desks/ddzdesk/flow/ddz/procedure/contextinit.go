@@ -28,6 +28,7 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 	}
 }
 
+// 根据玩家的playerID创建出斗地主Player
 func createDDZPlayers(players []uint64) []*ddz.Player {
 	result := make([]*ddz.Player, 0, len(players))
 	for _, playerID := range players {
