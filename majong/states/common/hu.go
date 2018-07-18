@@ -65,15 +65,18 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 	srcOutCards := srcPlayer.GetOutCards()
 	srcPlayer.OutCards = removeLastCard(logEntry, srcOutCards, card)
 
-	isReal := true
+	realPlayerID := utils.GetRealHuCardPlayer(players, srcPlayerID, mjContext)
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
+		isReal := false
+		if playerID == realPlayerID {
+			isReal = true
+		}
 		s.addHuCard(card, player, srcPlayerID, isReal)
-		isReal = false
 		// 玩家胡状态
 		player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
 	}
-	s.notifyHu(flow)
+	s.notifyHu(flow, realPlayerID)
 	return
 }
 
@@ -86,7 +89,7 @@ func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 }
 
 // HuState 广播胡
-func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
+func (s *HuState) notifyHu(flow interfaces.MajongFlow, realPlayerID uint64) {
 	mjContext := flow.GetMajongContext()
 	huType := room.HuType_HT_DIANPAO.Enum()
 	if s.isAfterGang(mjContext) {
@@ -97,6 +100,7 @@ func (s *HuState) notifyHu(flow interfaces.MajongFlow) {
 		FromPlayerId: proto.Uint64(mjContext.GetLastChupaiPlayer()),
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(mjContext.GetLastOutCard()))),
 		HuType:       huType,
+		RealPlayerId: proto.Uint64(realPlayerID),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }

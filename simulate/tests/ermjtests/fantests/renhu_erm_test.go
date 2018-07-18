@@ -29,9 +29,9 @@ func renhu(t *testing.T) *utils.DeskData {
 	return deskData
 }
 
-//TestFan_RenHu_Zimo_ERM 人胡立即结算自摸测试
+//TestFan_RenHu_dianpao_ERM 人胡立即结算自摸测试
 //期望赢分：156 = [88（大七星） +4（无花）+ 64（人胡）]* 1
-func TestFan_RenHu_Zimo_ERM(t *testing.T) {
+func TestFan_RenHu_dianpao_ERM(t *testing.T) {
 	deskData := renhu(t)
 	//开局 0 自询
 	assert.Nil(t, utils.WaitZixunNtf(deskData, 0))

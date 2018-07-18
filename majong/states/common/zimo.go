@@ -106,6 +106,7 @@ func (s *ZimoState) notifyHu(card *majongpb.Card, huType majongpb.HuType, player
 		FromPlayerId: proto.Uint64(playerID),
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		HuType:       rhuType.Enum(),
+		RealPlayerId: proto.Uint64(playerID),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }

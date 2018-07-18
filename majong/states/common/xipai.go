@@ -63,9 +63,9 @@ func (s *XipaiState) randDices() []uint32 {
 
 // selectZhuangjia 选择庄家
 func (s *XipaiState) selectZhuangjia(mjContext *majongpb.MajongContext, dices []uint32, gameID int) int {
-	totalDice := int(dices[0] + dices[1])
+	// totalDice := int(dices[0] + dices[1])
 
-	mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
+	// mjContext.ZhuangjiaIndex = uint32(totalDice % len(mjContext.Players))
 	zhuang := mjContext.GetOption().GetZhuang()
 	if zhuang.GetNeedDeployZhuang() {
 		mjContext.ZhuangjiaIndex = uint32(zhuang.GetZhuangIndex() % int32(len(mjContext.Players)))
