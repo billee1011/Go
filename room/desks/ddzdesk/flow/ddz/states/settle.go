@@ -83,10 +83,18 @@ func (s *settleState) settle(m machine.Machine) {
 		roomPlayer := global.GetPlayerMgr().GetPlayer(playerId)
 		billPlayer := room.DDZBillPlayerInfo{}
 		billPlayer.PlayerId = &playerId
-		isWin := winnerId == playerId
+		var isWin bool
+		var mul int32
+		if playerId == lordId {
+			isWin = lordWin
+			mul = int32(multiple * 2)
+		} else {
+			isWin = !lordWin
+			mul = int32(multiple)
+		}
 		billPlayer.Win = &isWin
 		billPlayer.Base = proto.Int32(int32(base))
-		billPlayer.Multiple = proto.Int32(int32(multiple))
+		billPlayer.Multiple = &mul
 		originCoin := roomPlayer.GetCoin()
 		settleScore := settleScores[playerId]
 		if isWin {
