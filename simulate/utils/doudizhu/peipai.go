@@ -2,7 +2,6 @@ package doudizhu
 
 import (
 	"steve/client_pb/room"
-	"steve/simulate/config"
 	"steve/simulate/structs"
 	"steve/simulate/utils"
 	"testing"
@@ -107,12 +106,6 @@ func NewStartDDZGameParamsTest1() structs.StartPukeGameParams {
 		// 地主的座位号
 		BankerSeat: 0,
 
-		// 服务器地址
-		ServerAddr: config.ServerAddr,
-
-		// 客户端版本号
-		ClientVer: config.ClientVersion,
-
 		// 金币数(座位ID 与 金币 的map)
 		PlayerSeatGold: map[int]uint64{0: 100000, 1: 100000, 2: 100000, 3: 100000},
 
@@ -216,12 +209,6 @@ func NewStartDDZGameParamsTest2() structs.StartPukeGameParams {
 
 		// 地主的座位号
 		BankerSeat: 0,
-
-		// 服务器地址
-		ServerAddr: config.ServerAddr,
-
-		// 客户端版本号
-		ClientVer: config.ClientVersion,
 
 		// 金币数(座位ID 与 金币 的map)
 		PlayerSeatGold: map[int]uint64{0: 100000, 1: 100000, 2: 100000, 3: 100000},

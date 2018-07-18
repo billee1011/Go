@@ -43,6 +43,18 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenera
 	}
 }
 
+// addAIEvents 将 AI 产生的事件添加到结果中
+func (aeg *autoEventGenerator) addAIEvents(result *interfaces.AutoEventGenerateResult, aiResult *interfaces.AIEventGenerateResult, playerID uint64, eventType interfaces.EventType) {
+	for _, aiEvent := range aiResult.Events {
+		result.Events = append(result.Events, interfaces.Event{
+			ID:        aiEvent.ID,
+			Context:   aiEvent.Context,
+			PlayerID:  playerID,
+			EventType: eventType,
+		})
+	}
+}
+
 // handlePlayerAI 处理玩家 AI
 // result 		: 存放AI事件的结果
 // AI			: 具体的AI产生器
@@ -72,12 +84,6 @@ func (aeg *autoEventGenerator) handleDDZPlayerAI(result *interfaces.AutoEventGen
 			})
 		}
 	}
-}
-
-// handlePlayerTuoGuan 处理玩家托管
-func (aeg *autoEventGenerator) handlePlayerTuoGuan(result *interfaces.AutoEventGenerateResult, AI interfaces.MajongAI,
-	player *majong.Player, mjContext *majong.MajongContext) {
-	aeg.handlePlayerAI(result, AI, player, mjContext, interfaces.TuoGuangAI, 0)
 }
 
 // handleOverTime 处理超时
@@ -226,12 +232,12 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 		result = aeg.handleTuoGuan(params.Desk, AI, params.StartTime, params.MajongContext)
 
 		// 超过 1s 处理机器人事件
-		if params.CurTime.Sub(params.StateTime) > 1*time.Second {
-			players := mjContext.GetPlayers()
+		if time.Now().Sub(params.StartTime) > 1*time.Second {
+			players := params.MajongContext.GetPlayers()
 			for _, player := range players {
 				playerID := player.GetPalyerId()
 				if lv, exist := params.RobotLv[playerID]; exist && lv != 0 {
-					aeg.handlePlayerAI(&result, AI, player, mjContext, interfaces.RobotAI, lv)
+					aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), params.MajongContext, interfaces.RobotAI, lv)
 				}
 			}
 		}

@@ -4,11 +4,11 @@ import (
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 
-	"steve/client_pb/msgId"
 	"steve/client_pb/room"
 
 	"errors"
 	"github.com/Sirupsen/logrus"
+	"steve/client_pb/msgid"
 )
 
 type initState struct{}

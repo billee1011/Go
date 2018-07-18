@@ -3,7 +3,7 @@ package states
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/client_pb/msgId"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/room/interfaces/global"

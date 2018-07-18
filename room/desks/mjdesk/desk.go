@@ -207,7 +207,7 @@ func (d *desk) genTimerEvent() {
 		Desk:          d,
 		MajongContext: &dContext.mjContext,
 		StartTime:     dContext.stateTime,
-		RobotLv:        robotLvs,
+		RobotLv:       robotLvs,
 	})
 	for _, event := range result.Events {
 		logEntry.WithFields(logrus.Fields{

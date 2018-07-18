@@ -1,13 +1,13 @@
 package player
 
 import (
-	"sync"
-	"steve/room/interfaces/facade"
-	"steve/client_pb/msgId"
-	"steve/client_pb/room"
 	"github.com/golang/protobuf/proto"
+	"steve/client_pb/msgid"
+	"steve/client_pb/room"
 	playerdata "steve/common/data/player"
+	"steve/room/interfaces/facade"
 	"steve/room2/desk"
+	"sync"
 )
 
 type Player struct {
@@ -23,7 +23,7 @@ type Player struct {
 	mu sync.RWMutex
 }
 
-func (dp *Player) GetDesk() *desk.Desk{
+func (dp *Player) GetDesk() *desk.Desk {
 	return dp.desk
 }
 
