@@ -6,6 +6,7 @@ Package common is a generated protocol buffer package.
 
 It is generated from these files:
 	common.proto
+	errors.proto
 
 It has these top-level messages:
 	GeographicalLocation
