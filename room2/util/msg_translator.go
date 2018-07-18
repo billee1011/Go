@@ -5,11 +5,11 @@ import (
 	"steve/client_pb/msgid"
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	a "steve/room/req_event_translator/majong"
-	b "steve/room/req_event_translator/ddz"
-	c "steve/room/interfaces/global"
 	"errors"
 	"steve/structs/proto/gate_rpc"
+	"steve/client_pb/room"
+	"steve/room2/desk/player"
+	"steve/room/req_event_translator/majong"
 )
 
 type msgTranslator struct {
@@ -129,4 +129,20 @@ func init() {
 	}
 	t.addTranslators()
 	tran = t
+}
+
+func TranslateToRoomPlayer(player *player.Player) room.RoomPlayerInfo {
+	return TranslateToRoomPlayer(player)
+}
+
+// TranslateToRoomPlayer 将 deskPlayer 转换成 RoomPlayerInfo
+func translateToRoomPlayer(player *player.Player) room.RoomPlayerInfo {
+	coin := player.GetCoin()
+	return room.RoomPlayerInfo{
+		PlayerId: proto.Uint64(player.GetPlayerID()),
+		Name:     proto.String(""), // TODO
+		Coin:     proto.Uint64(coin),
+		Seat:     proto.Uint32(uint32(player.GetSeat())),
+		// Location: TODO 没地方拿
+	}
 }

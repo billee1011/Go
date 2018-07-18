@@ -19,7 +19,7 @@ func NewMjDeskCreateConfig(context interface{},num int) DeskConfig {
 	merage := [][]string{defaultModels}
 	names := util.MergeStringArray(merage)
 	return DeskConfig{
-		Models:[]string{models.Event,models.Message,models.Request,models.Player,models.Trusteeship},
+		Models:names,
 		Context:context,
 		Num:num,
 	}
