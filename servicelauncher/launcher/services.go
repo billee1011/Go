@@ -17,6 +17,7 @@ func Init(args []string) {
 		loader.WithClientRPCCA(viper.GetString("rpc_ca_file"), viper.GetString("certi_server_name")),
 		loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
 		loader.WithConsulAddr(viper.GetString("consul_addr")),
+		loader.WithPProf(viper.GetString("pprofExposeType"), viper.GetInt("pprofHttpPort")),
 		loader.WithParams(args[1:]))
 }
 
