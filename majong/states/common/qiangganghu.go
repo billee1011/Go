@@ -3,6 +3,7 @@ package common
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -89,6 +90,7 @@ func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 	}
 	s.removeSrcCard(card, srcPlayer)
 	s.notifyHu(flow, realPlayerID)
+	gutils.SetNextZhuangIndex(players, srcPlayerID, mjContext)
 	return
 }
 
