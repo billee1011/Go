@@ -228,7 +228,7 @@ message MajongContext {
     repeated uint64 revert_settles = 8; // 退税结算 ids
     Card last_out_card = 9;   // 最后一次出的牌
     uint32 zhuangjia_index = 10; // 庄家索引
-    bool fix_zhuangjia_index = 11;  // 是否固定庄家位置
+    // bool fix_zhuangjia_index = 11;  // 是否固定庄家位置
     repeated uint64 last_hu_players = 12; // 最近一次执行胡操作的玩家列表
     uint64 last_peng_player = 13; // 最近一次执行碰操作的玩家
     uint64 last_gang_player = 14;   // 最近一次执行杠操作的玩家
@@ -243,6 +243,8 @@ message MajongContext {
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
     uint64 last_chi_player = 25; // 最近一次执行吃操作的玩家
+    uint32 next_banker_seat = 26;   // 下一局庄家座号
+    bool fix_next_banker_seat = 27; // 是否已经确定下一局庄家位置
 
     uint32 xingpai_option_id = 251; // 行牌选项 ID 
     uint32 cardtype_option_id = 252;    // 牌型选项 ID 
@@ -260,13 +262,13 @@ message MajongCommonOption {
     string cards = 5;    //配牌的墙牌
     uint32 wallcards_length = 6;   //配牌配的墙牌长度
     Huansanzhangfx hsz_fx = 7;  //配置换三张方向
-    Zhuang zhuang = 8;  //配置庄家
+    // Zhuang zhuang = 8;  //配置庄家
 }
 
-message Zhuang{
-    bool need_deploy_zhuang = 1; //是否需要配置庄家
-    int32 zhuang_index = 2; //庄家位置
-}
+// message Zhuang{
+//     bool need_deploy_zhuang = 1; //是否需要配置庄家
+//     int32 zhuang_index = 2; //庄家位置
+// }
 
 message Huansanzhangfx{
     bool need_deploy_fx = 1; //是否需要配置换三张方向

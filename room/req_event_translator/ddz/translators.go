@@ -22,7 +22,7 @@ func TranslateGrabRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.GrabRequestEvent{
 		Head: &head,
-		Grab: *req.Grab,
+		Grab: req.GetGrab(),
 	}
 	eventID = int(ddz.EventID_event_grab_request)
 	return
@@ -35,7 +35,7 @@ func TranslateDoubleRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.DoubleRequestEvent{
 		Head:     &head,
-		IsDouble: *req.IsDouble,
+		IsDouble: req.GetIsDouble(),
 	}
 	eventID = int(ddz.EventID_event_double_request)
 	return
@@ -49,7 +49,7 @@ func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Heade
 	eventContext = &ddz.PlayCardRequestEvent{
 		Head:     &head,
 		Cards:    req.Cards,
-		CardType: ddz.CardType(int32(*req.CardType)),
+		CardType: ddz.CardType(int32(req.GetCardType())),
 	}
 	eventID = int(ddz.EventID_event_chupai_request)
 	return

@@ -20,6 +20,7 @@ var (
 	loinServerAddr    = flag.String("login_server_addr", "127.0.0.1:36201", "登录服地址")
 	gatewayServerAddr = flag.String("gateway_server_addr", "127.0.0.1:36001", "网关服地址")
 	peiPaiURL         = flag.String("peipai_url", "http://127.0.0.1:36102", "配牌服务地址")
+	matchHTTPAddr     = flag.String("match_http_addr", "http://127.0.0.1:37002", "匹配服 http 地址")
 	dbPath            *string
 )
 
@@ -41,6 +42,11 @@ func GetPeipaiURL() string {
 // GetClientVersion 获取客户端版本号
 func GetClientVersion() string {
 	return *clientVersion
+}
+
+// GetMatchHTTPAddr 获取匹配服 http 地址
+func GetMatchHTTPAddr() string {
+	return *matchHTTPAddr
 }
 
 // GetDBPath 获取 DB 路径

@@ -11,7 +11,7 @@ import (
 	"steve/room2/desk/contexts"
 )
 
-func getStateCostTime(entryTime int64) (costTime uint32) {
+func GetStateCostTime(entryTime int64) (costTime uint32) {
 	nowTime := time.Now().Unix()
 	if nowTime > entryTime {
 		costTime = uint32(nowTime - entryTime)
@@ -19,7 +19,7 @@ func getStateCostTime(entryTime int64) (costTime uint32) {
 	return
 }
 
-func getOperatePlayerID(mjContext *server_pb.MajongContext) *uint64 {
+func GetOperatePlayerID(mjContext *server_pb.MajongContext) *uint64 {
 	state := mjContext.GetCurState()
 	var playerID uint64
 	switch state {
@@ -43,7 +43,7 @@ func getOperatePlayerID(mjContext *server_pb.MajongContext) *uint64 {
 	return &playerID
 }
 
-func getGameStage(curState server_pb.StateID) (stage room.GameStage) {
+func GetGameStage(curState server_pb.StateID) (stage room.GameStage) {
 	switch curState {
 	case server_pb.StateID_state_huansanzhang:
 		stage = room.GameStage_GAMESTAGE_HUANSANZHANG
@@ -55,7 +55,7 @@ func getGameStage(curState server_pb.StateID) (stage room.GameStage) {
 	return
 }
 
-func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
+func GetDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 	if mjContext.GetCurState() == server_pb.StateID_state_zixun {
 		DoorCard := uint32(mjContext.GetLastMopaiCard().GetPoint())
 		return &DoorCard
@@ -63,7 +63,7 @@ func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 	return nil
 }
 
-func getRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
+func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo []*room.GamePlayerInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "getRecoverPlayerInfo",
 	})
@@ -190,7 +190,7 @@ func getTingType(player *server_pb.Player) *room.TingType {
 
 }
 
-func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomZixunNtf) {
+func GetZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomZixunNtf) {
 	if mjContext.GetCurState() != server_pb.StateID_state_zixun {
 		return proto.Bool(false), nil
 	}
@@ -202,7 +202,7 @@ func getZixunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *
 	return proto.Bool(true), zixunTransform(player.GetZixunRecord())
 }
 
-func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomChupaiWenxunNtf) {
+func GetWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomChupaiWenxunNtf) {
 	if mjContext.GetCurState() != server_pb.StateID_state_chupaiwenxun {
 		return proto.Bool(false), nil
 	}
@@ -237,7 +237,7 @@ func getWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, 
 	return proto.Bool(true), wenXunInfo
 }
 
-func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomWaitQianggangHuNtf) {
+func GetQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomWaitQianggangHuNtf) {
 	if mjContext.GetCurState() != server_pb.StateID_state_waitqiangganghu {
 		return proto.Bool(false), nil
 	}

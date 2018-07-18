@@ -57,10 +57,10 @@ func InitMajongContext(param server_pb.InitMajongContextParams) (mjContext serve
 	mjContext.Players = initPlayers(param.GetPlayers())
 	mjContext.ActivePlayer = param.GetPlayers()[param.GetZhuangIndex()]
 	mjContext.ZhuangjiaIndex = param.GetZhuangIndex()
-	mjContext.FixZhuangjiaIndex = param.GetFixZhuangIndex()
+	// mjContext.FixZhuangjiaIndex = param.GetFixZhuangIndex()
 
 	mjContext.Option = param.GetOption()
 	mjContext.MajongOption = param.GetMajongOption()
-
+	logEntry.Debugln("初始化麻将现场")
 	return
 }

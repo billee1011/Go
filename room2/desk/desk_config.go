@@ -6,22 +6,24 @@ import (
 )
 
 type DeskConfig struct {
-	Models []string
+	Models  []string
 	Context interface{} //预留gameContext
-	Num int
+	Settle  interface{}
+	Num     int
 }
 
 //默认自带的
 var defaultModels = []string{models.Event,models.Message,models.Request,models.Player,models.Trusteeship}
 
 //麻将
-func NewMjDeskCreateConfig(context interface{},num int) DeskConfig {
+func NewMjDeskCreateConfig(context interface{},settle interface{},num int) DeskConfig {
 	merage := [][]string{defaultModels}
 	names := util.MergeStringArray(merage)
 	return DeskConfig{
-		Models:names,
-		Context:context,
-		Num:num,
+		Models:  names,
+		Context: context,
+		Num:     num,
+		Settle:  settle,
 	}
 }
 
