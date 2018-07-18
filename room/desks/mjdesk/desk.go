@@ -89,7 +89,7 @@ func (d *desk) Start(finish func()) error {
 
 	d.event <- deskEvent{
 		event: interfaces.Event{
-			ID:        server_pb.EventID_event_start_game,
+			ID:        int32(server_pb.EventID_event_start_game),
 			Context:   []byte{},
 			EventType: interfaces.NormalEvent,
 		},
@@ -135,7 +135,7 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 	}
 
 	d.PushEvent(interfaces.Event{
-		ID:        server_pb.EventID(eventID),
+		ID:        int32(eventID),
 		Context:   eventConetxtByte,
 		EventType: interfaces.NormalEvent,
 		PlayerID:  playerID,
@@ -204,11 +204,10 @@ func (d *desk) genTimerEvent() {
 		}
 	}
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
-		MajongContext:  &dContext.mjContext,
-		CurTime:        time.Now(),
-		StateTime:      dContext.stateTime,
+		Desk:          d,
+		MajongContext: &dContext.mjContext,
+		StartTime:     dContext.stateTime,
 		RobotLv:        robotLvs,
-		TuoGuanPlayers: tuoGuanPlayers,
 	})
 	for _, event := range result.Events {
 		logEntry.WithFields(logrus.Fields{
@@ -249,8 +248,8 @@ func (d *desk) timerTask(ctx context.Context) {
 
 // needCompareStateNumber 判断事件是否需要比较 stateNumber
 func (d *desk) needCompareStateNumber(event *deskEvent) bool {
-	if event.event.ID == server_pb.EventID_event_huansanzhang_request ||
-		event.event.ID == server_pb.EventID_event_dingque_request {
+	if event.event.ID == int32(server_pb.EventID_event_huansanzhang_request) ||
+		event.event.ID == int32(server_pb.EventID_event_dingque_request) {
 		return false
 	}
 	return true
@@ -266,7 +265,7 @@ func (d *desk) recordTuoguanOverTimeCount(event interfaces.Event) {
 		return
 	}
 	id := event.ID
-	if id == server_pb.EventID_event_huansanzhang_request || id == server_pb.EventID_event_dingque_request {
+	if id == int32(server_pb.EventID_event_huansanzhang_request) || id == int32(server_pb.EventID_event_dingque_request) {
 		return
 	}
 	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
@@ -306,7 +305,7 @@ func (d *desk) processEvents(ctx context.Context) {
 				if d.needCompareStateNumber(&event) && event.stateNumber != d.dContext.stateNumber {
 					continue
 				}
-				d.processEvent(event.event.ID, event.event.Context)
+				d.processEvent(server_pb.EventID(event.event.ID), event.event.Context)
 				d.recordTuoguanOverTimeCount(event.event)
 			}
 		}
@@ -432,7 +431,7 @@ func (d *desk) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNumber int) {
 		return
 	}
 	d.PushEvent(interfaces.Event{
-		ID:        autoEvent.EventId,
+		ID:        int32(autoEvent.EventId),
 		Context:   autoEvent.EventContext,
 		EventType: interfaces.NormalEvent,
 		PlayerID:  0,

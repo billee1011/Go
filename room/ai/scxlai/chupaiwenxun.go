@@ -82,7 +82,7 @@ func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *interfaces.AI
 		return nil
 	}
 	return &interfaces.AIEvent{
-		ID:      eventID,
+		ID:      int32(eventID),
 		Context: data,
 	}
 }

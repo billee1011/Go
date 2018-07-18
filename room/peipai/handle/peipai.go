@@ -5,6 +5,7 @@ import (
 	"steve/room/peipai/utils"
 	"strconv"
 
+	"fmt"
 	"github.com/Sirupsen/logrus"
 )
 
@@ -61,6 +62,17 @@ func GetPeiPai(gameID int) string {
 	return ""
 }
 
+//ClearPeiPai 通过配牌关键字删除配牌
+func ClearPeiPai(key string) bool {
+	for index, pp := range peiPaiInfos {
+		if pp.Key == key {
+			peiPaiInfos = append(peiPaiInfos[:index], peiPaiInfos[index+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 //GetLensOfWallCards 牌墙长度
 func GetLensOfWallCards(gameID int) int {
 	key := idIntToStr(gameID)
@@ -106,6 +118,17 @@ func Peipai(w http.ResponseWriter, r *http.Request) {
 
 	// 配牌
 	value := r.FormValue(cards)
+	if value == "" {
+		found := ClearPeiPai(gameName)
+		var msg string
+		if found {
+			msg = fmt.Sprintf("%s's peipai cleared", gameName)
+		} else {
+			msg = fmt.Sprintf("%s's peipai not found", gameName)
+		}
+		respMSG(w, msg, 200)
+		return
+	}
 
 	// 配牌的长度-字符串
 	lenValue := r.FormValue(num)

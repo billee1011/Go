@@ -48,7 +48,7 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 		return nil, err
 	}
 	// TODO : game name
-	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
+	if err := Peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
 	// 配置麻将选项
@@ -115,17 +115,9 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	}
 
 	// 通知服务器：配牌
-	if err := peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
+	if err := Peipai(params.PeiPaiGame, params.Cards, params.WallCards, params.HszDir, params.BankerSeat); err != nil {
 		return nil, err
 	}
-
-	// 通知服务器：麻将选项（是否开启换三张）
-	//if err := majongOption(params.PeiPaiGame, params.IsHsz); err != nil {
-	//	return nil, err
-	//}
-
-	// 所有玩家的洗牌通知期望
-	//xipaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_XIPAI_NTF)
 
 	// 所有玩家的斗地主发牌通知期望
 	fapaiNtfExpectors := createExpectors(players, msgid.MsgID_ROOM_DDZ_DEAL_NTF)
@@ -173,7 +165,7 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		// 下一状态信息
 		deskData.DDZData.NextState = stntf.GetNextStage()
 
-		logEntry.Infof("玩家%d收到了斗地主游戏开始的通知,叫地主玩家 = %d，当前状态 = %v, 进入下一状态等待时间 = %d",
+		logEntry.Infof("玩家%d收到了斗地主游戏开始的通知,叫地主玩家 = %d，下一状态 = %v, 进入下一状态等待时间 = %d",
 			player.GetID(), stntf.GetPlayerId(), deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
 	}
 
@@ -187,9 +179,6 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 		}
 	}
 
-	// 暂停对应的秒数
-	time.Sleep(time.Duration(deskData.DDZData.NextState.GetTime()) * time.Second)
-
 	// 检测收到的发牌消息是否符合预期
 	if err := checkDDZFapaiNtf(fapaiNtfExpectors, &deskData, params.Cards); err != nil {
 		return nil, err
@@ -198,23 +187,22 @@ func StartDDZGame(params structs.StartPukeGameParams) (*DeskData, error) {
 	// 保存参数
 	deskData.DDZData.Params = params
 
-	// 检测是否收到洗牌通知
-	//checkXipaiNtf(xipaiNtfExpectors, &dd, params.Cards, params.WallCards)
-
-	// 是否执行换三张
-	//if params.IsHsz {
-	//	// 执行换三张
-	//	if err := executeHSZ(&dd, params.HszCards); err != nil {
-	//		return nil, err
-	//	}
-	//}
-
-	//// 是否执行定缺
-	//if err := executeDingque(&dd, params.DingqueColor); err != nil {
-	//	return nil, err
-	//}
-
 	return &deskData, nil
+}
+
+// sendDoubleReq 发送加倍请求
+// double : 是否加倍
+func sendDoubleReq(player *DeskPlayer, double bool) error {
+	logrus.WithFields(logrus.Fields{
+		"func_name": "sendJiabeiReq()",
+	}).Info("发出加倍请求，玩家 = ", player.Player.GetID())
+
+	client := player.Player.GetClient()
+	_, err := client.SendPackage(CreateMsgHead(msgid.MsgID_ROOM_DDZ_DOUBLE_REQ), &room.DDZDoubleReq{
+		IsDouble: &double, // 加倍为true，不加倍为false
+	})
+
+	return err
 }
 
 // createPlayerExpectors 创建玩家的麻将逻辑消息期望
@@ -227,6 +215,7 @@ func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.
 		msgid.MsgID_ROOM_CHAT_NTF, msgid.MsgID_ROOM_RESUME_GAME_RSP, msgid.MsgID_ROOM_DESK_QUIT_RSP,
 		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
 		msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP,
+		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
 	}
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
 	for _, msg := range msgs {
@@ -255,6 +244,7 @@ func createDDZPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfac
 		//msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF,  // 斗地主 出牌通知
 		msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF, // 斗地主 结束通知
 		msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
+		//msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
 	}
 
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
@@ -535,12 +525,15 @@ func checkDDZFapaiNtf(ntfExpectors map[uint64]interfaces.MessageExpector, deskDa
 		//}
 	}
 
-	logEntry.Infof("当前状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
+	// 暂停2秒（因为2秒之后才进入叫地主状态）
+	//time.Sleep(time.Second * 2)
+
+	logEntry.Infof("发牌处理中，下一状态 = %v, 进入下一状态等待时间 = %d", deskData.DDZData.NextState.GetStage(), deskData.DDZData.NextState.GetTime())
+
+	logEntry.Infof("发送发牌动画播放完成的请求")
 
 	// 通知服务器，每个玩家的发牌动画播放完成
-	//return sendCartoonFinish(room.CartoonType_CTNT_FAPAI, deskData)
-
-	return nil
+	return sendCartoonFinish(room.CartoonType_CTNT_DDZ_FAPAI, deskData)
 }
 
 // executeHSZ 执行换三张

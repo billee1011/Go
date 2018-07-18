@@ -88,7 +88,7 @@ func (h *huansanzhangStateAI) huansanzhang(player *majong.Player) *interfaces.AI
 		return nil
 	}
 	return &interfaces.AIEvent{
-		ID:      majong.EventID_event_huansanzhang_request,
+		ID:      int32(majong.EventID_event_huansanzhang_request),
 		Context: data,
 	}
 }
