@@ -36,7 +36,7 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateP
 // getAction 获取问询动作
 func (h *chupaiWenxunStateAI) getAction(player *majong.Player) majong.Action {
 	action := majong.Action_action_qi
-	if len(player.HuCards) != 0 {
+	if gutils.IsTing(player) || gutils.IsHu(player) {
 		for _, possibleAction := range player.GetPossibleActions() {
 			if possibleAction == majong.Action_action_hu {
 				action = majong.Action_action_hu
