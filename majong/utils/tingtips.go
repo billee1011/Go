@@ -1,20 +1,20 @@
 package utils
 
 import (
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/gutils"
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
+	"steve/majong/bus"
 )
 
 // calcHuTimes 计算胡牌倍数
 func calcHuTimes(card *majongpb.Card, player *majongpb.Player, mjContext *majongpb.MajongContext) uint32 {
-	calcor := global.GetFanTypeCalculator()
+	calcor := bus.GetFanTypeCalculator()
 	pengCards := []*majongpb.Card{}
 	gangCards := []*majongpb.GangCard{}
 	for _, pcard := range player.GetPengCards() {

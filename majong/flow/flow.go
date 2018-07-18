@@ -2,7 +2,6 @@ package flow
 
 import (
 	"errors"
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/transition"
 	majongpb "steve/server_pb/majong"
@@ -13,6 +12,7 @@ import (
 	_ "steve/majong/states/factory" // init state facotry
 
 	"github.com/Sirupsen/logrus"
+	"steve/majong/bus"
 )
 
 type flow struct {
@@ -30,7 +30,7 @@ func NewFlow(mjContext majongpb.MajongContext) interfaces.MajongFlow {
 
 	return &flow{
 		context:             mjContext,
-		stateFactory:        global.GetMajongStateFactory(),
+		stateFactory:        bus.GetMajongStateFactory(),
 		transitionValidator: transitionFactory.CreateTransitionValidator(int(mjContext.GetGameId())),
 		msgs:                make([]majongpb.ReplyClientMessage, 0),
 	}
@@ -51,7 +51,7 @@ var errTransitionNotExist = errors.New("不存在转换关系")
 // stateProcess 派发到状态处理事件
 func (f *flow) stateProcess(entry *logrus.Entry, eventID majongpb.EventID, eventContext []byte) (majongpb.StateID, error) {
 	curStateID := f.context.CurState
-	oldState := f.stateFactory.CreateState(int(f.context.GameId), curStateID)
+	oldState := f.stateFactory.CreateState(f.context.GameId, curStateID)
 	if oldState == nil {
 		entry.Error(errCreateState)
 		return curStateID, errCreateState
@@ -79,8 +79,8 @@ func (f *flow) switchState(entry *logrus.Entry, eventID majongpb.EventID, newSta
 		entry.WithError(err).Error(errTransitionNotExist)
 		return errTransitionNotExist
 	}
-	oldState := f.stateFactory.CreateState(int(f.context.GameId), oldStateID)
-	newState := f.stateFactory.CreateState(int(f.context.GameId), newStateID)
+	oldState := f.stateFactory.CreateState(f.context.GameId, oldStateID)
+	newState := f.stateFactory.CreateState(f.context.GameId, newStateID)
 	if oldState == nil || newState == nil {
 		entry.Error(errCreateState)
 		return errCreateState

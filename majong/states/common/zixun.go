@@ -16,6 +16,7 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"github.com/golang/protobuf/proto"
+	"steve/majong/bus"
 )
 
 // ZiXunState 摸牌状态
@@ -536,7 +537,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		}
 		for _, tt := range tingInfo {
 			hCard, _ := utils.IntToCard(int32(tt))
-			times, _, _ := facade.CalculateCardValue(global.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+			times, _, _ := facade.CalculateCardValue(bus.GetFanTypeCalculator(), context, interfaces.FantypeParams{
 				PlayerID:  player.GetPalyerId(),
 				MjContext: context,
 				HandCard:  newHand,

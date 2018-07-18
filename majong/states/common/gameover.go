@@ -13,6 +13,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"steve/majong/settle"
+	"steve/majong/bus"
 )
 
 // GameOverState 游戏结束状态
@@ -184,7 +185,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 					},
 					GameID: int(context.GetGameId()),
 				}
-				calculator := global.GetFanTypeCalculator()
+				calculator := bus.GetFanTypeCalculator()
 				total, _, _ := facade.CalculateCardValue(calculator, context, cardParams)
 				if maxMulti < int64(total) {
 					maxMulti = int64(total)

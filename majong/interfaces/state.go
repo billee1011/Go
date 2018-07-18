@@ -14,5 +14,5 @@ type MajongState interface {
 // MajongStateFactory 麻将状态工厂
 type MajongStateFactory interface {
 	// CreateState 根据 gameID 和 stateID 创建麻将状态
-	CreateState(gameID int, stateID majongpb.StateID) MajongState
+	CreateState(gameID int32, stateID majongpb.StateID) MajongState
 }
