@@ -6,6 +6,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+
 // CanTingCardInfoSvr2Client 玩家停牌信息转换，server_pb-->client_pb
 func CanTingCardInfoSvr2Client(minfos []*majongpb.CanTingCardInfo) []*room.CanTingCardInfo {
 	rinfos := []*room.CanTingCardInfo{}

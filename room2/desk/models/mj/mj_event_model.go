@@ -209,7 +209,7 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	return false
 }
 
-func (model MjEventModel) reply(replyMsgs []server_pb.ReplyClientMessage) {
+func (model MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 	if replyMsgs == nil {
 		return
 	}
