@@ -109,3 +109,293 @@ func Test_Tuoguan_Shunzi(t *testing.T) {
 	assert.Equal(t, int(0x27), int(outInts[3]))
 	assert.Equal(t, int(0x28), int(outInts[4]))
 }
+
+// 测试托管的连对
+func Test_Tuoguan_Pairs(t *testing.T) {
+
+	// 手中的牌（10998877665224）
+	handCards := states.ToDDZCards([]uint32{0x2A, 0x19, 0x29, 0x28, 0x18, 0x27, 0x17, 0x16, 0x26, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（443355）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x13, 0x45, 0x35})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBiggerPairs(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_Pairs()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是667788
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x26), int(outInts[1]))
+	assert.Equal(t, int(0x17), int(outInts[2]))
+	assert.Equal(t, int(0x27), int(outInts[3]))
+	assert.Equal(t, int(0x18), int(outInts[4]))
+	assert.Equal(t, int(0x28), int(outInts[5]))
+}
+
+// 测试托管的三张
+func Test_Tuoguan_Triple(t *testing.T) {
+
+	// 手中的牌（999886665224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x28, 0x18, 0x16, 0x26, 0x36, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（444）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x44})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBiggerTriple(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_Triple()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是667788
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x26), int(outInts[1]))
+	assert.Equal(t, int(0x36), int(outInts[2]))
+}
+
+// 测试托管的3带1
+func Test_Tuoguan_3And1(t *testing.T) {
+
+	// 手中的牌（999886665224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x28, 0x18, 0x16, 0x26, 0x36, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（4445）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x15, 0x14, 0x44})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3And1(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_3And1()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是6664
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x26), int(outInts[1]))
+	assert.Equal(t, int(0x36), int(outInts[2]))
+	assert.Equal(t, int(0x24), int(outInts[3]))
+}
+
+// 测试托管的3带2
+func Test_Tuoguan_3And2(t *testing.T) {
+
+	// 手中的牌（999886665224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x28, 0x18, 0x16, 0x26, 0x36, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（44455）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x15, 0x14, 0x25, 0x44})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3And2(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_3And2()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是66688
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x26), int(outInts[1]))
+	assert.Equal(t, int(0x36), int(outInts[2]))
+	assert.Equal(t, int(0x18), int(outInts[3]))
+	assert.Equal(t, int(0x28), int(outInts[4]))
+}
+
+// 测试托管的飞机
+func Test_Tuoguan_Triples(t *testing.T) {
+
+	// 手中的牌（9998886665224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x28, 0x18, 0x38, 0x16, 0x26, 0x36, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（444333）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x44, 0x23, 0x13})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBiggerTriples(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_Triples()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是888999
+	assert.Equal(t, int(0x18), int(outInts[0]))
+	assert.Equal(t, int(0x28), int(outInts[1]))
+	assert.Equal(t, int(0x38), int(outInts[2]))
+	assert.Equal(t, int(0x19), int(outInts[3]))
+	assert.Equal(t, int(0x29), int(outInts[4]))
+	assert.Equal(t, int(0x39), int(outInts[5]))
+}
+
+// 测试托管的飞机带单张
+func Test_Tuoguan_3sAnd1s(t *testing.T) {
+
+	// 手中的牌（9998886665224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x28, 0x18, 0x38, 0x16, 0x26, 0x36, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（4443339J）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x44, 0x23, 0x13, 0x49, 0x1B})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3sAnd1s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_3sAnd1s()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是88899945
+	assert.Equal(t, int(0x18), int(outInts[0]))
+	assert.Equal(t, int(0x28), int(outInts[1]))
+	assert.Equal(t, int(0x38), int(outInts[2]))
+	assert.Equal(t, int(0x19), int(outInts[3]))
+	assert.Equal(t, int(0x29), int(outInts[4]))
+	assert.Equal(t, int(0x39), int(outInts[5]))
+	assert.Equal(t, int(0x24), int(outInts[6]))
+	assert.Equal(t, int(0x45), int(outInts[7]))
+}
+
+// 测试托管的飞机带对子
+func Test_Tuoguan_3sAnd2s(t *testing.T) {
+
+	// 手中的牌（9998886665224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x28, 0x18, 0x38, 0x16, 0x26, 0x36, 0x45, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（44433377JJ）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x44, 0x23, 0x13, 0x17, 0x1B, 0x27, 0x2B})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3sAnd2s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_3sAnd2s()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是8889996622
+	assert.Equal(t, int(0x18), int(outInts[0]))
+	assert.Equal(t, int(0x28), int(outInts[1]))
+	assert.Equal(t, int(0x38), int(outInts[2]))
+	assert.Equal(t, int(0x19), int(outInts[3]))
+	assert.Equal(t, int(0x29), int(outInts[4]))
+	assert.Equal(t, int(0x39), int(outInts[5]))
+	assert.Equal(t, int(0x16), int(outInts[6]))
+	assert.Equal(t, int(0x26), int(outInts[7]))
+	assert.Equal(t, int(0x22), int(outInts[8]))
+	assert.Equal(t, int(0x32), int(outInts[9]))
+}
+
+// 测试托管的4带2单张
+func Test_Tuoguan_4sAnd1s(t *testing.T) {
+
+	// 手中的牌（9988886666224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x48, 0x28, 0x18, 0x38, 0x16, 0x26, 0x36, 0x46, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（7777Q9）
+	lastCards := states.ToDDZCards([]uint32{0x17, 0x1C, 0x27, 0x37, 0x47, 0x19})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger4sAnd1s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_4sAnd1s()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是888846
+	assert.Equal(t, int(0x18), int(outInts[0]))
+	assert.Equal(t, int(0x28), int(outInts[1]))
+	assert.Equal(t, int(0x38), int(outInts[2]))
+	assert.Equal(t, int(0x48), int(outInts[3]))
+	assert.Equal(t, int(0x24), int(outInts[4]))
+	assert.Equal(t, int(0x16), int(outInts[5]))
+}
+
+// 测试托管的4带2对子
+func Test_Tuoguan_4sAnd2s(t *testing.T) {
+
+	// 手中的牌（9988886666224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x48, 0x28, 0x18, 0x38, 0x16, 0x26, 0x36, 0x46, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（77779933）
+	lastCards := states.ToDDZCards([]uint32{0x17, 0x27, 0x37, 0x47, 0x39, 0x39, 0x33, 0x23})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger4sAnd2s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_4sAnd2s()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是88886699
+	assert.Equal(t, int(0x18), int(outInts[0]))
+	assert.Equal(t, int(0x28), int(outInts[1]))
+	assert.Equal(t, int(0x38), int(outInts[2]))
+	assert.Equal(t, int(0x48), int(outInts[3]))
+	assert.Equal(t, int(0x16), int(outInts[4]))
+	assert.Equal(t, int(0x26), int(outInts[5]))
+	assert.Equal(t, int(0x19), int(outInts[6]))
+	assert.Equal(t, int(0x29), int(outInts[7]))
+}
+
+// 测试托管的炸弹
+func Test_Tuoguan_Boom(t *testing.T) {
+
+	// 手中的牌（9988886666224）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x48, 0x28, 0x18, 0x38, 0x16, 0x26, 0x36, 0x46, 0x22, 0x32, 0x24})
+
+	// 上次出的牌（7777）
+	lastCards := states.ToDDZCards([]uint32{0x17, 0x27, 0x37, 0x47})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBiggerBoom(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_Boom()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是8888
+	assert.Equal(t, int(0x18), int(outInts[0]))
+	assert.Equal(t, int(0x28), int(outInts[1]))
+	assert.Equal(t, int(0x38), int(outInts[2]))
+	assert.Equal(t, int(0x48), int(outInts[3]))
+}
