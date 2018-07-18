@@ -1,7 +1,5 @@
 package interfaces
 
-import "steve/server_pb/majong"
-
 // EventType 事件类型
 type EventType int
 
@@ -18,7 +16,7 @@ const (
 
 // Event 事件
 type Event struct {
-	ID        majong.EventID // 事件 ID
+	ID        int32 // 事件 ID
 	Context   []byte         // 事件现场
 	EventType EventType      // 事件类型
 	PlayerID  uint64         // 针对哪个玩家的事件

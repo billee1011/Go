@@ -102,6 +102,8 @@ type DeskMgr interface {
 
 // CreateDeskOptions 创建牌桌选项
 type CreateDeskOptions struct {
+	FixBankerSeat bool // 是否固定庄家位置
+	BankerSeat    int  // 庄家位置
 }
 
 // CreateDeskResult 创建房间结果

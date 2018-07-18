@@ -46,20 +46,21 @@ func (hws *RoomService) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 	}
 
 	deskPlayers := make([]interfaces.DeskPlayer, 0, len(players))
-	var seat uint32
 	for _, pbPlayer := range players {
 		robotLv := int(pbPlayer.GetRobotLevel())
 		playerID := pbPlayer.GetPlayerId()
-		deskPlayer := deskbase.CreateDeskPlayer(playerID, seat, player.GetPlayerCoin(playerID), 2, robotLv)
+		deskPlayer := deskbase.CreateDeskPlayer(playerID, pbPlayer.Seat, player.GetPlayerCoin(playerID), 2, robotLv)
 		deskPlayers = append(deskPlayers, deskPlayer)
-		seat++
 	}
 
 	deskFactory := global.GetDeskFactory()
 	deskMgr := global.GetDeskMgr()
 
 	// 创建桌子
-	result, err := deskFactory.CreateDesk(deskPlayers, int(req.GetGameId()), interfaces.CreateDeskOptions{})
+	result, err := deskFactory.CreateDesk(deskPlayers, int(req.GetGameId()), interfaces.CreateDeskOptions{
+		FixBankerSeat: req.GetFixBanker(),
+		BankerSeat:    int(req.GetBankerSeat()),
+	})
 	if err != nil {
 		logEntry.WithFields(
 			logrus.Fields{

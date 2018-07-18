@@ -12,6 +12,9 @@ import (
 	"steve/structs/proto/gate_rpc"
 	"time"
 
+	"context"
+	"runtime/debug"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
@@ -20,6 +23,8 @@ import (
 type deskEvent struct {
 	eventID      int
 	eventContext []byte
+	eventType    interfaces.EventType
+	playerID     uint64
 }
 
 // desk 斗地主牌桌
@@ -28,11 +33,17 @@ type desk struct {
 	eventChannel   chan deskEvent
 	closingChannel chan struct{}
 	ddzContext     *ddz.DDZContext
+	cancel         context.CancelFunc // 取消事件处理
 }
 
 // initDDZContext 初始化斗地主现场
 func (d *desk) initDDZContext() {
-	d.ddzContext = procedure.CreateInitDDZContext(facade.GetDeskPlayerIDs(d))
+
+	// 牌桌所有玩家的playerID
+	// index:座位号 value:playerID
+	playersID := facade.GetDeskPlayerIDs(d)
+
+	d.ddzContext = procedure.CreateInitDDZContext(playersID)
 }
 
 // Start 启动牌桌逻辑
@@ -41,19 +52,122 @@ func (d *desk) Start(finish func()) error {
 	d.eventChannel = make(chan deskEvent, 4)
 	d.closingChannel = make(chan struct{})
 
+	// 初始化操作
 	d.initDDZContext()
+
+	// 逻辑线程
 	go func() {
+		defer func() {
+			if x := recover(); x != nil {
+				logrus.Errorln(x)
+				debug.PrintStack()
+			}
+		}()
+
+		// 开始运行
 		d.run()
+
+		// 执行结束时的函数
 		finish()
 	}()
+
+	// 定时器线程
+	var ctx context.Context
+	ctx, d.cancel = context.WithCancel(context.Background())
+	go func() {
+		defer func() {
+			if x := recover(); x != nil {
+				logrus.Errorln(x)
+				debug.PrintStack()
+			}
+		}()
+
+		// 定时器
+		d.timerTask(ctx)
+	}()
+
+	// 游戏开始事件
 	d.pushEvent(&deskEvent{
 		eventID: int(ddz.EventID_event_start_game),
 	})
+
 	return nil
+}
+
+// timerTask 定时任务，产生自动事件
+func (d *desk) timerTask(ctx context.Context) {
+	defer func() {
+		if x := recover(); x != nil {
+			debug.PrintStack()
+		}
+	}()
+
+	// 200毫秒的定时器
+	t := time.NewTicker(time.Millisecond * 200)
+
+	defer t.Stop()
+
+	for {
+		select {
+		case <-t.C:
+			{
+				d.genTimerEvent()
+			}
+		case <-ctx.Done():
+			{
+				return
+			}
+		}
+	}
+}
+
+// genTimerEvent 生成计时事件，定时器触发时调用
+func (d *desk) genTimerEvent() {
+	g := global.GetDeskAutoEventGenerator()
+	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
+	dContext := d.ddzContext
+
+	// 牌桌的所有托管玩家
+	tuoGuanPlayers := facade.GetTuoguanPlayers(d)
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":       "desk.genTimerEvent",
+		"tuoguan_players": tuoGuanPlayers,
+	})
+
+	// 开始时间
+	startTime := time.Time{}
+	startTime.UnmarshalBinary(dContext.StartTime)
+
+	// 产生AI事件
+	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
+		Desk:       d,
+		DDZContext: dContext,
+		PlayerIds:  dContext.CountDownPlayers,
+		StartTime:  startTime,
+		Duration:   dContext.Duration,
+		RobotLv:    map[uint64]int{},
+	})
+
+	// 把AI事件转换为斗地主的牌桌事件
+	for _, event := range result.Events {
+		logEntry.WithFields(logrus.Fields{
+			"event_id":     event.ID,
+			"event_player": event.PlayerID,
+			"event_type":   event.EventType,
+		}).Debugln("注入计时事件")
+		d.eventChannel <- deskEvent{
+			eventID:      int(event.ID),
+			eventContext: event.Context,
+			eventType:    event.EventType,
+			playerID:     event.PlayerID,
+		}
+	}
 }
 
 // Stop 停止牌桌
 func (d *desk) Stop() error {
+	d.cancel()
 	d.closingChannel <- struct{}{}
 	return nil
 }
@@ -110,12 +224,28 @@ forstart:
 		case event := <-d.eventChannel:
 			{
 				d.processEvent(&event)
+				d.recordTuoguanOverTimeCount(event)
 			}
 		case <-d.closingChannel:
 			{
 				break forstart
 			}
 		}
+	}
+}
+
+// recordTuoguanOverTimeCount 记录托管超时计数
+func (d *desk) recordTuoguanOverTimeCount(event deskEvent) {
+	if event.eventType != interfaces.OverTimeEvent {
+		return
+	}
+	playerID := event.playerID
+	if playerID == 0 {
+		return
+	}
+	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
+	if deskPlayer != nil {
+		deskPlayer.OnPlayerOverTime()
 	}
 }
 
@@ -132,60 +262,6 @@ func (d *desk) processEvent(e *deskEvent) {
 		EventContext: e.eventContext,
 	}
 
-	/* 	// 处理恢复对局的请求
-	   	if e.eventID == int(ddz.EventID_event_resume_request) {
-	   		message := &ddz.ResumeRequestEvent{}
-	   		err := proto.Unmarshal(e.eventContext, message)
-	   		if err != nil {
-	   			//logEntry.WithError(err).Errorln("处理恢复对局事件失败")
-	   			return
-	   		}
-
-	   		// 请求的玩家ID
-	   		reqPlayerID := message.GetHead().GetPlayerId()
-
-	   		bExist := false
-
-	   		// 是否有这个玩家
-	   		for _, player := range d.ddzContext.GetPlayers() {
-	   			if player.GetPalyerId() == reqPlayerID {
-	   				bExist = true
-	   			}
-	   		}
-
-	   		// 存在的话，则发送回复消息
-	   		if bExist {
-	   			playersInfo := []*room.DDZPlayerInfo{}
-
-	   			for _, player := range d.ddzContext.GetPlayers() {
-	   				// Player转为RoomPlayer
-	   				roomPlayerInfo := TranslateDDZPlayerToRoomPlayer(*player)
-	   				lord := player.GetLord()
-	   				double := player.GetIsDouble()
-	   				tuoguan := false // TODO
-
-	   				ddzPlayerInfo := room.DDZPlayerInfo{}
-	   				ddzPlayerInfo.PlayerInfo = &roomPlayerInfo
-	   				ddzPlayerInfo.OutCards = player.GetOutCards()
-	   				ddzPlayerInfo.HandCards = player.GetHandCards()
-	   				ddzPlayerInfo.Lord = &lord
-	   				ddzPlayerInfo.IsDouble = &double
-	   				ddzPlayerInfo.Tuoguan = &tuoguan
-
-	   				playersInfo = append(playersInfo, &ddzPlayerInfo)
-	   			}
-
-	   			// 发送游戏信息
-	   			d.getMessageSender().([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_REQ, &room.DDZResumeGameRsp{
-	   				Result: genResult(0, ""),
-	   				GameInfo: &room.DDZDeskInfo{
-	   					Players: playersInfo,
-	   					Stage:d.get
-	   				},
-	   			})
-	   		}
-	   	} */
-
 	result := procedure.HandleEvent(params)
 	if !result.Succeed {
 		entry.Errorln("处理事件失败")
@@ -195,7 +271,7 @@ func (d *desk) processEvent(e *deskEvent) {
 	d.ddzContext = &result.Context
 	// 游戏结束
 	if d.ddzContext.GetCurState() == ddz.StateID_state_over {
-		go func() { d.closingChannel <- struct{}{} }()
+		go func() { d.Stop() }()
 		return
 	}
 	if result.HasAutoEvent {
