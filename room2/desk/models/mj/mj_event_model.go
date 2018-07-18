@@ -124,7 +124,7 @@ func (model MjEventModel) processEvents(ctx context.Context) {
 				logEntry.Infoln("done")
 				return
 			}
-		/*case enterQuitInfo := <-d.PlayerEnterQuitChannel():
+		/*case enterQuitInfo := <-model.GetDesk().PlayerEnterQuitChannel():
 			{
 				d.handleEnterQuit(enterQuitInfo)
 			}*/

@@ -3,7 +3,7 @@ package util
 import (
 	"steve/gutils"
 	majongpb "steve/server_pb/majong"
-	"steve/room2"
+	"steve/room2/desk/player"
 )
 
 // mergeSettle 合并一组SettleInfo
@@ -41,7 +41,7 @@ func GetSettleInfoBySid(settleInfos []*majongpb.SettleInfo, ID uint64) int {
 // 1.玩家身上的钱够赔付胡牌玩家的话,直接赔付
 // 2.玩家身上的钱不够赔付胡牌玩家的话,那么该玩家身上的钱平分给胡牌玩家，,按逆时针方向,从点炮者数起,余 1 情况赔付于第一胡牌玩家,
 //	 余 2 情况赔付于第一、第二胡牌玩家;
-func CalcCoin(deskPlayer []*room2.Player, contextPlayer []*majongpb.Player, huQuitPlayers map[uint64]bool, score map[uint64]int64) (map[uint64]int64, []uint64) {
+func CalcCoin(deskPlayer []*player.Player, contextPlayer []*majongpb.Player, huQuitPlayers map[uint64]bool, score map[uint64]int64) (map[uint64]int64, []uint64) {
 	// 赢豆上限
 	maxScore := getMaxScore(deskPlayer, huQuitPlayers, score)
 	// 赢家
@@ -78,7 +78,7 @@ func CalcCoin(deskPlayer []*room2.Player, contextPlayer []*majongpb.Player, huQu
 // getMaxScore 计算玩家输赢上限
 // 赢豆上限 = max(进房豆子数,当前豆子数)
 // 胡牌且退出房间后不参与牌局的所有结算
-func getMaxScore(deskPlayer []*room2.Player, huQuitPlayers map[uint64]bool, score map[uint64]int64) (maxScore map[uint64]int64) {
+func getMaxScore(deskPlayer []*player.Player, huQuitPlayers map[uint64]bool, score map[uint64]int64) (maxScore map[uint64]int64) {
 	maxScore = make(map[uint64]int64, 0)
 	losePids := make([]uint64, 0)
 	winnPids := make([]uint64, 0)
@@ -122,7 +122,7 @@ func getMaxScore(deskPlayer []*room2.Player, huQuitPlayers map[uint64]bool, scor
 }
 
 // GetDeskPlayer 获取指定id的room Player
-func GetDeskPlayer(deskPlayers []*room2.Player, pid uint64) *room2.Player {
+func GetDeskPlayer(deskPlayers []*player.Player, pid uint64) *player.Player {
 	for _, p := range deskPlayers {
 		if p.GetPlayerID() == pid {
 			return p
@@ -132,7 +132,7 @@ func GetDeskPlayer(deskPlayers []*room2.Player, pid uint64) *room2.Player {
 }
 
 
-func getWinMax(winPlayer *room2.Player, winScore int64) (winMax int64) {
+func getWinMax(winPlayer *player.Player, winScore int64) (winMax int64) {
 	winMax = int64(0)
 	currentCoin := int64(winPlayer.GetCoin()) // 当前豆子数
 	enterCoin := int64(winPlayer.GetEcoin())                                // 进房豆子数
@@ -185,7 +185,7 @@ func calcSocreWinner1(winPlayer uint64, losePlayers []uint64, maxScore map[uint6
 	brokePlayers := make([]uint64, 0)
 	for _, losePid := range losePlayers {
 		loseScore := abs(maxScore[losePid])                                   // 输家输的分
-		roomPlayer := room2.GetRoomPlayerMgr().GetPlayer(losePid)
+		roomPlayer := player.GetRoomPlayerMgr().GetPlayer(losePid)
 		loseCoin := int64(roomPlayer.GetCoin()) // 输家金币数
 		if loseScore < loseCoin {
 			coinCost[losePid] = -loseScore
@@ -205,7 +205,7 @@ func calcSocrelose1(winPlayers []uint64, losePlayer uint64, loseScore int64, max
 	// 破产玩家
 	brokePlayers := make([]uint64, 0)
 	// 输家金币数
-	roomPlayer := room2.GetRoomPlayerMgr().GetPlayer(losePlayer)
+	roomPlayer := player.GetRoomPlayerMgr().GetPlayer(losePlayer)
 	loseCoin := int64(roomPlayer.GetCoin())
 	// 赢家人数
 	winSum := len(winPlayers)
@@ -234,7 +234,7 @@ func divideScore(losePlayer uint64, winPlayers []uint64, maxScore map[uint64]int
 	// 赢家人数
 	winSum := len(winPlayers)
 	// 输家金币数
-	roomPlayer := room2.GetRoomPlayerMgr().GetPlayer(losePlayer)
+	roomPlayer := player.GetRoomPlayerMgr().GetPlayer(losePlayer)
 	loseCoin := int64(roomPlayer.GetCoin())
 	// 多个赢家，按照赢家人数平分
 	for _, winPid := range winPlayers {

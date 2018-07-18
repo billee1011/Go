@@ -67,9 +67,9 @@ type HuPlayerSettle struct {
 
 // HuQuitPlayerSettle 已胡牌玩家(退出)可参与的结算
 type HuQuitPlayerSettle struct {
-	HuQuitPlayerGangSettle  bool `yaml:"huquit_player_gang_settle"`                         //杠结算
-	HuQuitPlayeHuSettle     bool `yaml:"huquit_playe_hu_settle"`                            //胡结算
-	HuQuitPlayerRoundSettle bool `yaml:"huPlayer_round_huquit_player_round_settelesettele"` //单局结算
+	HuQuitPlayerGangSettle  bool `yaml:"huquit_player_gang_settle"`   //杠结算
+	HuQuitPlayeHuSettle     bool `yaml:"huquit_playe_hu_settle"`      //胡结算
+	HuQuitPlayerRoundSettle bool `yaml:"huquit_player_round_settele"` //单局结算
 
 }
 

@@ -4,7 +4,7 @@ import (
 	"steve/room2/desk/models"
 	"github.com/Sirupsen/logrus"
 	"steve/room2/desk/models/public"
-	"steve/room2"
+	"steve/room2/desk/player"
 )
 
 type Desk struct {
@@ -35,7 +35,7 @@ func (desk Desk) InitModel(){
 	}
 }
 
-func (desk Desk) GetPlayer(playerId uint64) *room2.Player {
+func (desk Desk) GetPlayer(playerId uint64) *player.Player {
 	players := desk.GetDeskPlayers()
 	for _,player := range players{
 		if player.GetPlayerID()==playerId {
@@ -45,7 +45,7 @@ func (desk Desk) GetPlayer(playerId uint64) *room2.Player {
 	return nil
 }
 
-func (desk Desk) GetDeskPlayers() []*room2.Player {
+func (desk Desk) GetDeskPlayers() []*player.Player {
 	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayers()
 	return players
 }

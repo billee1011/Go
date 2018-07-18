@@ -11,6 +11,7 @@ const (
 	Request     = "RequestModel"
 	Message     = "MessageModel"
 	Trusteeship = "TrusteeshipModel"
+	Chat = "ChatModel"
 )
 
 func CreateModel(name string, desk *desk.Desk) DeskModel {
@@ -22,6 +23,7 @@ func CreateModel(name string, desk *desk.Desk) DeskModel {
 	case Request:
 	case Message:
 	case Trusteeship:
+	case Chat:
 	}
 	return result
 }
