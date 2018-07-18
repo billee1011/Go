@@ -48,11 +48,11 @@ func GetZixunPlayer(mjContext *majongpb.MajongContext) uint64 {
 // SetNextZhuangIndex 设置续局庄家Index
 func SetNextZhuangIndex(huPlayerID []uint64, lostPlayerID uint64, mjContext *majongpb.MajongContext) {
 	huPlayerCount := len(huPlayerID)
-	if !mjContext.GetFixZhuangjiaIndex() {
+	if !mjContext.GetFixNextBankerSeat() {
 		if huPlayerCount == 1 {
-			mjContext.ZhuangjiaIndex = uint32(GetPlayerIndex(huPlayerID[0], mjContext.GetPlayers()))
+			mjContext.NextBankerSeat = uint32(GetPlayerIndex(huPlayerID[0], mjContext.GetPlayers()))
 		} else if huPlayerCount > 1 {
-			mjContext.ZhuangjiaIndex = uint32(GetPlayerIndex(lostPlayerID, mjContext.GetPlayers()))
+			mjContext.NextBankerSeat = uint32(GetPlayerIndex(lostPlayerID, mjContext.GetPlayers()))
 		}
 	}
 }
