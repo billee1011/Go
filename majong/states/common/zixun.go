@@ -340,10 +340,9 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	//查听,打什么,听什么
 	s.checkTing(zixunNtf, player, mjContext)
 	if zixunNtf.GetEnableZimo() == true {
-		roomHuType, majongHuType := s.getHuType(playerID, mjContext)
-		zixunNtf.HuType = &roomHuType
-		record.HuType = majongHuType
-		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), mjContext.GetLastMopaiCard())
+		//roomHuType, majongHuType := s.getHuType(playerID, mjContext)
+		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), s.getHuCard(mjContext, player))
+		zixunNtf.HuType = room.HuType(int32(record.HuType)).Enum()
 	}
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	if len(zixunNtf.GetCanTingCardInfo()) != 0 && !gutils.IsTing(player) && xpOption.EnableTingButton {
@@ -404,24 +403,45 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 		SrcPlayer: huPlayerID,
 		Type:      majongpb.HuType_hu_zimo,
 	}
+	cardOptionID := int(context.GetCardtypeOptionId())
 	fanTypes, genCount, huaCount := fantype.CalculateFanTypes(context, huPlayerID, calcHandCard, calcHuCard)
 	record.HuFanType = new(majongpb.HuFanType)
 	record.HuFanType.GenCount = uint64(genCount)
 	record.HuFanType.HuaCount = uint64(huaCount)
-	HfanTypes := make([]int64, 0)
+	huType := gutils.ServerFanType2ClientHuType(cardOptionID, fanTypes)
+	record.HuType = majongpb.HuType(huType)
 	for _, fanType := range fanTypes {
-		HfanTypes = append(HfanTypes, int64(fanType))
+		record.HuFanType.FanTypes = append(record.HuFanType.FanTypes, int64(fanType))
 	}
-	record.HuFanType.FanTypes = HfanTypes
-	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
 	logrus.WithFields(logrus.Fields{
 		"calcHandCard": calcHandCard,
 		"calcHuCard":   calcHuCard,
+		"huType":       huType,
 		"fanTypes":     fanTypes,
+		"HfanTypes":    record.HuFanType.FanTypes,
 		"genCount":     genCount,
 		"huaCount":     huaCount,
 	}).Infoln("自询查番")
 
+}
+
+// getHuCard 获取胡牌
+func (s *ZiXunState) getHuCard(mjContext *majongpb.MajongContext, player *majongpb.Player) (card *majongpb.Card) {
+	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
+	if player.GetZixunCount() == 1 && player.GetPalyerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId() {
+		xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+		switch xpOption.TianhuCardType {
+		case mjoption.MostTingsCard:
+			_, card = utils.CalcTianHuCardNum(mjContext, player.GetPalyerId())
+		case mjoption.RightCard:
+			card = player.HandCards[len(player.GetHandCards())-1]
+		case mjoption.MoCard:
+			card = mjContext.GetLastMopaiCard()
+		}
+	} else {
+		card = mjContext.GetLastMopaiCard()
+	}
+	return
 }
 
 func (s *ZiXunState) recordZixunMsg(record *majongpb.ZiXunRecord, ntf *room.RoomZixunNtf) {
