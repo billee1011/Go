@@ -42,5 +42,5 @@ func TestFan_TianHu_Zimo_ERM(t *testing.T) {
 	// 检测分数
 	winScro := 180 * (len(deskData.Players) - 1)
 
-	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_TIANHU)
+	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_DAQIXING)
 }
