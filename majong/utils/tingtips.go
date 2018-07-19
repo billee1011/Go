@@ -3,6 +3,7 @@ package utils
 import (
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
@@ -57,21 +58,22 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	for _, utilscard := range tingCards {
 		card, _ := IntToCard(int32(utilscard))
 		// 胡提示不能是定缺牌
-		if card.GetColor() != player.GetDingqueColor() {
-			newCard, _ := CardToInt(*card)
-			times := calcHuTimes(card, player, mjContext)
-			tingCardInfo := &room.TingCardInfo{
-				TingCard: proto.Uint32(uint32(*newCard)),
-				Times:    proto.Uint32(times),
-			}
-			ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
-			// 记录听牌信息
-			mjTingInfo := &majongpb.TingCardInfo{
-				TingCard: uint32(*newCard),
-				Times:    times,
-			}
-			player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)
+		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque && card.GetColor() == player.GetDingqueColor() {
+			continue
 		}
+		newCard, _ := CardToInt(*card)
+		times := calcHuTimes(card, player, mjContext)
+		tingCardInfo := &room.TingCardInfo{
+			TingCard: proto.Uint32(uint32(*newCard)),
+			Times:    proto.Uint32(times),
+		}
+		ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
+		// 记录听牌信息
+		mjTingInfo := &majongpb.TingCardInfo{
+			TingCard: uint32(*newCard),
+			Times:    times,
+		}
+		player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)
 	}
 	flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_TINGINFO_NTF),

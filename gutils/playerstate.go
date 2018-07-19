@@ -1,6 +1,7 @@
 package gutils
 
 import (
+	"math"
 	"steve/client_pb/room"
 	majongpb "steve/server_pb/majong"
 )
@@ -47,13 +48,23 @@ func GetZixunPlayer(mjContext *majongpb.MajongContext) uint64 {
 
 // SetNextZhuangIndex 设置续局庄家Index
 func SetNextZhuangIndex(huPlayerID []uint64, lostPlayerID uint64, mjContext *majongpb.MajongContext) {
-	huPlayerCount := len(huPlayerID)
-	if !mjContext.GetFixNextBankerSeat() {
+	if !FixNextBankerSeat(mjContext) {
+		huPlayerCount := len(huPlayerID)
 		if huPlayerCount == 1 {
 			mjContext.NextBankerSeat = uint32(GetPlayerIndex(huPlayerID[0], mjContext.GetPlayers()))
 		} else if huPlayerCount > 1 {
 			mjContext.NextBankerSeat = uint32(GetPlayerIndex(lostPlayerID, mjContext.GetPlayers()))
+		} else if huPlayerCount == 0 {
+			mjContext.NextBankerSeat = 0
 		}
-		mjContext.FixNextBankerSeat = true
+		// mjContext.FixNextBankerSeat = true
 	}
+}
+
+// FixNextBankerSeat 是否填充了下个庄家
+func FixNextBankerSeat(mjContext *majongpb.MajongContext) bool {
+	if mjContext.GetNextBankerSeat() == math.MaxUint32 {
+		return false
+	}
+	return true
 }
