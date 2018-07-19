@@ -109,7 +109,7 @@ func IsBombAndSingles(cards []Poker) (bool, *Poker) {
 // 飞机
 func IsTriples(cards []Poker) (bool, *Poker) {
 	planeCount := len(cards) / 3
-	if planeCount < 2 {
+	if len(cards)%3 != 0 || planeCount < 2 {
 		return false, nil
 	}
 
@@ -129,7 +129,7 @@ func IsTriples(cards []Poker) (bool, *Poker) {
 // 飞机带对子
 func IsTriplesAndPairs(cards []Poker) (bool, *Poker) {
 	planeCount := len(cards) / 5
-	if planeCount < 2 {
+	if len(cards)%5 != 0 || planeCount < 2 {
 		return false, nil
 	}
 
@@ -166,7 +166,7 @@ func IsTriplesAndPairs(cards []Poker) (bool, *Poker) {
 // 飞机带单张
 func IsTriplesAndSingles(cards []Poker) (bool, *Poker) {
 	planeCount := len(cards) / 4
-	if planeCount < 2 {
+	if len(cards)%4 != 0 || planeCount < 2 {
 		return false, nil
 	}
 
@@ -187,7 +187,7 @@ func IsTriplesAndSingles(cards []Poker) (bool, *Poker) {
 // 连对
 func IsPairs(cards []Poker) (bool, *Poker) {
 	pairs := len(cards) / 2
-	if pairs < 3 {
+	if len(cards)%2 != 0 || pairs < 3 {
 		return false, nil
 	}
 
