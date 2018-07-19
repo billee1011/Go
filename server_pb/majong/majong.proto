@@ -131,13 +131,14 @@ message Player {
     uint32 max_card_value = 25;              // 胡最大倍数（胡牌时）
     repeated CardsGroup cards_group = 26;   // 胡最大倍数时的牌组（胡牌时）
     bool selected_ting = 27;                //玩家出牌请求时，是否请求了听
+    int32 chupai_count = 28;                //进入出牌状态的次数
     map<string, bytes> properties = 256;    // 其他的一些属性
 }
 
 message TingStateInfo{
    bool is_ting = 1; //听
    bool is_tianting = 2; //天听
-   bool is_baotingyifa = 3; //报听一发
+   int32 baotingyifa_count = 3; //报听前所有的特殊操作加上出牌count的数量（不包括胡）
 }
 
 // AutoEvent 自动事件
