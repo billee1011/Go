@@ -1,31 +1,21 @@
 package main
 
 import (
-	"steve/structs/service"
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
+	"steve/room/loader_balancer"
+	"steve/room2/desk"
+	"steve/room2/desk/register"
+	"steve/room2/util"
+	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/net"
-	"steve/server_pb/room_mgr"
-	"github.com/spf13/viper"
-	"github.com/Sirupsen/logrus"
-	"steve/room2/util"
-	"steve/room2/desk/register"
-	"steve/room2/desk"
-	"steve/room/loader_balancer"
+	"steve/structs/service"
 )
 
 type roomCore struct {
 	e   *structs.Exposer
 	dog net.WatchDog
-}
-
-// GetService 获取服务接口，被 serviceloader 调用
-func GetService() service.Service {
-	return new(roomCore)
-}
-
-// NewService 创建服务
-func NewService() service.Service {
-	return new(roomCore)
 }
 
 func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
@@ -72,6 +62,11 @@ func startPeipai() error {
 	}
 	logEntry.Info("未配置配牌")
 	return nil
+}
+
+// GetService 获取服务接口，被 serviceloader 调用
+func GetService() service.Service {
+	return new(roomCore)
 }
 
 func main() {}
