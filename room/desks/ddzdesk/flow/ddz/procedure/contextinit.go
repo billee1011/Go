@@ -1,6 +1,7 @@
 package procedure
 
 import (
+	"github.com/Sirupsen/logrus"
 	"steve/client_pb/room"
 	"steve/server_pb/ddz"
 )
@@ -28,6 +29,7 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 
 // 根据玩家的playerID创建出斗地主Player
 func createDDZPlayers(players []uint64) []*ddz.Player {
+	logrus.WithField("players", players).Debug("创建斗地主玩家")
 	result := make([]*ddz.Player, 0, len(players))
 	for _, playerID := range players {
 		result = append(result, &ddz.Player{

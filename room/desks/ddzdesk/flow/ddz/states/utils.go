@@ -95,7 +95,7 @@ func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 func GetNextPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 	for k, player := range players {
 		if player.PlayerId == id {
-			index := (k - 1) % len(players)
+			index := (k + 1) % len(players)
 			return players[index]
 		}
 	}

@@ -1,7 +1,7 @@
 package ddzdesk
 
 import (
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/procedure"
 	"steve/room/desks/deskbase"
@@ -226,11 +226,38 @@ forstart:
 				d.processEvent(&event)
 				d.recordTuoguanOverTimeCount(event)
 			}
+		case enterQuitInfo := <-d.PlayerEnterQuitChannel():
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}
 		case <-d.closingChannel:
 			{
 				break forstart
 			}
 		}
+	}
+}
+
+// handleEnterQuit 处理退出进入信息
+func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "handleEnterQuit",
+		"player_id": eqi.PlayerID,
+		"quit":      eqi.Quit,
+	})
+	deskPlayer := facade.GetDeskPlayerByID(d, eqi.PlayerID)
+	defer close(eqi.FinishChannel)
+
+	if deskPlayer == nil {
+		logEntry.Errorln("玩家不在牌桌上")
+		return
+	}
+	if eqi.Quit {
+		deskPlayer.SetTuoguan(true, true)
+		logEntry.Debugln("玩家退出")
+	} else {
+		deskPlayer.SetTuoguan(false, true)
+		logEntry.Debugln("玩家进入")
 	}
 }
 
