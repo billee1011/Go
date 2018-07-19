@@ -46,6 +46,8 @@ func diff(cardPoints []int32, diff int32) int {
 	for i := len(cardPoints) - 1; i > 0; i-- {
 		if cardPoints[i]-cardPoints[i-1] == diff {
 			count++
+		} else { //断了，重来
+			count = 1
 		}
 	}
 	return count

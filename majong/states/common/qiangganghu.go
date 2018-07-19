@@ -7,6 +7,7 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
+
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
@@ -45,7 +46,7 @@ func (s *QiangganghuState) OnExit(flow interfaces.MajongFlow) {
 
 // addHuCard 添加胡的牌
 func (s *QiangganghuState) addHuCard(card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64, isReal bool) {
-	AddHuCard(card, player, srcPlayerID, majongpb.HuType_hu_dianpao, isReal)
+	AddHuCard(card, player, srcPlayerID, majongpb.HuType_hu_qiangganghu, isReal)
 }
 
 func (s *QiangganghuState) removeSrcCard(card *majongpb.Card, srcPlayer *majongpb.Player) {

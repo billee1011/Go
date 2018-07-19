@@ -2,6 +2,7 @@ package fantype
 
 import (
 	"steve/gutils"
+	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 )
 
@@ -17,13 +18,20 @@ func checkHuJueZhang(tc *typeCalculator) bool {
 		cards := make([]*majongpb.Card, 0)
 		cards = append(cards, wall...)
 		for _, palyer := range players {
-			cards = append(cards, palyer.GetHandCards()...)
+			// 自摸时，胡牌会加入到手牌
+			if palyer.GetPalyerId() == tc.getPlayer().GetPalyerId() && huCard.GetType() == majongpb.HuType_hu_zimo {
+				currCards, _ := utils.RemoveCards(palyer.GetHandCards(), huCard.GetCard(), 1)
+				cards = append(cards, currCards...)
+			} else {
+				cards = append(cards, palyer.GetHandCards()...)
+			}
 		}
 		for _, card := range cards {
 			if gutils.CardEqual(card, huCard.GetCard()) {
 				return false
 			}
 		}
+		return true
 	}
-	return true
+	return false
 }
