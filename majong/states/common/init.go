@@ -1,7 +1,6 @@
 package common
 
 import (
-	"math"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
@@ -32,7 +31,7 @@ func (s *InitState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, 
 func (s *InitState) notifyPlayers(flow interfaces.MajongFlow) {
 	//先要判断游戏有没有换三张的玩法，有换三张的玩法，再判断需不需要配置换三张
 	mjContext := flow.GetMajongContext()
-	mjContext.NextBankerSeat = math.MaxUint32
+	mjContext.NextBankerSeat = len(mjContext.GetPlayers())
 	isHsz := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).Hnz.Enable
 	if isHsz {
 		isHsz = mjContext.GetOption().GetHasHuansanzhang()

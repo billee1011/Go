@@ -1,7 +1,6 @@
 package gutils
 
 import (
-	"math"
 	"steve/client_pb/room"
 	majongpb "steve/server_pb/majong"
 )
@@ -63,7 +62,7 @@ func SetNextZhuangIndex(huPlayerID []uint64, lostPlayerID uint64, mjContext *maj
 
 // FixNextBankerSeat 是否填充了下个庄家
 func FixNextBankerSeat(mjContext *majongpb.MajongContext) bool {
-	if mjContext.GetNextBankerSeat() == math.MaxUint32 {
+	if mjContext.GetNextBankerSeat() == uint32(len(mjContext.GetPlayers())) {
 		return false
 	}
 	return true
