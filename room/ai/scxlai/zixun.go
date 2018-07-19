@@ -52,7 +52,7 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 		return result, fmt.Errorf("手牌数量少于2")
 	}
 	switch mjContext.GetZixunType() {
-	case majong.ZixunType_ZXT_PENG:
+	case majong.ZixunType_ZXT_PENG, majong.ZixunType_ZXT_CHI:
 		{
 			//有定缺牌，出最大的定缺牌
 			hasChuPai := false
