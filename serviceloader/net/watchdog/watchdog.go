@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"steve/serviceloader/pprof"
 )
 
 type defaultIDAllocator struct {
@@ -62,6 +63,7 @@ func (cc *clientCallbackImpl) onClientClose() {
 
 func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 	clientID := dog.alloc.NewClientID()
+	pprof.AddClient(clientID)
 	client := newClientV2(e, &clientCallbackImpl{
 		dog:      dog,
 		clientID: clientID,
@@ -76,6 +78,7 @@ func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 	go func() {
 		// 由 run 函数自己处理异常
 		err := client.run(func() {
+			pprof.RemoveClient(clientID)
 			dog.clientMap.Delete(clientID)
 		})
 		logrus.WithField("client_id", clientID).WithError(err).Debug("client finished")

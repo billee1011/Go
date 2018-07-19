@@ -156,6 +156,18 @@ func ServerFanType2ClientHuType(cardTypeOptionID int, fanTypes []int) int32 {
 	return -1
 }
 
+// RemoveHuTypeFromFan 移除胡牌类型
+func RemoveHuTypeFromFan(cardTypeOptionID int, fanTypes []int) []int64 {
+	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
+	removeHuType := make([]int64, 0)
+	for _, fanType := range fanTypes {
+		if _, ok := cardTypeOption.FanType2HuType[fanType]; !ok {
+			removeHuType = append(removeHuType, int64(fanType))
+		}
+	}
+	return removeHuType
+}
+
 // MakeRoomCards 构造牌切片
 func MakeRoomCards(card ...room.Card) []*room.Card {
 	result := []*room.Card{}

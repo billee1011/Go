@@ -147,7 +147,7 @@ func (m *mgr) run() {
 }
 
 // acceptContinuePlayer 接收续局匹配玩家， 返回是否接收成功
-func (m *mgr) acceptContinuePlayer(gameID int, playerID uint64, cancel bool) bool {
+func (m *mgr) acceptContinuePlayer(gameID int, playerID uint64, cancel bool) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "mgr.acceptContinuePlayer",
 		"player_id": playerID,
@@ -155,7 +155,7 @@ func (m *mgr) acceptContinuePlayer(gameID int, playerID uint64, cancel bool) boo
 	deskID, ok := m.playerDesk[playerID]
 	if !ok && !cancel {
 		m.acceptApplyPlayer(gameID, playerID)
-		return false
+		return
 	}
 	entry = entry.WithField("desk_id", deskID)
 	desk, ok := m.desks[deskID]
@@ -163,23 +163,24 @@ func (m *mgr) acceptContinuePlayer(gameID int, playerID uint64, cancel bool) boo
 		delete(m.playerDesk, playerID)
 		entry.Errorln("牌桌不存在")
 		m.acceptApplyPlayer(gameID, playerID)
-		return false
+		return
 	}
 	// 非续局牌桌
 	if !desk.isContinue {
-		return true
+		return
 	}
 	if cancel {
 		m.dismissContinueDesk(desk, playerID)
+		return
 	}
 	player, ok := desk.continueWaitPlayers[playerID]
 	if !ok {
-		return true
+		return
 	}
 	entry.Debugln("接收续局玩家")
 	delete(desk.continueWaitPlayers, playerID)
 	m.addDeskPlayer2Desk(&player, desk)
-	return true
+	return
 }
 
 // acceptApplyPlayer 接收申请匹配玩家

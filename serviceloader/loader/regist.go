@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
+	"steve/serviceloader/pprof"
 )
 
 var errNewConsulAgent = errors.New("创建 consul agent 失败")
@@ -28,6 +29,7 @@ func RegisterServer2(opt *option) {
 		port:       opt.rpcPort,
 		consulAddr: opt.consulAddr,
 	})
+	pprof.Init(opt.rpcServerName, opt.pprofExposeType, opt.pprofHttpPort)
 }
 
 // registerServer 注册服务

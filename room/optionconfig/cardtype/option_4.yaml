@@ -446,7 +446,7 @@ fan_type_2_hu_type:
   69: # 地胡
     huType: 8  
   70: # 人胡
-    huType: 9
+    huType: 2
   79: # 海底捞月
     huType: 4
   76: # 杠上开花
@@ -457,3 +457,5 @@ fan_type_2_hu_type:
     huType: 1
   81: # 点炮
     huType: 2   
+  71: # 妙手回春
+    huType: 9  

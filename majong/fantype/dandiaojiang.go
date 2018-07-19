@@ -6,10 +6,6 @@ import (
 
 // checkDanDiaoJiang 单钓将:钓单张牌作将成胡,1112 胡 2 算单钓将,1234 胡 1、4 不算单钓将
 func checkDanDiaoJiang(tc *typeCalculator) bool {
-	tingCardInfo, _ := utils.GetTingCards(tc.getHandCards(), nil)
-	if len(tingCardInfo) != 1 {
-		return false
-	}
 	huCard := tc.getHuCard()
 	huValue := utils.ServerCard2Number(huCard.Card)
 	isJiang := false
