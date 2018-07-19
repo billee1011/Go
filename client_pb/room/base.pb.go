@@ -83,6 +83,7 @@ It has these top-level messages:
 	GamePlayerInfo
 	GameDeskInfo
 	RoomResumeGameRsp
+	RoomTuoGuanReq
 	RoomTuoGuanNtf
 	RoomCancelTuoGuanReq
 	Result
