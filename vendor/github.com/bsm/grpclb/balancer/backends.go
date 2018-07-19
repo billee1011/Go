@@ -41,6 +41,10 @@ func (b *backends) Servers() []*balancerpb.Server {
 
 	servers := make([]*balancerpb.Server, 0, len(b.set))
 	for _, b := range b.set {
+		// 如果score() < 0 :表示服务被退休了。
+		if b.Score() < 0 {
+			continue
+		}
 		servers = append(servers, b.Server())
 	}
 	return servers

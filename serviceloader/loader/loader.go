@@ -41,6 +41,8 @@ func CreateExposer(opt option) *structs.Exposer {
 	exposer.Publisher = pubsub.CreatePublisher()
 	exposer.Subscriber = pubsub.CreateSubscriber()
 	structs.SetGlobalExposer(exposer)
+	// 开启通用的负载报告服务
+	RegisterLBReporter(exposer.RPCServer)
 	return exposer
 }
 
@@ -59,6 +61,7 @@ func Run(service service.Service, exposer *structs.Exposer, opt option) {
 		defer recoverPanic()
 		runService(service)
 	}()
+	//exposer.RPCClient.GetConnectByServerName("match")
 	wg.Wait()
 }
 
