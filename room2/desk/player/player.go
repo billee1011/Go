@@ -18,6 +18,7 @@ type Player struct {
 	overTime    int    // 超时计数
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
+	robotLv 	int	   //机器人等级
 	desk        *desk.Desk
 
 	mu sync.RWMutex
@@ -51,6 +52,28 @@ func (dp *Player) GetEcoin() int {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return int(dp.ecoin)
+}
+
+func (p *Player) SetEcoin(coin int) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	p.ecoin = uint64(coin)
+}
+
+func (p *Player) SetMaxOverTime(time int){
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	p.overTime = time
+}
+
+func (p *Player) SetRobotLv(lv int){
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	p.robotLv = lv
+}
+
+func (p *Player) GetRobotLv() int {
+	return p.robotLv
 }
 
 // IsQuit 是否已经退出

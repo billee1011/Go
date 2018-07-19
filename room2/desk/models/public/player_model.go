@@ -11,6 +11,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"steve/gutils"
 	"github.com/Sirupsen/logrus"
+	"steve/room2/desk/models/mj"
 )
 
 type PlayerModel struct {
@@ -22,13 +23,16 @@ func (model PlayerModel) GetName() string{
 }
 func (model PlayerModel) Start(){
 	model.players = make([]*player.Player,model.GetDesk().GetConfig().Num)
+	ids:=model.GetDesk().GetDeskPlayerIDs()
+	for i:=0;i<len(model.players);i++{
+		model.players[i] = player.GetRoomPlayerMgr().GetPlayer(ids[i])
+	}
 }
 func (model PlayerModel) Stop(){
 
 }
 
-func (model PlayerModel) PlayerEnter(player *player.Player,seat uint32){
-	player.SetSeat(seat)
+func (model PlayerModel) PlayerEnter(player *player.Player){
 	player.EnterDesk(model.GetDesk())
 
 	// 判断行牌状态, 选项化后需修改
@@ -40,10 +44,10 @@ func (model PlayerModel) PlayerEnter(player *player.Player,seat uint32){
 		player.SetTuoguan(false, false)
 	}
 	player.EnterDesk(model.GetDesk())
-	model.recoverGameForPlayer(eqi.PlayerID)
-	d.setMjPlayerQuitDesk(eqi.PlayerID, false)
-	d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
-	logEntry.Debugln("玩家进入")
+	model.recoverGameForPlayer(player.GetPlayerID())
+	model.setContextPlayerQuit(player,false)
+	//d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
+	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_ENTER)
 }
 
 func (model PlayerModel) recoverGameForPlayer(playerID uint64) {
@@ -51,29 +55,29 @@ func (model PlayerModel) recoverGameForPlayer(playerID uint64) {
 		"func_name": "recoverGameForPlayer",
 		"playerID":  playerID,
 	})
-
-	mjContext := &d.dContext.mjContext
+	ctx := model.GetDesk().GetConfig().Context.(contexts.MjContext).MjContext
+	mjContext := &ctx
 	bankerSeat := mjContext.GetZhuangjiaIndex()
 	totalCardsNum := mjContext.GetCardTotalNum()
-	gameStage := getGameStage(mjContext.GetCurState())
+	gameStage := util.GetGameStage(mjContext.GetCurState())
 	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
 		GameId:      &gameID,
 		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(playerID, d),
+		Players:     util.GetRecoverPlayerInfo(playerID, model.GetDesk()),
 		Dices:       mjContext.GetDices(),
 		BankerSeat:  &bankerSeat,
 		EastSeat:    &bankerSeat,
 		TotalCards:  &totalCardsNum,
 		RemainCards: proto.Uint32(uint32(len(mjContext.GetWallCards()))),
-		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
-		OperatePid:  getOperatePlayerID(mjContext),
-		DoorCard:    getDoorCard(mjContext),
+		CostTime:    proto.Uint32(util.GetStateCostTime(model.GetDesk().GetConfig().Context.(contexts.MjContext).StateTime.Unix())),
+		OperatePid:  util.GetOperatePlayerID(mjContext),
+		DoorCard:    util.GetDoorCard(mjContext),
 		NeedHsz:     proto.Bool(gutils.GameHasHszState(mjContext)),
 	}
-	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
-	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
-	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = getQghInfo(playerID, mjContext)
+	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = util.GetZixunInfo(playerID, mjContext)
+	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = util.GetWenxunInfo(playerID, mjContext)
+	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = util.GetQghInfo(playerID, mjContext)
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
@@ -84,7 +88,7 @@ func (model PlayerModel) recoverGameForPlayer(playerID uint64) {
 		logEntry.WithError(err).Errorln("序列化失败")
 		return
 	}
-	d.reply([]server_pb.ReplyClientMessage{
+	model.GetDesk().GetModel(models.Event).(mj.MjEventModel).Reply([]server_pb.ReplyClientMessage{
 		server_pb.ReplyClientMessage{
 			Players: []uint64{playerID},
 			MsgId:   int32(msgid.MsgID_ROOM_RESUME_GAME_RSP),
@@ -137,6 +141,18 @@ func (model PlayerModel) GetDeskPlayerIDs() []uint64 {
 	result := make([]uint64, len(players))
 	for _, player := range players {
 		result[player.GetSeat()] = player.GetPlayerID()
+	}
+	return result
+}
+
+// GetTuoguanPlayers 获取牌桌所有托管玩家
+func (model PlayerModel) GetTuoguanPlayers() []uint64 {
+	players := model.GetDesk().GetDeskPlayers()
+	result := make([]uint64, 0, len(players))
+	for _, player := range players {
+		if player.IsTuoguan() {
+			result = append(result, player.GetPlayerID())
+		}
 	}
 	return result
 }

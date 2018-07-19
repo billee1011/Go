@@ -13,8 +13,7 @@
     "balancer",
     "discovery/consul",
     "grpclb_backend_v1",
-    "grpclb_balancer_v1",
-    "load"
+    "grpclb_balancer_v1"
   ]
   revision = "8ee3dbe8dee53600a5f95f474ddc27c2ed937a72"
   version = "v0.4.3"
@@ -75,6 +74,18 @@
   name = "github.com/golang/snappy"
   packages = ["."]
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
+  version = "v1.6.2"
 
 [[projects]]
   name = "github.com/hashicorp/consul"
@@ -204,6 +215,12 @@
   version = "v1.2.1"
 
 [[projects]]
+  name = "github.com/tkrajina/go-reflector"
+  packages = ["reflector"]
+  revision = "5b75a6445531c13710949a00e776b4291fa86573"
+  version = "v0.5.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -298,6 +315,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "edebae7506f066d2b342f613f955fbc2e7e377c5031ee1b7e1c123ebc395588d"
+  inputs-digest = "a7191192f9535f3267e9002414ca5d43e51b2a501d8e80752917c6faec97e808"
   solver-name = "gps-cdcl"
   solver-version = 1

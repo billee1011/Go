@@ -237,7 +237,6 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 			"tingType":     *ntf.TingAction.TingType,
 		}).Infoln("出牌通知")
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_CHUPAI_NTF, &ntf)
-	activePlayer.SelectedTing = false
 
 }
 
@@ -246,8 +245,17 @@ func (s *ChupaiState) clearWenxunInfo(player *majongpb.Player) {
 	player.EnbleChiCards = player.EnbleChiCards[:0]
 }
 
+//AddChuPaiCount 出牌状态次数递增1
+func (s *ChupaiState) AddChuPaiCount(flow interfaces.MajongFlow) {
+	mjContext := flow.GetMajongContext()
+	playerID := mjContext.GetLastChupaiPlayer()
+	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
+	player.ChupaiCount++
+}
+
 // OnEntry 进入状态
 func (s *ChupaiState) OnEntry(flow interfaces.MajongFlow) {
+	s.AddChuPaiCount(flow)
 	flow.SetAutoEvent(majongpb.AutoEvent{
 		EventId:      majongpb.EventID_event_chupai_finish,
 		EventContext: nil,

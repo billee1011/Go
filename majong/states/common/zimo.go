@@ -4,6 +4,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -60,6 +61,7 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 	mjContext.LastHuPlayers = []uint64{player.GetPalyerId()}
 	huType := s.calcHuType(player.GetPalyerId(), flow)
 	s.notifyHu(card, huType, player.GetPalyerId(), flow)
+	gutils.SetNextZhuangIndex(mjContext.GetLastHuPlayers(), player.GetPalyerId(), mjContext)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
 	AddHuCard(card, player, player.GetPalyerId(), huType, true)
 
@@ -106,6 +108,7 @@ func (s *ZimoState) notifyHu(card *majongpb.Card, huType majongpb.HuType, player
 		FromPlayerId: proto.Uint64(playerID),
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
 		HuType:       rhuType.Enum(),
+		RealPlayerId: proto.Uint64(playerID),
 	}
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }

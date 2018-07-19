@@ -431,7 +431,7 @@ func TestXiaoyuwu(t *testing.T) {
 
 // TestDaqixing 大七星
 func TestDaqixing(t *testing.T) {
-	handUtilCards := []utils.Card{41, 41, 46, 45, 45, 45, 45, 43, 43, 47, 47, 42, 42}
+	handUtilCards := []utils.Card{41, 41, 47, 47, 42, 42, 43, 43, 44, 44, 45, 45, 46}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(46)
@@ -1376,7 +1376,7 @@ func TestBuqiuren(t *testing.T) {
 
 // TestJuezhang 绝张
 func TestJuezhang(t *testing.T) {
-	handUtilCards := []utils.Card{12, 13, 17, 18, 19, 17, 18, 19, 19, 19}
+	handUtilCards := []utils.Card{12, 13, 17, 18, 19, 17, 18, 19, 19, 19, 11}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{11}
@@ -1389,6 +1389,7 @@ func TestJuezhang(t *testing.T) {
 		PengCard: []*majongpb.PengCard{
 			&majongpb.PengCard{Card: pengCards[0]},
 		},
+		// WallCards:        handCards,
 		HuCard:           &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
 		CardtypeOptionID: 4,
 		GameID:           4,
@@ -1436,14 +1437,29 @@ func TestQuanFengKe(t *testing.T) {
 
 // TestJianke 箭刻
 func TestJianke(t *testing.T) {
-	handUtilCards := []utils.Card{12, 13, 11, 12, 13, 46, 46, 46, 19, 19}
+	handUtilCards := []utils.Card{12, 13, 11, 12, 13, 21, 22, 23, 11, 19}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(11)
+	// gangUtilCards := []utils.Card{45}
+	// gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	// assert.Nil(t, err)
+	pengUtilCards := []utils.Card{45}
+	pengCards, err := utils.CheckHuUtilCardsToHandCards(pengUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(19)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
-		HandCard:         handCards,
-		HuCard:           &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
+		HandCard: handCards,
+		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_zimo},
+		// GangCard: []*majongpb.GangCard{
+		// 	&majongpb.GangCard{
+		// 		Card: gangCards[0],
+		// 		Type: majongpb.GangType_gang_minggang,
+		// 	},
+		// },
+		PengCard: []*majongpb.PengCard{
+			&majongpb.PengCard{Card: pengCards[0]},
+		},
 		CardtypeOptionID: 4,
 		GameID:           4,
 	}
@@ -1556,10 +1572,10 @@ func TestMenqianqing(t *testing.T) {
 
 // TestYibangao 一般高
 func TestYibangao(t *testing.T) {
-	handUtilCards := []utils.Card{12, 12, 15, 16, 17, 15, 16, 17, 25, 26, 27, 18, 18}
+	handUtilCards := []utils.Card{11, 12, 13, 11, 12, 41, 41, 41, 42, 42, 42, 43, 43}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(12)
+	HuCard, err := utils.IntToCard(13)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard:         handCards,
@@ -1574,10 +1590,10 @@ func TestYibangao(t *testing.T) {
 
 // TestLianliu 连六
 func TestLianliu(t *testing.T) {
-	handUtilCards := []utils.Card{13, 14, 15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18}
+	handUtilCards := []utils.Card{11, 11, 12, 13, 14, 15, 16, 19, 44, 44, 44, 45}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(12)
+	HuCard, err := utils.IntToCard(45)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard:         handCards,
@@ -1716,10 +1732,10 @@ func TestKanZhang(t *testing.T) {
 
 //单吊将
 func TestDangDiaoJiang(t *testing.T) {
-	handUtilCards := []utils.Card{11, 12, 13, 21, 22, 23, 34, 35, 36, 37, 38, 39, 17}
+	handUtilCards := []utils.Card{11, 11, 11, 12, 41, 41, 41, 42, 42, 42, 43, 43, 43}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(17)
+	HuCard, err := utils.IntToCard(12)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard:         handCards,
@@ -1763,12 +1779,12 @@ func TestZimo(t *testing.T) {
 
 func calculate(params CardCalcParams) ([]int, int, int) {
 	player := &majongpb.Player{
-		PalyerId:      1,
-		HandCards:     params.HandCard,
-		PengCards:     params.PengCard,
-		GangCards:     params.GangCard,
-		ChiCards:      params.ChiCard,
-		HuCards:       []*majongpb.HuCard{params.HuCard},
+		PalyerId:  1,
+		HandCards: params.HandCard,
+		PengCards: params.PengCard,
+		GangCards: params.GangCard,
+		ChiCards:  params.ChiCard,
+		// HuCards:       []*majongpb.HuCard{params.HuCard},
 		ZixunCount:    params.ZiXunCount,
 		TingStateInfo: params.TingStateInfo,
 		HuaCards:      params.HuaCards,
