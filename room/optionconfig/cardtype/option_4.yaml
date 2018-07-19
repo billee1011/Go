@@ -451,11 +451,16 @@ fan_type_2_hu_type:
     huType: 4
   76: # 杠上开花
     huType: 3
-  75: # 自摸
-    huType: 6
   80: # 抢杠胡
-    huType: 1
-  81: # 点炮
-    huType: 2   
+    huType: 1 
   71: # 妙手回春
     huType: 9  
+
+#番型对应的结算类型  
+fan_type_2_settle_type:
+  75: #自摸
+    settleType: 4
+  81: #点炮
+    settleType: 3
+  80: #抢杠胡    
+    settleType: 3   

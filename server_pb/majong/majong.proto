@@ -38,8 +38,8 @@ enum HuType {
     hu_zimo = 6;               // 自摸
     hu_tianhu = 7;             // 天胡
     hu_dihu = 8;               // 地胡
-    hu_renhu = 9;              // 人胡
-    hu_miaoshouhuichun = 10;   // 妙手回春
+    hu_miaoshouhuichun = 9;    // 妙手回春 
+    hu_renhu = 10;             // 人胡
     hu_quanqiuren = 11;        // 全求人
     hu_buqiuren = 12;          // 不求人
     hu_juezhang = 13;          // 胡绝张
