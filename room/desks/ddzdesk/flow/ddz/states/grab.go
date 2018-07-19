@@ -108,12 +108,10 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
 	}
 
-	if lordPlayerId != 0 {
-		context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
+	if lordPlayerId != 0 || context.AllAbandonCount > 3 {
+		context.CurStage = ddz.DDZStage_DDZ_STAGE_NONE //最后一个人的抢地主广播NextStage为NONE
 	}
-	if context.AllAbandonCount > 3 {
-		context.CurStage = ddz.DDZStage_DDZ_STAGE_GRAB //应客户端要求，三次全弃地主广播前，返回grab阶段
-	}
+
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId:     &playerId,
 		Grab:         &grab,
