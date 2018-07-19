@@ -16,14 +16,20 @@ func checkHuJueZhang(tc *typeCalculator) bool {
 		players := tc.mjContext.GetPlayers()
 		cards := make([]*majongpb.Card, 0)
 		cards = append(cards, wall...)
+
 		for _, palyer := range players {
-			cards = append(cards, palyer.GetHandCards()...)
+			if palyer.GetPalyerId() == tc.getPlayer().GetPalyerId() {
+				cards = append(cards, tc.getHandCards()...)
+			} else {
+				cards = append(cards, palyer.GetHandCards()...)
+			}
 		}
 		for _, card := range cards {
 			if gutils.CardEqual(card, huCard.GetCard()) {
 				return false
 			}
 		}
+		return true
 	}
-	return true
+	return false
 }
