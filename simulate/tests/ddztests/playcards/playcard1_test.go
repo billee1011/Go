@@ -94,6 +94,4 @@ func TestPlaycard1(t *testing.T) {
 		// 当前状态
 		logEntry.Infof("当前状态：%v，进入下一状态的等待时间:%d", ddzDeskInfo.GetStage().GetStage(), ddzDeskInfo.GetStage().GetTime())
 	}
-
-	assert.NotNil(t, nil)
 }
