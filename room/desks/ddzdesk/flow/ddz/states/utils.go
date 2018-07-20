@@ -155,7 +155,7 @@ func ContainsAll(handCards []Poker, outCards []Poker) bool {
 // Contains cards是否包含card
 func Contains(cards []Poker, card Poker) bool {
 	for _, value := range cards {
-		if value.equals(card) {
+		if value.Equals(card) {
 			return true
 		}
 	}

@@ -132,13 +132,13 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	} else if context.CurCardType == ddz.CardType_CT_KINGBOMB {
 		bigger = false
 	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
-		bigger = currPivot.pointBiggerThan(lastPivot)
+		bigger = currPivot.PointBiggerThan(lastPivot)
 	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
 		bigger = true
 	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
 		bigger = false
 	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
-		bigger = currPivot.pointBiggerThan(lastPivot)
+		bigger = currPivot.PointBiggerThan(lastPivot)
 	}
 
 	if !bigger {
