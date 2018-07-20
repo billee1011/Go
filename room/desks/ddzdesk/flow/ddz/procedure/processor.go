@@ -232,9 +232,6 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 			playersInfo = append(playersInfo, &ddzPlayerInfo)
 		}
 
-		var errCode uint32 = 0
-		errDesc := ""
-
 		// 开始时间
 		startTime := time.Time{}
 		startTime.UnmarshalBinary(ddzContext.StartTime)
@@ -258,9 +255,21 @@ func dealResumeRequest(eventContext []byte, machine *ddzmachine.DDZMachine, ddzC
 
 		curStage := room.DDZStage(int32(ddzContext.CurStage))
 
+		// 打印出恢复对局的消息
+		logEntry.Infof("向玩家%v发送恢复对局的消息,当前状态：%v, 剩余时间：%v, 当前操作玩家：%v, 底牌：%v",
+			reqPlayerID, curStage, leftTimeInt32, ddzContext.GetCurrentPlayerId(), ddzContext.GetDipai())
+
+		for index := 0; index < len(playersInfo); index++ {
+			ddzPlayer := playersInfo[index]
+			logEntry.Infof("玩家%v的信息: 名字：%v, 金币数：%v, 座位号：%v, 打出的牌：%v, 手中的牌：%v, 是否地主：%v, 叫抢地主类型：%v, 双倍类型：%v,手牌数量：%v",
+				ddzPlayer.GetPlayerInfo().GetPlayerId(), ddzPlayer.GetPlayerInfo().GetName(), ddzPlayer.GetPlayerInfo().GetCoin(),
+				ddzPlayer.GetPlayerInfo().GetSeat(), ddzPlayer.GetOutCards(), ddzPlayer.GetHandCards(), ddzPlayer.GetLord(),
+				ddzPlayer.GetGrabLord(), ddzPlayer.GetDouble(), ddzPlayer.GetHandCardsCount())
+		}
+
 		// 发送游戏信息
 		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
-			Result: &room.Result{ErrCode: &errCode, ErrDesc: &errDesc},
+			Result: &room.Result{ErrCode: proto.Uint32(0), ErrDesc: proto.String("")},
 			GameInfo: &room.DDZDeskInfo{
 				Players: playersInfo, // 每个人的信息
 				Stage: &room.NextStage{
