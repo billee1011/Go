@@ -15,8 +15,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/golang/protobuf/proto"
 	"steve/majong/bus"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // ZiXunState 摸牌状态
