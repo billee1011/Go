@@ -199,7 +199,7 @@ func Test_PaiXing_PaiXingYiYang_Xiao2(t *testing.T) {
 	fmt.Println(hszCards)
 
 	//牌数不一样,选择牌数少的一种花色定牌
-	hanCard2 := []Card{11, 11, 12, 12, 13, 13, 21, 21, 22, 22, 23, 23, 26, 29}
+	hanCard2 := []Card{11, 11, 12, 12, 13, 13, 21, 21, 22, 22, 23, 23, 29, 31}
 	cards2, _ := CheckHuUtilCardsToHandCards(hanCard2)
 	hszCards2 := GetRecommedHuanSanZhang(cards2)
 	assert.Equal(t, 3, len(hszCards2))

@@ -697,10 +697,10 @@ func TestSixiqidui(t *testing.T) {
 
 // TestSilianke 四连刻
 func TestSilianke(t *testing.T) {
-	handUtilCards := []utils.Card{12, 12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 15, 16}
+	handUtilCards := []utils.Card{12, 12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 15, 17}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(16)
+	HuCard, err := utils.IntToCard(17)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard:         handCards,
@@ -1376,7 +1376,7 @@ func TestBuqiuren(t *testing.T) {
 
 // TestJuezhang 绝张
 func TestJuezhang(t *testing.T) {
-	handUtilCards := []utils.Card{12, 13, 17, 18, 19, 17, 18, 19, 19, 19, 11}
+	handUtilCards := []utils.Card{12, 13, 17, 18, 19, 17, 18, 19, 19, 19}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
 	pengUtilCards := []utils.Card{11}
@@ -1714,10 +1714,10 @@ func TestBianZhang(t *testing.T) {
 
 //TestKanZhang 坎张
 func TestKanZhang(t *testing.T) {
-	handUtilCards := []utils.Card{11, 13, 17, 21, 22, 23, 34, 35, 36, 37, 38, 39, 17}
+	handUtilCards := []utils.Card{14, 15, 15, 16, 17, 19, 19}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(12)
+	HuCard, err := utils.IntToCard(16)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
 		HandCard:         handCards,
@@ -1728,6 +1728,21 @@ func TestKanZhang(t *testing.T) {
 	cardTypes, _, _ := calculate(playerParams)
 	fmt.Println(cardTypes)
 	assert.Contains(t, cardTypes, int(room.FanType_FT_KANZHANG))
+
+	handUtilCards2 := []utils.Card{14, 15, 15, 16}
+	handCards2, err := utils.CheckHuUtilCardsToHandCards(handUtilCards2)
+	assert.Nil(t, err)
+	HuCard2, err := utils.IntToCard(15)
+	assert.Nil(t, err)
+	playerParams2 := CardCalcParams{
+		HandCard:         handCards2,
+		HuCard:           &majongpb.HuCard{Card: HuCard2},
+		CardtypeOptionID: 4,
+		GameID:           4,
+	}
+	cardTypes2, _, _ := calculate(playerParams2)
+	fmt.Println(cardTypes2)
+	assert.Contains(t, cardTypes2, int(room.FanType_FT_KANZHANG))
 }
 
 //单吊将

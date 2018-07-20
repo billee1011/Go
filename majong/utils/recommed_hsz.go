@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	majongpb "steve/server_pb/majong"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 //CardDis 牌距离
@@ -24,14 +26,42 @@ func GetRecommedHuanSanZhang(handCards []*majongpb.Card) []*majongpb.Card {
 	sortPriority, colorPrioMap := GetColorPriorityInfo(colorCardsMap)
 	minPriority := sortPriority[len(sortPriority)-1] // 获取最小优先级 1为最大，18为最小优先级
 	colors := GetColorByPriority(colorPrioMap, minPriority)
-	if len(colors) != 1 {
-		// 最小优先级不止一个的情况
-		rd := rand.New(rand.NewSource(time.Now().UnixNano())) // 随机出颜色
-		towards := rd.Intn(len(colors))
-		cards := colorCardsMap[colors[towards]]
-		return DingCard(cards)
+	if len(colors) == 1 {
+		return DingCard(colorCardsMap[colors[0]])
 	}
-	return DingCard(colorCardsMap[colors[0]])
+	return CardTypeIsSame(colors, colorCardsMap)
+}
+
+// CardTypeIsSame 牌型一样
+func CardTypeIsSame(colors []majongpb.CardColor, colorCardsMap map[majongpb.CardColor][]*majongpb.Card) []*majongpb.Card {
+	// 牌数不一样，选择最小牌数
+	if flag, minCards := IsCardNumEqualAndMinCards(colors, colorCardsMap); !flag {
+		logrus.WithFields(logrus.Fields{"func_name": "GetRecommedHuanSanZhang",
+			"minCards": minCards, "colors": colors}).Info("牌型一样，牌数不一样，选择最小牌数")
+		return DingCard(minCards)
+	}
+	//牌数一样，随机
+	rd := rand.New(rand.NewSource(time.Now().UnixNano())) // 随机出颜色
+	towards := rd.Intn(len(colors))
+	cards := colorCardsMap[colors[towards]]
+	logrus.WithFields(logrus.Fields{"func_name": "GetRecommedHuanSanZhang",
+		"cards": cards, "towards": towards, "colors": colors}).Info("牌型一样，牌数一样，随机")
+	return DingCard(cards)
+}
+
+//IsCardNumEqualAndMinCards 判断牌数是否相等，并返回最小的牌数组
+func IsCardNumEqualAndMinCards(colors []majongpb.CardColor, colorCardsMap map[majongpb.CardColor][]*majongpb.Card) (bool, []*majongpb.Card) {
+	minCards, flag := colorCardsMap[0], true
+	for _, color := range colors {
+		cards := colorCardsMap[color]
+		if len(minCards) != len(cards) {
+			flag = false
+			if len(minCards) > len(cards) {
+				minCards = cards
+			}
+		}
+	}
+	return flag, minCards
 }
 
 //IsCanGetRecommedCars 是否能获取推荐牌
