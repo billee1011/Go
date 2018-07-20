@@ -9,8 +9,9 @@ import (
 	"steve/majong/interfaces/facade"
 	majongpb "steve/server_pb/majong"
 
-	"github.com/golang/protobuf/proto"
 	"steve/majong/bus"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // calcHuTimes 计算胡牌倍数
@@ -61,16 +62,16 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque && card.GetColor() == player.GetDingqueColor() {
 			continue
 		}
-		newCard, _ := CardToInt(*card)
+		newCard := ServerCard2Uint32(card)
 		times := calcHuTimes(card, player, mjContext)
 		tingCardInfo := &room.TingCardInfo{
-			TingCard: proto.Uint32(uint32(*newCard)),
+			TingCard: proto.Uint32(newCard),
 			Times:    proto.Uint32(times),
 		}
 		ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
 		// 记录听牌信息
 		mjTingInfo := &majongpb.TingCardInfo{
-			TingCard: uint32(*newCard),
+			TingCard: newCard,
 			Times:    times,
 		}
 		player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)

@@ -76,9 +76,6 @@ func (s *QiangganghuState) doHu(flow interfaces.MajongFlow) {
 	card := mjContext.GetGangCard() // 杠的牌为抢杠胡的牌
 
 	realPlayerID := utils.GetRealHuCardPlayer(players, srcPlayerID, mjContext)
-	logrus.WithFields(logrus.Fields{
-		"RealHucardPlayer": realPlayerID,
-	}).Infoln("亮实牌的玩家")
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
 		isReal := false
