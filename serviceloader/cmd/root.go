@@ -50,6 +50,7 @@ to quickly create a Cobra application.`,
 			loader.WithClientRPCCA(viper.GetString("rpc_ca_file"), viper.GetString("certi_server_name")),
 			loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
 			loader.WithConsulAddr(viper.GetString("consul_addr")),
+			loader.WithHealthPort(viper.GetInt("health_port")),
 			loader.WithParams(args[1:]))
 	},
 }
