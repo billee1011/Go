@@ -51,7 +51,7 @@ func CardTypeIsSame(colors []majongpb.CardColor, colorCardsMap map[majongpb.Card
 
 //IsCardNumEqualAndMinCards 判断牌数是否相等，并返回最小的牌数组
 func IsCardNumEqualAndMinCards(colors []majongpb.CardColor, colorCardsMap map[majongpb.CardColor][]*majongpb.Card) (bool, []*majongpb.Card) {
-	minCards, flag := colorCardsMap[0], true
+	minCards, flag := colorCardsMap[colors[0]], true
 	for _, color := range colors {
 		cards := colorCardsMap[color]
 		if len(minCards) != len(cards) {

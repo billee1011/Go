@@ -27,6 +27,11 @@ type DeskPlayer interface {
 	SetTuoguan(tuoguan bool, notify bool)
 	// 获取机器人等级
 	GetRobotLv() int
+
+	// IsDetached 是否已经解除和牌桌的关联
+	IsDetached() bool
+	// SetDetached 设置是否解除和牌桌的关联
+	SetDetached(detach bool)
 }
 
 // PlayerEnterQuitInfo 玩家退出进入信息
@@ -94,8 +99,9 @@ type DeskMgr interface {
 	// GetRunDeskByPlayerID 获取该玩家所在牌桌
 	GetRunDeskByPlayerID(playerID uint64) (Desk, error)
 
-	// RemoveDeskPlayerByPlayerID 移除某个在桌子上的玩家
-	RemoveDeskPlayerByPlayerID(playerID uint64)
+	// DetachPlayer 解除玩家和牌桌的关联
+	DetachPlayer(player DeskPlayer)
+
 	// GetDeskCount 获取牌桌数量
 	GetDeskCount() int
 }

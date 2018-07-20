@@ -3,12 +3,14 @@ log_dir: ./log
 log_prefix: match
 log_stderr: true 
 
-redis_addr: 127.0.0.1:6379
-redis_passwd: 
-
 rpc_addr: 127.0.0.1
 rpc_port: 37001
 rpc_server_name: match
+health_port: 17001
+
+
+redis_addr: 127.0.0.1:6379
+redis_passwd: 
 
 consul_addr: 127.0.0.1:8500
 
