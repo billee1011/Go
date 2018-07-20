@@ -7,6 +7,7 @@ geng_method: 2 # 根的计算方式，0相加，1相乘， 2幂乘
 enable_hua: false # 是否启用花
 hua_score: 0 # 花的番数
 hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
+enable_fan_type_deal: true #番型处理，是否将胡类型从，番型拿出
 
 # 支持的番型列表
 enable_fan_types:

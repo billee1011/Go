@@ -158,6 +158,10 @@ func GetShowFan(cardTypeOptionID int, fanTypes []int) []int64 {
 	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
 	showFan := make([]int64, 0)
 	for _, fanType := range fanTypes {
+		if !cardTypeOption.EnableFanTypeDeal { // 胡类型是否从番型拿出
+			showFan = append(showFan, int64(fanType))
+			continue
+		}
 		_, isHuType := cardTypeOption.FanType2HuType[fanType]
 		_, isSettleType := cardTypeOption.FanType2Settle[fanType]
 		if !isHuType && !isSettleType {

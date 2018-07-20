@@ -84,7 +84,9 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 	}
 	if params.HuType == majongpb.HuType_hu_ganghoupao { // 杠后炮需呼叫转移
 		cSettleInfo := huSettle.newCallTransferSettleInfo(&params, settleOption)
-		settleInfos = append(settleInfos, cSettleInfo)
+		if cSettleInfo != nil {
+			settleInfos = append(settleInfos, cSettleInfo)
+		}
 	}
 	return settleInfos
 }
@@ -106,6 +108,9 @@ func (huSettle *HuSettle) newCallTransferSettleInfo(params *interfaces.HuSettleP
 	gangCard := params.GangCard
 	// 杠倍数
 	gangValue := GetGangValue(settleOption, gangCard.GetType())
+	if gangValue == 0 {
+		return nil
+	}
 	// 赢家人数
 	winSum := int64(len(params.HuPlayers))
 	// 底数

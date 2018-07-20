@@ -1,6 +1,7 @@
 package fantype
 
 import (
+	"steve/gutils"
 	"steve/majong/utils"
 )
 
@@ -29,7 +30,10 @@ func checkSiGuiYi(tc *typeCalculator) bool {
 	}
 	cardValue = utils.ServerCard2Number(huCard.Card)
 	cardCount[cardValue] = cardCount[cardValue] + 1
-	for _, count := range cardCount {
+	for card, count := range cardCount {
+		if int(card) >= gutils.Dong && int(card) <= gutils.Bai {
+			continue
+		}
 		if count == 4 {
 			return true
 		}
