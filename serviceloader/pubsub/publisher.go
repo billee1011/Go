@@ -33,7 +33,8 @@ func createNsqProducer(addr string) *nsq.Producer {
 		logrus.WithError(err).Panicln("创建 NSQ 生产者失败")
 	}
 	if err := producer.Ping(); err != nil {
-		logrus.WithError(err).Panicln("连接 NSQ 失败")
+		// 暂时改为 Error，后续还原成 Panic
+		logrus.WithError(err).Errorln("连接 NSQ 失败")
 	}
 	return producer
 }
