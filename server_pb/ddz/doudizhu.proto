@@ -34,7 +34,7 @@ message DDZContext {
     StateID cur_state = 2;          // 当前状态
     DDZStage cur_stage = 3;         // 客户端当前阶段
     repeated Player players = 4;    // 玩家列表
-    repeated uint32 wall_cards = 5; // 墙牌(开局发好牌后，只剩3张)
+    repeated uint32 dipai = 5;      // 底牌
     uint64 current_player_id = 6;   // 当前操作玩家
     //叫地主阶段
     uint64 first_grab_player_id = 7;// 第一个实际叫地主玩家
@@ -60,9 +60,8 @@ message DDZContext {
     uint64 call_player_id = 23;     //开局叫地主玩家id
     repeated uint64 grabbed_players = 24;//已操作(抢/不抢)玩家id，不包括叫地主
     repeated uint64 doubled_players = 25;//已操作(加倍/不加倍)玩家id
-    repeated uint32 dipai = 26;     //底牌
     //倒计时
-    repeated uint64 count_down_players = 27;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
-    bytes startTime = 28;           //开始倒计时时间
-    uint32 duration = 29;           //倒计时时间
+    repeated uint64 count_down_players = 26;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
+    bytes startTime = 27;           //开始倒计时时间
+    uint32 duration = 28;           //倒计时时间
 }

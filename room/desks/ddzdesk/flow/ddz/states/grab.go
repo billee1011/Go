@@ -135,7 +135,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if lordPlayerId != 0 {
 		lordPlayer := GetPlayerByID(context.GetPlayers(), lordPlayerId)
 		lordPlayer.Lord = true
-		for _, card := range context.WallCards {
+		for _, card := range context.Dipai {
 			lordPlayer.HandCards = append(lordPlayer.HandCards, card)
 		}
 		lordPlayer.HandCards = DDZSortDescend(lordPlayer.HandCards)
@@ -145,11 +145,9 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
 			PlayerId:  &lordPlayerId,
 			TotalGrab: &context.TotalGrab,
-			Dipai:     context.WallCards,
+			Dipai:     context.Dipai,
 			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
-		context.Dipai = context.WallCards
-		context.WallCards = []uint32{}
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil

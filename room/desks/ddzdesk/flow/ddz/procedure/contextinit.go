@@ -12,7 +12,6 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 		GameId:            int32(room.GameId_GAMEID_DOUDIZHU),
 		CurState:          ddz.StateID_state_init,
 		Players:           createDDZPlayers(players),
-		WallCards:         []uint32{},
 		FirstGrabPlayerId: 0,
 		GrabbedCount:      0,
 		AllAbandonCount:   0,
@@ -33,8 +32,7 @@ func createDDZPlayers(players []uint64) []*ddz.Player {
 	result := make([]*ddz.Player, 0, len(players))
 	for _, playerID := range players {
 		result = append(result, &ddz.Player{
-			PlayerId:  playerID,
-			HandCards: []uint32{},
+			PlayerId: playerID,
 		})
 	}
 	return result
