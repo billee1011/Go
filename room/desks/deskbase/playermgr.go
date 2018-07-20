@@ -94,7 +94,7 @@ func (dpm *deskPlayerMgr) removeQuit(playerIDs []uint64) []uint64 {
 	deskPlayers := dpm.GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {
 		playerID := deskPlayer.GetPlayerID()
-		deskPlayerIDs[playerID] = deskPlayer.IsQuit()
+		deskPlayerIDs[playerID] = deskPlayer.IsQuit() || deskPlayer.IsDetached()
 	}
 	result := []uint64{}
 	for _, playerID := range playerIDs {

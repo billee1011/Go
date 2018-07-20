@@ -60,7 +60,7 @@ func (dm *deskMgr) RunDesk(desk interfaces.Desk) error {
 
 	if err := desk.Start(dm.deskFinish(desk)); err != nil {
 		logEntry.WithError(err).Errorln(errDeskStartError)
-		dm.finishDesk(deskUID, playerIDs)
+		dm.finishDesk(desk)
 		return errDeskStartError
 	}
 	return nil
@@ -99,31 +99,32 @@ func (dm *deskMgr) unbindPlayerRoomAddr(players []uint64) {
 	}
 }
 
-func (dm *deskMgr) finishDesk(deskUID uint64, players []uint64) {
-	logrus.WithFields(logrus.Fields{
+func (dm *deskMgr) finishDesk(desk interfaces.Desk) {
+	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "deskMgr.finishDesk",
-		"desk_uid":  deskUID,
-		"players":   players,
-	}).Infoln("desk finished")
+		"desk_uid":  desk.GetUID(),
+	})
+	entry.Infoln("牌桌结束")
 
+	deskUID := desk.GetUID()
 	dm.deskMap.Delete(deskUID)
 	dm.deskCount--
-	for _, playerID := range players {
-		// TODO 并发待优化
-		if _, ok := dm.playerDeskMap.Load(playerID); ok {
-			dm.playerDeskMap.Delete(playerID)
-			dm.unbindPlayerRoomAddr([]uint64{playerID})
+	deskPlayers := desk.GetDeskPlayers()
+	for _, deskPlayer := range deskPlayers {
+		if deskPlayer.IsDetached() {
+			continue
 		}
+		playerID := deskPlayer.GetPlayerID()
+		dm.unbindPlayerRoomAddr([]uint64{playerID})
+		dm.playerDeskMap.Delete(playerID)
 	}
 }
 
 func (dm *deskMgr) deskFinish(desk interfaces.Desk) func() {
-	deskUID := desk.GetUID()
-	playerIDs := facade.GetDeskPlayerIDs(desk)
 	return func() {
 		dm.mu.Lock()
 		defer dm.mu.Unlock()
-		dm.finishDesk(deskUID, playerIDs)
+		dm.finishDesk(desk)
 	}
 }
 
@@ -176,15 +177,16 @@ func (dm *deskMgr) GetRunDeskByPlayerID(playerID uint64) (desk interfaces.Desk, 
 	return desk, nil
 }
 
-// RemoveDeskPlayerByPlayerID
-func (dm *deskMgr) RemoveDeskPlayerByPlayerID(playerID uint64) {
+// DetachPlayer 解除玩家和牌桌的关联
+func (dm *deskMgr) DetachPlayer(deskPlayer interfaces.DeskPlayer) {
 	dm.mu.Lock()
 	defer dm.mu.Unlock()
-	// TODO 并发待优化
-	if _, ok := dm.playerDeskMap.Load(playerID); ok {
-		dm.playerDeskMap.Delete(playerID)
-		dm.unbindPlayerRoomAddr([]uint64{playerID})
+	if deskPlayer.IsDetached() {
+		return
 	}
+	deskPlayer.SetDetached(true)
+	dm.playerDeskMap.Delete(deskPlayer.GetPlayerID())
+	dm.unbindPlayerRoomAddr([]uint64{deskPlayer.GetPlayerID()})
 }
 
 func (dm *deskMgr) GetDeskCount() int {

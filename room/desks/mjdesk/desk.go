@@ -377,7 +377,8 @@ func (d *desk) handleQuitByPlayerState(playerID uint64) {
 
 	if !gutils.IsPlayerContinue(player.GetXpState(), &mjContext) {
 		deskMgr := global.GetDeskMgr()
-		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+		deskPlayer := facade.GetDeskPlayerByID(d, playerID)
+		deskMgr.DetachPlayer(deskPlayer)
 	}
 	logrus.WithFields(logrus.Fields{
 		"funcName":    "handleQuitByPlayerState",
@@ -600,7 +601,7 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
 	d.playerQuitEnterDeskNtf(playerID, room.QuitEnterType_QET_QUIT)
 	deskPlayer.QuitDesk()
-	deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+	deskMgr.DetachPlayer(deskPlayer)
 	// getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil
 }

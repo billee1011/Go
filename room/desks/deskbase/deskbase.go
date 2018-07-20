@@ -59,6 +59,9 @@ func (d *DeskBase) ContinueDesk(fixBanker bool, bankerSeat int, winners []uint64
 	players := d.GetDeskPlayers()
 	continuePlayers := make([]*match.ContinuePlayer, 0, len(players))
 	for _, player := range players {
+		if player.IsQuit() { // 玩家已经退出牌桌，不续局
+			return
+		}
 		continuePlayers = append(continuePlayers, &match.ContinuePlayer{
 			PlayerId:   player.GetPlayerID(),
 			Seat:       int32(player.GetSeat()),

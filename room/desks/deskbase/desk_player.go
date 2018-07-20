@@ -19,6 +19,7 @@ type deskPlayer struct {
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
 	robotLv     int    // 机器人等级
+	detached    bool   // 是否已经和牌桌解除关联
 
 	mu sync.RWMutex
 }
@@ -32,6 +33,7 @@ func CreateDeskPlayer(playerID uint64, seat uint32, coin uint64, maxOverTime int
 		ecoin:       coin,
 		maxOverTime: maxOverTime,
 		robotLv:     robotLv,
+		detached:    false,
 	}
 }
 
@@ -117,4 +119,14 @@ func (dp *deskPlayer) notifyTuoguan(playerID uint64, tuoguan bool) {
 	facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
+}
+
+// IsDetached 是否和牌桌解除了关联
+func (dp *deskPlayer) IsDetached() bool {
+	return dp.detached
+}
+
+// SetDetached 设置是否解除和牌桌的关联
+func (dp *deskPlayer) SetDetached(detach bool) {
+	dp.detached = detach
 }
