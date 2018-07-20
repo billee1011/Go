@@ -83,17 +83,17 @@ func Test_ContinueDDZ(t *testing.T) {
 	})
 
 	players := startDDZAndFinishGame(t)
-	time.Sleep(10 * time.Millisecond) // 等待 10ms
+	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保match服已经接收到room服的续局牌桌的请求
 
 	for _, player := range players {
 
 		// 准备：续局匹配的响应通知，斗地主开始游戏的通知
 		player.AddExpectors(msgid.MsgID_MATCH_CONTINUE_RSP, msgid.MsgID_ROOM_DDZ_START_GAME_NTF)
 
-		// 发出斗地主续局请求
+		// 发出游戏续局请求
 		player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
 			GameId: common.GameId_GAMEID_DOUDIZHU.Enum(),
-			Cancel: proto.Bool(false),
+			Cancel: proto.Bool(false), // false表开始续局
 		})
 
 		// 续局期待
@@ -114,6 +114,37 @@ func Test_ContinueDDZ(t *testing.T) {
 		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &startGameNotify))
 
 		logEntry.Infof("斗地主续局后收到了开始游戏的通知，playerID = %v, nextStage = %v", startGameNotify.GetPlayerId(), startGameNotify.GetNextStage())
+	}
+}
+
+// Test_ContinueCancelDDZ 测试斗地主取消续局
+func Test_ContinueCancelDDZ(t *testing.T) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "continue_test.go::Test_ContinueCancelDDZ",
+	})
+
+	players := startDDZAndFinishGame(t)
+	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保match服已经接收到room服的续局牌桌的请求
+
+	// 准备：续局牌桌解散的期望
+	for i := 1; i < len(players); i++ {
+		players[i].AddExpectors(msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF)
+	}
+
+	// 由第一个玩家发出游戏取消续局的请求
+	players[0].GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
+		GameId: common.GameId_GAMEID_DOUDIZHU.Enum(),
+		Cancel: proto.Bool(true), // true表取消续局
+	})
+
+	// 剩余两个玩家收到续局牌桌解散的通知
+	for i := 1; i < len(players); i++ {
+		expector := players[i].GetExpector(msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF)
+
+		deskMissNtf := match.MatchContinueDeskDimissNtf{}
+		expector.Recv(global.DefaultWaitMessageTime, &deskMissNtf)
+
+		logEntry.Infof("斗地主续局取消后收到了续局牌桌解散的通知,reserve = %v", deskMissNtf.GetReserve())
 	}
 }
 
