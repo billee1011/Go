@@ -8,9 +8,11 @@ import (
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
+	"steve/simulate/utils/doudizhu"
 	"testing"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,6 +41,80 @@ func startAndFinishGame(t *testing.T) []interfaces.ClientPlayer {
 		players = append(players, deskPlayer.Player)
 	}
 	return players
+}
+
+// 开始斗地主然后结束
+// 返回参与游戏的玩家列表
+func startDDZAndFinishGame(t *testing.T) []interfaces.ClientPlayer {
+
+	// 配牌1
+	params := doudizhu.NewStartDDZGameParamsTest1()
+
+	// 开始游戏
+	deskData, err := utils.StartDDZGame(params)
+	assert.NotNil(t, deskData)
+	assert.Nil(t, err)
+
+	// 叫地主用例1
+	doudizhu.JiaodizhuTest1(deskData)
+
+	// 加倍用例1
+	doudizhu.JiabeiTest1(deskData)
+
+	// 出牌用例1
+	doudizhu.PlaycardTest1(deskData)
+
+	// 所有玩家的clientPlayer
+	players := make([]interfaces.ClientPlayer, 0, len(deskData.Players))
+	for _, deskPlayer := range deskData.Players {
+		players = append(players, deskPlayer.Player)
+	}
+
+	return players
+}
+
+// Test_ContinueDDZ 测试斗地主续局功能
+// 开始一局游戏，等游戏结束后，3个玩家均申请续局
+// 4 个玩家均会收到房间创建通知，且每个玩家座位号不变
+func Test_ContinueDDZ(t *testing.T) {
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "continue_test.go::Test_ContinueDDZ",
+	})
+
+	players := startDDZAndFinishGame(t)
+	time.Sleep(10 * time.Millisecond) // 等待 10ms
+
+	for _, player := range players {
+
+		// 准备：续局匹配的响应通知，斗地主开始游戏的通知
+		player.AddExpectors(msgid.MsgID_MATCH_CONTINUE_RSP, msgid.MsgID_ROOM_DDZ_START_GAME_NTF)
+
+		// 发出斗地主续局请求
+		player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
+			GameId: common.GameId_GAMEID_DOUDIZHU.Enum(),
+			Cancel: proto.Bool(false),
+		})
+
+		// 续局期待
+		expector := player.GetExpector(msgid.MsgID_MATCH_CONTINUE_RSP)
+
+		// 接收续局回应
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, nil))
+	}
+
+	// 所有玩家收到斗地主游戏开始通知
+	for _, player := range players {
+
+		// 斗地主开始游戏的通知
+		expector := player.GetExpector(msgid.MsgID_ROOM_DDZ_START_GAME_NTF)
+
+		startGameNotify := room.DDZStartGameNtf{}
+
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &startGameNotify))
+
+		logEntry.Infof("斗地主续局后收到了开始游戏的通知，playerID = %v, nextStage = %v", startGameNotify.GetPlayerId(), startGameNotify.GetNextStage())
+	}
 }
 
 // Test_ContinueMajong 测试麻将续局功能
