@@ -12,7 +12,7 @@ package common
 import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/settle/majong"
+	"steve/majong/settle"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -80,8 +80,8 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 		SettleID:       mjContext.CurrentSettleId,
 	}
 
-	settlerFactory := majong.SettlerFactory{}
-	settleInfo := settlerFactory.CreateGangSettler().Settle(param)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfo := settlerFactory.CreateGangSettler(mjContext.GameId).Settle(param)
 	if settleInfo != nil {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++

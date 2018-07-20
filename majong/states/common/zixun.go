@@ -16,6 +16,7 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"github.com/golang/protobuf/proto"
+	"steve/majong/bus"
 )
 
 // ZiXunState 摸牌状态
@@ -390,8 +391,11 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 	record.HuFanType = new(majongpb.HuFanType)
 	record.HuFanType.GenCount = uint64(genCount)
 	record.HuFanType.HuaCount = uint64(huaCount)
+	record.HuType = majongpb.HuType_hu_zimo
 	huType := gutils.ServerFanType2ClientHuType(cardOptionID, fanTypes)
-	record.HuType = majongpb.HuType(huType)
+	if huType != -1 {
+		record.HuType = majongpb.HuType(huType)
+	}
 	for _, fanType := range fanTypes {
 		record.HuFanType.FanTypes = append(record.HuFanType.FanTypes, int64(fanType))
 	}
@@ -538,7 +542,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		}
 		for _, tt := range tingInfo {
 			hCard, _ := utils.IntToCard(int32(tt))
-			times, _, _ := facade.CalculateCardValue(global.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+			times, _, _ := facade.CalculateCardValue(bus.GetFanTypeCalculator(), context, interfaces.FantypeParams{
 				PlayerID:  player.GetPalyerId(),
 				MjContext: context,
 				HandCard:  newHand,

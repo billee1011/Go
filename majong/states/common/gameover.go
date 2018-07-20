@@ -7,12 +7,13 @@ import (
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
-	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/majong/settle"
+	"steve/majong/bus"
 )
 
 // GameOverState 游戏结束状态
@@ -111,8 +112,8 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		SettleInfos:      mjContext.SettleInfos,
 		SettleID:         mjContext.CurrentSettleId,
 	}
-	settlerFactory := majong.SettlerFactory{}
-	settleInfos, raxbeatIds := settlerFactory.CreateRoundSettle().Settle(params)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfos, raxbeatIds := settlerFactory.CreateRoundSettle(mjContext.GameId).Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 	}
@@ -185,7 +186,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 					},
 					GameID: int(context.GetGameId()),
 				}
-				calculator := global.GetFanTypeCalculator()
+				calculator := bus.GetFanTypeCalculator()
 				total, _, _ := facade.CalculateCardValue(calculator, context, cardParams)
 				if maxMulti < int64(total) {
 					maxMulti = int64(total)

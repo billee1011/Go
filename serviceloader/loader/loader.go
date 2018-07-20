@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+
 )
 
 func createConfiguration() *configuration.ConfigurationImpl {
@@ -30,7 +31,7 @@ func recoverPanic() {
 }
 
 // createExposer 创建 exposer 对象
-func CreateExposer(opt option) *structs.Exposer {
+func CreateExposer(opt Option) *structs.Exposer {
 	exposer := &structs.Exposer{}
 	exposer.Configuration = createConfiguration()
 	exposer.RPCServer = createRPCServer(opt.rpcKeyFile, opt.rpcCertiFile)
@@ -41,11 +42,15 @@ func CreateExposer(opt option) *structs.Exposer {
 	exposer.Publisher = pubsub.CreatePublisher()
 	exposer.Subscriber = pubsub.CreateSubscriber()
 	structs.SetGlobalExposer(exposer)
+	// 开启通用的负载报告服务
+	RegisterLBReporter(exposer.RPCServer)
+
+
 	return exposer
 }
 
 // run 启动服务循环
-func Run(service service.Service, exposer *structs.Exposer, opt option) {
+func Run(service service.Service, exposer *structs.Exposer, opt Option) {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
@@ -59,7 +64,10 @@ func Run(service service.Service, exposer *structs.Exposer, opt option) {
 		defer recoverPanic()
 		runService(service)
 	}()
+	//exposer.RPCClient.GetConnectByServerName("match")
 	wg.Wait()
+	// 从consul删除服务节点
+	DeleteMyConsulAgent()
 }
 
 func runService(s service.Service) {

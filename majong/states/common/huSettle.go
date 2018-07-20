@@ -6,12 +6,12 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/majong/settle"
 )
 
 // HuSettleState 杠结算状态
@@ -94,7 +94,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		cardsGroup[huPlayerID] = utils.GetCardsGroup(huPlayer, mjContext.GetLastOutCard())
 
 		cardOptionID := int(mjContext.GetCardtypeOptionId())
-		HfanTypes := gutils.RemoveHuTypeFromFan(cardOptionID, fanTypes)
+		HfanTypes := gutils.GetShowFan(cardOptionID, fanTypes)
 		cardTypes[huPlayerID] = HfanTypes
 		cardValues[huPlayerID] = totalValue
 		genCount[huPlayerID] = uint64(genSum)
@@ -122,8 +122,8 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		params.HuType = majongpb.HuType_hu_ganghoupao
 		params.GangCard = *GangCards[len(GangCards)-1]
 	}
-	settlerFactory := majong.SettlerFactory{}
-	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler(mjContext.GameId).Settle(params)
 	if s.isAfterGang(mjContext) {
 		settleOption := mjoption.GetSettleOption(int(mjContext.GetSettleOptionId()))
 		if settleOption.GangInstantSettle {
