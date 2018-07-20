@@ -390,8 +390,11 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 	record.HuFanType = new(majongpb.HuFanType)
 	record.HuFanType.GenCount = uint64(genCount)
 	record.HuFanType.HuaCount = uint64(huaCount)
+	record.HuType = majongpb.HuType_hu_zimo
 	huType := gutils.ServerFanType2ClientHuType(cardOptionID, fanTypes)
-	record.HuType = majongpb.HuType(huType)
+	if huType != -1 {
+		record.HuType = majongpb.HuType(huType)
+	}
 	for _, fanType := range fanTypes {
 		record.HuFanType.FanTypes = append(record.HuFanType.FanTypes, int64(fanType))
 	}

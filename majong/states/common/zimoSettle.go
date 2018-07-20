@@ -94,7 +94,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	for _, fanType := range record.GetHuFanType().GetFanTypes() {
 		fan = append(fan, int(fanType))
 	}
-	cardTypes[huPlayerID] = gutils.RemoveHuTypeFromFan(cardOptionID, fan)
+	cardTypes[huPlayerID] = gutils.GetShowFan(cardOptionID, fan)
 	cardValues[huPlayerID] = s.calculateScore(mjContext, record)
 	genCount[huPlayerID] = record.GetHuFanType().GetGenCount()
 	huaCount[huPlayerID] = record.GetHuFanType().GetHuaCount()

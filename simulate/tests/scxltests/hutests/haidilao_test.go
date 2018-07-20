@@ -28,7 +28,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	// 1 号玩家最后1张牌改为 9W
 	params.Cards[zimoSeat][12] = 19
 	// 牌墙大小设置为1
-	params.WallCards = []uint32{19}
+	params.WallCards = []uint32{39, 39, 39, 39, 19}
 
 	// 传入参数开始游戏
 	deskData, err := utils.StartGame(params)
@@ -46,16 +46,49 @@ func Test_Zimo_Haidilao(t *testing.T) {
 	ntf := room.RoomZixunNtf{}
 	// 1秒内接收到自询通知，并赋值到ntf
 	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
+
+	assert.Nil(t, utils.SendChupaiReq(deskData, zimoSeat, 39))
+
+	// 2 号玩家期望收到自询通知
+	zixunexpector, _ = utils.GetDeskPlayerBySeat(2, deskData).Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	ntf = room.RoomZixunNtf{}
+	// 1秒内接收到自询通知，并赋值到ntf
+	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
+
+	assert.Nil(t, utils.SendChupaiReq(deskData, 2, 39))
+
+	// 3 号玩家期望收到自询通知
+	zixunexpector, _ = utils.GetDeskPlayerBySeat(3, deskData).Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	ntf = room.RoomZixunNtf{}
+	// 1秒内接收到自询通知，并赋值到ntf
+	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
+
+	assert.Nil(t, utils.SendChupaiReq(deskData, 3, 39))
+
+	// 0 号玩家期望收到自询通知
+	zixunexpector, _ = utils.GetDeskPlayerBySeat(0, deskData).Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	ntf = room.RoomZixunNtf{}
+	// 1秒内接收到自询通知，并赋值到ntf
+	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
+
+	assert.Nil(t, utils.SendChupaiReq(deskData, 0, 39))
+
+	zixunexpector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
+	ntf = room.RoomZixunNtf{}
+	// 1秒内接收到自询通知，并赋值到ntf
+	assert.Nil(t, zixunexpector.Recv(global.DefaultWaitMessageTime, &ntf))
+
 	// 判断自询通知中是否有自摸
 	assert.True(t, ntf.GetEnableZimo())
 
 	// 发送胡请求
 	assert.Nil(t, utils.SendHuReq(deskData, zimoSeat))
 
-	// 检测所有玩家收到自摸结算通知,地胡-清一色-2根*自摸 = 32 * 4 *4 = 512
-	winScro := 32 * 4 * 4 * 2 * (len(deskData.Players) - 1)
+	// 检测所有玩家收到自摸结算通知,清一色-2根*自摸 = 2 * 4 *4 = 32
+	winScro := 2 * 4 * 4 * (len(deskData.Players) - 1)
 	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
 
 	// 检测所有玩家收到海底捞胡类型通知
+	//TODO 测试用例需改，海底捞月跟地胡不能同时存在
 	utils.CheckHuNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_HAIDILAO)
 }

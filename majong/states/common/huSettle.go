@@ -94,7 +94,7 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		cardsGroup[huPlayerID] = utils.GetCardsGroup(huPlayer, mjContext.GetLastOutCard())
 
 		cardOptionID := int(mjContext.GetCardtypeOptionId())
-		HfanTypes := gutils.RemoveHuTypeFromFan(cardOptionID, fanTypes)
+		HfanTypes := gutils.GetShowFan(cardOptionID, fanTypes)
 		cardTypes[huPlayerID] = HfanTypes
 		cardValues[huPlayerID] = totalValue
 		genCount[huPlayerID] = uint64(genSum)
