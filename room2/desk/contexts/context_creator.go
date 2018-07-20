@@ -3,15 +3,13 @@ package contexts
 import (
 	"errors"
 	"steve/common/mjoption"
-	"steve/room2/desk"
-	"steve/room2/util"
 	"steve/server_pb/majong"
 	server_pb "steve/server_pb/majong"
-	"time"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
+	"time"
+	"steve/room2/common"
 )
 
 var errInitMajongContext = errors.New("初始化麻将现场失败")
@@ -19,42 +17,41 @@ var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
 var errPlayerNeedXingPai = errors.New("玩家需要参与行牌")
 
-func CreateMajongContext(desk desk.Desk) error {
-	players := desk.GetDeskPlayerIDs()
+func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
 	param := server_pb.InitMajongContextParams{
-		GameId:  int32(desk.GetGameId()),
+		GameId:  int32(gameId),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
-			MaxFapaiCartoonTime:        uint32(viper.GetInt(util.MaxFapaiCartoonTime)),
-			MaxHuansanzhangCartoonTime: uint32(viper.GetInt(util.MaxHuansanzhangCartoonTime)),
-			HasHuansanzhang:            util.GetHsz(desk.GetGameId()),                     //设置玩家是否开启换三张
-			Cards:                      util.GetPeiPai(desk.GetGameId()),                  //设置是否配置墙牌
-			WallcardsLength:            uint32(util.GetLensOfWallCards(desk.GetGameId())), //设置墙牌长度
+			MaxFapaiCartoonTime:        uint32(viper.GetInt(common.MaxFapaiCartoonTime)),
+			MaxHuansanzhangCartoonTime: uint32(viper.GetInt(common.MaxHuansanzhangCartoonTime)),
+			HasHuansanzhang:            common.GetHsz(gameId),                     //设置玩家是否开启换三张
+			Cards:                      common.GetPeiPai(gameId),                  //设置是否配置墙牌
+			WallcardsLength:            uint32(common.GetLensOfWallCards(gameId)), //设置墙牌长度
 			HszFx: &server_pb.Huansanzhangfx{
-				NeedDeployFx:   util.GetHSZFangXiang(desk.GetGameId()) != -1,
-				HuansanzhangFx: int32(util.GetHSZFangXiang(desk.GetGameId())),
+				NeedDeployFx:   common.GetHSZFangXiang(gameId) != -1,
+				HuansanzhangFx: int32(common.GetHSZFangXiang(gameId)),
 			}, //设置换三张方向
-			Zhuang: &server_pb.Zhuang{
+			/*Zhuang: &server_pb.Zhuang{
 				NeedDeployZhuang: util.GetZhuangIndex(desk.GetGameId()) != -1,
 				ZhuangIndex:      int32(util.GetZhuangIndex(desk.GetGameId())),
-			},
+			},*/
 		}, //设置庄家
 		MajongOption: []byte{},
 	}
 	var mjContext server_pb.MajongContext
 	var err error
 	if mjContext, err = initMajongContext(param); err != nil {
-		return err
+		return nil,err
 	}
-	if err := fillContextOptions(desk.GetGameId(), &mjContext); err != nil {
-		return err
+	if err := fillContextOptions(gameId, &mjContext); err != nil {
+		return nil,err
 	}
-	desk.GetConfig().Context = &MjContext{
+	result := &MjContext{
 		MjContext:   mjContext,
 		StateNumber: 0,
 		StateTime:   time.Now(),
 	}
-	return nil
+	return result,nil
 }
 
 var errCreateEmptyContextFailed = errors.New("创建空的麻将现场失败")

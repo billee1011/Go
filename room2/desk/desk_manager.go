@@ -4,15 +4,14 @@ import (
 	"sync"
 	"sync/atomic"
 	"steve/room2/desk/contexts"
-	"steve/room2/desk/player"
 	"steve/server_pb/room_mgr"
 	"context"
 	"steve/client_pb/room"
 	"steve/client_pb/msgid"
 	"steve/room2/desk/models"
-	"steve/room2/desk/models/public"
 	"steve/room2/util"
 	"steve/room2/desk/settle"
+	"steve/room2/desk/player"
 )
 
 type DeskMgr struct {
@@ -59,7 +58,7 @@ func (mgr DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskReques
 	rsp.ErrCode = roommgr.RoomError_SUCCESS
 	pbPlayers := []*room.RoomPlayerInfo{}
 	//通知玩家
-	for _, tempPlayer := range desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayers() {
+	for _, tempPlayer := range desk.GetModel(models.Player).(models.PlayerModel).GetDeskPlayers() {
 		roomPlayer := util.TranslateToRoomPlayer(tempPlayer)
 		pbPlayers = append(pbPlayers, &roomPlayer)
 	}
@@ -67,7 +66,7 @@ func (mgr DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskReques
 		GameId:  room.GameId(desk.GetGameId()).Enum(),
 		Players: pbPlayers,
 	}
-	desk.GetModel(models.Message).(public.MessageModel).BroadCastDeskMessage( nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
+	desk.GetModel(models.Message).(models.MessageModel).BroadCastDeskMessage( nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
 
 	desk.Start()
 
@@ -81,18 +80,20 @@ func (mgr DeskMgr) CreateDeskObj(len int, players [len]uint64, gameID int, robot
 	id, _ := mgr.allocDeskID()
 	desk := NewDesk(id, gameID,players[:], &config)
 	var err error = nil
+	var ctx interface{} = nil
 	switch gameID {
 	case GameId_GAMEID_DOUDIZHU:
 		config = NewDDZMDeskCreateConfig(context, len)
 	default:
 		config = NewMjDeskCreateConfig(context, settle.NewMajongSettle(),len)
-		err = contexts.CreateMajongContext(desk)
+		ctx,err = contexts.CreateMajongContext(desk.GetDeskPlayerIDs(),gameID)
 	}
 	if err != nil{
 		return desk,err
 	}
-	desk.InitModel()
+	desk.GetConfig().Context = ctx
 	player.GetRoomPlayerMgr().InitDeskData(len, players, gameID, robotLvs)
+	desk.InitModel()
 	return desk,nil
 }
 

@@ -28,6 +28,25 @@ func (dp *Player) GetDesk() *desk.Desk {
 	return dp.desk
 }
 
+
+// QuitDesk 退出房间
+func (dp *Player) QuitDesk(desk *desk.Desk) {
+	dp.mu.Lock()
+	defer dp.mu.Unlock()
+	dp.quit = true
+	dp.tuoguan = true // 退出后自动托管
+	dp.desk = nil
+}
+
+// EnterDesk 进入房间
+func (dp *Player) EnterDesk(desk *desk.Desk) {
+	dp.mu.Lock()
+	defer dp.mu.Unlock()
+	dp.quit = false
+	dp.desk = desk
+	dp.ecoin = dp.GetCoin()
+}
+
 // GetPlayerID 获取玩家 ID
 func (dp *Player) GetPlayerID() uint64 {
 	dp.mu.RLock()
@@ -81,24 +100,6 @@ func (dp *Player) IsQuit() bool {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return dp.quit
-}
-
-// QuitDesk 退出房间
-func (dp *Player) QuitDesk(desk *desk.Desk) {
-	dp.mu.Lock()
-	defer dp.mu.Unlock()
-	dp.quit = true
-	dp.tuoguan = true // 退出后自动托管
-	dp.desk = nil
-}
-
-// EnterDesk 进入房间
-func (dp *Player) EnterDesk(desk *desk.Desk) {
-	dp.mu.Lock()
-	defer dp.mu.Unlock()
-	dp.quit = false
-	dp.desk = desk
-	dp.ecoin = dp.GetCoin()
 }
 
 // OnPlayerOverTime 玩家超时

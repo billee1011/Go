@@ -3,18 +3,18 @@ package desk
 import (
 	"steve/room2/desk/models"
 	"github.com/Sirupsen/logrus"
-	"steve/room2/desk/models/public"
-	"steve/room2/desk/player"
 	"context"
 	"steve/client_pb/room"
 	"steve/client_pb/msgid"
+	"steve/room2/desk/player"
+	"github.com/golang/protobuf/proto"
 )
 
 type Desk struct {
 	uid       uint64
 	gameID    int
 	config    *DeskConfig
-	models    map[string]models.DeskModel
+
 	playerIds []uint64
 	Context context.Context
 	Cancel    context.CancelFunc // 取消事件处理
@@ -57,13 +57,17 @@ func (desk Desk) GetPlayer(playerId uint64) *player.Player {
 }
 
 func (desk Desk) GetDeskPlayers() []*player.Player {
-	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayers()
+	players := desk.GetModel(models.Player).(models.PlayerModel).GetDeskPlayers()
 	return players
 }
 
 func (desk Desk) GetDeskPlayerIDs() []uint64{
-	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayerIDs()
+	players := desk.GetModel(models.Player).(models.PlayerModel).GetDeskPlayerIDs()
 	return players
+}
+
+func (desk Desk) PushEvent(event DeskEvent){
+	desk.GetModel(models.Event).(models.MjEventModel).PushEvent(event)
 }
 
 func (desk Desk) GetModel(name string) models.DeskModel{
@@ -91,9 +95,17 @@ func (desk Desk) Stop() {
 		v.Stop()
 	}
 	ntf := room.RoomDeskDismissNtf{}
-	desk.GetModel(models.Message).(public.MessageModel).BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_DISMISS_NTF, &ntf, true)
+	desk.GetModel(models.Message).(models.MessageModel).BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_DISMISS_NTF, &ntf, true)
 }
 
 func (desk Desk) GetConfig() *DeskConfig {
 	return desk.config
+}
+
+func  (desk Desk) BroadCastDeskMessageExcept(expcetPlayers []uint64, exceptQuit bool, msgID msgid.MsgID, body proto.Message) error {
+	return desk.GetModel(models.Message).(models.MessageModel).BroadCastDeskMessageExcept(expcetPlayers,exceptQuit,msgID,body)
+}
+
+func (desk Desk) BroadCastDeskMessage(playerIDs []uint64, msgID msgid.MsgID, body proto.Message, exceptQuit bool) error {
+	return desk.GetModel(models.Message).(models.MessageModel).BroadCastDeskMessage(playerIDs,msgID,body,exceptQuit)
 }

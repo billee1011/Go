@@ -11,6 +11,7 @@ import (
 	"steve/room2/desk/register"
 	"steve/room2/desk"
 	"steve/room/loader_balancer"
+	"steve/room2/common"
 )
 
 type roomCore struct {
@@ -57,14 +58,14 @@ func (c *roomCore) Start() error {
 }
 
 func startPeipai() error {
-	peipaiAddr := viper.GetString(util.ListenPeipaiAddr)
+	peipaiAddr := viper.GetString(common.ListenPeipaiAddr)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "startPeipai",
 		"addr":      peipaiAddr,
 	})
 	if peipaiAddr != "" {
 		logEntry.Info("启动配牌服务")
-		err := util.RunPeiPai(peipaiAddr)
+		err := common.RunPeiPai(peipaiAddr)
 		if err != nil {
 			logEntry.WithError(err).Panic("配牌服务启动失败")
 		}

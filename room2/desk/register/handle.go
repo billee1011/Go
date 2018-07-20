@@ -10,7 +10,6 @@ import (
 	"steve/room2/util"
 	player2 "steve/room2/desk/player"
 	"steve/room2/desk/models"
-	"steve/room2/desk/models/public"
 	"github.com/Sirupsen/logrus"
 )
 
@@ -19,7 +18,7 @@ func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 	if player == nil {
 		return
 	}
-	player.GetDesk().GetModel(models.Chat).(public.ChatModel).RoomChatMsgReq(player,header,req)
+	player.GetDesk().GetModel(models.Chat).(models.ChatModel).RoomChatMsgReq(player,header,req)
 	return
 }
 
@@ -38,7 +37,7 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	}
 	desk := player.GetDesk()
 	response.ErrCode = room.RoomError_SUCCESS.Enum()
-	desk.GetModel(models.Player).(public.PlayerModel).PlayerQuit(player)
+	desk.GetModel(models.Player).(models.PlayerModel).PlayerQuit(player)
 	return
 }
 

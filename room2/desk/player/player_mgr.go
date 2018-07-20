@@ -2,20 +2,30 @@ package player
 
 import (
 	"sync"
+	"errors"
 )
 
 type PlayerMgr struct {
 	playerMap sync.Map
 }
 
-var roomPlayerMgr PlayerMgr
+var roomPlayerMgr *PlayerMgr
 
 func init(){
-	roomPlayerMgr = PlayerMgr{}
+	roomPlayerMgr = &PlayerMgr{}
 }
 
-func GetRoomPlayerMgr() PlayerMgr {
+func GetRoomPlayerMgr() *PlayerMgr {
 	return roomPlayerMgr
+}
+
+func (pm *PlayerMgr) SetPlayerGold(playerID uint64,gold uint64) error{
+	player := pm.GetPlayer(playerID)
+	if player == nil {
+		return errors.New("player not find")
+	}
+	player.SetCoin(gold)
+	return nil
 }
 
 func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {
@@ -48,4 +58,9 @@ func (pm *PlayerMgr) InitPlayer(playerID uint64) {
 //TODO 离开房间服删除
 func (pm *PlayerMgr) RemovePlayer(playerID uint64) {
 	pm.playerMap.Delete(playerID)
+}
+
+
+func (pm *PlayerMgr) PlayerOverTime(player *Player){
+	player.OnPlayerOverTime()
 }
