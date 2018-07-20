@@ -1,8 +1,8 @@
 package desk
 
 import (
-	"steve/room2/desk/models"
 	"steve/room2/util"
+	"steve/room2/fixed"
 )
 
 type DeskConfig struct {
@@ -13,7 +13,7 @@ type DeskConfig struct {
 }
 
 //默认自带的
-var defaultModels = []string{models.Event,models.Message,models.Request,models.Player,models.Trusteeship}
+var defaultModels = []string{fixed.Event,fixed.Message,fixed.Request,fixed.Player,fixed.Trusteeship}
 
 //麻将
 func NewMjDeskCreateConfig(context interface{},settle interface{},num int) DeskConfig {

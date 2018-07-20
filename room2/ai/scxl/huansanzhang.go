@@ -6,7 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/desk/ai"
+	"steve/room2/ai"
 )
 
 type huansanzhangStateAI struct {

@@ -1,4 +1,4 @@
-package util
+package models
 
 import (
 	"reflect"
@@ -8,7 +8,7 @@ import (
 	"errors"
 	"steve/structs/proto/gate_rpc"
 	"steve/client_pb/room"
-	"steve/room2/desk/player"
+	"steve/room2/player"
 	"steve/room/req_event_translator/majong"
 )
 

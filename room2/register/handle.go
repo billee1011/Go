@@ -8,17 +8,17 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"steve/room2/util"
-	player2 "steve/room2/desk/player"
-	"steve/room2/desk/models"
+	player2 "steve/room2/player"
 	"github.com/Sirupsen/logrus"
+	modelmanager "steve/room2/models"
 )
 
 func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskChatReq) (ret []exchanger.ResponseMsg){
-	player := player2.GetRoomPlayerMgr().GetPlayer(playerID)
+	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
 		return
 	}
-	player.GetDesk().GetModel(models.Chat).(models.ChatModel).RoomChatMsgReq(player,header,req)
+	modelmanager.GetModelManager().GetChatModel(player.GetDesk().GetUid()).RoomChatMsgReq(player,header,req)
 	return
 }
 
@@ -31,19 +31,19 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	}
 	defer util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 
-	player := player2.GetRoomPlayerMgr().GetPlayer(playerID)
+	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
 		return
 	}
 	desk := player.GetDesk()
 	response.ErrCode = room.RoomError_SUCCESS.Enum()
-	desk.GetModel(models.Player).(models.PlayerModel).PlayerQuit(player)
+	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
 	return
 }
 
 // HandleResumeGameReq 恢复对局请求
 func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
-	player := player2.GetRoomPlayerMgr().GetPlayer(playerID)
+	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if !(player==nil) {
 		body := &room.RoomResumeGameRsp{
 			ResumeRes: room.RoomError_DESK_NO_GAME_PLAYING.Enum(),
@@ -56,7 +56,7 @@ func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, re
 		}
 	}
 
-	player.GetDesk().GetModel(models.Player).(public.PlayerModel).PlayerEnter(player)
+	modelmanager.GetModelManager().GetPlayerModel(player.GetDesk().GetUid()).PlayerEnter(player)
 	return
 }
 
@@ -70,7 +70,7 @@ func HandleCancelTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		"func_name": "HandleCancelTuoGuanReq",
 		"player_id": playerID,
 	})
-	player := player2.GetRoomPlayerMgr().GetPlayer(playerID)
+	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
 		logEntry.Debugln("获取玩家失败")
 		return

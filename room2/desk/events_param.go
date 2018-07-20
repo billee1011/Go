@@ -1,4 +1,4 @@
-package common
+package desk
 
 type EventParams struct {
 	Params   []interface{}

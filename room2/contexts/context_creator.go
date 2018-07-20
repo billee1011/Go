@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"time"
 	"steve/room2/common"
+	"steve/room2/fixed"
 )
 
 var errInitMajongContext = errors.New("初始化麻将现场失败")
@@ -22,8 +23,8 @@ func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
 		GameId:  int32(gameId),
 		Players: players,
 		Option: &server_pb.MajongCommonOption{
-			MaxFapaiCartoonTime:        uint32(viper.GetInt(common.MaxFapaiCartoonTime)),
-			MaxHuansanzhangCartoonTime: uint32(viper.GetInt(common.MaxHuansanzhangCartoonTime)),
+			MaxFapaiCartoonTime:        uint32(viper.GetInt(fixed.MaxFapaiCartoonTime)),
+			MaxHuansanzhangCartoonTime: uint32(viper.GetInt(fixed.MaxHuansanzhangCartoonTime)),
 			HasHuansanzhang:            common.GetHsz(gameId),                     //设置玩家是否开启换三张
 			Cards:                      common.GetPeiPai(gameId),                  //设置是否配置墙牌
 			WallcardsLength:            uint32(common.GetLensOfWallCards(gameId)), //设置墙牌长度

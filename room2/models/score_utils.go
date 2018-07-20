@@ -1,9 +1,9 @@
-package util
+package models
 
 import (
 	"steve/gutils"
 	majongpb "steve/server_pb/majong"
-	"steve/room2/desk/player"
+	"steve/room2/player"
 )
 
 // mergeSettle 合并一组SettleInfo
@@ -185,7 +185,7 @@ func calcSocreWinner1(winPlayer uint64, losePlayers []uint64, maxScore map[uint6
 	brokePlayers := make([]uint64, 0)
 	for _, losePid := range losePlayers {
 		loseScore := abs(maxScore[losePid])                                   // 输家输的分
-		roomPlayer := player.GetRoomPlayerMgr().GetPlayer(losePid)
+		roomPlayer := player.GetPlayerMgr().GetPlayer(losePid)
 		loseCoin := int64(roomPlayer.GetCoin()) // 输家金币数
 		if loseScore < loseCoin {
 			coinCost[losePid] = -loseScore
@@ -205,7 +205,7 @@ func calcSocrelose1(winPlayers []uint64, losePlayer uint64, loseScore int64, max
 	// 破产玩家
 	brokePlayers := make([]uint64, 0)
 	// 输家金币数
-	roomPlayer := player.GetRoomPlayerMgr().GetPlayer(losePlayer)
+	roomPlayer := player.GetPlayerMgr().GetPlayer(losePlayer)
 	loseCoin := int64(roomPlayer.GetCoin())
 	// 赢家人数
 	winSum := len(winPlayers)
@@ -234,7 +234,7 @@ func divideScore(losePlayer uint64, winPlayers []uint64, maxScore map[uint64]int
 	// 赢家人数
 	winSum := len(winPlayers)
 	// 输家金币数
-	roomPlayer := player.GetRoomPlayerMgr().GetPlayer(losePlayer)
+	roomPlayer := player.GetPlayerMgr().GetPlayer(losePlayer)
 	loseCoin := int64(roomPlayer.GetCoin())
 	// 多个赢家，按照赢家人数平分
 	for _, winPid := range winPlayers {

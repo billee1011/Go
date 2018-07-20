@@ -2,7 +2,7 @@ package scxlai
 
 import (
 	"steve/server_pb/majong"
-	"steve/room2/desk/ai"
+	"steve/room2/ai"
 )
 
 // 注册 AI

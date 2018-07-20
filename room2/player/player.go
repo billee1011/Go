@@ -6,8 +6,9 @@ import (
 	"steve/client_pb/room"
 	playerdata "steve/common/data/player"
 	"steve/room/interfaces/facade"
-	"steve/room2/desk"
+
 	"sync"
+	"steve/room2/desk"
 )
 
 type Player struct {

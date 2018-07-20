@@ -1,19 +1,17 @@
-package settle
+package models
 
 import (
-	"steve/room2/desk"
-	"steve/room2/util"
-	"steve/room2/desk/contexts"
+	"steve/room2/contexts"
 	"steve/common/mjoption"
 	majongpb "steve/server_pb/majong"
 	"steve/client_pb/room"
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
 	"steve/gutils"
-	"steve/room/interfaces/global"
 	"github.com/Sirupsen/logrus"
-	"steve/room2/common"
-	"steve/room2/desk/player"
+	playerpkg "steve/room2/player"
+	"steve/room2/desk"
+	"steve/room2/fixed"
 )
 
 // MajongCoin   key:playerID value:score
@@ -51,7 +49,7 @@ func (majongSettle *MajongSettle) Settle(desk *desk.Desk, config *desk.DeskConfi
 
 	allSettleInfos := mjContext.SettleInfos // 结算信息
 
-	deskPlayers := desk.GetDeskPlayers() // 牌局玩家
+	deskPlayers := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers() // 牌局玩家
 
 	huQuitPlayers := majongSettle.getHuQuitPlayers(deskPlayers, mjContext) // 胡牌且退出房间后的玩家
 
@@ -68,12 +66,12 @@ func (majongSettle *MajongSettle) Settle(desk *desk.Desk, config *desk.DeskConfi
 
 		groupID := len(sInfo.GroupId) // 关联的一组结算id
 		if groupID <= 1 {
-			score, brokerPlayers = util.CalcCoin(deskPlayers, mjContext.GetPlayers(), huQuitPlayers, sInfo.Scores)
+			score, brokerPlayers = CalcCoin(deskPlayers, mjContext.GetPlayers(), huQuitPlayers, sInfo.Scores)
 			majongSettle.settleMap[sInfo.Id] = score
 			majongSettle.handleSettle[sInfo.Id] = true
 		} else {
-			groupSInfos, masterSInfo := util.MergeSettle(mjContext.SettleInfos, sInfo)
-			score, brokerPlayers = util.CalcCoin(deskPlayers, mjContext.GetPlayers(), huQuitPlayers, masterSInfo.Scores)
+			groupSInfos, masterSInfo := MergeSettle(mjContext.SettleInfos, sInfo)
+			score, brokerPlayers = CalcCoin(deskPlayers, mjContext.GetPlayers(), huQuitPlayers, masterSInfo.Scores)
 			majongSettle.apartScore2Settle(groupSInfos, score)
 		}
 		if CanInstantSettle(sInfo.SettleType, settleOption) { // 立即结算
@@ -93,7 +91,7 @@ func (majongSettle *MajongSettle) Settle(desk *desk.Desk, config *desk.DeskConfi
 			if rSettleInfo != nil {
 				// 扣费并设置玩家金币数
 				majongSettle.chargeCoin(deskPlayers, rSettleInfo.Scores)
-				desk.BroadCastDeskMessageExcept([]uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+				GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessageExcept([]uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 					BillPlayersInfo: majongSettle.getBillPlayerInfos(deskPlayers, rSettleInfo, rSettleInfo.Scores),
 				})
 			}
@@ -146,7 +144,7 @@ func (majongSettle *MajongSettle) generateRevertSettle2(revertID uint64, gangSet
 
 func (majongSettle *MajongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int64, contextPlayer []*majongpb.Player) (coinCost map[uint64]int64) {
 	coinCost = make(map[uint64]int64, 0)
-	loseCoin := int64(global.GetPlayerMgr().GetPlayer(losePlayer).GetCoin()) // 输家金币数
+	loseCoin := int64(playerpkg.GetPlayerMgr().GetPlayer(losePlayer).GetCoin()) // 输家金币数
 	loseScore := score[losePlayer]
 	if abs(loseScore) < loseCoin {
 		// 金币数够扣
@@ -198,12 +196,6 @@ func (majongSettle *MajongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers [
 	return
 }
 
-func abs(n int64) int64 {
-	if n < 0 {
-		return -n
-	}
-	return n
-}
 
 // GetSettleInfoByID 根据settleID获取对应settleInfo
 func GetSettleInfoByID(settleInfos []*majongpb.SettleInfo, ID uint64) *majongpb.SettleInfo {
@@ -249,22 +241,23 @@ func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, broke
 			PlayerID:  0,
 		}*/
 
-		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish),common.NormalEvent,desks,common.CreateEventParams(
+		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish),fixed.NormalEvent,desks,desk.CreateEventParams(
 			desks.GetConfig().Context.(contexts.MjContext).StateNumber,
 			eventContext,
 			0,
 		))
-		desks.PushEvent(event)
+		GetModelManager().GetMjEventModel(desks.GetUid()).PushEvent(event)
 	}
 }
 
 // instantSettle 立即结算并扣费
 func (majongSettle *MajongSettle) instantSettle(desk *desk.Desk, sInfo *majongpb.SettleInfo, score map[uint64]int64, brokerPlayers []uint64, giveUpPlayers map[uint64]bool) {
 	// 扣费并设置玩家金币数
-	majongSettle.chargeCoin(desk.GetDeskPlayers(), score)
+	players := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
+	majongSettle.chargeCoin(players, score)
 	// 广播结算
-	desk.BroadCastDeskMessageExcept([]uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
-		BillPlayersInfo: majongSettle.getBillPlayerInfos(desk.GetDeskPlayers(), sInfo, score),
+	GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessageExcept([]uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
+		BillPlayersInfo: majongSettle.getBillPlayerInfos(players, sInfo, score),
 	})
 	needSend := make([]uint64, 0)
 	for _, brokerPlayer := range brokerPlayers {
@@ -273,17 +266,17 @@ func (majongSettle *MajongSettle) instantSettle(desk *desk.Desk, sInfo *majongpb
 		}
 	}
 	// 广播认输
-	desk.BroadCastDeskMessageExcept([]uint64{}, true, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
+	GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessageExcept([]uint64{}, true, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
 		PlayerId: needSend,
 	})
 }
 
 // getBillPlayerInfos 获得玩家结算账单
-func (majongSettle *MajongSettle) getBillPlayerInfos(deskPlayers []*player.Player, settleInfo *majongpb.SettleInfo, costScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
+func (majongSettle *MajongSettle) getBillPlayerInfos(deskPlayers []*playerpkg.Player, settleInfo *majongpb.SettleInfo, costScore map[uint64]int64) (billplayerInfos []*room.BillPlayerInfo) {
 	billplayerInfos = make([]*room.BillPlayerInfo, 0)
 	for i := 0; i < len(deskPlayers); i++ {
 		pid := deskPlayers[i].GetPlayerID()
-		holdCoin := global.GetPlayerMgr().GetPlayer(pid).GetCoin()
+		holdCoin := playerpkg.GetPlayerMgr().GetPlayer(pid).GetCoin()
 		if costScore[pid] == 0 {
 			continue
 		}
@@ -337,7 +330,7 @@ func (majongSettle *MajongSettle) apartScore2Settle(groupSettleInfos []*majongpb
 }
 
 // getGiveupPlayers  获取认输的玩家id
-func getGiveupPlayers(dPlayers []*player.Player, mjContext majongpb.MajongContext) map[uint64]bool {
+func getGiveupPlayers(dPlayers []*playerpkg.Player, mjContext majongpb.MajongContext) map[uint64]bool {
 	giveupPlayers := make(map[uint64]bool, 0)
 	for _, cPlayer := range mjContext.Players {
 		if cPlayer.GetXpState() == 2 {
@@ -348,7 +341,7 @@ func getGiveupPlayers(dPlayers []*player.Player, mjContext majongpb.MajongContex
 }
 
 // getHuQuitPlayers  获取牌局胡牌且退出房间后的玩家id
-func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*player.Player, mjContext majongpb.MajongContext) map[uint64]bool {
+func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player, mjContext majongpb.MajongContext) map[uint64]bool {
 	huQuitPids := make(map[uint64]bool, 0)
 	for _, dPlayer := range dPlayers {
 		if dPlayer.IsQuit() {
@@ -370,7 +363,7 @@ func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.Desk
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家
-	deskPlayers := desk.GetDeskPlayers()
+	deskPlayers := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
 	// 游戏结算玩法
 	settleOption := GetSettleOption(int(mjContext.GetGameId()))
 
@@ -385,7 +378,7 @@ func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.Desk
 
 func (majongSettle *MajongSettle) sendRounSettleMessage(contextSInfos []*majongpb.SettleInfo, desk *desk.Desk, mjContext majongpb.MajongContext) {
 	// 牌局玩家
-	deskPlayers := desk.GetDeskPlayers()
+	deskPlayers := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
 
 	for i := 0; i < len(deskPlayers); i++ {
 		if deskPlayers[i].IsQuit() {
@@ -411,7 +404,7 @@ func (majongSettle *MajongSettle) sendRounSettleMessage(contextSInfos []*majongp
 			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(desk,pid, totalValue, fans, mjContext)
 		}
 		// 通知该玩家单局结算信息
-		desk.BroadCastDeskMessage([]uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
+		GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessage([]uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
 	}
 }
 
@@ -436,7 +429,7 @@ func (majongSettle *MajongSettle) makeBillPlayerInfo(desk *desk.Desk,currentPid 
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
 		playerID := player.GetPalyerId()
-		roomPlayer := desk.GetPlayer(playerID)
+		roomPlayer := playerpkg.GetPlayerMgr().GetPlayer(playerID)
 
 		coin := int64(roomPlayer.GetCoin())
 		billPlayerInfo := &room.BillPlayerInfo{
@@ -558,7 +551,7 @@ func (majongSettle *MajongSettle) makeBillDetail(pid uint64, sInfo *majongpb.Set
 }
 
 
-func (majongSettle *MajongSettle) chargeCoin(players []*player.Player, payScore map[uint64]int64) {
+func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, payScore map[uint64]int64) {
 	for _, player := range players {
 		pid := player.GetPlayerID()
 		// 玩家当前豆子数

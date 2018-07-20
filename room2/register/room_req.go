@@ -4,8 +4,8 @@ import (
 	"steve/client_pb/msgid"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
-	"steve/room2/desk/player"
-	"steve/room2/desk/models"
+	"steve/room2/player"
+	modelmanager "steve/room2/models"
 )
 
 // RegisterRoomReqHandlers 注册牌桌请求处理函数
@@ -28,7 +28,7 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 }
 
 func handleRoomReq(playerID uint64, header *steve_proto_gaterpc.Header, body []byte) (rspMsg []exchanger.ResponseMsg) {
-	player := player.GetRoomPlayerMgr().GetPlayer(playerID)
-	player.GetDesk().GetModel(models.Request).(models.RequestModel).HandlePlayerRequest(playerID, header, body)
+	player := player.GetPlayerMgr().GetPlayer(playerID)
+	modelmanager.GetModelManager().GetRequestModel(player.GetDesk().GetUid()).HandlePlayerRequest(playerID, header, body)
 	return []exchanger.ResponseMsg{}
 }

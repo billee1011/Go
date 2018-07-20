@@ -1,4 +1,4 @@
-package util
+package models
 
 import (
 	"steve/client_pb/room"
@@ -7,8 +7,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"steve/majong/utils"
+	"steve/room2/contexts"
 	"steve/room2/desk"
-	"steve/room2/desk/contexts"
+	"steve/room2/util"
 )
 
 func GetStateCostTime(entryTime int64) (costTime uint32) {
@@ -69,7 +70,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 	})
 	ctx :=d.GetConfig().Context.(contexts.MjContext).MjContext
 	mjContext := &ctx
-	deskPlayers := d.GetDeskPlayers()
+	deskPlayers := GetModelManager().GetPlayerModel(d.GetUid()).GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {
 		playerID := deskPlayer.GetPlayerID()
 		roomPlayerInfo := translateToRoomPlayer(deskPlayer)
@@ -84,10 +85,10 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		handCardCount := uint32(len(svrHandCard))
 		gamePlayerInfo := &room.GamePlayerInfo{
 			PlayerInfo:    &roomPlayerInfo,
-			Color:         ServerColor2ClientColor(player.DingqueColor).Enum(),
+			Color:         util.ServerColor2ClientColor(player.DingqueColor).Enum(),
 			HandCardCount: &handCardCount,
 			IsTuoguan:     proto.Bool(deskPlayer.IsTuoguan()),
-			IsTing:        proto.Bool(IsTing(player)),
+			IsTing:        proto.Bool(util.IsTing(player)),
 			TingType:      getTingType(player),
 		}
 
@@ -95,13 +96,13 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		gamePlayerInfo.XpState = &xpState
 		if (gamePlayerInfo.GetXpState() | room.XingPaiState_XP_STATE_HU) != 0 {
 			if len(player.HuCards) != 0 {
-				gamePlayerInfo.HuType = HuTypeSvr2Client(player.HuCards[0].GetType())
+				gamePlayerInfo.HuType = util.HuTypeSvr2Client(player.HuCards[0].GetType())
 			}
 		}
-		gamePlayerInfo.TingCardInfos = TingCardInfoSvr2Client(player.GetTingCardInfo())
+		gamePlayerInfo.TingCardInfos = util.TingCardInfoSvr2Client(player.GetTingCardInfo())
 		// 手牌组，请求恢复对局玩家才发
 		if playerID == reqPlayerID {
-			cltHandCard := ServerCards2Numbers(svrHandCard)
+			cltHandCard := util.ServerCards2Numbers(svrHandCard)
 			handCardGroup := &room.CardsGroup{
 				Cards: cltHandCard,
 				Type:  room.CardsGroupType_CGT_HAND.Enum(),
@@ -112,7 +113,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		var chiCardGroups []*room.CardsGroup
 		for _, chiCard := range player.GetChiCards() {
 			srcPlayerID := chiCard.GetSrcPlayer()
-			card := ServerCard2Number(chiCard.GetCard())
+			card := util.ServerCard2Number(chiCard.GetCard())
 			cards := []uint32{card, card + 1, card + 2}
 			chiCardGroup := &room.CardsGroup{
 				Cards: cards,
@@ -126,7 +127,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		var pengCardGroups []*room.CardsGroup
 		for _, pengCard := range player.GetPengCards() {
 			srcPlayerID := pengCard.GetSrcPlayer()
-			cards := []uint32{ServerCard2Number(pengCard.GetCard())}
+			cards := []uint32{util.ServerCard2Number(pengCard.GetCard())}
 			pengCardGroup := &room.CardsGroup{
 				Cards: append(cards, cards[0], cards[0]),
 				Type:  room.CardsGroupType_CGT_PENG.Enum(),
@@ -138,9 +139,9 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		// 杠牌组
 		var gangCardGroups []*room.CardsGroup
 		for _, gangCard := range player.GetGangCards() {
-			groupType := GangTypeSvr2Client(gangCard.GetType())
+			groupType := util.GangTypeSvr2Client(gangCard.GetType())
 			srcPlayerID := gangCard.GetSrcPlayer()
-			cards := []uint32{ServerCard2Number(gangCard.GetCard())}
+			cards := []uint32{util.ServerCard2Number(gangCard.GetCard())}
 			gangCardGroup := &room.CardsGroup{
 				Cards: append(cards, cards[0], cards[0], cards[0]),
 				Type:  &groupType,
@@ -154,7 +155,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		for _, huCard := range player.GetHuCards() {
 			srcPlayerID := huCard.GetSrcPlayer()
 			huCardGroup := &room.CardsGroup{
-				Cards:  []uint32{ServerCard2Number(huCard.GetCard())},
+				Cards:  []uint32{util.ServerCard2Number(huCard.GetCard())},
 				Type:   room.CardsGroupType_CGT_HU.Enum(),
 				Pid:    &srcPlayerID,
 				IsReal: proto.Bool(huCard.GetIsReal()),
@@ -164,14 +165,14 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huCardGroups...)
 		// 花牌组
 		huaGroup := &room.CardsGroup{
-			Cards: ServerCards2Numbers(player.GetHuaCards()),
+			Cards: util.ServerCards2Numbers(player.GetHuaCards()),
 			Type:  room.CardsGroupType_CGT_HUA.Enum(),
 			Pid:   proto.Uint64(player.GetPalyerId()),
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huaGroup)
 		// 出牌组
 		outCardGroup := &room.CardsGroup{
-			Cards: ServerCards2Numbers(player.GetOutCards()),
+			Cards: util.ServerCards2Numbers(player.GetOutCards()),
 			Type:  room.CardsGroupType_CGT_OUT.Enum(),
 			Pid:   &playerID,
 		}
@@ -213,7 +214,7 @@ func GetWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, 
 		return proto.Bool(false), nil
 	}
 
-	outCard := ServerCard2Number(mjContext.GetLastOutCard())
+	outCard := util.ServerCard2Number(mjContext.GetLastOutCard())
 	wenXunInfo := &room.RoomChupaiWenxunNtf{
 		Card: &outCard,
 	}
@@ -229,7 +230,7 @@ func GetWenxunInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, 
 			wenXunInfo.EnableQi = proto.Bool(true)
 		case server_pb.Action_action_chi:
 			wenXunInfo.ChiInfo = &room.RoomChiInfo{
-				ChiCard: proto.Uint32(ServerCard2Number(mjContext.GetLastOutCard())),
+				ChiCard: proto.Uint32(util.ServerCard2Number(mjContext.GetLastOutCard())),
 				Cards:   player.GetEnbleChiCards(),
 			}
 		}
@@ -248,7 +249,7 @@ func GetQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *ro
 		return proto.Bool(false), nil
 	}
 
-	outCard := ServerCard2Number(mjContext.GetLastOutCard())
+	outCard := util.ServerCard2Number(mjContext.GetLastOutCard())
 	gangPlayerID := mjContext.GetLastGangPlayer()
 	qghInfo := &room.RoomWaitQianggangHuNtf{
 		Card:         &outCard,
@@ -266,15 +267,15 @@ func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 	zixunNtf.EnableQi = proto.Bool(record.GetEnableQi())
 	zixunNtf.EnableZimo = proto.Bool(record.GetEnableZimo())
 	zixunNtf.EnableTing = proto.Bool(record.GetEnableTing())
-	TingType := TingTypeSvr2Client(record.GetTingType())
+	TingType := util.TingTypeSvr2Client(record.GetTingType())
 	if TingType != nil {
 		zixunNtf.TingType = TingType
 	}
-	huType := HuTypeSvr2Client(record.GetHuType())
+	huType := util.HuTypeSvr2Client(record.GetHuType())
 	if huType != nil {
 		zixunNtf.HuType = huType
 	}
-	zixunNtf.CanTingCardInfo = CanTingCardInfoSvr2Client(record.GetCanTingCardInfo())
+	zixunNtf.CanTingCardInfo = util.CanTingCardInfoSvr2Client(record.GetCanTingCardInfo())
 
 	return zixunNtf
 }

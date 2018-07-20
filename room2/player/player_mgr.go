@@ -15,7 +15,7 @@ func init(){
 	roomPlayerMgr = &PlayerMgr{}
 }
 
-func GetRoomPlayerMgr() *PlayerMgr {
+func GetPlayerMgr() *PlayerMgr {
 	return roomPlayerMgr
 }
 
@@ -37,7 +37,7 @@ func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {
 	return &player
 }
 
-func (pm *PlayerMgr) InitDeskData(len int,players [len]uint64,maxOverTime int,robotLv [len]int){
+func (pm *PlayerMgr) InitDeskData(players []uint64,maxOverTime int,robotLv []int){
 	for seat,playerId := range players{
 		player := pm.GetPlayer(playerId)
 		player.SetSeat(uint32(seat))

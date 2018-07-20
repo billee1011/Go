@@ -3,12 +3,12 @@ package ai
 import (
 	"steve/server_pb/majong"
 	"time"
-	"steve/room2/desk"
 	"github.com/spf13/viper"
-	"steve/room2/common"
 	"steve/room/config"
-	playerPkg "steve/room2/desk/player"
-	"steve/room2/desk/contexts"
+	playerPkg "steve/room2/player"
+	"steve/room2/contexts"
+	"steve/room2/desk"
+	"steve/room2/fixed"
 )
 
 // AutoEventGenerateParams 生成自动事件的参数
@@ -36,15 +36,15 @@ type AutoEventGenerator struct {
 	majongAIs map[int](map[majong.StateID]MajongAI)
 }
 
-var atEvent AutoEventGenerator
+var atEvent *AutoEventGenerator
 
 func init() {
-	atEvent = AutoEventGenerator{
+	atEvent = &AutoEventGenerator{
 		majongAIs: map[int](map[majong.StateID]MajongAI){},
 	}
 }
 
-func GetAtEvent() AutoEventGenerator {
+func GetAtEvent() *AutoEventGenerator {
 	return atEvent
 }
 
@@ -71,7 +71,7 @@ func (aeg *AutoEventGenerator) getStateDuration() time.Duration {
 // addAIEvents 将 AI 产生的事件添加到结果中
 func (aeg *AutoEventGenerator) addAIEvents(result *AutoEventGenerateResult, aiResult *AIEventGenerateResult, player *playerPkg.Player, eventType int) {
 	for _, aiEvent := range aiResult.Events {
-		event := desk.NewDeskEvent(int(aiEvent.ID),eventType,player.GetDesk(),common.CreateEventParams(
+		event := desk.NewDeskEvent(int(aiEvent.ID),eventType,player.GetDesk(),desk.CreateEventParams(
 			player.GetDesk().GetConfig().Context.(contexts.MjContext).StateNumber,aiEvent.Context,player.GetPlayerID(),
 		))
 		result.Events = append(result.Events, event)
@@ -89,13 +89,13 @@ func (aeg *AutoEventGenerator) handlePlayerAI(result *AutoEventGenerateResult, A
 		RobotLv:       robotLv,
 	})
 	if err == nil {
-		eventType := common.OverTimeEvent
+		eventType := fixed.OverTimeEvent
 		if aiType == RobotAI {
-			eventType = common.RobotEvent
+			eventType = fixed.RobotEvent
 		} else if aiType == TuoGuangAI {
-			eventType = common.TuoGuanEvent
+			eventType = fixed.TuoGuanEvent
 		}
-		player := playerPkg.GetRoomPlayerMgr().GetPlayer(playerID)
+		player := playerPkg.GetPlayerMgr().GetPlayer(playerID)
 		aeg.addAIEvents(result, &aiResult, player, eventType)
 	}
 }
