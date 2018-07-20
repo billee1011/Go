@@ -217,6 +217,7 @@ func (d *desk) PushEvent(event interfaces.Event) {
 
 // run 执行牌桌逻辑
 func (d *desk) run() {
+	defer d.consumeAllEnterQuit() // 消费完所有的退出进入数据
 
 forstart:
 	for {
@@ -234,6 +235,19 @@ forstart:
 			{
 				break forstart
 			}
+		}
+	}
+}
+
+func (d *desk) consumeAllEnterQuit() {
+	for {
+		select {
+		case enterQuitInfo := <-d.PlayerEnterQuitChannel():
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}
+		default:
+			return
 		}
 	}
 }
@@ -257,6 +271,18 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		logEntry.Debugln("玩家退出")
 	} else {
 		deskPlayer.SetTuoguan(false, true)
+
+		//生成恢复对局事件
+		eventMessage := &ddz.ResumeRequestEvent{
+			Head: &ddz.RequestEventHead{PlayerId: eqi.PlayerID},
+		}
+		eventID := int(ddz.EventID_event_resume_request)
+		eventContext, err := proto.Marshal(eventMessage)
+		if err != nil {
+			logEntry.WithError(err).Errorln("事件消息序列化失败")
+			return
+		}
+		d.processEvent(&deskEvent{eventID: eventID, eventContext: eventContext})
 		logEntry.Debugln("玩家进入")
 	}
 }

@@ -2,6 +2,8 @@ package machine
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
+	"time"
 )
 
 // Machine 状态机
@@ -13,6 +15,9 @@ type Machine interface {
 
 // DefaultProcessor 默认事件处理器
 func DefaultProcessor(m Machine, stateFactory StateFactory, event Event) error {
+	start := time.Now()
+	logEntry := logrus.WithFields(logrus.Fields{"eventId": event.EventID,
+		"start": start})
 	curStateID := m.GetStateID()
 
 	curState := stateFactory.NewState(curStateID)
@@ -26,6 +31,8 @@ func DefaultProcessor(m Machine, stateFactory StateFactory, event Event) error {
 	}
 
 	if curStateID == newStateID {
+		end := time.Now()
+		logEntry.WithFields(logrus.Fields{"end": end, "duration": end.Sub(start)}).Debug("状态机退出")
 		return nil
 	}
 
@@ -37,5 +44,8 @@ func DefaultProcessor(m Machine, stateFactory StateFactory, event Event) error {
 	curState.OnExit(m)
 	m.SetStateID(newStateID)
 	newState.OnEnter(m)
+
+	end := time.Now()
+	logEntry.WithFields(logrus.Fields{"end": end, "duration": end.Sub(start)}).Debug("状态机退出")
 	return nil
 }
