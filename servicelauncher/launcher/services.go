@@ -18,6 +18,7 @@ func Init(args []string) {
 		loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
 		loader.WithConsulAddr(viper.GetString("consul_addr")),
 		loader.WithPProf(viper.GetString("pprofExposeType"), viper.GetInt("pprofHttpPort")),
+		loader.WithHealthPort(viper.GetInt("health_port")),
 		loader.WithParams(args[1:]))
 }
 
@@ -29,18 +30,18 @@ func LoadService(name string, options ...loader.ServiceOption) {
 	loader.RegisterServer2(&opt)
 	loader.RegisterHealthServer(exposer.RPCServer)
 	// service := initService(name, exposer)
-	var service service.Service
+	var svr service.Service
 	switch name {
 	case "match":
-		service = matchcore.NewService()
+		svr = matchcore.NewService()
 	case "room":
-		service = roomcore.NewService()
+		svr = roomcore.NewService()
 	case "gateway":
-		service = gatewaycore.NewService()
+		svr = gatewaycore.NewService()
 	}
-	if service != nil {
-		service.Init(exposer)
-		loader.Run(service, exposer, opt)
+	if svr != nil {
+		svr.Init(exposer)
+		loader.Run(svr, exposer, opt)
 	}else{
 		logrus.Errorln("no service found")
 		panic("no service found")

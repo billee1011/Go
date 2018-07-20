@@ -3,7 +3,6 @@ package core
 import (
 	"steve/room/config"
 	"steve/room/interfaces/global"
-	"steve/room/loader_balancer"
 	"steve/room/peipai"
 	"steve/room/registers"
 	"steve/server_pb/room_mgr"
@@ -37,7 +36,8 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	c.e = e
 	global.SetMessageSender(e.Exchanger)
 	registers.RegisterHandlers(e.Exchanger)
-	registerLbReporter(e)
+	// 使用seviceloader的通用的负载报告模块，
+	//registerLbReporter(e)
 
 	rpcServer := e.RPCServer
 	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, &RoomService{})
@@ -71,8 +71,10 @@ func startPeipai() error {
 	return nil
 }
 
+/*
 func registerLbReporter(exposer *structs.Exposer) {
 	if err := lb.RegisterLBReporter(exposer.RPCServer); err != nil {
 		logrus.WithError(err).Panicln("注册负载上报服务失败")
 	}
 }
+*/
