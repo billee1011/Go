@@ -221,14 +221,9 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		return false, fmt.Errorf("碰的牌中没有请求中可以进行补杠的牌")
 	}
 	//判断当前玩家是否胡过牌，胡过牌了，当前玩家需要移除杠牌进行查胡，判断移除后是否会影响胡牌
-	if len(activePlayer.HuCards) > 0 {
+	if gutils.IsHu(activePlayer) || gutils.IsTing(activePlayer) {
 		//创建副本，移除相应的杠牌进行查胡
-		newcards := make([]*majongpb.Card, 0, len(handCards))
-		newcards = append(newcards, handCards...)
-		newcards, _ = utils.RemoveCards(newcards, bugangCard, 1)
-		laizi := make(map[utils.Card]bool)
-		huCards, _ := utils.GetTingCards(newcards, laizi)
-		if len(huCards) == 0 || !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
+		if !utils.CheckHuByRemoveGangCards(activePlayer, bugangCard, 1) {
 			return false, fmt.Errorf("当前的补杠杠操作会影响胡牌后的胡牌牌型，不允许补杠")
 		}
 	}
