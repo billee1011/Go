@@ -244,7 +244,7 @@ func CardsToRoomCards(cards []*majongpb.Card) []*room.Card {
 	var rCards []*room.Card
 	for i := 0; i < len(cards); i++ {
 		rCards = append(rCards, &room.Card{
-			Color: room.CardColor(cards[i].Color).Enum(),
+			Color: gutils.ServerColor2ClientColor(cards[i].Color).Enum(),
 			Point: &cards[i].Point,
 		})
 	}
