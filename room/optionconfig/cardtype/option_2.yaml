@@ -7,6 +7,7 @@ geng_method: 2 # 根的计算方式，0相加，1相乘， 2幂乘
 enable_hua: false # 是否启用花
 hua_score: 0 # 花的番数
 hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
+enable_fan_type_deal: true #番型处理，是否将胡类型从，番型拿出
 
 # 支持的番型列表
 enable_fan_types:
@@ -162,8 +163,6 @@ fan_type_2_hu_type:
     huType: 7
   69: # 地胡
     huType: 8  
-  75: # 自摸
-    huType: 6
   76: # 杠上开花
     huType: 3
   77: # 杠上海底捞
@@ -174,5 +173,12 @@ fan_type_2_hu_type:
     huType: 4    
   80: # 抢杠胡
     huType: 1
-  81: # 点炮
-    huType: 2   
+    
+#番型对应的结算类型  
+fan_type_2_settle_type:
+  75: #自摸
+    settleType: 4
+  81: #点炮
+    settleType: 3
+  80: #抢杠胡    
+    settleType: 3

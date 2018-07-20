@@ -1470,7 +1470,7 @@ func TestJianke(t *testing.T) {
 
 // TestSiguiyi 四归一
 func TestSiguiyi(t *testing.T) {
-	handUtilCards := []utils.Card{12, 13, 45, 45, 45, 46, 46, 46, 47, 47, 47, 47, 19, 19}
+	handUtilCards := []utils.Card{12, 13, 45, 45, 45, 46, 46, 46, 11, 11, 11, 19, 19, 19}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
 	HuCard, err := utils.IntToCard(11)
@@ -1590,14 +1590,20 @@ func TestYibangao(t *testing.T) {
 
 // TestLianliu 连六
 func TestLianliu(t *testing.T) {
-	handUtilCards := []utils.Card{11, 11, 12, 13, 14, 15, 16, 19, 44, 44, 44, 45}
+	handUtilCards := []utils.Card{12, 12, 14, 15, 16, 17, 18, 19}
 	handCards, err := utils.CheckHuUtilCardsToHandCards(handUtilCards)
 	assert.Nil(t, err)
-	HuCard, err := utils.IntToCard(45)
+	gangUtilCards := []utils.Card{11}
+	gangCards, err := utils.CheckHuUtilCardsToHandCards(gangUtilCards)
+	assert.Nil(t, err)
+	HuCard, err := utils.IntToCard(16)
 	assert.Nil(t, err)
 	playerParams := CardCalcParams{
-		HandCard:         handCards,
-		HuCard:           &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
+		HandCard: handCards,
+		HuCard:   &majongpb.HuCard{Card: HuCard, Type: majongpb.HuType_hu_dianpao},
+		GangCard: []*majongpb.GangCard{
+			&majongpb.GangCard{Card: gangCards[0], Type: majongpb.GangType_gang_angang},
+		},
 		CardtypeOptionID: 4,
 		GameID:           4,
 	}

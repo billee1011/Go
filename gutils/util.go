@@ -145,9 +145,6 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 // ServerFanType2ClientHuType fanType获取hutype
 func ServerFanType2ClientHuType(cardTypeOptionID int, fanTypes []int) int32 {
 	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
-	if len(cardTypeOption.FanType2HuType) == 0 {
-		return -1
-	}
 	for _, fanType := range fanTypes {
 		if _, ok := cardTypeOption.FanType2HuType[fanType]; ok {
 			return int32(cardTypeOption.FanType2HuType[fanType].ID)
@@ -156,16 +153,22 @@ func ServerFanType2ClientHuType(cardTypeOptionID int, fanTypes []int) int32 {
 	return -1
 }
 
-// RemoveHuTypeFromFan 移除胡牌类型
-func RemoveHuTypeFromFan(cardTypeOptionID int, fanTypes []int) []int64 {
+// GetShowFan 获取实际显示的番型，移除番型中的胡牌类型及结算类型
+func GetShowFan(cardTypeOptionID int, fanTypes []int) []int64 {
 	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
-	removeHuType := make([]int64, 0)
+	showFan := make([]int64, 0)
 	for _, fanType := range fanTypes {
-		if _, ok := cardTypeOption.FanType2HuType[fanType]; !ok {
-			removeHuType = append(removeHuType, int64(fanType))
+		if !cardTypeOption.EnableFanTypeDeal { // 胡类型是否从番型拿出
+			showFan = append(showFan, int64(fanType))
+			continue
+		}
+		_, isHuType := cardTypeOption.FanType2HuType[fanType]
+		_, isSettleType := cardTypeOption.FanType2Settle[fanType]
+		if !isHuType && !isSettleType {
+			showFan = append(showFan, int64(fanType))
 		}
 	}
-	return removeHuType
+	return showFan
 }
 
 // MakeRoomCards 构造牌切片
