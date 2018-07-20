@@ -19,6 +19,8 @@ type Option struct {
 	redisPasswd     string // redis 密码
 	consulAddr      string // consul api 地址
 	healthPort       int  // server health http port
+	pprofExposeType string // pprof 输出类型，空不输出
+	pprofHttpPort   int    // pprof http输出端口
 }
 
 var defaultOption = Option{
@@ -76,6 +78,14 @@ func WithClientRPCCA(caFile, serverName string) ServiceOption {
 	return func(opt *Option) {
 		opt.rpcCAFile = caFile
 		opt.rpcCAServerName = serverName
+	}
+}
+
+// WithPProf pprof配置
+func WithPProf(exposeType string, httpPort int) ServiceOption {
+	return func(opt *Option) {
+		opt.pprofExposeType = exposeType
+		opt.pprofHttpPort = httpPort
 	}
 }
 

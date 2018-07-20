@@ -22,8 +22,7 @@ type HuansanzhangState struct {
 
 // OnEntry 进入换三张状态
 func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
-	// 客户端强烈要求不要这个通知
-	// facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HUANSANZHANG_NTF, &room.RoomHuansanzhangNtf{})
+	s.notifyPlayerHuangSanZhang(flow) //换三张推荐通知
 }
 
 // ProcessEvent 处理换三张事件
@@ -277,4 +276,34 @@ func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 		"msgID":      msgid.MsgID_ROOM_HUANSANZHANG_RSP,
 		"dingQueNtf": toClientRsq,
 	}).Info("-----换三张成功应答")
+}
+
+// notifyPlayerHuangSanZhang 通知玩家换三张
+func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow) {
+	// 广播通知客户端进入定缺
+	for _, player := range flow.GetMajongContext().GetPlayers() {
+		// 获取推荐换三张
+		hszCards := utils.GetRecommedHuanSanZhang(player.GetHandCards())
+		// 先设置，用于超时AI
+		player.HuansanzhangCards = hszCards
+		if len(hszCards) != 3 {
+			logrus.WithFields(logrus.Fields{
+				"func_name":         "HuansanzhangState.notifyPlayerHuangSanZhang",
+				"HuansanzhangCards": hszCards,
+			}).Info("-----换三张数量不对")
+			return
+		}
+		hszNtf := &room.RoomHuansanzhangNtf{
+			HszCard: utils.CardsToRoomCards(player.GetHuansanzhangCards()),
+		}
+		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_NTF),
+			Msg:   hszNtf,
+		})
+		// 日志
+		logrus.WithFields(logrus.Fields{
+			"msgID":             msgid.MsgID_ROOM_HUANSANZHANG_NTF,
+			"HuansanzhangCards": hszNtf,
+		}).Info("-----换三张开始-进入换三张状态")
+	}
 }

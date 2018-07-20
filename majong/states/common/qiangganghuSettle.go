@@ -76,10 +76,8 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 		fanTypes, genSum, huaSum := fantype.CalculateFanTypes(mjContext, huPlayerID, huPlayer.GetHandCards(), huCard)
 		totalValue := fantype.CalculateScore(mjContext, fanTypes, genSum, huaSum)
 
-		HfanTypes := make([]int64, 0)
-		for _, fanType := range fanTypes {
-			HfanTypes = append(HfanTypes, int64(fanType))
-		}
+		cardOptionID := int(mjContext.GetCardtypeOptionId())
+		HfanTypes := gutils.GetShowFan(cardOptionID, fanTypes)
 		cardTypes[huPlayerID] = HfanTypes
 		cardValues[huPlayerID] = totalValue
 		genCount[huPlayerID] = uint64(genSum)

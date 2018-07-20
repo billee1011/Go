@@ -8,9 +8,13 @@ import (
 	"steve/server_pb/ddz"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"strconv"
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
+	"math/rand"
+	"steve/client_pb/room"
+	"steve/majong/global"
+	"steve/server_pb/majong"
+	"strconv"
 )
 
 // PeiPai 配牌工具
@@ -31,7 +35,7 @@ func PeiPai(wallCards []uint32, value string) error {
 			}
 		}
 	}
-	logrus.WithFields(logrus.Fields{"wallCards":wallCards, "peipai:":value}).Debug("斗地主配牌成功")
+	logrus.WithFields(logrus.Fields{"wallCards": wallCards, "peipai:": value}).Debug("斗地主配牌成功")
 	return nil
 }
 
@@ -44,6 +48,16 @@ func getDDZContext(m machine.Machine) *ddz.DDZContext {
 	return dm.GetDDZContext()
 }
 
+func remove(playerIds []uint64, removeId uint64) []uint64 {
+	var result []uint64
+	for _, playerId := range playerIds {
+		if playerId != removeId {
+			result = append(result, playerId)
+		}
+	}
+	return result
+}
+
 func getPlayerIds(m machine.Machine) []uint64 {
 	dm, ok := m.(*ddzmachine.DDZMachine)
 	if !ok {
@@ -52,47 +66,25 @@ func getPlayerIds(m machine.Machine) []uint64 {
 
 	players := []uint64{}
 	for _, player := range dm.GetDDZContext().GetPlayers() {
-		players = append(players, player.GetPalyerId())
+		players = append(players, player.GetPlayerId())
 	}
 	return players
 }
 
-// IsAllAbandon 判断是否三家都弃地主
-func IsAllAbandon(players []*ddz.Player) bool {
-	for _, player := range players {
-		if player.Grab {
-			return false
-		}
-	}
-	return true
+func isValidPlayer(context *ddz.DDZContext, id uint64) bool {
+	return GetPlayerByID(context.GetPlayers(), id) != nil
 }
 
-// GetTotalGrab 获取抢庄总倍数
-func GetTotalGrab(players []*ddz.Player) (totalGrab uint32) {
-	totalGrab = 1
-	for _, player := range players {
-		if player.Grab {
-			totalGrab = totalGrab * 2
-		}
-	}
-	return
-}
-
-// GetTotalDouble 获取加倍总倍数
-func GetTotalDouble(players []*ddz.Player) (totalGrab uint32) {
-	totalGrab = 1
-	for _, player := range players {
-		if player.IsDouble {
-			totalGrab = totalGrab * 2
-		}
-	}
-	return
+func getRandPlayerId(players []*ddz.Player) uint64 {
+	i := rand.Intn(len(players))
+	playerId := players[i].PlayerId
+	return playerId
 }
 
 //GetPlayerByID 根据玩家id获取玩家
 func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 	for _, player := range players {
-		if player.PalyerId == id {
+		if player.PlayerId == id {
 			return player
 		}
 	}
@@ -102,7 +94,7 @@ func GetPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 //GetNextPlayerByID 根据玩家id获取下个玩家
 func GetNextPlayerByID(players []*ddz.Player, id uint64) *ddz.Player {
 	for k, player := range players {
-		if player.PalyerId == id {
+		if player.PlayerId == id {
 			index := (k + 1) % len(players)
 			return players[index]
 		}
@@ -120,11 +112,14 @@ func sendMessage(m machine.Machine, players []uint64, msgID msgid.MsgID, body pr
 }
 
 func sendToPlayer(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
+	logrus.WithFields(logrus.Fields{"playerID": playerID, "msgId": msgID, "msg": body}).Debug("斗地主玩家响应")
 	return sendMessage(m, []uint64{playerID}, msgID, body)
 }
 
 func broadcast(m machine.Machine, msgID msgid.MsgID, body proto.Message) error {
-	return sendMessage(m, getPlayerIds(m), msgID, body)
+	playerIDs := getPlayerIds(m)
+	logrus.WithFields(logrus.Fields{"playerIDs": playerIDs, "msgId": msgID, "msg": body}).Debug("斗地主广播")
+	return sendMessage(m, playerIDs, msgID, body)
 }
 
 func broadcastExcept(m machine.Machine, playerID uint64, msgID msgid.MsgID, body proto.Message) error {
@@ -146,7 +141,6 @@ func setMachineAutoEvent(m machine.Machine, event machine.Event, duration time.D
 	}
 	dm.SetAutoEvent(event, duration)
 }
-
 
 // ContainsAll handCards是否包含所有outCards
 func ContainsAll(handCards []Poker, outCards []Poker) bool {
@@ -203,4 +197,26 @@ func If(judge bool, trueReturn interface{}, falseReturn interface{}) interface{}
 	} else {
 		return falseReturn
 	}
+}
+
+// TODO: 和麻将统一
+func OnCartoonFinish(curState int, nextState int, needCartoonType room.CartoonType, eventContext []byte) (newState int, err error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name":         "OnCartoonFinish",
+		"cur_state":         curState,
+		"next_state":        nextState,
+		"need_cartoon_type": needCartoonType,
+	})
+
+	req := new(majong.CartoonFinishRequestEvent)
+	if marshalErr := proto.Unmarshal(eventContext, req); marshalErr != nil {
+		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
+		return curState, global.ErrUnmarshalEvent
+	}
+	reqCartoonType := req.GetCartoonType()
+	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
+	if reqCartoonType != int32(needCartoonType) {
+		return curState, nil
+	}
+	return nextState, nil
 }

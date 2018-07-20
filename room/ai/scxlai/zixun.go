@@ -52,13 +52,14 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 		return result, fmt.Errorf("手牌数量少于2")
 	}
 	switch mjContext.GetZixunType() {
-	case majong.ZixunType_ZXT_PENG:
+	case majong.ZixunType_ZXT_PENG, majong.ZixunType_ZXT_CHI:
 		{
 			//有定缺牌，出最大的定缺牌
 			hasChuPai := false
 			for i := len(handCards) - 1; i >= 0; i-- {
 				hc := handCards[i]
-				if hc.GetColor() == player.GetDingqueColor() {
+				if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
+					hc.GetColor() == player.GetDingqueColor() {
 					aiEvent = h.chupai(player, hc)
 					hasChuPai = true
 					break
@@ -118,7 +119,7 @@ func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) interfac
 		}).Errorln("事件序列化失败")
 	}
 	return interfaces.AIEvent{
-		ID:      majong.EventID_event_chupai_request,
+		ID:      int32(majong.EventID_event_chupai_request),
 		Context: data,
 	}
 }
@@ -137,7 +138,7 @@ func (h *zixunStateAI) hu(player *majong.Player) interfaces.AIEvent {
 		}).Errorln("事件序列化失败")
 	}
 	return interfaces.AIEvent{
-		ID:      majong.EventID_event_hu_request,
+		ID:      int32(majong.EventID_event_hu_request),
 		Context: data,
 	}
 }

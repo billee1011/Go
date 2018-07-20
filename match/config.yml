@@ -18,4 +18,5 @@ nsqd_addr: 192.168.7.108:4150
 nsqlookupd_addrs: 
   - 192.168.7.108:4161
 
-
+# http 监听地址
+http_addr: 0.0.0.0:37002

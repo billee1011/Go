@@ -5,9 +5,11 @@ import (
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/common/data/player"
+	server_pb_match "steve/server_pb/match"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -30,7 +32,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		return
 	}
 
-	defaultMgr.addPlayer(playerID, int(req.GetGameId()), false)
+	defaultMgr.addPlayer(playerID, int(req.GetGameId()))
 	return
 }
 
@@ -46,6 +48,28 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 		Body:  response,
 	}}
 
-	defaultMgr.addPlayer(playerID, int(req.GetGameId()), true)
+	defaultMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
 	return
+}
+
+// AddContinueDesk 添加续局牌桌
+func AddContinueDesk(request *server_pb_match.AddContinueDeskReq) *server_pb_match.AddContinueDeskRsp {
+	logrus.WithFields(logrus.Fields{
+		"func_name": "AddContinueDesk",
+		"request":   request.String(),
+	}).Debugln("添加续局牌桌")
+	response := &server_pb_match.AddContinueDeskRsp{}
+
+	players := make([]deskPlayer, 0, len(request.GetPlayers()))
+	continuePlayers := request.GetPlayers()
+	for _, continuePlayer := range continuePlayers {
+		players = append(players, deskPlayer{
+			playerID: continuePlayer.GetPlayerId(),
+			robotLv:  int(continuePlayer.GetRobotLevel()),
+			seat:     int(continuePlayer.GetSeat()),
+			winner:   continuePlayer.GetWin(),
+		})
+	}
+	defaultMgr.addContinueDesk(players, int(request.GetGameId()), request.GetFixBanker(), int(request.GetBankerSeat()))
+	return response
 }

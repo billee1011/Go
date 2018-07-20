@@ -1,12 +1,16 @@
 package core
 
 import (
+	"net/http"
+	"steve/match/register"
+	mservice "steve/match/service"
+	"steve/server_pb/match"
 	"steve/structs"
 	"steve/structs/service"
-	"github.com/Sirupsen/logrus"
-	"steve/match/register"
-)
 
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
+)
 
 type matchCore struct {
 	e *structs.Exposer
@@ -27,10 +31,16 @@ func (c *matchCore) Init(e *structs.Exposer, param ...string) error {
 		return err
 	}
 
+	e.RPCServer.RegisterService(match.RegisterMatchServer, &mservice.MatchService{})
+
 	return nil
 }
 
 func (c *matchCore) Start() error {
+	httpAddr := viper.GetString("http_addr")
+	if httpAddr != "" {
+		go http.ListenAndServe(httpAddr, nil)
+		logrus.Infoln("启动 http 服务")
+	}
 	return nil
 }
-

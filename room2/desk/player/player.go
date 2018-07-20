@@ -1,13 +1,13 @@
 package player
 
 import (
-	"sync"
-	"steve/room/interfaces/facade"
-	"steve/client_pb/msgId"
-	"steve/client_pb/room"
 	"github.com/golang/protobuf/proto"
+	"steve/client_pb/msgid"
+	"steve/client_pb/room"
 	playerdata "steve/common/data/player"
+	"steve/room/interfaces/facade"
 	"steve/room2/desk"
+	"sync"
 )
 
 type Player struct {
@@ -18,12 +18,13 @@ type Player struct {
 	overTime    int    // 超时计数
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
+	robotLv 	int	   //机器人等级
 	desk        *desk.Desk
 
 	mu sync.RWMutex
 }
 
-func (dp *Player) GetDesk() *desk.Desk{
+func (dp *Player) GetDesk() *desk.Desk {
 	return dp.desk
 }
 
@@ -51,6 +52,28 @@ func (dp *Player) GetEcoin() int {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return int(dp.ecoin)
+}
+
+func (p *Player) SetEcoin(coin int) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	p.ecoin = uint64(coin)
+}
+
+func (p *Player) SetMaxOverTime(time int){
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	p.overTime = time
+}
+
+func (p *Player) SetRobotLv(lv int){
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	p.robotLv = lv
+}
+
+func (p *Player) GetRobotLv() int {
+	return p.robotLv
 }
 
 // IsQuit 是否已经退出

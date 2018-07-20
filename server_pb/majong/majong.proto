@@ -38,8 +38,8 @@ enum HuType {
     hu_zimo = 6;               // 自摸
     hu_tianhu = 7;             // 天胡
     hu_dihu = 8;               // 地胡
-    hu_renhu = 9;              // 人胡
-    hu_miaoshouhuichun = 10;   // 妙手回春
+    hu_miaoshouhuichun = 9;    // 妙手回春 
+    hu_renhu = 10;             // 人胡
     hu_quanqiuren = 11;        // 全求人
     hu_buqiuren = 12;          // 不求人
     hu_juezhang = 13;          // 胡绝张
@@ -131,13 +131,14 @@ message Player {
     uint32 max_card_value = 25;              // 胡最大倍数（胡牌时）
     repeated CardsGroup cards_group = 26;   // 胡最大倍数时的牌组（胡牌时）
     bool selected_ting = 27;                //玩家出牌请求时，是否请求了听
+    int32 chupai_count = 28;                //进入出牌状态的次数
     map<string, bytes> properties = 256;    // 其他的一些属性
 }
 
 message TingStateInfo{
    bool is_ting = 1; //听
    bool is_tianting = 2; //天听
-   bool is_baotingyifa = 3; //报听一发
+   int32 baotingyifa_count = 3; //报听前所有的特殊操作加上出牌count的数量（不包括胡）
 }
 
 // AutoEvent 自动事件
@@ -227,7 +228,7 @@ message MajongContext {
     repeated uint64 revert_settles = 8; // 退税结算 ids
     Card last_out_card = 9;   // 最后一次出的牌
     uint32 zhuangjia_index = 10; // 庄家索引
-    bool fix_zhuangjia_index = 11;  // 是否固定庄家位置
+    // bool fix_zhuangjia_index = 11;  // 是否固定庄家位置
     repeated uint64 last_hu_players = 12; // 最近一次执行胡操作的玩家列表
     uint64 last_peng_player = 13; // 最近一次执行碰操作的玩家
     uint64 last_gang_player = 14;   // 最近一次执行杠操作的玩家
@@ -242,6 +243,8 @@ message MajongContext {
     bool excuted_huansanzhang = 23; // 换三张是否已经执行完成
     uint32 card_total_num = 24; // 本局游戏的所有牌数量 
     uint64 last_chi_player = 25; // 最近一次执行吃操作的玩家
+    uint32 next_banker_seat = 26;   // 下一局庄家座号
+    bool fix_next_banker_seat = 27; // 是否已经确定下一局庄家位置
 
     uint32 xingpai_option_id = 251; // 行牌选项 ID 
     uint32 cardtype_option_id = 252;    // 牌型选项 ID 
@@ -259,13 +262,13 @@ message MajongCommonOption {
     string cards = 5;    //配牌的墙牌
     uint32 wallcards_length = 6;   //配牌配的墙牌长度
     Huansanzhangfx hsz_fx = 7;  //配置换三张方向
-    Zhuang zhuang = 8;  //配置庄家
+    // Zhuang zhuang = 8;  //配置庄家
 }
 
-message Zhuang{
-    bool need_deploy_zhuang = 1; //是否需要配置庄家
-    int32 zhuang_index = 2; //庄家位置
-}
+// message Zhuang{
+//     bool need_deploy_zhuang = 1; //是否需要配置庄家
+//     int32 zhuang_index = 2; //庄家位置
+// }
 
 message Huansanzhangfx{
     bool need_deploy_fx = 1; //是否需要配置换三张方向

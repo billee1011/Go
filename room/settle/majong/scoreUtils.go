@@ -73,19 +73,19 @@ func getMaxScore(deskPlayer []interfaces.DeskPlayer, huQuitPlayers map[uint64]bo
 	if len(losePids) == 1 {
 		for _, winnPid := range winnPids {
 			winMax := getWinMax(GetDeskPlayer(deskPlayer, winnPid), score[winnPid])
+			maxScore[winnPid] = score[winnPid]
 			if score[winnPid] >= winMax {
 				maxScore[winnPid] = winMax
 			}
-			maxScore[winnPid] = score[winnPid]
 			maxScore[losePids[0]] = maxScore[losePids[0]] - maxScore[winnPid]
 		}
 	} else if len(losePids) > 1 {
 		for _, losePid := range losePids {
 			winMax := getWinMax(GetDeskPlayer(deskPlayer, winnPids[0]), score[losePid])
+			maxScore[losePid] = score[losePid]
 			if abs(score[losePid]) >= winMax {
 				maxScore[losePid] = 0 - winMax
 			}
-			maxScore[losePid] = score[losePid]
 			maxScore[winnPids[0]] = maxScore[winnPids[0]] - maxScore[losePid]
 		}
 	}

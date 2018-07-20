@@ -64,6 +64,7 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 		"msgID":           msgid.MsgID_ROOM_GAMEOVER_NTF,
 		"roomGameOverNtf": roomGameOverNtf,
 	}).Info("-----牌局结束-推倒牌墙")
+	gutils.SetNextZhuangIndex([]uint64{}, 0, mjContext)
 }
 
 // roundSettle 处理查花猪，查大叫，退税 结算

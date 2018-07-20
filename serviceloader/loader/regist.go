@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
+	"steve/serviceloader/pprof"
 	"net/http"
 )
 
@@ -37,6 +38,7 @@ func RegisterServer2(opt *Option) {
 		consulAddr: opt.consulAddr,
 		healthPort: opt.healthPort,
 	})
+	pprof.Init(opt.rpcServerName, opt.pprofExposeType, opt.pprofHttpPort)
 }
 
 // registerServer 注册服务
@@ -134,7 +136,6 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 
 // getConsulAgent 获取 consul 代理
 func createConsulAgent(logEntry *logrus.Entry, consulAddr string) *api.Agent {
-
 	config := api.DefaultConfig()
 	config.Address = consulAddr
 	consul, err := api.NewClient(config)

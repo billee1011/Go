@@ -62,7 +62,7 @@ func (h *dingqueStateAI) dingque(player *majong.Player) *interfaces.AIEvent {
 		return nil
 	}
 	return &interfaces.AIEvent{
-		ID:      majong.EventID_event_dingque_request,
+		ID:      int32(majong.EventID_event_dingque_request),
 		Context: data,
 	}
 }

@@ -3,7 +3,7 @@ log_dir: ./log
 log_prefix: gateway
 log_stderr: true 
 
-rpc_addr: 192.168.8.17
+rpc_addr: 127.0.0.1
 rpc_port: 36002
 rpc_server_name: gate
 
@@ -11,7 +11,7 @@ lis_client_addr: 0.0.0.0
 lis_client_port: 36001
 
 # 客户端监听地址，需要返回给客户端用以发起连接
-lis_client_addr_inquire: 192.168.8.17
+lis_client_addr_inquire: 127.0.0.1
 
 redis_addr: 192.168.7.108:6379
 redis_passwd: 
@@ -21,3 +21,6 @@ consul_addr: 192.168.7.108:8500
 nsqd_addr: 192.168.7.108:4150
 nsqlookupd_addrs: 
   - 192.168.7.108:4161
+
+pprofExposeType:
+pprofHttpPort: 9909

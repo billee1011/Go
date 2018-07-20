@@ -4,23 +4,34 @@ import (
 	"steve/room2/desk/models"
 	"github.com/Sirupsen/logrus"
 	"steve/room2/desk/models/public"
-	"steve/room2"
+	"steve/room2/desk/player"
+	"context"
+	"steve/client_pb/room"
+	"steve/client_pb/msgid"
 )
 
 type Desk struct {
-	uid            uint64
-	gameID         int
-	config *DeskConfig
-	models map[string]models.DeskModel
+	uid       uint64
+	gameID    int
+	config    *DeskConfig
+	models    map[string]models.DeskModel
+	playerIds []uint64
+	Context context.Context
+	Cancel    context.CancelFunc // 取消事件处理
 }
 
-func NewDesk(uid uint64, gameId int,config *DeskConfig) Desk {
+func NewDesk(uid uint64, gameId int,playerIds []uint64,config *DeskConfig) Desk {
 	desk := Desk{uid: uid,
 		gameID: gameId,
 		config:config,
+		playerIds : playerIds,
 	}
 
 	return desk
+}
+
+func (desk Desk) GetPlayerIds() []uint64{
+	return desk.playerIds
 }
 
 func (desk Desk) InitModel(){
@@ -35,7 +46,7 @@ func (desk Desk) InitModel(){
 	}
 }
 
-func (desk Desk) GetPlayer(playerId uint64) *room2.Player {
+func (desk Desk) GetPlayer(playerId uint64) *player.Player {
 	players := desk.GetDeskPlayers()
 	for _,player := range players{
 		if player.GetPlayerID()==playerId {
@@ -45,7 +56,7 @@ func (desk Desk) GetPlayer(playerId uint64) *room2.Player {
 	return nil
 }
 
-func (desk Desk) GetDeskPlayers() []*room2.Player {
+func (desk Desk) GetDeskPlayers() []*player.Player {
 	players := desk.GetModel(models.Player).(public.PlayerModel).GetDeskPlayers()
 	return players
 }
@@ -68,15 +79,19 @@ func (desk Desk) GetGameId() int {
 }
 
 func (desk Desk) Start() {
+	desk.Context, desk.Cancel = context.WithCancel(context.Background())
 	for _,v := range desk.models{
 		v.Start()
 	}
 }
 
 func (desk Desk) Stop() {
+	desk.Cancel()
 	for _,v := range desk.models{
 		v.Stop()
 	}
+	ntf := room.RoomDeskDismissNtf{}
+	desk.GetModel(models.Message).(public.MessageModel).BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_DISMISS_NTF, &ntf, true)
 }
 
 func (desk Desk) GetConfig() *DeskConfig {

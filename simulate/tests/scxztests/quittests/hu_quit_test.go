@@ -23,7 +23,6 @@ func TestHuQuit(t *testing.T) {
 	assert.NotNil(t, deskData)
 	players, err := utils.CreateAndLoginUsersNum(3)
 	assert.Nil(t, err)
-	joinOther3Player(t, players)
 	//庄家等待自询状态,可以天胡
 	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	//庄家选择天胡,并且退出游戏
@@ -34,6 +33,7 @@ func TestHuQuit(t *testing.T) {
 	time.Sleep(time.Second * 1)
 	p := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
 	rsp, err := utils.ApplyJoinDesk(p.Player, room.GameId_GAMEID_XUEZHAN)
+	joinOther3Player(t, players)
 	assert.Nil(t, err)
 	assert.Equal(t, room.RoomError_SUCCESS, rsp.GetErrCode())
 }

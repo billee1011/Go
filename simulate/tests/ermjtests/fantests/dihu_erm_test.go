@@ -25,7 +25,6 @@ func dihu(t *testing.T) *utils.DeskData {
 	deskData, err2 := utils.StartGame(params)
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err2)
-
 	return deskData
 }
 
@@ -45,5 +44,5 @@ func TestFan_DiHu_Zimo_ERM(t *testing.T) {
 	// 检测分数
 	winScro := 184 * (len(deskData.Players) - 1)
 
-	utils.CheckFanSettle(t, deskData, 4, 1, int64(winScro), room.FanType_FT_DIHU)
+	utils.CheckFanSettle(t, deskData, 4, 1, int64(winScro), room.FanType_FT_DAQIXING)
 }

@@ -27,6 +27,16 @@ func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {
 	return &player
 }
 
+func (pm *PlayerMgr) InitDeskData(len int,players [len]uint64,maxOverTime int,robotLv [len]int){
+	for seat,playerId := range players{
+		player := pm.GetPlayer(playerId)
+		player.SetSeat(uint32(seat))
+		player.SetEcoin(int(player.GetCoin()))
+		player.SetMaxOverTime(maxOverTime)
+		player.SetRobotLv(robotLv[seat])
+	}
+}
+
 //TODO 第一次进入房间服初始化
 func (pm *PlayerMgr) InitPlayer(playerID uint64) {
 	player := Player{
