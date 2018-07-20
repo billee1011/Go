@@ -3,18 +3,20 @@ log_dir: ./log
 log_prefix: match
 log_stderr: true 
 
-redis_addr: 127.0.0.1:6379
-redis_passwd: 
-
-rpc_addr: 127.0.0.1
+rpc_addr: 192.168.8.17
 rpc_port: 37001
 rpc_server_name: match
+health_port: 17001
 
-consul_addr: 127.0.0.1:8500
 
-nsqd_addr: 127.0.0.1:4150
+redis_addr: 192.168.7.108:6379
+redis_passwd: 
+
+consul_addr: 192.168.7.108:8500
+
+nsqd_addr: 192.168.7.108:4150
 nsqlookupd_addrs: 
-  - 127.0.0.1:4161
+  - 192.168.7.108:4161
 
 # http 监听地址
 http_addr: 0.0.0.0:37002
