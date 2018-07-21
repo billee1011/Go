@@ -5,6 +5,7 @@ import (
 	"steve/server_pb/ddz"
 
 	"errors"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
@@ -45,8 +46,29 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
 	outCards := ToDDZCards(message.GetCards())
-
 	logEntry := logrus.WithField("playerId", playerId).WithField("outCards", outCards)
+
+	//修复玩家有手牌黑桃3时，伪造四个黑桃3能成功出炸弹的问题
+	counts := make(map[uint32]uint32) //Map<card, count>
+	for _, card := range message.GetCards() {
+		count, exists := counts[card]
+		if !exists {
+			counts[card] = 1
+		} else {
+			counts[card] = count + 1
+		}
+	}
+	for card, count := range counts {
+		if count > 1 {
+			msg := fmt.Sprintf("存在重复牌%s", ToDDZCard(card))
+			logEntry.Warnln(msg)
+			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+				Result: genResult(7, msg),
+			})
+			return int(ddz.StateID_state_playing), global.ErrInvalidEvent
+		}
+	}
+
 	if !isValidPlayer(context, playerId) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer

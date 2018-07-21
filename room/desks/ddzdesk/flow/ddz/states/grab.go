@@ -114,10 +114,14 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.CurStage = ddz.DDZStage_DDZ_STAGE_NONE //最后一个人的抢地主广播NextStage为NONE
 	}
 
+	totalGrab := context.TotalGrab
+	if totalGrab == 0 { //产品要求不能显示0倍
+		totalGrab = 1
+	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId:     &playerId,
 		Grab:         &grab,
-		TotalGrab:    &context.TotalGrab,
+		TotalGrab:    &totalGrab,
 		NextPlayerId: &nextPlayerId,
 		NextStage:    GenNextStage(room.DDZStage(int32(context.CurStage))),
 	})

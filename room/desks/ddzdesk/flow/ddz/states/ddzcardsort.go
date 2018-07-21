@@ -41,13 +41,13 @@ type Poker struct {
 
 func (c Poker) String() string {
 	if c.Suit == sDiamond {
-		return "♦ " + c.GetPointString()
+		return "♦" + c.GetPointString()
 	} else if c.Suit == sClub {
-		return "♣ " + c.GetPointString()
+		return "♣" + c.GetPointString()
 	} else if c.Suit == sHeart {
-		return "♥ " + c.GetPointString()
+		return "♥" + c.GetPointString()
 	} else if c.Suit == sSpade {
-		return "♠ " + c.GetPointString()
+		return "♠" + c.GetPointString()
 	} else {
 		return c.GetPointString()
 	}
