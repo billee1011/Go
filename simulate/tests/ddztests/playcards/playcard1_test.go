@@ -66,7 +66,8 @@ func TestPlaycard1(t *testing.T) {
 	assert.NotNil(t, resumeRspExpect)
 
 	// 发出恢复对局请求
-	_, resumeErr := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_DDZ_RESUME_REQ), &room.DDZResumeGameReq{})
+	//_, resumeErr := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_DDZ_RESUME_REQ), &room.DDZResumeGameReq{})
+	_, resumeErr := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_RESUME_GAME_REQ), &room.RoomResumeGameReq{})
 	assert.Nil(t, resumeErr)
 
 	resumeRsp := room.DDZResumeGameRsp{}
@@ -77,7 +78,7 @@ func TestPlaycard1(t *testing.T) {
 	}
 
 	// 打印恢复对局回复的信息
-	logEntry.Infof("玩家%d收到恢复对局的回复,resultCode = %d， resultStr = %s", resumeRsp.GetResult().GetErrCode(), resumeRsp.GetResult().GetErrDesc())
+	logEntry.Infof("玩家%d收到恢复对局的回复,resultCode = %d， resultStr = %s", player.GetID(), resumeRsp.GetResult().GetErrCode(), resumeRsp.GetResult().GetErrDesc())
 
 	// 成功时打印游戏信息
 	if resumeRsp.GetResult().GetErrCode() == 0 {
