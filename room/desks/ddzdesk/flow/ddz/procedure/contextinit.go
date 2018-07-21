@@ -16,7 +16,6 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 		GrabbedCount:      0,
 		AllAbandonCount:   0,
 		TotalGrab:         0,
-		DoubledCount:      0,
 		TotalDouble:       1,
 		CurCardType:       ddz.CardType_CT_NONE,
 		PassCount:         0,

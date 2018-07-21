@@ -65,8 +65,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	context.CountDownPlayers = remove(context.CountDownPlayers, playerId)
 
 	var nextStage *room.NextStage
-	context.DoubledCount++
-	if context.DoubledCount >= 3 {
+	if len(context.DoubledPlayers) >= 3 {
 		nextStage = GenNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_DOUBLE_NTF, &room.DDZDoubleNtf{
@@ -76,7 +75,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 		NextStage:   nextStage,
 	})
 
-	if context.DoubledCount >= 3 {
+	if len(context.DoubledPlayers) >= 3 {
 		context.CurrentPlayerId = context.LordPlayerId
 		context.Duration = 0 //清除倒计时
 		return int(ddz.StateID_state_playing), nil
