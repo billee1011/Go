@@ -35,29 +35,30 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_grab), nil
 	}
 	if event.EventID != int(ddz.EventID_event_grab_request) {
-		logrus.Error("grabState can only handle ddz.EventID_event_grab_request, invalid event")
 		return int(ddz.StateID_state_grab), global.ErrInvalidEvent
 	}
 
 	message := &ddz.GrabRequestEvent{}
 	err := proto.Unmarshal(event.EventData, message)
 	if err != nil {
-		logrus.Error("grabState unmarshal event error!")
 		return int(ddz.StateID_state_grab), global.ErrUnmarshalEvent
 	}
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	grab := message.GetGrab()
+
+	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerId, "grab": grab})
 	if !isValidPlayer(context, playerId) {
-		logrus.Error("玩家不在本牌桌上!")
+		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
 	}
 	if context.CurrentPlayerId != playerId {
-		logrus.WithField("expected player:", context.CurrentPlayerId).WithField("fact player", playerId).Error("未到本玩家抢地主")
+		logEntry.WithField("expected player:", context.CurrentPlayerId).Errorln("未到本玩家抢地主")
 		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
 	}
+	logEntry.Infoln("玩家叫/抢地主")
 
-	grab := message.GetGrab()
 	GetPlayerByID(context.GetPlayers(), playerId).Grab = grab //记录该玩家已叫/弃地主
 	context.GrabbedCount++                                    //记录完毕
 

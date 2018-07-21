@@ -64,7 +64,7 @@ func getPlayerIds(m machine.Machine) []uint64 {
 		return nil
 	}
 
-	players := []uint64{}
+	var players []uint64
 	for _, player := range dm.GetDDZContext().GetPlayers() {
 		players = append(players, player.GetPlayerId())
 	}

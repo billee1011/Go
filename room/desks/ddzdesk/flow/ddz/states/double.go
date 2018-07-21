@@ -40,12 +40,21 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	isDouble := message.IsDouble
+
+	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerId, "double": isDouble})
 	if !isValidPlayer(context, playerId) {
-		logrus.Error("玩家不在本牌桌上!")
+		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_double), global.ErrInvalidRequestPlayer
 	}
+	for _, doubledPlayer := range context.DoubledPlayers {
+		if doubledPlayer == playerId {
+			logEntry.WithField("DoubledPlayers", context.DoubledPlayers).Warnln("玩家重复加倍")
+			return int(ddz.StateID_state_double), nil
+		}
+	}
+	logEntry.Infoln("斗地主玩家加倍")
 
-	isDouble := message.IsDouble
 	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble //记录该玩家加倍
 	context.DoubledPlayers = append(context.DoubledPlayers, playerId)
 	if isDouble {
