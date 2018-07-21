@@ -18,6 +18,7 @@ type grabState struct{}
 func (s *grabState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_CALL
+	context.CurrentPlayerId = context.CallPlayerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()

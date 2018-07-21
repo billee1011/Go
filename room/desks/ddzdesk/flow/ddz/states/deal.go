@@ -30,7 +30,6 @@ func (s *dealState) OnEnter(m machine.Machine) {
 	PeiPai(wallCards, handle.GetPeiPai(int(room.GameId_GAMEID_DOUDIZHU)))
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_DEAL
-	context.CurrentPlayerId = context.CallPlayerId
 	players := context.GetPlayers()
 	for i := range players {
 		players[i].HandCards = DDZSortDescend(wallCards[i*17 : (i+1)*17])

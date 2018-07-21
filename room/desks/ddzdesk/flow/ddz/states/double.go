@@ -76,7 +76,6 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	})
 
 	if len(context.DoubledPlayers) >= 3 {
-		context.CurrentPlayerId = context.LordPlayerId
 		context.Duration = 0 //清除倒计时
 		return int(ddz.StateID_state_playing), nil
 	} else {
