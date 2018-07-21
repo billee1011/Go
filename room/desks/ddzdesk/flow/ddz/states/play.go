@@ -60,6 +60,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId
+	player := GetPlayerByID(context.GetPlayers(), playerId)
 	if len(outCards) == 0 { //pass
 		logEntry.Infoln("玩家过牌")
 		if context.CurCardType == ddz.CardType_CT_NONE { //该你出牌时不出牌，报错
@@ -68,6 +69,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 			})
 			return int(ddz.StateID_state_playing), errors.New("首轮出牌玩家不能过牌")
 		}
+		player.OutCards = ToInts(outCards)
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{ //成功pass
 			Result: genResult(0, ""),
 		})
@@ -99,7 +101,6 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 	logEntry.Infoln("玩家出牌")
 
-	player := GetPlayerByID(context.GetPlayers(), playerId)
 	handCards := ToDDZCards(player.HandCards)
 	if !ContainsAll(handCards, outCards) { //检查所出的牌是否在手牌中
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
