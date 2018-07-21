@@ -309,8 +309,9 @@ func (d *desk) processEvent(e *deskEvent) {
 	})
 
 	params := procedure.Params{
+		PlayerMgr:    d.DeskPlayerMgr,
 		Context:      *d.ddzContext,
-		Sender:       d.getMessageSender(),
+		Sender:       d.getMessageSender(), //TODO: 尽量不要把一个参数拆成多个参数
 		EventID:      e.eventID,
 		EventContext: e.eventContext,
 	}
