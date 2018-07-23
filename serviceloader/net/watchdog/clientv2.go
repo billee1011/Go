@@ -75,10 +75,6 @@ func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err 
 		header: proto.Clone(head).(*steve_proto_base.Header),
 		body:   body,
 	}
-	// logrus.WithFields(logrus.Fields{
-	// 	"func_name": "clientV2.pushMessage",
-	// 	"msg_id":    head.GetMsgId(),
-	// }).Infoln("clientV2 推送消息")
 	return
 }
 
@@ -177,7 +173,9 @@ func (c *clientV2) sendLoop(done <-chan struct{}) (finish chan struct{}) {
 				if data == nil {
 					return
 				}
-				if err := c.send(data); err != nil {
+				err := c.send(data)
+				c.callback.afterSendPkg(data.header, data.body, err)
+				if err != nil {
 					c.callback.onError(fmt.Errorf("数据发送失败: %v", err))
 					return
 				}

@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -15,7 +16,7 @@ import (
 func Test_SCXZ_AnGang_GiveUp_GameOver(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.HszCards = [][]uint32{}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	// 根据座位设置玩家金币数
@@ -51,7 +52,7 @@ func Test_SCXZ_AnGang_GiveUp_GameOver(t *testing.T) {
 //期待:所有人收到下家补杠的广播后，正常状态玩家不足，游戏结束
 func Test_SCXZ_BuGang_GiveUp_GameOver(t *testing.T) {
 	param := global.NewCommonStartGameParams()
-	param.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	param.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	param.PeiPaiGame = "scxz"
 	param.BankerSeat = 0
 	// 根据座位设置玩家金币数
@@ -124,7 +125,7 @@ func Test_SCXZ_BuGang_GiveUp_GameOver(t *testing.T) {
 //期望：正常状态玩家不足，游戏结束
 func Test_SCXZ_MingGang_GiveUp_GameOver(t *testing.T) {
 	param := global.NewCommonStartGameParams()
-	param.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	param.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	param.PeiPaiGame = "scxz"
 	param.BankerSeat = 0
 	param.IsHsz = false // 不换三张

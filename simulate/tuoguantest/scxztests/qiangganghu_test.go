@@ -33,7 +33,7 @@ func Test_Qiangganghu01(t *testing.T) {
 	params.DingqueColor[2] = room.CardColor_CC_TONG
 	// 墙牌改为 8W, 8W, 8W, 9W， 3B
 	params.WallCards = []uint32{18, 18, 18, 19, 33}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

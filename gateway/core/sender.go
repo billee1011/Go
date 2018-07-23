@@ -12,9 +12,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type sender struct {
-	core *gatewayCore
-}
+type sender struct{}
 
 var _ steve_proto_gaterpc.MessageSenderServer = new(sender)
 

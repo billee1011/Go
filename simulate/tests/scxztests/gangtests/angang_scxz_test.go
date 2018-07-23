@@ -1,6 +1,7 @@
 package gangtests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -17,7 +18,7 @@ import (
 func Test_SCXZ_Angang(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	thisParams.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	thisParams.PeiPaiGame = "scxz"
 	thisParams.WallCards = append(thisParams.WallCards, 39)
 	deskData, err := utils.StartGame(thisParams)
@@ -52,7 +53,7 @@ func Test_SCXZ_Angang(t *testing.T) {
 func Test_Angang1(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	thisParams.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	thisParams.PeiPaiGame = "scxz"
 	thisParams.Cards[0] = []uint32{11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 26, 27, 28, 29}
 	thisParams.Cards[1] = []uint32{29, 29, 31, 31, 32, 32, 32, 32, 33, 33, 37, 37, 36}

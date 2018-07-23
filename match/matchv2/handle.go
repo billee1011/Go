@@ -31,6 +31,11 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		response.ErrDesc = proto.String("已经在游戏中了")
 		return
 	}
+	if player.GetPlayerCoin(playerID) == 0 {
+		response.ErrCode = proto.Int32(1)
+		response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
+		return
+	}
 
 	defaultMgr.addPlayer(playerID, int(req.GetGameId()))
 	return

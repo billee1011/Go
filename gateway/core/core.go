@@ -30,16 +30,12 @@ func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 }
 
 func (c *gatewayCore) Start() error {
-	return watchdog.StartWatchDog(c.e, &receiver{
-		core: c,
-	}, connection.GetConnectionMgr())
+	return watchdog.StartWatchDog(c.e, &observer{}, connection.GetConnectionMgr())
 	// return c.startWatchDog()
 }
 
 func (c *gatewayCore) registSender() error {
-	return c.e.RPCServer.RegisterService(steve_proto_gaterpc.RegisterMessageSenderServer, &sender{
-		core: c,
-	})
+	return c.e.RPCServer.RegisterService(steve_proto_gaterpc.RegisterMessageSenderServer, &sender{})
 }
 
 func (c *gatewayCore) registerGateService() error {

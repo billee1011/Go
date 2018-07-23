@@ -1,6 +1,7 @@
 package fantests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -20,7 +21,7 @@ import (
 // 庄家：gang{11,22,13,14},handcard{15}
 func shibaluohan(t *testing.T) *utils.DeskData {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	params.Cards = [][]uint32{

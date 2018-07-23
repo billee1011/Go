@@ -1,6 +1,7 @@
 package qitests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -17,7 +18,7 @@ import (
 func Test_SCXZ_Dianpao_qi(t *testing.T) {
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	huSeat := 1

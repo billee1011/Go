@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"steve/client_pb/common"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -77,9 +78,9 @@ var erRenFanMulMap = map[room.FanType]int32{
 }
 
 //GetHuChiValueByGameID 根据游戏ID获取互斥番型数组
-func GetHuChiValueByGameID(gameID room.GameId, currFan room.FanType) []room.FanType {
+func GetHuChiValueByGameID(gameID common.GameId, currFan room.FanType) []room.FanType {
 	switch gameID {
-	case room.GameId_GAMEID_ERRENMJ:
+	case common.GameId_GAMEID_ERRENMJ:
 		return erRenHuChiFanMap[currFan]
 	default:
 		return []room.FanType{}
@@ -87,9 +88,9 @@ func GetHuChiValueByGameID(gameID room.GameId, currFan room.FanType) []room.FanT
 }
 
 //GetFanMulByGameID 根据游戏ID获取互斥番型倍数
-func GetFanMulByGameID(gameID room.GameId, currFan room.FanType) int32 {
+func GetFanMulByGameID(gameID common.GameId, currFan room.FanType) int32 {
 	switch gameID {
-	case room.GameId_GAMEID_ERRENMJ:
+	case common.GameId_GAMEID_ERRENMJ:
 		return erRenFanMulMap[currFan]
 	default:
 		return 0
@@ -97,7 +98,7 @@ func GetFanMulByGameID(gameID room.GameId, currFan room.FanType) int32 {
 }
 
 // CheckFanSettle 检测番型结算 winSeat赢家座位，winScore 赢家总赢分，currFan 指定确认都番型
-func CheckFanSettle(t *testing.T, deskData *DeskData, gameID room.GameId, winSeat int, winScore int64, currFan room.FanType) {
+func CheckFanSettle(t *testing.T, deskData *DeskData, gameID common.GameId, winSeat int, winScore int64, currFan room.FanType) {
 	winPlayer := GetDeskPlayerBySeat(winSeat, deskData)
 	expector, _ := winPlayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
 	ntf := &room.RoomBalanceInfoRsp{}
@@ -128,7 +129,7 @@ func IsExistAssignFan(currFan room.FanType, Fans []*room.Fan) bool {
 }
 
 //IsExistHuChiFan 是否存在互斥的牌
-func IsExistHuChiFan(gameID room.GameId, currFan room.FanType, Fans []*room.Fan) (bool, string) {
+func IsExistHuChiFan(gameID common.GameId, currFan room.FanType, Fans []*room.Fan) (bool, string) {
 	fanTyps := GetHuChiValueByGameID(gameID, currFan)
 	for _, fanTyp := range fanTyps {
 		if IsExistAssignFan(fanTyp, Fans) {
@@ -139,7 +140,7 @@ func IsExistHuChiFan(gameID room.GameId, currFan room.FanType, Fans []*room.Fan)
 }
 
 //IsAssignFanMulRight 判断指定番型倍数是否正确
-func IsAssignFanMulRight(gameID room.GameId, currFan room.FanType, Fans []*room.Fan) bool {
+func IsAssignFanMulRight(gameID common.GameId, currFan room.FanType, Fans []*room.Fan) bool {
 	for _, fan := range Fans {
 		if fan.GetName() == currFan && fan.GetValue() == erRenFanMulMap[currFan] {
 			return true

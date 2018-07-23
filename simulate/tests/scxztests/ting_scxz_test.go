@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -13,7 +14,7 @@ import (
 // 游戏开始流程包括： 登录，加入房间，配牌，洗牌，发牌，换三张，定缺
 func Test_SCXZ_StartGame_Ting_QiDuiHu(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.Cards = [][]uint32{
 		{11, 11, 11, 25, 22, 22, 22, 22, 13, 13, 13, 13, 14, 14},
@@ -43,7 +44,7 @@ func Test_StartGame_Ting_TuiDaoHu(t *testing.T) {
 		{25, 25, 25, 25, 26, 26, 26, 26, 27, 27, 27, 27, 28},
 	}
 	params.DingqueColor = []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.NotNil(t, deskData)

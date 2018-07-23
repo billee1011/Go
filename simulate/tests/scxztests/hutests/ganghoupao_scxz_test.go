@@ -2,6 +2,7 @@ package hutests
 
 import (
 	"fmt"
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -19,7 +20,7 @@ import (
 // 2. 1号玩家请求胡，所有玩家收到胡通知，2号玩家摸牌后收到自询通知
 func Test_SCXZ_Ganghoupao(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	huSeat := 1

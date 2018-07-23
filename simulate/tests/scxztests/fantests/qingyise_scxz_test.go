@@ -1,6 +1,7 @@
 package fantests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -20,7 +21,7 @@ import (
 // 12, 13, 14,15, 16, 17, 14, 15, 16, 17, 18, 19, 11,11
 func qingyise(t *testing.T) *utils.DeskData {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	params.Cards = [][]uint32{

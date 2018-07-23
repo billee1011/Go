@@ -1,7 +1,7 @@
 package matchtests
 
 import (
-	"steve/client_pb/room"
+	"steve/client_pb/common"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -18,7 +18,7 @@ import (
 //  后4个玩家都收到了创建房间通知和游戏开始通知
 func Test_OfflineMatch(t *testing.T) {
 	player1, err := utils.LoginNewPlayer()
-	utils.ApplyJoinDesk(player1, room.GameId_GAMEID_XUELIU)
+	utils.ApplyJoinDesk(player1, common.GameId_GAMEID_XUELIU)
 	assert.Nil(t, err)
 	player1.GetClient().Stop()
 	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
