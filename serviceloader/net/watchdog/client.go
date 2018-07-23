@@ -6,6 +6,7 @@ import (
 
 type clientCallback interface {
 	onRecvPkg(header *steve_proto_base.Header, body []byte)
+	afterSendPkg(header *steve_proto_base.Header, body []byte, err error)
 	onClientClose()
 	onError(err error)
 }

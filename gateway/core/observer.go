@@ -21,18 +21,17 @@ import (
 	"google.golang.org/grpc"
 )
 
-type receiver struct {
-	core *gatewayCore
+type observer struct {
 }
 
-var _ net.MessageObserver = new(receiver)
+var _ net.MessageObserver = new(observer)
 
 var errNoCorrespondeServer = errors.New("消息没有对应的处理服务")
 var errCallServiceFailed = errors.New("调用服务失败")
 var errGetConnectByServerName = errors.New("根据服务名称获取连接失败")
 
 // getConnection 根据服务名称和客户端 ID 获取处理服务器的 RPC 连接
-func (o *receiver) getConnection(serverName string, playerID uint64) (*grpc.ClientConn, error) {
+func (o *observer) getConnection(serverName string, playerID uint64) (*grpc.ClientConn, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":   "receiver.getConnection",
 		"player_id":   playerID,
@@ -57,7 +56,7 @@ func (o *receiver) getConnection(serverName string, playerID uint64) (*grpc.Clie
 	return cc, nil
 }
 
-func (o *receiver) getPlayerID(clientID uint64) uint64 {
+func (o *observer) getPlayerID(clientID uint64) uint64 {
 	cm := connection.GetConnectionMgr()
 	connection := cm.GetConnection(clientID)
 	if connection == nil {
@@ -67,7 +66,7 @@ func (o *receiver) getPlayerID(clientID uint64) uint64 {
 }
 
 // handle 通过 RPC 服务处理消息
-func (o *receiver) handle(cc *grpc.ClientConn, clientID uint64, playerID uint64, msgID uint32, body []byte) ([]*steve_proto_gaterpc.ResponseMessage, error) {
+func (o *observer) handle(cc *grpc.ClientConn, clientID uint64, playerID uint64, msgID uint32, body []byte) ([]*steve_proto_gaterpc.ResponseMessage, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"name":      "receiver.handle",
 		"client_id": clientID,
@@ -90,7 +89,7 @@ func (o *receiver) handle(cc *grpc.ClientConn, clientID uint64, playerID uint64,
 }
 
 // responseRPCMessage 将 RPC 服务处理消息的结果回复给客户端
-func (o *receiver) responseRPCMessage(clientID uint64, reqHeader *steve_proto_base.Header, responses []*steve_proto_gaterpc.ResponseMessage) {
+func (o *observer) responseRPCMessage(clientID uint64, reqHeader *steve_proto_base.Header, responses []*steve_proto_gaterpc.ResponseMessage) {
 	for _, response := range responses {
 		rspMsgID := response.GetHeader().GetMsgId()
 		o.response(clientID, reqHeader, rspMsgID, response.GetBody())
@@ -98,7 +97,7 @@ func (o *receiver) responseRPCMessage(clientID uint64, reqHeader *steve_proto_ba
 }
 
 // responseLocalMessage 回复本地消息处理器返回的结果
-func (o *receiver) responseLocalMessage(clientID uint64, reqHeader *steve_proto_base.Header, responses []exchanger.ResponseMsg) {
+func (o *observer) responseLocalMessage(clientID uint64, reqHeader *steve_proto_base.Header, responses []exchanger.ResponseMsg) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name":    "receiver.responseLocalMessage",
 		"req_send_seq": reqHeader.GetSendSeq(),
@@ -114,7 +113,7 @@ func (o *receiver) responseLocalMessage(clientID uint64, reqHeader *steve_proto_
 	}
 }
 
-func (o *receiver) response(clientID uint64, reqHeader *steve_proto_base.Header, rspMsgID uint32, body []byte) {
+func (o *observer) response(clientID uint64, reqHeader *steve_proto_base.Header, rspMsgID uint32, body []byte) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name":    "receiver.response",
 		"rsp_msg_id":   msgid.MsgID(rspMsgID),
@@ -132,9 +131,29 @@ func (o *receiver) response(clientID uint64, reqHeader *steve_proto_base.Header,
 	}
 }
 
+func heartBeat(clientID uint64) {
+	conn := connection.GetConnectionMgr().GetConnection(clientID)
+	if conn != nil {
+		conn.HeartBeat()
+	}
+}
+
+// AfterSend 消息发送后的回调
+func (o *observer) AfterSend(clientID uint64, header *steve_proto_base.Header, body []byte, err error) {
+	// 只要发送消息成功，就重置心跳时间
+	if err != nil {
+		heartBeat(clientID)
+	}
+}
+
 // OnRecv 收到消息后的处理
-func (o *receiver) OnRecv(clientID uint64, header *steve_proto_base.Header, body []byte) {
+func (o *observer) OnRecv(clientID uint64, header *steve_proto_base.Header, body []byte) {
 	msgID := header.GetMsgId()
+	// 收到消息时，非心跳消息，也计算一次心跳
+	// 也就是说，只要收到消息就重置心跳时间
+	if msgID != uint32(msgid.MsgID_GATE_HEART_BEAT_REQ) {
+		heartBeat(clientID)
+	}
 
 	playerID := o.getPlayerID(clientID)
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -159,7 +178,7 @@ func (o *receiver) OnRecv(clientID uint64, header *steve_proto_base.Header, body
 	}
 }
 
-func (o *receiver) callRemoteHandler(clientID uint64, playerID uint64, reqHeader *steve_proto_base.Header, body []byte, serverName string) {
+func (o *observer) callRemoteHandler(clientID uint64, playerID uint64, reqHeader *steve_proto_base.Header, body []byte, serverName string) {
 	msgID := reqHeader.GetMsgId()
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "receiver.callRemoteHandler",
@@ -192,12 +211,12 @@ func (o *receiver) callRemoteHandler(clientID uint64, playerID uint64, reqHeader
 }
 
 // getLocalHandler 获取本地消息处理器
-func (o *receiver) getLocalHandler(msgID uint32) *exchanger.Handler {
+func (o *observer) getLocalHandler(msgID uint32) *exchanger.Handler {
 	exposer := structs.GetGlobalExposer()
 	return exposer.Exchanger.GetHandler(msgID)
 }
 
-func (o *receiver) callLocalHandler(clientID uint64, playerID uint64, reqHeader *steve_proto_base.Header, body []byte) {
+func (o *observer) callLocalHandler(clientID uint64, playerID uint64, reqHeader *steve_proto_base.Header, body []byte) {
 	msgID := reqHeader.GetMsgId()
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "receiver.callLocalHandler",
