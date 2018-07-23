@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	majongpb "steve/server_pb/majong"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 //GetColorStatistics 统计各花色
@@ -257,4 +259,21 @@ func NotDuplicatesCards(cards []*majongpb.Card) []*majongpb.Card {
 		}
 	}
 	return newCards
+}
+
+// CardTypeIsSame 牌型一样
+func CardTypeIsSame(colors []majongpb.CardColor, colorCardsMap map[majongpb.CardColor][]*majongpb.Card) []*majongpb.Card {
+	// 牌数不一样，选择最小牌数
+	if flag, minCards := IsCardNumEqualAndMinCards(colors, colorCardsMap); !flag {
+		logrus.WithFields(logrus.Fields{"func_name": "GetRecommedHuanSanZhang",
+			"minCards": minCards, "colors": colors}).Info("牌型一样，牌数不一样，选择最小牌数")
+		return minCards
+	}
+	//牌数一样，随机
+	rd := rand.New(rand.NewSource(time.Now().UnixNano())) // 随机出颜色
+	towards := rd.Intn(len(colors))
+	cards := colorCardsMap[colors[towards]]
+	logrus.WithFields(logrus.Fields{"func_name": "GetRecommedHuanSanZhang",
+		"cards": cards, "towards": towards, "colors": colors}).Info("牌型一样，牌数一样，随机")
+	return cards
 }

@@ -9,7 +9,6 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
@@ -536,9 +535,11 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
+		cardTypeOptionID := int(context.GetCardtypeOptionId())
 		for _, tt := range tingInfo {
 			hCard, _ := utils.IntToCard(int32(tt))
-			times, _, _ := facade.CalculateCardValue(bus.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+			ctc := bus.GetFanTypeCalculator()
+			types, gen, hua := ctc.Calculate(interfaces.FantypeParams{
 				PlayerID:  player.GetPalyerId(),
 				MjContext: context,
 				HandCard:  newHand,
@@ -549,6 +550,9 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 					Type: majongpb.HuType_hu_dianpao,
 				},
 			})
+			// 移除胡类型的番型
+			types = gutils.DeleteHuType(cardTypeOptionID, types)
+			times := ctc.CardTypeValue(context, types, gen, hua)
 			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
 				TingCard: proto.Uint32(uint32(tt)),
 				Times:    proto.Uint32(uint32(times)),
