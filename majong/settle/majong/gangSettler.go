@@ -91,17 +91,17 @@ func (gangSettle *GangSettle) gangType2SettleType(gangType majongpb.GangType) ma
 func CanGangSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
 	for _, giveupPlayer := range givePlayers {
 		if giveupPlayer != playerID {
-			break
+			continue
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerGangSettle
 	}
 	for _, hasHupalyer := range hasHuPlayers {
 		if hasHupalyer != playerID {
-			break
+			continue
 		}
 		for _, quitPlayer := range quitPlayers {
 			if quitPlayer != playerID {
-				break
+				continue
 			}
 			return settleOption.HuQuitPlayerSettle.HuQuitPlayerGangSettle
 		}

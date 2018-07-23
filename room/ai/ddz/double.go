@@ -19,6 +19,13 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 
 	playerId := params.PlayerID
 
+	context := params.DDZContext
+	for _, doubledPlayer := range context.DoubledPlayers {
+		if doubledPlayer == playerId { //此用户已加倍
+			return
+		}
+	}
+
 	request := ddz.DoubleRequestEvent{Head: &ddz.RequestEventHead{
 		PlayerId: playerId,
 	}, IsDouble: false,

@@ -18,4 +18,6 @@ func Test_StartGame(t *testing.T) {
 
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err)
+
+	utils.ClearPeiPai(params.PeiPaiGame)
 }

@@ -106,6 +106,21 @@ func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPl
 	return
 }
 
+func UpdateDDZPlayerClientInfo(client interfaces.Client, player interfaces.ClientPlayer, deskData *DeskData) {
+	oldPlayer, exist := deskData.Players[player.GetID()]
+	if !exist {
+		return
+	}
+
+	newPlayer := DeskPlayer{
+		Player:    player,
+		Seat:      oldPlayer.Seat,
+		Expectors: createDDZPlayerExpectors(player.GetClient()),
+	}
+	deskData.Players[player.GetID()] = newPlayer
+	return
+}
+
 // GenerateAccountName 生成账号名字
 func GenerateAccountName(accountID uint64) string {
 	return fmt.Sprintf("account_%v", accountID)

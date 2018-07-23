@@ -47,7 +47,7 @@ func ExistInDesk(playerID uint64) (interfaces.Desk, bool) {
 }
 
 // HandleResumeGameReq 恢复对局请求
-func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
+func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomResumeGameReq) (ret []exchanger.ResponseMsg) {
 	desk, exist := ExistInDesk(playerID)
 	if !exist {
 		body := &room.RoomResumeGameRsp{
