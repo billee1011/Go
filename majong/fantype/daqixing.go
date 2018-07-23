@@ -1,25 +1,31 @@
 package fantype
 
+import (
+	"steve/gutils"
+	majongpb "steve/server_pb/majong"
+)
+
 // checkDaQiXing 大七星:胡牌为七对,并且由“东南西北中发白”其中的字牌构成
 func checkDaQiXing(tc *typeCalculator) bool {
 	if !tc.callCheckFunc(qiduiFuncID) {
 		return false
 	}
-	handCards := tc.getHandCards()
-	if len(handCards) != 13 {
-		return false
-	}
-	huCard := tc.getHuCard()
-	if huCard == nil {
-		return false
-	}
-	for _, card := range handCards {
-		if IsXuShuCard(card) {
-			return false
+	cards := make([]*majongpb.Card, 0)
+	cards = append(cards, tc.getHandCards()...)
+	cards = append(cards, tc.getHuCard().GetCard())
+	count := 0
+	ziCards := []int{gutils.Dong, gutils.Nan, gutils.Xi, gutils.Bei, gutils.Zhong, gutils.Fa, gutils.Bai}
+	for _, ziCard := range ziCards {
+		for _, card := range cards {
+			if IsXuShuCard(card) {
+				return false
+			}
+			cardValue := gutils.ServerCard2Number(card)
+			if cardValue == uint32(ziCard) {
+				count++
+				break
+			}
 		}
 	}
-	if IsXuShuCard(huCard.GetCard()) {
-		return false
-	}
-	return true
+	return count == 7
 }

@@ -1,16 +1,17 @@
 package common
 
 import (
+	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/majong/settle"
 )
 
 // HuSettleState 杠结算状态
@@ -92,10 +93,8 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		totalValue := fantype.CalculateScore(mjContext, fanTypes, genSum, huaSum)
 		cardsGroup[huPlayerID] = utils.GetCardsGroup(huPlayer, mjContext.GetLastOutCard())
 
-		HfanTypes := make([]int64, 0)
-		for _, fanType := range fanTypes {
-			HfanTypes = append(HfanTypes, int64(fanType))
-		}
+		cardOptionID := int(mjContext.GetCardtypeOptionId())
+		HfanTypes := gutils.GetShowFan(cardOptionID, fanTypes)
 		cardTypes[huPlayerID] = HfanTypes
 		cardValues[huPlayerID] = totalValue
 		genCount[huPlayerID] = uint64(genSum)
@@ -123,12 +122,15 @@ func (s *HuSettleState) doHuSettle(flow interfaces.MajongFlow) {
 		params.HuType = majongpb.HuType_hu_ganghoupao
 		params.GangCard = *GangCards[len(GangCards)-1]
 	}
-	settlerFactory := majong.SettlerFactory{}
-	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler(mjContext.GameId).Settle(params)
 	if s.isAfterGang(mjContext) {
-		lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
-		if lastSettleInfo.SettleType == majongpb.SettleType_settle_angang || lastSettleInfo.SettleType == majongpb.SettleType_settle_minggang || lastSettleInfo.SettleType == majongpb.SettleType_settle_bugang {
-			lastSettleInfo.CallTransfer = true
+		settleOption := mjoption.GetSettleOption(int(mjContext.GetSettleOptionId()))
+		if settleOption.GangInstantSettle {
+			lastSettleInfo := mjContext.SettleInfos[len(mjContext.SettleInfos)-1]
+			if lastSettleInfo.SettleType == majongpb.SettleType_settle_angang || lastSettleInfo.SettleType == majongpb.SettleType_settle_minggang || lastSettleInfo.SettleType == majongpb.SettleType_settle_bugang {
+				lastSettleInfo.CallTransfer = true
+			}
 		}
 	}
 	maxSID := uint64(0)

@@ -20,7 +20,7 @@ import (
 	//"steve/serviceloader/logger"
 
 	"github.com/Sirupsen/logrus"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"steve/servicelauncher/launcher"
@@ -102,7 +102,7 @@ func initConfig() string {
 }
 
 func initDefaultConfig() {
-	viper.SetDefault("log_level", "info")
+	viper.SetDefault("log_level", "debug")
 	viper.SetDefault("log_dir", "")
 	viper.SetDefault("log_prefix", "")
 	viper.SetDefault("log_stderr", true)
@@ -119,6 +119,7 @@ func initDefaultConfig() {
 }
 
 func initLogger() {
+	logrus.SetLevel(logrus.DebugLevel)
 	//logger.SetupLog(viper.GetString("log_prefix"), viper.GetString("log_dir"),
 	//	viper.GetString("log_level"), viper.GetBool("log_stderr"))
 }

@@ -41,6 +41,10 @@ func (b *backends) Servers() []*balancerpb.Server {
 
 	servers := make([]*balancerpb.Server, 0, len(b.set))
 	for _, b := range b.set {
+		// 如果score() < 0 :表示服务被退休了。
+		if b.Score() < 0 {
+			continue
+		}
 		servers = append(servers, b.Server())
 	}
 	return servers
@@ -74,8 +78,14 @@ func (b *backends) Update(addrs []string) (err error) {
 
 	// Connect to added backends, in parallel
 	if len(added) != 0 {
-		err = b.connectAll(addrs)
+		// 修复会产生大量重连连接问题 addrs->added
+		err = b.connectAll(added)
+		// 只要能获取到一个可用的连接，就不会出错.
+		if len(b.set) != 0 {
+			err = nil
+		}
 	}
+
 	return
 }
 

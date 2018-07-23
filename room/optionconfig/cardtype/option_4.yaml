@@ -5,6 +5,7 @@ enable_geng: false # 是否启用根
 enable_hua: true # 是否启用花
 hua_score: 1 # 花的番数
 hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
+enable_fan_type_deal: false #番型处理，是否将胡类型从，番型拿出
 
 # 支持的番型列表
 enable_fan_types:
@@ -174,7 +175,7 @@ enable_fan_types:
   35:  # 三同顺
     id: 35 # 三同顺
     func_id: 35  # 计算函数 ID : 35
-    mutex: [36,60]  # 不计三连刻、一般高
+    mutex: [60]  # 不计一般高
     method: 0   # 计算方式：相加
     score: 24    # 番数 24 
   2:  # 七对
@@ -446,14 +447,21 @@ fan_type_2_hu_type:
   69: # 地胡
     huType: 8  
   70: # 人胡
-    huType: 9
+    huType: 2
   79: # 海底捞月
     huType: 4
   76: # 杠上开花
     huType: 3
-  75: # 自摸
-    huType: 6
   80: # 抢杠胡
-    huType: 1
-  81: # 点炮
-    huType: 2   
+    huType: 1 
+  71: # 妙手回春
+    huType: 9  
+
+#番型对应的结算类型  
+fan_type_2_settle_type:
+  75: #自摸
+    settleType: 4
+  81: #点炮
+    settleType: 3
+  80: #抢杠胡    
+    settleType: 3   

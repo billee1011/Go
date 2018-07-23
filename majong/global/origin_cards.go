@@ -96,94 +96,94 @@ var (
 	Card8H = majongpb.Card{Color: majongpb.CardColor_ColorHua, Point: 8}
 )
 
-func getMjCard(v int) majongpb.Card {
+func getMjCard(v int) *majongpb.Card {
 	switch v {
 	case 11:
-		return Card1W
+		return &Card1W
 	case 12:
-		return Card2W
+		return &Card2W
 	case 13:
-		return Card3W
+		return &Card3W
 	case 14:
-		return Card4W
+		return &Card4W
 	case 15:
-		return Card5W
+		return &Card5W
 	case 16:
-		return Card6W
+		return &Card6W
 	case 17:
-		return Card7W
+		return &Card7W
 	case 18:
-		return Card8W
+		return &Card8W
 	case 19:
-		return Card9W
+		return &Card9W
 	case 21:
-		return Card1T
+		return &Card1T
 	case 22:
-		return Card2T
+		return &Card2T
 	case 23:
-		return Card3T
+		return &Card3T
 	case 24:
-		return Card4T
+		return &Card4T
 	case 25:
-		return Card5T
+		return &Card5T
 	case 26:
-		return Card6T
+		return &Card6T
 	case 27:
-		return Card7T
+		return &Card7T
 	case 28:
-		return Card8T
+		return &Card8T
 	case 29:
-		return Card9T
+		return &Card9T
 	case 31:
-		return Card1B
+		return &Card1B
 	case 32:
-		return Card2B
+		return &Card2B
 	case 33:
-		return Card3B
+		return &Card3B
 	case 34:
-		return Card4B
+		return &Card4B
 	case 35:
-		return Card5B
+		return &Card5B
 	case 36:
-		return Card6B
+		return &Card6B
 	case 37:
-		return Card7B
+		return &Card7B
 	case 38:
-		return Card8B
+		return &Card8B
 	case 39:
-		return Card9B
+		return &Card9B
 	case 41:
-		return Card1Z
+		return &Card1Z
 	case 42:
-		return Card2Z
+		return &Card2Z
 	case 43:
-		return Card3Z
+		return &Card3Z
 	case 44:
-		return Card4Z
+		return &Card4Z
 	case 45:
-		return Card5Z
+		return &Card5Z
 	case 46:
-		return Card6Z
+		return &Card6Z
 	case 47:
-		return Card7Z
+		return &Card7Z
 	case 51:
-		return Card1H
+		return &Card1H
 	case 52:
-		return Card2H
+		return &Card2H
 	case 53:
-		return Card3H
+		return &Card3H
 	case 54:
-		return Card4H
+		return &Card4H
 	case 55:
-		return Card5H
+		return &Card5H
 	case 56:
-		return Card6H
+		return &Card6H
 	case 57:
-		return Card7H
+		return &Card7H
 	case 58:
-		return Card8H
+		return &Card8H
 	}
-	return majongpb.Card{}
+	return &majongpb.Card{}
 }
 
 // GetOriginCards 获取gameID游戏的所有牌
@@ -192,7 +192,7 @@ func GetOriginCards(mjContext *majongpb.MajongContext) []*majongpb.Card {
 	result := make([]*majongpb.Card, 0, 200)
 	for _, v := range xpOption.WallCards {
 		card := getMjCard(v)
-		result = append(result, &card)
+		result = append(result, card)
 	}
 	return result
 }

@@ -100,6 +100,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	fmt.Println(ntf)
 	callTransferScore := 6
+	fmt.Println(ntf.BillPlayersInfo)
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
 			assert.Equal(t, billInfo.GetScore(), int64(-callTransferScore))

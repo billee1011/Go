@@ -4,6 +4,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
@@ -58,8 +59,9 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 		return
 	}
 	mjContext.LastHuPlayers = []uint64{player.GetPalyerId()}
-	huType := s.calcHuType(player.GetPalyerId(), flow)
+	huType := player.ZixunRecord.HuType
 	s.notifyHu(card, huType, player.GetPalyerId(), flow)
+	gutils.SetNextZhuangIndex(mjContext.GetLastHuPlayers(), player.GetPalyerId(), mjContext)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
 	AddHuCard(card, player, player.GetPalyerId(), huType, true)
 
@@ -73,40 +75,20 @@ func (s *ZimoState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 	return mjContext.GetMopaiType() == majongpb.MopaiType_MT_GANG
 }
 
-// calcHuType 计算胡牌类型
-func (s *ZimoState) calcHuType(huPlayerID uint64, flow interfaces.MajongFlow) majongpb.HuType {
-	mjContext := flow.GetMajongContext()
-	afterGang := s.isAfterGang(mjContext)
-	isLast := !utils.HasAvailableWallCards(flow)
-	if afterGang && isLast {
-		return majongpb.HuType_hu_gangshanghaidilao
-	} else if afterGang {
-		return majongpb.HuType_hu_gangkai
-	} else if isLast {
-		return majongpb.HuType_hu_haidilao
-	}
-	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
-	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
-		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
-			return majongpb.HuType_hu_tianhu
-		}
-		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
-			return majongpb.HuType_hu_dihu
-		}
-	}
-	return majongpb.HuType_hu_zimo
-}
-
 // notifyHu 广播胡
 func (s *ZimoState) notifyHu(card *majongpb.Card, huType majongpb.HuType, playerID uint64, flow interfaces.MajongFlow) {
 	// mjContext := flow.GetMajongContext()
-	rhuType := s.huType2RoomHuType(huType)
 	body := room.RoomHuNtf{
 		Players:      []uint64{playerID},
 		FromPlayerId: proto.Uint64(playerID),
 		Card:         proto.Uint32(uint32(utils.ServerCard2Number(card))),
-		HuType:       rhuType.Enum(),
+		HuType:       room.HuType(huType).Enum(),
+		RealPlayerId: proto.Uint64(playerID),
 	}
+	logrus.WithFields(logrus.Fields{
+		"huType":    huType,
+		"RoomHuNtf": body,
+	}).Debugln("广播胡--------------------")
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_HU_NTF, &body)
 }
 

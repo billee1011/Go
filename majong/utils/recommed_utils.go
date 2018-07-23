@@ -139,7 +139,7 @@ func CheckShunGroup(cardCountMap map[int32]int) (bool, int) {
 		return true, 12
 	}
 	if duiCount == 1 { //顺+对
-		return true, 11
+		return true, 13
 	}
 	return false, 18
 }
@@ -230,4 +230,31 @@ func GetDuiNumByShunJiaDui(cardCountMap map[int32]int) int {
 		}
 	}
 	return duiCount
+}
+
+//CopyColorCardMap 复制ColorCardMap
+func CopyColorCardMap(currMap map[majongpb.CardColor][]*majongpb.Card) map[majongpb.CardColor][]*majongpb.Card {
+	newMap := make(map[majongpb.CardColor][]*majongpb.Card)
+	for key, value := range currMap {
+		newMap[key] = value
+	}
+	return newMap
+}
+
+// NotDuplicatesCards 去除重复的牌
+func NotDuplicatesCards(cards []*majongpb.Card) []*majongpb.Card {
+	newCards := make([]*majongpb.Card, 0)
+	for _, card := range cards {
+		flag := true
+		for _, nCard := range newCards {
+			if CardEqual(card, nCard) {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			newCards = append(newCards, card)
+		}
+	}
+	return newCards
 }

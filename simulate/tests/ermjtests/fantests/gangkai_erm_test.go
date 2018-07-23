@@ -45,5 +45,5 @@ func TestFan_GangKai_Zimo_ERM(t *testing.T) {
 	// 检测分数
 	winScro := 280 * (len(deskData.Players) - 1)
 
-	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_GANGSHANGKAIHUA)
+	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_ZIYISE)
 }

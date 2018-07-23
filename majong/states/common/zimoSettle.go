@@ -5,12 +5,12 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/majong/settle"
 )
 
 // ZiMoSettleState 自摸结算状态
@@ -89,7 +89,12 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 	huaCount := make(map[uint64]uint64, 0)
 
 	record := huPlayer.GetZixunRecord()
-	cardTypes[huPlayerID] = record.GetHuFanType().GetFanTypes()
+	fan := make([]int, 0)
+	cardOptionID := int(mjContext.GetCardtypeOptionId())
+	for _, fanType := range record.GetHuFanType().GetFanTypes() {
+		fan = append(fan, int(fanType))
+	}
+	cardTypes[huPlayerID] = gutils.GetShowFan(cardOptionID, fan)
 	cardValues[huPlayerID] = s.calculateScore(mjContext, record)
 	genCount[huPlayerID] = record.GetHuFanType().GetGenCount()
 	huaCount[huPlayerID] = record.GetHuFanType().GetHuaCount()
@@ -111,8 +116,8 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 		SettleID:       mjContext.CurrentSettleId,
 	}
 	totalValue := uint32(0)
-	settlerFactory := majong.SettlerFactory{}
-	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler(mjContext.GameId).Settle(params)
 	for _, settleInfo := range settleInfos {
 		mjContext.SettleInfos = append(mjContext.SettleInfos, settleInfo)
 		mjContext.CurrentSettleId++

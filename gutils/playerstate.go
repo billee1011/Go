@@ -9,11 +9,7 @@ import (
 
 // IsTing 玩家是否是听的状态
 func IsTing(player *majongpb.Player) bool {
-	tingState := player.GetTingStateInfo()
-	if tingState.GetIsTing() || tingState.GetIsTianting() {
-		return true
-	}
-	return false
+	return player.GetTingStateInfo().GetIsTing()
 }
 
 // GetTingType 获取玩家听的类型
@@ -47,4 +43,27 @@ func GetZixunPlayer(mjContext *majongpb.MajongContext) uint64 {
 	default:
 		return mjContext.GetLastMopaiPlayer()
 	}
+}
+
+// SetNextZhuangIndex 设置续局庄家Index
+func SetNextZhuangIndex(huPlayerID []uint64, lostPlayerID uint64, mjContext *majongpb.MajongContext) {
+	if !FixNextBankerSeat(mjContext) {
+		huPlayerCount := len(huPlayerID)
+		if huPlayerCount == 1 {
+			mjContext.NextBankerSeat = uint32(GetPlayerIndex(huPlayerID[0], mjContext.GetPlayers()))
+		} else if huPlayerCount > 1 {
+			mjContext.NextBankerSeat = uint32(GetPlayerIndex(lostPlayerID, mjContext.GetPlayers()))
+		} else if huPlayerCount == 0 {
+			mjContext.NextBankerSeat = 0
+		}
+		// mjContext.FixNextBankerSeat = true
+	}
+}
+
+// FixNextBankerSeat 是否填充了下个庄家
+func FixNextBankerSeat(mjContext *majongpb.MajongContext) bool {
+	if mjContext.GetNextBankerSeat() == uint32(len(mjContext.GetPlayers())) {
+		return false
+	}
+	return true
 }

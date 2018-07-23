@@ -1,20 +1,22 @@
 package utils
 
 import (
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	majongpb "steve/server_pb/majong"
+
+	"steve/majong/bus"
 
 	"github.com/golang/protobuf/proto"
 )
 
 // calcHuTimes 计算胡牌倍数
 func calcHuTimes(card *majongpb.Card, player *majongpb.Player, mjContext *majongpb.MajongContext) uint32 {
-	calcor := global.GetFanTypeCalculator()
+	calcor := bus.GetFanTypeCalculator()
 	pengCards := []*majongpb.Card{}
 	gangCards := []*majongpb.GangCard{}
 	for _, pcard := range player.GetPengCards() {
@@ -57,21 +59,22 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	for _, utilscard := range tingCards {
 		card, _ := IntToCard(int32(utilscard))
 		// 胡提示不能是定缺牌
-		if card.GetColor() != player.GetDingqueColor() {
-			newCard, _ := CardToInt(*card)
-			times := calcHuTimes(card, player, mjContext)
-			tingCardInfo := &room.TingCardInfo{
-				TingCard: proto.Uint32(uint32(*newCard)),
-				Times:    proto.Uint32(times),
-			}
-			ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
-			// 记录听牌信息
-			mjTingInfo := &majongpb.TingCardInfo{
-				TingCard: uint32(*newCard),
-				Times:    times,
-			}
-			player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)
+		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque && card.GetColor() == player.GetDingqueColor() {
+			continue
 		}
+		newCard := ServerCard2Uint32(card)
+		times := calcHuTimes(card, player, mjContext)
+		tingCardInfo := &room.TingCardInfo{
+			TingCard: proto.Uint32(newCard),
+			Times:    proto.Uint32(times),
+		}
+		ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
+		// 记录听牌信息
+		mjTingInfo := &majongpb.TingCardInfo{
+			TingCard: newCard,
+			Times:    times,
+		}
+		player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)
 	}
 	flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
 		MsgID: int(msgid.MsgID_ROOM_TINGINFO_NTF),

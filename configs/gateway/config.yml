@@ -13,11 +13,14 @@ lis_client_port: 36001
 # 客户端监听地址，需要返回给客户端用以发起连接
 lis_client_addr_inquire: 127.0.0.1
 
-redis_addr: 127.0.0.1:6379
+redis_addr: 192.168.7.108:6379
 redis_passwd: 
 
-consul_addr: 127.0.0.1:8500
+consul_addr: 192.168.7.108:8500
 
-nsqd_addr: 127.0.0.1:4150
+nsqd_addr: 192.168.7.108:4150
 nsqlookupd_addrs: 
-  - 127.0.0.1:4161
+  - 192.168.7.108:4161
+
+pprofExposeType:
+pprofHttpPort: 9909

@@ -15,6 +15,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"steve/majong/bus"
+
 	"github.com/golang/protobuf/proto"
 )
 
@@ -28,39 +30,40 @@ var _ interfaces.MajongState = new(ZiXunState)
 func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_hu_request:
-		{
-			message := &majongpb.HuRequestEvent{}
-			err := proto.Unmarshal(eventContext, message)
-			if err != nil {
-				return majongpb.StateID_state_zixun, global.ErrInvalidEvent
-			}
-			return s.zimo(flow, message)
-
-		}
+		return s.doHu(eventContext, flow)
 	case majongpb.EventID_event_chupai_request:
-		{
-			message := &majongpb.ChupaiRequestEvent{}
-			err := proto.Unmarshal(eventContext, message)
-			if err != nil {
-				return majongpb.StateID_state_zixun, global.ErrInvalidEvent
-			}
-			return s.chupai(flow, message)
-		}
+		return s.doChupai(eventContext, flow)
 	case majongpb.EventID_event_gang_request:
-		{
-			message := &majongpb.GangRequestEvent{}
-			err := proto.Unmarshal(eventContext, message)
-			if err != nil {
-				return majongpb.StateID_state_zixun, global.ErrInvalidEvent
-			}
-			return s.gang(flow, message)
-
-		}
-	default:
-		{
-			return majongpb.StateID_state_zixun, nil
-		}
+		return s.doGang(eventContext, flow)
 	}
+	return majongpb.StateID_state_zixun, nil
+}
+
+func (s *ZiXunState) doGang(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := &majongpb.GangRequestEvent{}
+	err := proto.Unmarshal(eventContext, message)
+	if err != nil {
+		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
+	}
+	return s.gang(flow, message)
+}
+
+func (s *ZiXunState) doHu(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := &majongpb.HuRequestEvent{}
+	err := proto.Unmarshal(eventContext, message)
+	if err != nil {
+		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
+	}
+	return s.zimo(flow, message)
+}
+
+func (s *ZiXunState) doChupai(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := &majongpb.ChupaiRequestEvent{}
+	err := proto.Unmarshal(eventContext, message)
+	if err != nil {
+		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
+	}
+	return s.chupai(flow, message)
 }
 
 //angang 决策杠
@@ -130,34 +133,30 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		"reqCard":  card,
 		"hanCards": gutils.FmtMajongpbCards(activePlayer.GetHandCards()),
 	})
-	if activePlayer.GetTingStateInfo().GetIsBaotingyifa() {
-		activePlayer.GetTingStateInfo().IsBaotingyifa = false
-	}
 	for _, c := range activePlayer.GetHandCards() {
-		if utils.CardEqual(c, card) {
-			mjContext.LastOutCard = card
-			mjContext.LastChupaiPlayer = pid
-			//出牌后标志听的状态
-			if !gutils.IsTing(activePlayer) {
-				TingAction := message.GetTingAction()
-				if TingAction.GetEnableTing() {
-					activePlayer.SelectedTing = true
-					switch TingAction.GetTingType() {
-					case majongpb.TingType_TT_NORMAL_TING:
-						activePlayer.GetTingStateInfo().IsTing = true
-					case majongpb.TingType_TT_TIAN_TING:
-						activePlayer.GetTingStateInfo().IsTianting = true
-					}
-					activePlayer.GetTingStateInfo().IsBaotingyifa = true
-				}
-			}
-			logEntry = logEntry.WithFields(logrus.Fields{
-				"selectTing": gutils.IsTing(activePlayer),
-				"tingType":   gutils.GetTingType(activePlayer),
-			})
-			logEntry.Infoln("玩家出牌请求")
-			return majongpb.StateID_state_chupai, nil
+		if !utils.CardEqual(c, card) {
+			continue
 		}
+		mjContext.LastOutCard = card
+		mjContext.LastChupaiPlayer = pid
+		//出牌后标志听的状态
+		if !gutils.IsTing(activePlayer) {
+			TingAction := message.GetTingAction()
+			if TingAction.GetEnableTing() {
+				activePlayer.GetTingStateInfo().IsTing = true
+				if TingAction.GetTingType() == majongpb.TingType_TT_TIAN_TING {
+					activePlayer.GetTingStateInfo().IsTianting = true
+				}
+				activePlayer.GetTingStateInfo().BaotingyifaCount = activePlayer.GetChupaiCount() +
+					int32(len(activePlayer.GetGangCards()))
+			}
+		}
+		logEntry = logEntry.WithFields(logrus.Fields{
+			"selectTing": gutils.IsTing(activePlayer),
+			"tingType":   gutils.GetTingType(activePlayer),
+		})
+		logEntry.Infoln("玩家出牌请求")
+		return majongpb.StateID_state_chupai, nil
 	}
 	return majongpb.StateID_state_zixun, nil
 }
@@ -175,29 +174,14 @@ func (s *ZiXunState) canAnGang(flow interfaces.MajongFlow, message *majongpb.Gan
 	if message.GetHead().GetPlayerId() != playerID {
 		return false, fmt.Errorf("当前玩家不是可执行玩家，不予操作")
 	}
-
 	//检查手牌中是否有足够的暗杠牌
-	gangCardsNum := 0
-	for _, card := range activePlayer.HandCards {
-		if utils.CardEqual(card, angangCard) {
-			gangCardsNum++
-		}
-	}
+	gangCardsNum := utils.GetCardNum(angangCard, activePlayer.GetHandCards())
 	if gangCardsNum != 4 {
 		return false, fmt.Errorf("暗杠的牌不足4张")
 	}
-
 	//判断当前玩家是否胡过牌，胡过牌了，当前玩家需要移除杠牌进行查胡，判断移除后是否会影响胡牌
-	if len(activePlayer.HuCards) > 0 || gutils.IsTing(activePlayer) {
-		//创建副本，移除相应的杠牌进行查胡
-		newcards := make([]*majongpb.Card, 0, len(activePlayer.HandCards))
-		newcards = append(newcards, activePlayer.HandCards...)
-		newcards, _ = utils.RemoveCards(newcards, angangCard, 4)
-		laizi := make(map[utils.Card]bool)
-		huCards, _ := utils.GetTingCards(newcards, laizi)
-		if len(huCards) == 0 || !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
-			return false, fmt.Errorf("当前的明杠操作会影响胡牌后的胡牌牌型，不允许暗杠")
-		}
+	if (gutils.IsHu(activePlayer) || gutils.IsTing(activePlayer)) && !utils.CheckHuByRemoveGangCards(activePlayer, angangCard, 4) {
+		return false, fmt.Errorf("当前的明杠操作会影响胡牌后的胡牌牌型，不允许暗杠")
 	}
 	return true, nil
 }
@@ -237,14 +221,9 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		return false, fmt.Errorf("碰的牌中没有请求中可以进行补杠的牌")
 	}
 	//判断当前玩家是否胡过牌，胡过牌了，当前玩家需要移除杠牌进行查胡，判断移除后是否会影响胡牌
-	if len(activePlayer.HuCards) > 0 {
+	if gutils.IsHu(activePlayer) || gutils.IsTing(activePlayer) {
 		//创建副本，移除相应的杠牌进行查胡
-		newcards := make([]*majongpb.Card, 0, len(handCards))
-		newcards = append(newcards, handCards...)
-		newcards, _ = utils.RemoveCards(newcards, bugangCard, 1)
-		laizi := make(map[utils.Card]bool)
-		huCards, _ := utils.GetTingCards(newcards, laizi)
-		if len(huCards) == 0 || !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
+		if !utils.CheckHuByRemoveGangCards(activePlayer, bugangCard, 1) {
 			return false, fmt.Errorf("当前的补杠杠操作会影响胡牌后的胡牌牌型，不允许补杠")
 		}
 	}
@@ -340,10 +319,9 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	//查听,打什么,听什么
 	s.checkTing(zixunNtf, player, mjContext)
 	if zixunNtf.GetEnableZimo() == true {
-		roomHuType, majongHuType := s.getHuType(playerID, mjContext)
-		zixunNtf.HuType = &roomHuType
-		record.HuType = majongHuType
-		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), mjContext.GetLastMopaiCard())
+		//roomHuType, majongHuType := s.getHuType(playerID, mjContext)
+		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), s.getHuCard(mjContext, player))
+		zixunNtf.HuType = room.HuType(int32(record.HuType)).Enum()
 	}
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	if len(zixunNtf.GetCanTingCardInfo()) != 0 && !gutils.IsTing(player) && xpOption.EnableTingButton {
@@ -404,24 +382,48 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 		SrcPlayer: huPlayerID,
 		Type:      majongpb.HuType_hu_zimo,
 	}
+	cardOptionID := int(context.GetCardtypeOptionId())
 	fanTypes, genCount, huaCount := fantype.CalculateFanTypes(context, huPlayerID, calcHandCard, calcHuCard)
 	record.HuFanType = new(majongpb.HuFanType)
 	record.HuFanType.GenCount = uint64(genCount)
 	record.HuFanType.HuaCount = uint64(huaCount)
-	HfanTypes := make([]int64, 0)
-	for _, fanType := range fanTypes {
-		HfanTypes = append(HfanTypes, int64(fanType))
+	record.HuType = majongpb.HuType_hu_zimo
+	huType := gutils.ServerFanType2ClientHuType(cardOptionID, fanTypes)
+	if huType != -1 {
+		record.HuType = majongpb.HuType(huType)
 	}
-	record.HuFanType.FanTypes = HfanTypes
-	record.HuType = majongpb.HuType(gutils.ServerFanType2ClientHuType(int(context.GetCardtypeOptionId()), fanTypes))
+	for _, fanType := range fanTypes {
+		record.HuFanType.FanTypes = append(record.HuFanType.FanTypes, int64(fanType))
+	}
 	logrus.WithFields(logrus.Fields{
 		"calcHandCard": calcHandCard,
 		"calcHuCard":   calcHuCard,
+		"huType":       huType,
 		"fanTypes":     fanTypes,
+		"HfanTypes":    record.HuFanType.FanTypes,
 		"genCount":     genCount,
 		"huaCount":     huaCount,
 	}).Infoln("自询查番")
 
+}
+
+// getHuCard 获取胡牌
+func (s *ZiXunState) getHuCard(mjContext *majongpb.MajongContext, player *majongpb.Player) (card *majongpb.Card) {
+	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
+	if player.GetZixunCount() == 1 && player.GetPalyerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId() {
+		xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
+		switch xpOption.TianhuCardType {
+		case mjoption.MostTingsCard:
+			_, card = utils.CalcTianHuCardNum(mjContext, player.GetPalyerId())
+		case mjoption.RightCard:
+			card = player.HandCards[len(player.GetHandCards())-1]
+		case mjoption.MoCard:
+			card = mjContext.GetLastMopaiCard()
+		}
+	} else {
+		card = mjContext.GetLastMopaiCard()
+	}
+	return
 }
 
 func (s *ZiXunState) recordZixunMsg(record *majongpb.ZiXunRecord, ntf *room.RoomZixunNtf) {
@@ -536,7 +538,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		}
 		for _, tt := range tingInfo {
 			hCard, _ := utils.IntToCard(int32(tt))
-			times, _, _ := facade.CalculateCardValue(global.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+			times, _, _ := facade.CalculateCardValue(bus.GetFanTypeCalculator(), context, interfaces.FantypeParams{
 				PlayerID:  player.GetPalyerId(),
 				MjContext: context,
 				HandCard:  newHand,

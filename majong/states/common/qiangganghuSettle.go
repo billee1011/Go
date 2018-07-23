@@ -5,12 +5,12 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/settle/majong"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/majong/settle"
 )
 
 // QiangGangHuSettleState 枪杠胡结算状态
@@ -76,10 +76,8 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 		fanTypes, genSum, huaSum := fantype.CalculateFanTypes(mjContext, huPlayerID, huPlayer.GetHandCards(), huCard)
 		totalValue := fantype.CalculateScore(mjContext, fanTypes, genSum, huaSum)
 
-		HfanTypes := make([]int64, 0)
-		for _, fanType := range fanTypes {
-			HfanTypes = append(HfanTypes, int64(fanType))
-		}
+		cardOptionID := int(mjContext.GetCardtypeOptionId())
+		HfanTypes := gutils.GetShowFan(cardOptionID, fanTypes)
 		cardTypes[huPlayerID] = HfanTypes
 		cardValues[huPlayerID] = totalValue
 		genCount[huPlayerID] = uint64(genSum)
@@ -103,8 +101,8 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 		HuaCount:       huaCount,
 		SettleID:       mjContext.CurrentSettleId,
 	}
-	settlerFactory := majong.SettlerFactory{}
-	settleInfos := settlerFactory.CreateHuSettler().Settle(params)
+	settlerFactory := settle.SettlerFactory{}
+	settleInfos := settlerFactory.CreateHuSettler(mjContext.GameId).Settle(params)
 	maxSID := uint64(0)
 	totalValue := uint32(0)
 	for _, settleInfo := range settleInfos {

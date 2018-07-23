@@ -377,7 +377,8 @@ func (d *desk) handleQuitByPlayerState(playerID uint64) {
 
 	if !gutils.IsPlayerContinue(player.GetXpState(), &mjContext) {
 		deskMgr := global.GetDeskMgr()
-		deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+		deskPlayer := facade.GetDeskPlayerByID(d, playerID)
+		deskMgr.DetachPlayer(deskPlayer)
 	}
 	logrus.WithFields(logrus.Fields{
 		"funcName":    "handleQuitByPlayerState",
@@ -491,7 +492,11 @@ func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
 	mjContext := d.dContext.mjContext
 	// 游戏结束
 	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
-		d.ContinueDesk(true, int(mjContext.GetNextBankerSeat()), d.getWinners())
+		nextBankerSeat := int(mjContext.GetNextBankerSeat())
+		if nextBankerSeat >= len(mjContext.GetPlayers()) {
+			nextBankerSeat = int(mjContext.GetZhuangjiaIndex())
+		}
+		d.ContinueDesk(true, nextBankerSeat, d.getWinners())
 		d.settler.RoundSettle(d, mjContext)
 		logEntry.Infoln("游戏结束状态")
 		d.cancel()
@@ -596,7 +601,7 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
 	d.playerQuitEnterDeskNtf(playerID, room.QuitEnterType_QET_QUIT)
 	deskPlayer.QuitDesk()
-	deskMgr.RemoveDeskPlayerByPlayerID(playerID)
+	deskMgr.DetachPlayer(deskPlayer)
 	// getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil
 }
