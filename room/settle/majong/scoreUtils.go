@@ -46,6 +46,38 @@ func calcCoin(deskPlayer []interfaces.DeskPlayer, contextPlayer []*majongpb.Play
 	return coinCost, brokePlayers
 }
 
+// calcTaxbetCoin 计算退税的金币数
+func calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int64, contextPlayer []*majongpb.Player) (coinCost map[uint64]int64) {
+	coinCost = make(map[uint64]int64, 0)
+	loseCoin := int64(global.GetPlayerMgr().GetPlayer(losePlayer).GetCoin()) // 输家金币数
+	loseScore := score[losePlayer]
+	if loseCoin <= 0 {
+		allPlayers := append(winPlayers, losePlayer)
+		for _, player := range allPlayers {
+			coinCost[player] = 0
+		}
+		return
+	}
+	if abs(loseScore) < loseCoin {
+		// 金币数够扣
+		for _, win := range winPlayers {
+			coinCost[win] = score[win]
+		}
+		coinCost[losePlayer] = score[losePlayer]
+	} else {
+		winSum := len(winPlayers)
+		// 金币数不够扣，赢家为1时直接输家的金币全部给赢家，否则平分
+		if winSum == 1 {
+			coinCost[winPlayers[0]] = loseCoin
+			coinCost[losePlayer] = -loseCoin
+		} else if winSum > 1 {
+			divideScore(losePlayer, winPlayers, nil, contextPlayer)
+
+		}
+	}
+	return
+}
+
 // getMaxScore 计算玩家输赢上限
 // 赢豆上限 = max(进房豆子数,当前豆子数)
 // 胡牌且退出房间后不参与牌局的所有结算
@@ -168,6 +200,14 @@ func calcSocrelose1(winPlayers []uint64, losePlayer uint64, loseScore int64, max
 	loseCoin := int64(global.GetPlayerMgr().GetPlayer(losePlayer).GetCoin())
 	// 赢家人数
 	winSum := len(winPlayers)
+	// 输家金币数为0
+	if loseCoin <= 0 {
+		allPlayers := append(winPlayers, losePlayer)
+		for _, player := range allPlayers {
+			coinCost[player] = 0
+		}
+		return coinCost, brokePlayers
+	}
 	if loseScore < loseCoin {
 		// 金币数够扣
 		for _, win := range winPlayers {
@@ -197,11 +237,11 @@ func divideScore(losePlayer uint64, winPlayers []uint64, maxScore map[uint64]int
 	// 多个赢家，按照赢家人数平分
 	for _, winPid := range winPlayers {
 		winScore := int64(loseCoin / int64(winSum))
-		if winScore >= maxScore[winPid] {
+		if maxScore != nil && winScore >= maxScore[winPid] {
 			winScore = maxScore[winPid]
 		}
 		coinCost[winPid] = winScore
-		coinCost[losePlayer] = coinCost[losePlayer] - coinCost[winPid]
+		coinCost[losePlayer] = coinCost[losePlayer] - abs(coinCost[winPid])
 	}
 	// 剩余分数，余 1 情况赔付于赢钱最多的玩家, 余 2 情况赔付于第一、第二胡牌玩家
 	surplusScore := loseCoin - coinCost[losePlayer]

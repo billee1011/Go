@@ -423,67 +423,13 @@ func (majongSettle *majongSettle) generateRevertSettle2(revertID uint64, gangSet
 		}
 	}
 	scoreCost[rlosePid] = scoreCost[rlosePid] + rloseScore
-	coinCost = majongSettle.calcTaxbetCoin(rlosePid, rWinnerPids, scoreCost, mjContext.GetPlayers())
+	coinCost = calcTaxbetCoin(rlosePid, rWinnerPids, scoreCost, mjContext.GetPlayers())
 	majongSettle.revertScore[revertID] = coinCost
 
 	return &majongpb.SettleInfo{
 		Scores:     coinCost,
 		SettleType: majongpb.SettleType_settle_taxrebeat,
 	}
-}
-
-func (majongSettle *majongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int64, contextPlayer []*majongpb.Player) (coinCost map[uint64]int64) {
-	coinCost = make(map[uint64]int64, 0)
-	loseCoin := int64(global.GetPlayerMgr().GetPlayer(losePlayer).GetCoin()) // 输家金币数
-	loseScore := score[losePlayer]
-	if abs(loseScore) < loseCoin {
-		// 金币数够扣
-		for _, win := range winPlayers {
-			coinCost[win] = score[win]
-		}
-		coinCost[losePlayer] = score[losePlayer]
-	} else {
-		winSum := len(winPlayers)
-		// 金币数不够扣，赢家为1时直接输家的金币全部给赢家，否则平分
-		if winSum == 1 {
-			coinCost[winPlayers[0]] = loseCoin
-			coinCost[losePlayer] = -loseCoin
-		} else if winSum > 1 {
-			// 多个赢家，按照赢家人数平分
-			for _, winPid := range winPlayers {
-				winScore := int64(loseCoin / int64(winSum))
-				coinCost[winPid] = winScore
-				coinCost[losePlayer] = coinCost[losePlayer] - coinCost[winPid]
-			}
-			// 剩余分数，余 1 情况赔付于靠近的第一的玩家, 余 2 情况赔付于靠近第一、第二玩家
-			surplusScore := loseCoin - abs(coinCost[losePlayer])
-			if surplusScore > 0 {
-				loseIndex := gutils.GetPlayerIndex(losePlayer, contextPlayer)
-				resortPlayers := make([]uint64, 0)
-				for i := 0; i < len(contextPlayer); i++ {
-					index := (loseIndex + i) % len(contextPlayer)
-					resortPlayers = append(resortPlayers, contextPlayer[index].GetPalyerId())
-				}
-				resortHuPlayers := make([]uint64, 0)
-				for _, resortPID := range resortPlayers {
-					for _, winPlayer := range winPlayers {
-						if resortPID == winPlayer {
-							resortHuPlayers = append(resortHuPlayers, resortPID)
-						}
-					}
-				}
-				if surplusScore%2 == 0 {
-					coinCost[resortHuPlayers[0]] = coinCost[resortHuPlayers[0]] + surplusScore/2
-					coinCost[resortHuPlayers[1]] = coinCost[resortHuPlayers[1]] + surplusScore/2
-					coinCost[losePlayer] = coinCost[losePlayer] - surplusScore
-				} else {
-					coinCost[resortHuPlayers[0]] = coinCost[resortHuPlayers[0]] + surplusScore
-					coinCost[losePlayer] = coinCost[losePlayer] - surplusScore
-				}
-			}
-		}
-	}
-	return
 }
 
 // getBillDetail 获得玩家单次结算详情，包括番型，分数，倍数，以及输赢玩家
