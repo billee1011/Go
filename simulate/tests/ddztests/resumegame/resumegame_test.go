@@ -89,6 +89,8 @@ func TestPlaycard1(t *testing.T) {
 		}
 
 		// 当前状态
-		logEntry.Infof("当前状态：%v，进入下一状态的等待时间:%d", ddzDeskInfo.GetStage().GetStage(), ddzDeskInfo.GetStage().GetTime())
+		logEntry.Infof("当前状态：%v，进入下一状态的等待时间:%d, 当前操作的玩家:%v, 底牌：%v, 抢庄倍数：%v, 加倍倍数：%v, 炸弹倍数：%v",
+			ddzDeskInfo.GetStage().GetStage(), ddzDeskInfo.GetStage().GetTime(), ddzDeskInfo.GetCurPlayerId(),
+			ddzDeskInfo.GetDipai(), ddzDeskInfo.GetTotalGrab(), ddzDeskInfo.GetTotalDouble(), ddzDeskInfo.GetTotalBomb())
 	}
 }

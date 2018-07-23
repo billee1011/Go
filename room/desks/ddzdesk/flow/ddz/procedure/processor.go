@@ -10,10 +10,11 @@ import (
 	"steve/server_pb/ddz"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // Result 处理牌局事件的结果
@@ -265,6 +266,11 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 		logEntry.WithField("玩家信息", playersInfo).Infof("向玩家%v发送恢复对局的消息,当前状态：%v, 剩余时间：%v, 当前操作玩家：%v, 底牌：%v",
 			reqPlayerID, curStage, leftTimeInt32, ddzContext.GetCurrentPlayerId(), ddzContext.GetDipai())
 
+		totalGrab := ddzContext.GetTotalGrab()
+		if totalGrab == 0 {
+			totalGrab = 1
+		}
+
 		// 发送游戏信息
 		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
 			Result: &room.Result{ErrCode: proto.Uint32(0), ErrDesc: proto.String("")},
@@ -276,6 +282,9 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 				},
 				CurPlayerId: proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
 				Dipai:       ddzContext.GetDipai(),
+				TotalGrab:   &totalGrab,
+				TotalDouble: proto.Uint32(ddzContext.GetTotalDouble()),
+				TotalBomb:   proto.Uint32(ddzContext.GetTotalBomb()),
 			},
 		})
 	}
