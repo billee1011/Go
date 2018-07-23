@@ -98,14 +98,14 @@ enable_fan_types:
   68: # 天胡
     id: 68 # 天胡
     func_id: 78  # 计算函数 ID: 78
-    mutex: [75]  # 跟自摸互斥
+    mutex: []  # 跟自摸互斥
     method: 1    # 计算方式：相乘
     score: 32    # 番数 32
     subgeng: 0   # 扣除的根数量
   69: # 地胡
     id: 69 # 地胡
     func_id: 79  # 计算函数 ID: 79
-    mutex: [75]  # 跟自摸互斥
+    mutex: []  # 跟自摸互斥
     method: 1    # 计算方式：相乘
     score: 32    # 番数 32
     subgeng: 0   # 扣除的根数量
