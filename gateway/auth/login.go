@@ -11,6 +11,7 @@ import (
 	"steve/gateway/gateservice"
 	"steve/server_pb/gateway"
 	server_login_pb "steve/server_pb/login"
+	"steve/server_pb/user"
 	"steve/structs"
 	"steve/structs/common"
 	"steve/structs/proto/base"
@@ -78,7 +79,31 @@ func execLogin(clientID uint64, clientRequest login.LoginAuthReq) (clientRespons
 
 	checkAnother(playerID)
 	connection.AttachPlayer(playerID)
+
+	pubLoginMessage(playerID)
 	return
+}
+
+// pubLoginMessage 发布登录消息
+func pubLoginMessage(playerID uint64) {
+
+	entry := logrus.WithFields(logrus.Fields{
+		"func_name": "pubLoginMessage",
+		"player_id": playerID,
+	})
+
+	exposer := structs.GetGlobalExposer()
+	message := user.PlayerLogin{
+		PlayerId: playerID,
+	}
+	messageData, err := proto.Marshal(&message)
+	if err != nil {
+		entry.WithError(err).Errorln("发布登录消息时消息序列化失败")
+		return
+	}
+	if err := exposer.Publisher.Publish("player_login", messageData); err != nil {
+		entry.WithError(err).Errorln("发布消息失败")
+	}
 }
 
 // callLoginService 调用登录服务

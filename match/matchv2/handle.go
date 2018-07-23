@@ -1,16 +1,20 @@
 package matchv2
 
 import (
+	"fmt"
 	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/common/data/player"
 	server_pb_match "steve/server_pb/match"
+	"steve/server_pb/user"
+	"steve/structs"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	nsq "github.com/nsqio/go-nsq"
 )
 
 // HandleMatchReq 匹配请求的处理(来自网关服)
@@ -77,4 +81,24 @@ func AddContinueDesk(request *server_pb_match.AddContinueDeskReq) *server_pb_mat
 	}
 	defaultMgr.addContinueDesk(players, int(request.GetGameId()), request.GetFixBanker(), int(request.GetBankerSeat()))
 	return response
+}
+
+type playerLoginHandler struct {
+}
+
+func (plh *playerLoginHandler) HandleMessage(message *nsq.Message) error {
+	loginPb := user.PlayerLogin{}
+	if err := proto.Unmarshal(message.Body, &loginPb); err != nil {
+		logrus.WithError(err).Errorln("消息反序列化失败")
+		return fmt.Errorf("消息反序列化失败：%v", err)
+	}
+	defaultMgr.addLoginData(loginPb.PlayerId)
+	return nil
+}
+
+func init() {
+	exposer := structs.GetGlobalExposer()
+	if err := exposer.Subscriber.Subscribe("player_login", "match", &playerLoginHandler{}); err != nil {
+		logrus.WithError(err).Panicln("订阅登录消息失败")
+	}
 }
