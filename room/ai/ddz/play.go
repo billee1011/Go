@@ -174,6 +174,8 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 		resultCards = ToInts(sendPukes)
 	}
 
+	logrus.Info("托管被动出牌：%v", resultCards)
+
 	request := ddz.PlayCardRequestEvent{
 		Head: &ddz.RequestEventHead{
 			PlayerId: player.GetPlayerId()},
@@ -205,6 +207,8 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 
 	// 最终打出去的牌（打最小的那个牌）
 	resultCards := []uint32{handPokes[0].ToInt()}
+
+	logrus.Info("托管主动出牌：%v", resultCards)
 
 	// 最终打出去的牌型（单张）
 	resultCardType := ddz.CardType_CT_SINGLE
