@@ -172,7 +172,8 @@ message SettleInfo {
     uint32 gen_count=7;                // 根的数目
     uint32 hua_count = 8;              // 花的数目
     bool call_transfer = 9;            // 结算是否被呼叫转移
-    repeated uint64 group_id = 10;      // 一炮多响相关联的结算 id
+    repeated uint64 group_id = 10;     // 一炮多响相关联的结算 id
+    repeated uint64 hu_players = 11;   // 已胡玩家   
 }
 
 // 玩家操作

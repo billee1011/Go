@@ -10,10 +10,11 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"steve/majong/bus"
+	"steve/majong/settle"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/majong/settle"
-	"steve/majong/bus"
 )
 
 // GameOverState 游戏结束状态
@@ -105,6 +106,7 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		SettleOptionID:   int(mjContext.GetSettleOptionId()),
 		FlowerPigPlayers: flowerPigPlayers,
 		HuPlayers:        huPlayers,
+		HasHuPlayers:     utils.GetHuPlayers(mjContext, []uint64{}),
 		TingPlayersInfo:  tingPlayersInfo,
 		QuitPlayers:      quitPlayers,
 		GiveupPlayers:    giveupPalyers,

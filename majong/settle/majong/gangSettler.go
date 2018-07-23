@@ -75,6 +75,7 @@ func (gangSettle *GangSettle) newGangSettleInfo(params *interfaces.GangSettlePar
 		HuType:     -1,
 		SettleType: gangSettle.gangType2SettleType(params.GangType),
 		CardValue:  gangValue,
+		HuPlayers:  params.HasHuPlayers,
 	}
 }
 
