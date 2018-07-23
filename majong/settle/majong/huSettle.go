@@ -22,7 +22,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		"winnersID":      params.HuPlayers,
 		"settleType":     params.SettleType,
 		"huType":         params.HuType,
-		"allPlayers":     params.HuPlayers,
+		"allPlayers":     params.AllPlayers,
 		"hasHuPlayers":   params.HasHuPlayers,
 		"quitPlayers":    params.QuitPlayers,
 		"cardTypes":      params.CardTypes,
@@ -213,17 +213,17 @@ func (huSettle *HuSettle) divideScore(gangScore, winSum int64, params *interface
 func (huSettle *HuSettle) canHuSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
 	for _, giveupPlayer := range givePlayers {
 		if giveupPlayer != playerID {
-			break
+			continue
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerHuSettle
 	}
 	for _, hasHupalyer := range hasHuPlayers {
 		if hasHupalyer != playerID {
-			break
+			continue
 		}
 		for _, quitPlayer := range quitPlayers {
 			if quitPlayer != playerID {
-				break
+				continue
 			}
 			return settleOption.HuQuitPlayerSettle.HuQuitPlayeHuSettle
 		}
