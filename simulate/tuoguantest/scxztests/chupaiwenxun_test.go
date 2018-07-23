@@ -21,7 +21,7 @@ func Test_ChupauiwenxunTuoguan(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.WallCards = []uint32{31}
 	params.Cards[0] = []uint32{11, 11, 11, 31, 12, 12, 12, 32, 13, 13, 13, 33, 14, 18}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
@@ -40,7 +40,7 @@ func Test_ChupaiTuoguan(t *testing.T) {
 	params.Cards[0][12] = 31
 	params.Cards[0][13] = 31
 	params.DingqueColor[0] = room.CardColor_CC_WAN
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

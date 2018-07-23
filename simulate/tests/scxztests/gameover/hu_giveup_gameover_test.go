@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -23,7 +24,7 @@ func Test_SCXZ_ZiMo_GiveUp_GameOver(t *testing.T) {
 		{25, 25, 25, 25, 26, 26, 26, 26, 27, 27, 27, 27, 28},
 	}
 	params.HszCards = [][]uint32{}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	// 根据座位设置玩家金币数
@@ -56,7 +57,7 @@ func Test_SCXZ_ZiMo_GiveUp_GameOver(t *testing.T) {
 func Test_SCXZ_DuoDianpao_GiveUp_GameOver(t *testing.T) {
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	// 根据座位设置玩家金币数
@@ -122,7 +123,7 @@ func Test_SCXZ_DuoDianpao_GiveUp_GameOver(t *testing.T) {
 // 3. 牌墙有剩余，正常玩家人数不足，游戏结束
 func Test_SCXZ_DuoQiangganghu_GiveUp_GameOver(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	// 根据座位设置玩家金币数

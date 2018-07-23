@@ -141,7 +141,7 @@ func heartBeat(clientID uint64) {
 // AfterSend 消息发送后的回调
 func (o *observer) AfterSend(clientID uint64, header *steve_proto_base.Header, body []byte, err error) {
 	// 只要发送消息成功，就重置心跳时间
-	if err != nil {
+	if err == nil {
 		heartBeat(clientID)
 	}
 }

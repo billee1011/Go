@@ -1,6 +1,7 @@
 package hutests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -19,7 +20,7 @@ func Test_SCXZ_Zimo(t *testing.T) {
 	var Int1B uint32 = 31
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	zimoSeat := 1

@@ -2,6 +2,7 @@ package deskbase
 
 import (
 	"context"
+	playerdata "steve/common/data/player"
 	"steve/room/interfaces"
 	"steve/server_pb/match"
 	"steve/structs"
@@ -60,6 +61,10 @@ func (d *DeskBase) ContinueDesk(fixBanker bool, bankerSeat int, winners []uint64
 	continuePlayers := make([]*match.ContinuePlayer, 0, len(players))
 	for _, player := range players {
 		if player.IsQuit() { // 玩家已经退出牌桌，不续局
+			return
+		}
+		// 玩家金币数为0， 不续局
+		if playerdata.GetPlayerCoin(player.GetPlayerID()) == 0 {
 			return
 		}
 		continuePlayers = append(continuePlayers, &match.ContinuePlayer{

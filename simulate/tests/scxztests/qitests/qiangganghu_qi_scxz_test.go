@@ -1,6 +1,7 @@
 package qitests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -17,7 +18,7 @@ import (
 // 1号玩家将收到杠通知，杠后摸牌后将收到自询通知
 func Test_SCXZ_Qiangganghu_qi(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	// 庄家的初始手牌： 11,11,11,11,12,12,12,12,13,13,13,39,31,19

@@ -1,6 +1,7 @@
 package doudizhu
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/structs"
 	"steve/simulate/utils"
@@ -12,7 +13,7 @@ import (
 // NewStartDDZGameParamsTest1 创建棋牌启动参数测试
 func NewStartDDZGameParamsTest1() structs.StartPukeGameParams {
 	return structs.StartPukeGameParams{
-		GameID: room.GameId_GAMEID_DOUDIZHU, // 斗地主
+		GameID: common.GameId_GAMEID_DOUDIZHU, // 斗地主
 		Cards: [][]uint32{
 			// 第一个人的牌(地主)
 			{
@@ -117,7 +118,7 @@ func NewStartDDZGameParamsTest1() structs.StartPukeGameParams {
 // NewStartDDZGameParamsTest2 创建棋牌启动参数测试2
 func NewStartDDZGameParamsTest2() structs.StartPukeGameParams {
 	return structs.StartPukeGameParams{
-		GameID: room.GameId_GAMEID_DOUDIZHU, // 斗地主
+		GameID: common.GameId_GAMEID_DOUDIZHU, // 斗地主
 		Cards: [][]uint32{
 			// 第一个人的牌(地主)
 			{

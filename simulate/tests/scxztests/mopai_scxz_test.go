@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -18,7 +19,7 @@ func Test_SCXZ_Mopai(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	// 庄家最后一张牌改为1筒
 	params.Cards[0][13] = 31
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 
@@ -61,7 +62,7 @@ func Test_SCXZ_Hued_NotMopai(t *testing.T) {
 		{35, 35, 35, 25, 26, 36, 36, 36, 37, 37, 37, 37, 38},
 	}
 	params.HszCards = [][]uint32{}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	params.WallCards = []uint32{31, 31, 32, 33}
@@ -109,7 +110,7 @@ func Test_GiveUp_MoPai(t *testing.T) {
 		{35, 35, 35, 25, 26, 36, 36, 36, 37, 37, 37, 37, 38},
 	}
 	params.HszCards = [][]uint32{}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	// 根据座位设置玩家金币数

@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -16,7 +17,7 @@ import (
 // 期望：其他玩家收到庄家出牌通知
 func Test_SCXZ_Chupai(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 

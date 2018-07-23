@@ -70,7 +70,7 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	assert.Equal(t, playerState, common.PlayerState_PS_GAMEING)
 
 	// 请求加入失败  新架构匹配服务没有识别 在游戏中
-	// rsp2, err := utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUEZHAN)
+	// rsp2, err := utils.ApplyJoinDesk(zimoPlayer.Player, common.GameId_GAMEID_XUEZHAN)
 	// assert.Nil(t, err)
 	// assert.Equal(t, room.RoomError_DESK_GAME_PLAYING, rsp2.GetErrCode())
 
