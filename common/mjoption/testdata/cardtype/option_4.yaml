@@ -13,7 +13,7 @@ enable_fan_types:
     func_id: 61  # 计算函数 ID: 61
     mutex: []   # 不和任何牌互斥,边张、坎张、单钓将不影响平和
     method: 0   # 计算方式：相加
-    score: 1    # 番数 1
+    score: 2    # 番数 2
   12:  # 大四喜
     id: 12 # 大四喜
     func_id: 12                # 计算函数 ID : 12
