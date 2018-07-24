@@ -6,6 +6,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -283,7 +284,7 @@ func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow
 	// 广播通知客户端进入定缺
 	for _, player := range flow.GetMajongContext().GetPlayers() {
 		// 获取推荐换三张
-		hszCards := utils.GetRecommedHuanSanZhang(player.GetHandCards())
+		hszCards := gutils.GetRecommedHuanSanZhang(player.GetHandCards())
 		// 先设置，用于超时AI
 		player.HuansanzhangCards = hszCards
 		if len(hszCards) != 3 {

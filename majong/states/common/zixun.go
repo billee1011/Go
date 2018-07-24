@@ -688,7 +688,7 @@ func (s *ZiXunState) sortCards(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	playerID := gutils.GetZixunPlayer(mjContext)
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
-	utils.SortCards(player.GetHandCards())
+	gutils.SortCards(player.GetHandCards())
 }
 
 //AddZiXunCount 自询次数递增1
