@@ -350,7 +350,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		return
 	}
 	if eqi.Quit {
-		deskPlayer.QuitDesk()
+		deskPlayer.QuitDesk(d.needTuoguan())
 		d.setMjPlayerQuitDesk(eqi.PlayerID, true)
 		d.handleQuitByPlayerState(eqi.PlayerID)
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
@@ -369,6 +369,18 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
 		logEntry.Debugln("玩家进入")
 	}
+}
+
+func (d *desk) needTuoguan() bool {
+	state := d.dContext.mjContext.GetCurState()
+	switch state {
+	case server_pb.StateID_state_init,
+		server_pb.StateID_state_fapai,
+		server_pb.StateID_state_huansanzhang,
+		server_pb.StateID_state_dingque:
+		return false
+	}
+	return true
 }
 
 func (d *desk) handleQuitByPlayerState(playerID uint64) {
@@ -600,7 +612,7 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	deskMgr := global.GetDeskMgr()
 	deskPlayer := facade.GetDeskPlayerByID(d, playerID)
 	d.playerQuitEnterDeskNtf(playerID, room.QuitEnterType_QET_QUIT)
-	deskPlayer.QuitDesk()
+	deskPlayer.QuitDesk(true)
 	deskMgr.DetachPlayer(deskPlayer)
 	// getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil

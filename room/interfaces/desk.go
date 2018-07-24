@@ -16,7 +16,7 @@ type DeskPlayer interface {
 	// IsQuit 是否已经退出
 	IsQuit() bool
 	// QuitDesk 退出房间
-	QuitDesk()
+	QuitDesk(needTuoguan bool)
 	// EnterDesk 进入房间
 	EnterDesk()
 	// OnPlayerOverTime 玩家超时

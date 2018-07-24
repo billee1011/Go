@@ -71,11 +71,11 @@ func (dp *deskPlayer) IsQuit() bool {
 }
 
 // QuitDesk 退出牌桌
-func (dp *deskPlayer) QuitDesk() {
+func (dp *deskPlayer) QuitDesk(needTuoguan bool) {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.quit = true
-	dp.tuoguan = true // 退出后自动托管
+	dp.tuoguan = dp.tuoguan || needTuoguan // 退出后自动托管
 }
 
 // EnterDesk 进入牌桌
