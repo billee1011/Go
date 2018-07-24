@@ -3,7 +3,7 @@ package flow
 import (
 	"errors"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"testing"
 
 	"github.com/golang/mock/gomock"

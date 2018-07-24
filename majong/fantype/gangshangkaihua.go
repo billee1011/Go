@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkGangShangKaiHua 检测杠开（杠上开花），杠后摸牌自摸

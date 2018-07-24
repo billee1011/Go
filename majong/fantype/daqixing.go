@@ -2,7 +2,7 @@ package fantype
 
 import (
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkDaQiXing 大七星:胡牌为七对,并且由“东南西北中发白”其中的字牌构成

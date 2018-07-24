@@ -2,7 +2,7 @@ package utils
 
 import (
 	"sort"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 type cards []*majongpb.Card

@@ -9,7 +9,7 @@ import (
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -23,7 +23,7 @@ const (
 )
 
 // ProcessEvent 处理事件
-func (f *FapaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (f *FapaiState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_fapai_finish:
 		{
@@ -69,7 +69,7 @@ func (f *FapaiState) curState() majongpb.StateID {
 }
 
 // onCartoonFinish 动画播放完毕
-func (f *FapaiState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
+func (f *FapaiState) onCartoonFinish(flow interfaces.MajongFlow, eventContext interface{}) (newState majongpb.StateID, err error) {
 	return OnCartoonFinish(f.curState(), f.nextState(flow.GetMajongContext()), room.CartoonType_CTNT_FAPAI, eventContext)
 }
 

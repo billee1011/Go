@@ -2,7 +2,7 @@ package fantype
 
 import (
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"steve/majong/bus"
 )
 

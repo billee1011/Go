@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家

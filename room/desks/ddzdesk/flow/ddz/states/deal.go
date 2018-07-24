@@ -10,7 +10,7 @@ import (
 	"steve/client_pb/room"
 	"steve/majong/global"
 	"steve/room/peipai/handle"
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 	"time"
 )
 

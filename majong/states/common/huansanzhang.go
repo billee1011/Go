@@ -6,14 +6,13 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 // HuansanzhangState 换三张状态
@@ -26,7 +25,7 @@ func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
 }
 
 // ProcessEvent 处理换三张事件
-func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_huansanzhang_request:
 		{
@@ -64,7 +63,7 @@ func (s *HuansanzhangState) curState() majongpb.StateID {
 }
 
 // onCartoonFinish 动画播放完毕
-func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
+func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventContext interface{}) (newState majongpb.StateID, err error) {
 	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
 	if !finished {
 		return s.curState(), global.ErrInvalidEvent
@@ -93,19 +92,14 @@ func (s *HuansanzhangState) checkReq(logEntry *logrus.Entry, player *majongpb.Pl
 }
 
 // onReq 处理换三张请求事件
-func (s *HuansanzhangState) onReq(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *HuansanzhangState) onReq(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	newState, err = majongpb.StateID_state_huansanzhang, nil
 
 	logEntry := logrus.WithField("func_name", "HuansanzhangState.onReq")
 	mjContext := flow.GetMajongContext()
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
 
-	req := new(majongpb.HuansanzhangRequestEvent)
-
-	if marshalErr := proto.Unmarshal(eventContext, req); marshalErr != nil {
-		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
-		return majongpb.StateID_state_huansanzhang, global.ErrUnmarshalEvent
-	}
+	req := eventContext.(majongpb.HuansanzhangRequestEvent)
 	playerID := req.GetHead().GetPlayerId()
 
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)

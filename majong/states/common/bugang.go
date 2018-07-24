@@ -13,10 +13,10 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -31,7 +31,7 @@ type BuGangState struct {
 var _ interfaces.MajongState = new(BuGangState)
 
 // ProcessEvent 处理事件
-func (s *BuGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *BuGangState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_bugang_finish {
 		s.setMopaiPlayer(flow)
 		xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))

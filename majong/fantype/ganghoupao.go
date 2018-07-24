@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 //checkGangHouPao 检测杠后炮,摸牌类型是杠后摸牌，点炮
 func checkGangHouPao(tc *typeCalculator) bool {

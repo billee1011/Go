@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkLaoShaoFu 检查老少副 含有一种花色的123,789的俩副顺子

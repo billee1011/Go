@@ -1,7 +1,7 @@
 package utils
 
 import (
-	server_majongpb "steve/server_pb/majong"
+	server_majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )

@@ -3,7 +3,7 @@ package transition
 import (
 	"testing"
 
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/stretchr/testify/assert"
 )

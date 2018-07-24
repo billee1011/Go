@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkShuangMingGang 检测双明杠 含有两个明杠(直杠，补杠)

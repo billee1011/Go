@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkRenHu 检测人胡,庄家打出的第一张牌闲家就胡牌，此为人胡，若庄家出牌前有暗杠，那么不算人胡；

@@ -2,7 +2,7 @@ package gutils
 
 import (
 	"steve/client_pb/room"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //

@@ -2,13 +2,12 @@ package common
 
 import (
 	"errors"
-	"fmt"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -18,7 +17,7 @@ import (
 type ChupaiwenxunState struct{}
 
 // ProcessEvent 处理事件
-func (s *ChupaiwenxunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *ChupaiwenxunState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_hu_request,
 		majongpb.EventID_event_gang_request,
@@ -109,62 +108,44 @@ func (s *ChupaiwenxunState) existAction(action majongpb.Action, player *majongpb
 }
 
 // getPengRequestPlayer 获取碰请求的玩家
-func (s *ChupaiwenxunState) getPengRequestPlayer(eventContext []byte) (uint64, error) {
-	pengRequest := majongpb.PengRequestEvent{}
-	if err := proto.Unmarshal(eventContext, &pengRequest); err != nil {
-		return 0, fmt.Errorf("反序列化失败: %v", err)
-	}
+func (s *ChupaiwenxunState) getPengRequestPlayer(eventContext interface{}) (uint64, error) {
+	pengRequest := eventContext.(majongpb.PengRequestEvent)
 	return pengRequest.GetHead().GetPlayerId(), nil
 }
 
 // getGangRequestPlayer 获取杠请求的玩家
-func (s *ChupaiwenxunState) getGangRequestPlayer(eventContext []byte) (uint64, error) {
-	gangRequest := majongpb.GangRequestEvent{}
-	if err := proto.Unmarshal(eventContext, &gangRequest); err != nil {
-		return 0, fmt.Errorf("反序列化失败: %v", err)
-	}
+func (s *ChupaiwenxunState) getGangRequestPlayer(eventContext interface{}) (uint64, error) {
+	gangRequest := eventContext.(majongpb.GangRequestEvent)
 	return gangRequest.GetHead().GetPlayerId(), nil
 }
 
 // getHuRequestPlayer 获取胡请求的玩家
-func (s *ChupaiwenxunState) getHuRequestPlayer(eventContext []byte) (uint64, error) {
-	huRequest := majongpb.HuRequestEvent{}
-	if err := proto.Unmarshal(eventContext, &huRequest); err != nil {
-		return 0, fmt.Errorf("反序列化失败: %v", err)
-	}
+func (s *ChupaiwenxunState) getHuRequestPlayer(eventContext interface{}) (uint64, error) {
+	huRequest := eventContext.(majongpb.HuRequestEvent)
 	return huRequest.GetHead().GetPlayerId(), nil
 }
 
 // getChiRequestPlayer 获取吃请求的玩家
-func (s *ChupaiwenxunState) getChiRequestPlayer(eventContext []byte) (uint64, error) {
-	chiRequest := majongpb.ChiRequestEvent{}
-	if err := proto.Unmarshal(eventContext, &chiRequest); err != nil {
-		return 0, fmt.Errorf("反序列化失败: %v", err)
-	}
+func (s *ChupaiwenxunState) getChiRequestPlayer(eventContext interface{}) (uint64, error) {
+	chiRequest := eventContext.(majongpb.ChiRequestEvent)
 	return chiRequest.GetHead().GetPlayerId(), nil
 }
 
-func (s *ChupaiwenxunState) getChiRequestInfo(eventContext []byte, player *majongpb.Player) error {
-	chiRequest := majongpb.ChiRequestEvent{}
-	if err := proto.Unmarshal(eventContext, &chiRequest); err != nil {
-		return fmt.Errorf("反序列化失败: %v", err)
-	}
+func (s *ChupaiwenxunState) getChiRequestInfo(eventContext interface{}, player *majongpb.Player) error {
+	chiRequest := eventContext.(majongpb.ChiRequestEvent)
 	reqChiCards := chiRequest.GetCards()
 	player.DesignChiCards = reqChiCards
 	return nil
 }
 
 // getQiRequestPlayer 获取弃请求的玩家
-func (s *ChupaiwenxunState) getQiRequestPlayer(eventContext []byte) (uint64, error) {
-	qiRequest := majongpb.QiRequestEvent{}
-	if err := proto.Unmarshal(eventContext, &qiRequest); err != nil {
-		return 0, fmt.Errorf("反序列化失败: %v", err)
-	}
+func (s *ChupaiwenxunState) getQiRequestPlayer(eventContext interface{}) (uint64, error) {
+	qiRequest := eventContext.(majongpb.QiRequestEvent)
 	return qiRequest.GetHead().GetPlayerId(), nil
 }
 
 // getRequestInfo 根据请求事件获取请求的基础信息
-func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContext []byte, mjContext *majongpb.MajongContext) (
+func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContext interface{}, mjContext *majongpb.MajongContext) (
 	player *majongpb.Player, action majongpb.Action, err error) {
 	// 从 map 中查找对应的 action
 	action, ok := map[majongpb.EventID]majongpb.Action{
@@ -180,7 +161,7 @@ func (s *ChupaiwenxunState) getRequestInfo(eventID majongpb.EventID, eventContex
 	}
 
 	// 从 map 中查找和调用对应的方法
-	type getPlayerFunc func(eventContext []byte) (uint64, error)
+	type getPlayerFunc func(eventContext interface{}) (uint64, error)
 	f, ok := map[majongpb.EventID]getPlayerFunc{
 		majongpb.EventID_event_peng_request: s.getPengRequestPlayer,
 		majongpb.EventID_event_gang_request: s.getGangRequestPlayer,
@@ -224,7 +205,7 @@ func (s *ChupaiwenxunState) canPlayerAction(player *majongpb.Player, action majo
 }
 
 // onActionRequestEvent 处理玩家 action 请求事件
-func (s *ChupaiwenxunState) onActionRequestEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *ChupaiwenxunState) onActionRequestEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	newState, err = majongpb.StateID_state_chupaiwenxun, nil
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "ChupaiwenxunState.onActionRequestEvent",

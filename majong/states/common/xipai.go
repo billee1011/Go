@@ -4,11 +4,11 @@ import (
 	"math/rand"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -22,7 +22,7 @@ type XipaiState struct {
 var _ interfaces.MajongState = new(XipaiState)
 
 // ProcessEvent 处理事件
-func (s *XipaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *XipaiState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_xipai_finish {
 		return majongpb.StateID(majongpb.StateID_state_fapai), nil
 	}

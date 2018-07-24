@@ -3,7 +3,7 @@ package fantype
 import (
 	"steve/majong/global"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkChunXiaQiuDong 检测春夏秋冬

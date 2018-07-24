@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkDiHu 检测地胡 闲家摸到第一张牌就胡牌，此为地胡，若闲家抓的第一张牌是花牌，那么补花之后胡牌也算地胡；若闲家抓牌前有人吃碰杠（包括暗杠），那么不算地胡

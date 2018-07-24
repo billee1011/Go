@@ -9,7 +9,7 @@ import (
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"

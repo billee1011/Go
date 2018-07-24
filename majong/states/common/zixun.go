@@ -5,12 +5,12 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 
@@ -26,7 +26,7 @@ type ZiXunState struct {
 var _ interfaces.MajongState = new(ZiXunState)
 
 // ProcessEvent 处理事件
-func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_hu_request:
 		return s.doHu(eventContext, flow)
@@ -38,31 +38,19 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 	return majongpb.StateID_state_zixun, nil
 }
 
-func (s *ZiXunState) doGang(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
-	message := &majongpb.GangRequestEvent{}
-	err := proto.Unmarshal(eventContext, message)
-	if err != nil {
-		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
-	}
-	return s.gang(flow, message)
+func (s *ZiXunState) doGang(eventContext interface{}, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := eventContext.(majongpb.GangRequestEvent)
+	return s.gang(flow, &message)
 }
 
-func (s *ZiXunState) doHu(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
-	message := &majongpb.HuRequestEvent{}
-	err := proto.Unmarshal(eventContext, message)
-	if err != nil {
-		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
-	}
-	return s.zimo(flow, message)
+func (s *ZiXunState) doHu(eventContext interface{}, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := eventContext.(majongpb.HuRequestEvent)
+	return s.zimo(flow, &message)
 }
 
-func (s *ZiXunState) doChupai(eventContext []byte, flow interfaces.MajongFlow) (majongpb.StateID, error) {
-	message := &majongpb.ChupaiRequestEvent{}
-	err := proto.Unmarshal(eventContext, message)
-	if err != nil {
-		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
-	}
-	return s.chupai(flow, message)
+func (s *ZiXunState) doChupai(eventContext interface{}, flow interfaces.MajongFlow) (majongpb.StateID, error) {
+	message := eventContext.(majongpb.ChupaiRequestEvent)
+	return s.chupai(flow, &message)
 }
 
 //angang 决策杠

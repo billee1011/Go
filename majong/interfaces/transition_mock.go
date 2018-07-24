@@ -5,7 +5,7 @@ package interfaces
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	majong "steve/server_pb/majong"
+	majong "steve/entity/majong"
 )
 
 // Mock of TransitionValidator interface

@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 // checkDuanYao 断幺
 func checkDuanYao(tc *typeCalculator) bool {

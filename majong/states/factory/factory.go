@@ -6,7 +6,7 @@ package factory
  */
 import (
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"steve/majong/bus"
 )
 // 状态机管理器列表: 在下面列表中，定义自己的特殊状态机。

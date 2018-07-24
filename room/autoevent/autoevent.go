@@ -3,7 +3,7 @@ package autoevent
 import (
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 	"time"
 
 	"steve/client_pb/room"

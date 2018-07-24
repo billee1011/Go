@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"steve/client_pb/msgid"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -18,7 +18,7 @@ type MajongFlow interface {
 	GetMajongContext() *majongpb.MajongContext
 	SetAutoEvent(autoEvent majongpb.AutoEvent)
 	GetAutoEvent() *majongpb.AutoEvent
-	ProcessEvent(eventID majongpb.EventID, eventContext []byte) error
+	ProcessEvent(eventID majongpb.EventID, eventContext interface{}) error
 	PushMessages(playerIDs []uint64, msgs ...ToClientMessage)
 	GetMessages() []majongpb.ReplyClientMessage
 }

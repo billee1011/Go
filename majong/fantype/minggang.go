@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 // checkMingGang 检测明杠
 func checkMingGang(tc *typeCalculator) bool {

@@ -3,7 +3,7 @@ package utils
 import (
 	"steve/gutils"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )

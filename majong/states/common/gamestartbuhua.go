@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -16,7 +16,7 @@ import (
 type GameStartBuhuaState struct{}
 
 // ProcessEvent 处理事件,目前二人是自动补花，如果存在其他麻将有手动补花，补花需要请求
-func (bh *GameStartBuhuaState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (bh *GameStartBuhuaState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_gamestart_buhua_finish:
 		{

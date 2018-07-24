@@ -1,15 +1,13 @@
 package common
 
 import (
-	"fmt"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"testing"
 
 	"steve/majong/interfaces"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/mock/gomock"
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,11 +36,6 @@ func TestPengState_chupai(t *testing.T) {
 		Head:  &majongpb.RequestEventHead{PlayerId: 1},
 		Cards: &Card3W,
 	}
-
-	eventContext, err := proto.Marshal(chupaiEvent)
-	if err != nil {
-		fmt.Println(err)
-	}
 	flow.EXPECT().GetMajongContext().Return(&mjContext).AnyTimes()
 	start := "碰状态"
 	logrus.WithFields(logrus.Fields{
@@ -53,7 +46,7 @@ func TestPengState_chupai(t *testing.T) {
 	}).Info("前")
 	// 碰状态接受到出牌消息
 	p := new(PengState)
-	newStateID, err := p.ProcessEvent(majongpb.EventID_event_chupai_request, eventContext, flow)
+	newStateID, err := p.ProcessEvent(majongpb.EventID_event_chupai_request, chupaiEvent, flow)
 	if newStateID == majongpb.StateID_state_chupai {
 		start = "出牌状态"
 	}

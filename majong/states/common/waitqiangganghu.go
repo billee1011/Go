@@ -1,13 +1,12 @@
 package common
 
 import (
-	"errors"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -20,7 +19,7 @@ type WaitQiangganghuState struct {
 var _ interfaces.MajongState = new(WaitQiangganghuState)
 
 // ProcessEvent 处理事件
-func (s *WaitQiangganghuState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *WaitQiangganghuState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_hu_request:
 		{
@@ -59,18 +58,13 @@ func (s *WaitQiangganghuState) OnExit(flow interfaces.MajongFlow) {
 }
 
 // onHuRequest 处理胡请求
-func (s *WaitQiangganghuState) onHuRequest(eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *WaitQiangganghuState) onHuRequest(eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "WaitQiangganghuState.onHuRequest",
 	})
 	newState, err = majongpb.StateID_state_waitqiangganghu, nil
 
-	huRequest := majongpb.HuRequestEvent{}
-	if err = proto.Unmarshal(eventContext, &huRequest); err != nil {
-		err = errors.New("事件现场反序列化失败")
-		logEntry.WithError(err).Errorln(err)
-		return
-	}
+	huRequest := eventContext.(majongpb.HuRequestEvent)
 	playerID := huRequest.GetHead().GetPlayerId()
 	logEntry = logEntry.WithField("request_player", playerID)
 
@@ -91,18 +85,13 @@ func (s *WaitQiangganghuState) onHuRequest(eventContext []byte, flow interfaces.
 }
 
 // onQiRequest 处理弃请求
-func (s *WaitQiangganghuState) onQiRequest(eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *WaitQiangganghuState) onQiRequest(eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "WaitQiangganghuState.onQiRequest",
 	})
 	newState, err = majongpb.StateID_state_waitqiangganghu, nil
 
-	qiRequest := majongpb.QiRequestEvent{}
-	if err = proto.Unmarshal(eventContext, &qiRequest); err != nil {
-		err = errors.New("事件现场反序列化失败")
-		logEntry.WithError(err).Errorln(err)
-		return
-	}
+	qiRequest := eventContext.(majongpb.QiRequestEvent)
 	playerID := qiRequest.GetHead().GetPlayerId()
 	logEntry = logEntry.WithField("request_player", playerID)
 

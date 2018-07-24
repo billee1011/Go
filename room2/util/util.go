@@ -1,7 +1,7 @@
 package util
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"steve/client_pb/room"
 	"github.com/golang/protobuf/proto"
 )

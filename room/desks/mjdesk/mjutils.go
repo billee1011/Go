@@ -6,7 +6,7 @@ import (
 	"steve/common/mjoption"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )

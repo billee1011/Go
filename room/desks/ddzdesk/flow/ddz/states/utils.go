@@ -8,13 +8,13 @@ import (
 	"steve/server_pb/ddz"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	"math/rand"
 	"steve/client_pb/room"
-	"steve/majong/global"
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // PeiPai 配牌工具
@@ -199,8 +199,8 @@ func If(judge bool, trueReturn interface{}, falseReturn interface{}) interface{}
 	}
 }
 
-// TODO: 和麻将统一
-func OnCartoonFinish(curState int, nextState int, needCartoonType room.CartoonType, eventContext []byte) (newState int, err error) {
+// OnCartoonFinish TODO: 和麻将统一
+func OnCartoonFinish(curState int, nextState int, needCartoonType room.CartoonType, eventContext interface{}) (newState int, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":         "OnCartoonFinish",
 		"cur_state":         curState,
@@ -208,11 +208,7 @@ func OnCartoonFinish(curState int, nextState int, needCartoonType room.CartoonTy
 		"need_cartoon_type": needCartoonType,
 	})
 
-	req := new(majong.CartoonFinishRequestEvent)
-	if marshalErr := proto.Unmarshal(eventContext, req); marshalErr != nil {
-		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
-		return curState, global.ErrUnmarshalEvent
-	}
+	req := eventContext.(majong.CartoonFinishRequestEvent)
 	reqCartoonType := req.GetCartoonType()
 	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
 	if reqCartoonType != int32(needCartoonType) {

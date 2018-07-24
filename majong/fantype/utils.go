@@ -3,7 +3,7 @@ package fantype
 import (
 	"sort"
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 type intSlice []int32

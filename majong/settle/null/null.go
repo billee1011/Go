@@ -2,7 +2,7 @@ package null
 
 import (
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 

@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	server_pb "steve/server_pb/majong"
+	server_pb "steve/entity/majong"
 )
 
 // DeskSettler 牌桌结算

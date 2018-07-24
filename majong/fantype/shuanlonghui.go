@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 // checkShuanLongHui 双龙会:由一种花色的 2 个老少副,5 为将牌组成的胡牌
 func checkShuanLongHui(tc *typeCalculator) bool {

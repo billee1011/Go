@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 // checkMengQianQing 检测门前清 ：没有吃、碰、杠(暗杠可以)，不能是自摸
 func checkMengQianQing(tc *typeCalculator) bool {

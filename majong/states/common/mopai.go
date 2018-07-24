@@ -3,10 +3,10 @@ package common
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 
@@ -20,7 +20,7 @@ type MoPaiState struct {
 var _ interfaces.MajongState = new(MoPaiState)
 
 // ProcessEvent 处理事件
-func (s *MoPaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *MoPaiState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_mopai_finish {
 		return s.mopai(flow)
 	}

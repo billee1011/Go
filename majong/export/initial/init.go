@@ -2,10 +2,9 @@ package initial
 
 import (
 	"errors"
-	server_pb "steve/server_pb/majong"
+	server_pb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 func initPlayers(players []uint64) []*server_pb.Player {
@@ -47,11 +46,6 @@ func InitMajongContext(param server_pb.InitMajongContextParams) (mjContext serve
 		return
 	}
 
-	if err = proto.Unmarshal([]byte{}, &mjContext); err != nil {
-		logEntry.WithError(err).Errorln(errCreateEmptyContextFailed)
-		err = errCreateEmptyContextFailed
-		return
-	}
 	mjContext.GameId = param.GetGameId()
 	mjContext.CurState = server_pb.StateID_state_init
 	mjContext.Players = initPlayers(param.GetPlayers())

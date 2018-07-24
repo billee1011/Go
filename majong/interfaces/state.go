@@ -1,12 +1,12 @@
 package interfaces
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // MajongState 牌局状态
 type MajongState interface {
-	ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow MajongFlow) (newState majongpb.StateID, err error)
+	ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow MajongFlow) (newState majongpb.StateID, err error)
 	OnEntry(flow MajongFlow)
 	OnExit(flow MajongFlow)
 }

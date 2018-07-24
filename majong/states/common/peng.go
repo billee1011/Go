@@ -11,10 +11,10 @@ package common
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -28,7 +28,7 @@ var _ interfaces.MajongState = new(PengState)
 
 // ProcessEvent 处理事件
 // 碰牌成功后，接受到出牌请求，处理出牌请求，处理完成，进入出牌状态
-func (s *PengState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *PengState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_peng_finish {
 		mjContext := flow.GetMajongContext()
 		mjContext.ZixunType = majongpb.ZixunType_ZXT_PENG

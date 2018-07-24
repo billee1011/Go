@@ -3,9 +3,9 @@ package common
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -18,7 +18,7 @@ type XingPaiBuhuaState struct {
 var _ interfaces.MajongState = new(XipaiState)
 
 // ProcessEvent 处理事件
-func (s *XingPaiBuhuaState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *XingPaiBuhuaState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	switch eventID {
 	case majongpb.EventID_event_xingpai_buhua_finish:
 		return s.doBuhua(flow), nil

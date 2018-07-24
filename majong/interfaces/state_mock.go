@@ -4,8 +4,9 @@
 package interfaces
 
 import (
+	majong "steve/entity/majong"
+
 	gomock "github.com/golang/mock/gomock"
-	majong "steve/server_pb/majong"
 )
 
 // Mock of MajongState interface
@@ -29,7 +30,7 @@ func (_m *MockMajongState) EXPECT() *_MockMajongStateRecorder {
 	return _m.recorder
 }
 
-func (_m *MockMajongState) ProcessEvent(eventID majong.EventID, eventContext []byte, flow MajongFlow) (majong.StateID, error) {
+func (_m *MockMajongState) ProcessEvent(eventID majong.EventID, eventContext interface{}, flow MajongFlow) (majong.StateID, error) {
 	ret := _m.ctrl.Call(_m, "ProcessEvent", eventID, eventContext, flow)
 	ret0, _ := ret[0].(majong.StateID)
 	ret1, _ := ret[1].(error)

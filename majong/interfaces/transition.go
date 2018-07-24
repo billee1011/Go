@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // TransitionValidator 状态转移验证器

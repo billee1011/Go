@@ -12,11 +12,11 @@ package common
 //约束条件：定缺的颜色，必需是万或条或筒
 import (
 	"fmt"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"steve/client_pb/room"
 
@@ -33,7 +33,7 @@ type DingqueState struct {
 var _ interfaces.MajongState = new(DingqueState)
 
 // ProcessEvent 处理事件
-func (s *DingqueState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *DingqueState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_dingque_request {
 		isFinish, err := s.dingque(eventContext, flow)
 		if err != nil || !isFinish {
@@ -60,12 +60,9 @@ func (s *DingqueState) notifyTingCards(flow interfaces.MajongFlow) {
 }
 
 //定缺操作
-func (s *DingqueState) dingque(eventContext []byte, flow interfaces.MajongFlow) (bool, error) {
+func (s *DingqueState) dingque(eventContext interface{}, flow interfaces.MajongFlow) (bool, error) {
 	// 序列化utils
-	dinqueEvent := new(majongpb.DingqueRequestEvent)
-	if err := proto.Unmarshal(eventContext, dinqueEvent); err != nil {
-		return false, fmt.Errorf("定缺 ： %v", errUnmarshalEvent)
-	}
+	dinqueEvent := eventContext.(majongpb.DingqueRequestEvent)
 	//麻将牌局现场
 	mjContext := flow.GetMajongContext()
 	// 所有玩家

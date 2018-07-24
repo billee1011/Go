@@ -1,11 +1,12 @@
 package process
 
 import (
+	"bytes"
+	"encoding/gob"
+	server_pb "steve/entity/majong"
 	"steve/majong/flow"
-	server_pb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 // HandleMajongEventResult 处理牌局事件的结果
@@ -20,7 +21,7 @@ type HandleMajongEventResult struct {
 type HandleMajongEventParams struct {
 	MajongContext server_pb.MajongContext // 牌局现场
 	EventID       server_pb.EventID       // 事件 ID
-	EventContext  []byte                  // 事件现场
+	EventContext  interface{}             // 事件现场
 }
 
 // HandleMajongEvent 处理牌局事件
@@ -30,15 +31,19 @@ func HandleMajongEvent(params HandleMajongEventParams) (result HandleMajongEvent
 		"params":    params,
 	})
 
-	cloneContext := *proto.Clone(&params.MajongContext).(*server_pb.MajongContext)
+	cloneContext, err := deepCopyMjongContext(params.MajongContext)
+	if err != nil {
+		logEntry.WithError(err).Errorln("拷贝majongContext失败")
+		return
+	}
 
 	result = HandleMajongEventResult{
-		NewContext: cloneContext,
+		NewContext: *cloneContext,
 		ReplyMsgs:  make([]server_pb.ReplyClientMessage, 0),
 		Succeed:    false,
 	}
-	flow := flow.NewFlow(cloneContext)
-	err := flow.ProcessEvent(params.EventID, params.EventContext)
+	flow := flow.NewFlow(*cloneContext)
+	err = flow.ProcessEvent(params.EventID, params.EventContext)
 	if err != nil {
 		logEntry.WithError(err).Errorln("处理事件失败")
 		return
@@ -48,4 +53,15 @@ func HandleMajongEvent(params HandleMajongEventParams) (result HandleMajongEvent
 	result.AutoEvent = flow.GetAutoEvent()
 	result.Succeed = true
 	return
+}
+
+func deepCopyMjongContext(src server_pb.MajongContext) (*server_pb.MajongContext, error) {
+	var buf bytes.Buffer
+	var err error
+	if err = gob.NewEncoder(&buf).Encode(src); err != nil {
+		return nil, err
+	}
+	var dst server_pb.MajongContext
+	err = gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(&dst)
+	return &dst, err
 }

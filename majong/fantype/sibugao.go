@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkSiBuGao 检测四步高 含有一种花色4副依次递增一位数或二位数的顺子,包括吃

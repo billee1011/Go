@@ -2,7 +2,7 @@ package transition
 
 import (
 	"errors"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )

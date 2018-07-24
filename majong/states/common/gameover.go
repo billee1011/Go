@@ -3,12 +3,12 @@ package common
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"steve/majong/bus"
 	"steve/majong/settle"
@@ -24,7 +24,7 @@ type GameOverState struct {
 var _ interfaces.MajongState = new(GameOverState)
 
 // ProcessEvent 处理事件
-func (s *GameOverState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *GameOverState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	return majongpb.StateID_state_gameover, global.ErrInvalidEvent
 }
 

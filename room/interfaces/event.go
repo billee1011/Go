@@ -16,8 +16,8 @@ const (
 
 // Event 事件
 type Event struct {
-	ID        int32 // 事件 ID
-	Context   []byte         // 事件现场
-	EventType EventType      // 事件类型
-	PlayerID  uint64         // 针对哪个玩家的事件
+	ID        int32       // 事件 ID
+	Context   interface{} // 事件现场
+	EventType EventType   // 事件类型
+	PlayerID  uint64      // 针对哪个玩家的事件
 }

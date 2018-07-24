@@ -7,7 +7,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/golang/mock/gomock"
 )

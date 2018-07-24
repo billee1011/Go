@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkDaSanFeng 检测小三风 含有2个风牌的刻子或杠，以及1对风将牌

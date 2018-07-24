@@ -10,14 +10,13 @@ package common
 //状态进入行为：触发生成杠结算信息
 //约束条件：无
 import (
+	majongpb "steve/entity/majong"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/settle"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 // GangSettleState 杠结算状态
@@ -30,15 +29,11 @@ var _ interfaces.MajongState = new(GangSettleState)
 // 杠逻辑执行完后，进入杠结算状态
 // 1.处理结算完成事件，返回摸牌状态
 // 2.处理玩家认输事件，返回游戏结束状态
-func (s *GangSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *GangSettleState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	s.setMopaiPlayer(flow)
 	if eventID == majongpb.EventID_event_settle_finish {
-		message := &majongpb.SettleFinishEvent{}
-		err := proto.Unmarshal(eventContext, message)
-		if err != nil {
-			return majongpb.StateID_state_gang_settle, global.ErrInvalidEvent
-		}
-		utils.SettleOver(flow, message)
+		message := eventContext.(majongpb.SettleFinishEvent)
+		utils.SettleOver(flow, &message)
 		return s.nextState(flow.GetMajongContext()), nil
 	}
 	return majongpb.StateID(majongpb.StateID_state_gang_settle), global.ErrInvalidEvent

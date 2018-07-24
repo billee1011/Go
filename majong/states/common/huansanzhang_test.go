@@ -1,8 +1,8 @@
 package common
 
 import (
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -32,14 +32,13 @@ func TestHuanSanZhangState_huansanzhang(t *testing.T) {
 
 	f := new(HuansanzhangState)
 
-	event := &majongpb.HuansanzhangRequestEvent{
+	evenContext := &majongpb.HuansanzhangRequestEvent{
 		Head: &majongpb.RequestEventHead{
 			PlayerId: 0,
 		},
 		Cards: []*majongpb.Card{&Card1W, &Card1W, &Card1W},
 		Sure:  true,
 	}
-	evenContext, _ := proto.Marshal(event)
 	newState, _ := f.ProcessEvent(majongpb.EventID_event_huansanzhang_request, evenContext, flow)
 
 	event = &majongpb.HuansanzhangRequestEvent{

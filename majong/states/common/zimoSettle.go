@@ -1,17 +1,16 @@
 package common
 
 import (
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"steve/majong/settle"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 // ZiMoSettleState 自摸结算状态
@@ -22,14 +21,10 @@ var _ interfaces.MajongState = new(ZiMoSettleState)
 
 // ProcessEvent 处理事件
 // 自摸逻辑执行完后，进入自摸结算状态
-func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *ZiMoSettleState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_settle_finish {
-		message := &majongpb.SettleFinishEvent{}
-		err := proto.Unmarshal(eventContext, message)
-		if err != nil {
-			return majongpb.StateID_state_zimo_settle, global.ErrInvalidEvent
-		}
-		utils.SettleOver(flow, message)
+		req := eventContext.(majongpb.SettleFinishEvent)
+		utils.SettleOver(flow, &req)
 		nextState := s.nextState(flow.GetMajongContext())
 		if nextState == majongpb.StateID_state_mopai {
 			s.setMopaiPlayer(flow)

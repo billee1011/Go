@@ -1,6 +1,6 @@
 package interfaces
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 // FantypeCalculator 番型计算器
 type FantypeCalculator interface {

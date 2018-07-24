@@ -6,7 +6,7 @@ package factory
 import (
 	"steve/majong/interfaces"
 	"steve/majong/states/common"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // 状态列表：在下面列表中增加自己添加的新状态.

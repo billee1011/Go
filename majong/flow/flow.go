@@ -4,7 +4,7 @@ import (
 	"errors"
 	"steve/majong/interfaces"
 	"steve/majong/transition"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/golang/protobuf/proto"
 
@@ -49,7 +49,7 @@ var errStateProcess = errors.New("当前状态处理事件失败")
 var errTransitionNotExist = errors.New("不存在转换关系")
 
 // stateProcess 派发到状态处理事件
-func (f *flow) stateProcess(entry *logrus.Entry, eventID majongpb.EventID, eventContext []byte) (majongpb.StateID, error) {
+func (f *flow) stateProcess(entry *logrus.Entry, eventID majongpb.EventID, eventContext interface{}) (majongpb.StateID, error) {
 	curStateID := f.context.CurState
 	oldState := f.stateFactory.CreateState(f.context.GameId, curStateID)
 	if oldState == nil {
@@ -107,7 +107,7 @@ func (f *flow) processAutoEvent(entry *logrus.Entry) error {
 }
 
 // ProcessEvent 处理外部事件
-func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext []byte) error {
+func (f *flow) ProcessEvent(eventID majongpb.EventID, eventContext interface{}) error {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name":        "flow.ProcessEvent",
 		"event_id":         eventID,

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"steve/majong/global"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // GetTingCardNum 获取听牌数量

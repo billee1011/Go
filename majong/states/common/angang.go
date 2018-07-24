@@ -13,10 +13,10 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -32,7 +32,7 @@ var _ interfaces.MajongState = new(AnGangState)
 
 // ProcessEvent 处理事件
 // 暗杠逻辑执行完后，进入暗杠结算状态，确认接收到暗杠结算完成请求，返回摸牌状态
-func (s *AnGangState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *AnGangState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_angang_finish {
 		s.setMopaiPlayer(flow)
 		xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))

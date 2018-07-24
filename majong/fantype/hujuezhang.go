@@ -2,7 +2,7 @@ package fantype
 
 import (
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkHuJueZhang 检测胡绝张 胡牌池，桌面已亮明的3张牌所剩的第4张牌,抢扛胡不算

@@ -7,7 +7,6 @@ import (
 	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type playStateAI struct {
@@ -183,11 +182,9 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 		CardType: resultCardType, // 打出去的牌型
 	}
 
-	data, _ := proto.Marshal(&request)
-
 	event := interfaces.AIEvent{
 		ID:      int32(ddz.EventID_event_chupai_request),
-		Context: data,
+		Context: request,
 	}
 
 	return &event
@@ -221,11 +218,9 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 		CardType: resultCardType, // 打出去的牌型
 	}
 
-	data, _ := proto.Marshal(&request)
-
 	event := interfaces.AIEvent{
 		ID:      int32(ddz.EventID_event_chupai_request),
-		Context: data,
+		Context: request,
 	}
 
 	return &event

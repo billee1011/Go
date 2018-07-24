@@ -2,7 +2,7 @@ package fantype
 
 import (
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkSanTongShun 三同顺:胡牌时,含有一种花色 3 副序数相同的顺子

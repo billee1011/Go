@@ -1,9 +1,9 @@
 package common
 
 import (
+	majongpb "steve/entity/majong"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -39,9 +39,6 @@ func TestZixunState_angang(t *testing.T) {
 		},
 		Card: &Card1W,
 	}
-
-	requestEvent, err := proto.Marshal(gangRequestEvent)
-	assert.Nil(t, err)
 	context := flow.GetMajongContext()
 	player := utils.GetPlayerByID(context.GetPlayers(), context.GetMopaiPlayer())
 	logrus.WithFields(FmtPlayerInfo(player)).Info("暗杠前")
@@ -50,7 +47,7 @@ func TestZixunState_angang(t *testing.T) {
 	// beforeResults += FmtPlayerInfo(player)
 	// logrus.Info(beforeResults)
 	// stateID, err := s.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent, flow)
-	flow.ProcessEvent(majongpb.EventID_event_gang_request, requestEvent)
+	flow.ProcessEvent(majongpb.EventID_event_gang_request, gangRequestEvent)
 	// assert.Nil(t, err)
 	// assert.Equal(t, majongpb.StateID_state_angang, stateID, "执行暗杠操作成功后，状态应该为暗杠状态")
 	// results := ""

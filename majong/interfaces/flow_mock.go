@@ -4,8 +4,9 @@
 package interfaces
 
 import (
+	majong "steve/entity/majong"
+
 	gomock "github.com/golang/mock/gomock"
-	majong "steve/server_pb/majong"
 )
 
 // Mock of MajongFlow interface
@@ -57,7 +58,7 @@ func (_mr *_MockMajongFlowRecorder) GetAutoEvent() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAutoEvent")
 }
 
-func (_m *MockMajongFlow) ProcessEvent(eventID majong.EventID, eventContext []byte) error {
+func (_m *MockMajongFlow) ProcessEvent(eventID majong.EventID, eventContext interface{}) error {
 	ret := _m.ctrl.Call(_m, "ProcessEvent", eventID, eventContext)
 	ret0, _ := ret[0].(error)
 	return ret0

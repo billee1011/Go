@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 // checkHunYiSe 检测混一色
 func checkHunYiSe(tc *typeCalculator) bool {

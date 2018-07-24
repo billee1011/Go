@@ -1,7 +1,7 @@
 package utils
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"strconv"
 )
 

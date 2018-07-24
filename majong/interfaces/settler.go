@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // SettlerType 结算类型

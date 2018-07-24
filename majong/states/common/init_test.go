@@ -4,7 +4,7 @@ import (
 	"steve/majong/interfaces"
 	"testing"
 
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

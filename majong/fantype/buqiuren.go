@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkBuQiuRen 检测不求人 4副牌及将牌中，没有吃，碰，明杠的自摸胡牌

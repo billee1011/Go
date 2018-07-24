@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -43,16 +43,16 @@ func CardEqual(card1 *majongpb.Card, card2 *majongpb.Card) bool {
 //CardToRoomCard majongpb.card类型转room.Card类型
 func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	var color room.CardColor
-	if card.Color.String() == room.CardColor_CC_WAN.String() {
+	if card.Color == majongpb.CardColor_ColorWan {
 		color = room.CardColor_CC_WAN
 	}
-	if card.Color.String() == room.CardColor_CC_TIAO.String() {
+	if card.Color == majongpb.CardColor_ColorTiao {
 		color = room.CardColor_CC_TIAO
 	}
-	if card.Color.String() == room.CardColor_CC_TONG.String() {
+	if card.Color == majongpb.CardColor_ColorTong {
 		color = room.CardColor_CC_TONG
 	}
-	if card.Color.String() == room.CardColor_CC_HUA.String() {
+	if card.Color == majongpb.CardColor_ColorHua {
 		color = room.CardColor_CC_HUA
 	}
 	return &room.Card{
@@ -299,7 +299,7 @@ func FmtMajongpbCards(cards []*majongpb.Card) string {
 func FmtGangCards(gangCards []*majongpb.GangCard) string {
 	result := ""
 	for _, gangCard := range gangCards {
-		result += fmt.Sprintf("杠的类型:%v ", gangCard.Type.String())
+		result += fmt.Sprintf("杠的类型:%v ", gangCard.Type)
 		result += fmt.Sprintf("杠的牌:%v%v ", gangCard.Card.Point, getColor(gangCard.Card.Color))
 		result += fmt.Sprintf("来自玩家:%v ", gangCard.SrcPlayer)
 	}
@@ -320,7 +320,7 @@ func FmtPengCards(pengCards []*majongpb.PengCard) string {
 func FmtHuCards(huCards []*majongpb.HuCard) string {
 	result := ""
 	for _, huCard := range huCards {
-		result += fmt.Sprintf("胡的类型:%v ", huCard.Type.String())
+		result += fmt.Sprintf("胡的类型:%v ", huCard.Type)
 		result += fmt.Sprintf("胡的牌:%v%v ", huCard.Card.Point, getColor(huCard.Card.Color))
 		result += fmt.Sprintf("来自玩家:%v ", huCard.SrcPlayer)
 	}

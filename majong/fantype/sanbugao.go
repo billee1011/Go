@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkSanBuGao 检测三步高 含有一种花色3副依次递增一位数或二位数的顺子

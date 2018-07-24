@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

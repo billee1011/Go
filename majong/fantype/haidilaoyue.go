@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //checkHaiDiLaoYue 检测海底捞月 胡最后打出的牌，必须是最后摸牌的人点炮

@@ -2,7 +2,7 @@ package fantype
 
 import (
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkSiLianKe 四连刻:胡牌时,含有一种花色 4 副依次递增一位数的刻子;

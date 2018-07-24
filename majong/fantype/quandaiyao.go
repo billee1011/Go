@@ -1,7 +1,7 @@
 package fantype
 
 import (
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkQuanDaiYao 检测全带幺 每副牌，将牌都有幺九(1,9,字牌)

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"math/rand"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"time"
 
 	"github.com/Sirupsen/logrus"

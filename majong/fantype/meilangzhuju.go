@@ -3,7 +3,7 @@ package fantype
 import (
 	"steve/gutils"
 	"steve/majong/global"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkMeiLanZhuJiu 检测梅兰竹菊

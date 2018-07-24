@@ -4,7 +4,7 @@ import (
 	"math"
 	"steve/common/mjoption"
 	"steve/majong/utils"
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 )
 
 // Combine 牌型组合

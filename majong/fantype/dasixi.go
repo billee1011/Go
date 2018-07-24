@@ -2,7 +2,7 @@ package fantype
 
 import (
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkDaSiXi 检查大四喜 含有“东南西北”4副风刻或杠

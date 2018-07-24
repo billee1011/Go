@@ -3,7 +3,7 @@ package fantype
 import (
 	"steve/common/mjoption"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //miaoshouhuichun 检测妙手回春，最后一张牌自摸

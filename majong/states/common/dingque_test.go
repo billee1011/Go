@@ -3,7 +3,7 @@ package common
 import (
 	"fmt"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"testing"
 
 	"github.com/Sirupsen/logrus"

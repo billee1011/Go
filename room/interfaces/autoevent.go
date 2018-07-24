@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 	"time"
 	"steve/server_pb/ddz"
 )

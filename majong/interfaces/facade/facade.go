@@ -3,7 +3,7 @@ package facade
 import (
 	msgid "steve/client_pb/msgid"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/golang/protobuf/proto"
 )

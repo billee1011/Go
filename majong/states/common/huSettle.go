@@ -2,17 +2,16 @@ package common
 
 import (
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"steve/majong/settle"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 // HuSettleState 杠结算状态
@@ -25,14 +24,10 @@ var _ interfaces.MajongState = new(HuSettleState)
 // 点炮逻辑执行完后，进入点炮结算状态
 // 1.处理结算完成事件，返回摸牌状态
 // 2.处理玩家认输事件，返回游戏结束状态
-func (s *HuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *HuSettleState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_settle_finish {
-		message := &majongpb.SettleFinishEvent{}
-		err := proto.Unmarshal(eventContext, message)
-		if err != nil {
-			return majongpb.StateID_state_hu_settle, global.ErrInvalidEvent
-		}
-		utils.SettleOver(flow, message)
+		req := eventContext.(majongpb.SettleFinishEvent)
+		utils.SettleOver(flow, &req)
 		nextState := s.nextState(flow.GetMajongContext())
 		if nextState == majongpb.StateID_state_mopai {
 			s.setMopaiPlayer(flow)

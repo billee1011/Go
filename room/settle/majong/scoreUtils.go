@@ -4,7 +4,7 @@ import (
 	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // calcCoin 计算扣除的金币

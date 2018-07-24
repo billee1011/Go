@@ -1,6 +1,6 @@
 package fantype
 
-import majongpb "steve/server_pb/majong"
+import majongpb "steve/entity/majong"
 
 func checkQingyise(tc *typeCalculator) bool {
 	handCards := tc.getHandCards()

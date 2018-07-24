@@ -4,12 +4,12 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -22,7 +22,7 @@ type ChupaiState struct {
 var _ interfaces.MajongState = new(ChupaiState)
 
 // ProcessEvent 处理事件
-func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext []byte, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
+func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext interface{}, flow interfaces.MajongFlow) (newState majongpb.StateID, err error) {
 	if eventID == majongpb.EventID_event_chupai_finish {
 		s.chupai(flow)
 		context := flow.GetMajongContext()

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/majong/interfaces"
-	majongpb "steve/server_pb/majong"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -168,16 +168,18 @@ func IntToRoomCard(cardValue int32) (*room.Card, error) {
 //CardToRoomCard majongpb.card类型转room.Card类型
 func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 	var color room.CardColor
-	if card.Color.String() == room.CardColor_CC_WAN.String() {
+	if card.Color == majongpb.CardColor_ColorWan {
 		color = room.CardColor_CC_WAN
 	}
-	if card.Color.String() == room.CardColor_CC_TIAO.String() {
+	if card.Color == majongpb.CardColor_ColorTiao {
 		color = room.CardColor_CC_TIAO
 	}
-	if card.Color.String() == room.CardColor_CC_TONG.String() {
+	if card.Color == majongpb.CardColor_ColorTong {
 		color = room.CardColor_CC_TONG
 	}
-
+	if card.Color == majongpb.CardColor_ColorHua {
+		color = room.CardColor_CC_HUA
+	}
 	return &room.Card{
 		Color: color.Enum(),
 		Point: proto.Int32(card.Point),

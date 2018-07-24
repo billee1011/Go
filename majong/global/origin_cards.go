@@ -2,7 +2,7 @@ package global
 
 import (
 	"steve/common/mjoption"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 var (

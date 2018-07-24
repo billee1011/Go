@@ -3,7 +3,7 @@ package fantype
 import (
 	"steve/majong/global"
 	"steve/majong/utils"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // checkSiXiQiDui 四喜七对:胡牌为七对,并且包含“东南西北”
