@@ -4,7 +4,6 @@ import (
 	"context"
 	client_match_pb "steve/client_pb/match"
 	"steve/client_pb/msgid"
-	playerdata "steve/common/data/player"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/server_pb/match"
@@ -64,13 +63,10 @@ func (d *DeskBase) ContinueDesk(fixBanker bool, bankerSeat int, winners []uint64
 	continuePlayers := make([]*match.ContinuePlayer, 0, len(players))
 	for _, player := range players {
 		playerID := player.GetPlayerID()
-		playerCoin := playerdata.GetPlayerCoin(playerID)
-
-		if player.IsQuit() || playerCoin == 0 { // 玩家已经退出牌桌或者 玩家金币数为0，不续局
+		if player.IsQuit() { // 玩家已经退出牌桌或者 玩家金币数为0，不续局
 			entry.WithFields(logrus.Fields{
 				"player_id": playerID,
 				"quited":    player.IsQuit(),
-				"coin":      playerCoin,
 			}).Debugln("玩家不满足续局条件")
 			facade.BroadCastDeskMessage(d, nil, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &client_match_pb.MatchContinueDeskDimissNtf{}, true)
 			return

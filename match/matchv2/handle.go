@@ -57,6 +57,15 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 		Body:  response,
 	}}
 
+	// 不是取消先判断金币数
+	if !req.GetCancel() {
+		if player.GetPlayerCoin(playerID) == 0 {
+			response.ErrCode = proto.Int32(1)
+			response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
+			return
+		}
+	}
+
 	defaultMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
 	return
 }
