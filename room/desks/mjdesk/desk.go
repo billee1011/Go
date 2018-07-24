@@ -508,8 +508,8 @@ func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
 		if nextBankerSeat >= len(mjContext.GetPlayers()) {
 			nextBankerSeat = int(mjContext.GetZhuangjiaIndex())
 		}
-		d.ContinueDesk(true, nextBankerSeat, d.getWinners())
 		d.settler.RoundSettle(d, mjContext)
+		d.ContinueDesk(true, nextBankerSeat, d.getWinners())
 		logEntry.Infoln("游戏结束状态")
 		d.cancel()
 		return true
