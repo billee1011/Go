@@ -142,7 +142,7 @@ func Test_ContinueCancelDDZ(t *testing.T) {
 		expector := players[i].GetExpector(msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF)
 
 		deskMissNtf := match.MatchContinueDeskDimissNtf{}
-		expector.Recv(global.DefaultWaitMessageTime, &deskMissNtf)
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &deskMissNtf))
 
 		logEntry.Infof("斗地主续局取消后收到了续局牌桌解散的通知,reserve = %v", deskMissNtf.GetReserve())
 	}
