@@ -63,8 +63,6 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 
 	deskPlayers := desk.GetDeskPlayers() // 牌局玩家
 
-	huQuitPlayers := majongSettle.getHuQuitPlayers(deskPlayers, mjContext) // 胡牌且退出房间后的玩家
-
 	giveUpPlayers := getGiveupPlayers(deskPlayers, mjContext) // 认输玩家
 
 	revertIds := mjContext.RevertSettles   // 退税id
@@ -81,6 +79,8 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 		score := make(map[uint64]int64, 0) // 玩家输赢分数
 
 		brokerPlayers := make([]uint64, 0) // 破产的玩家id
+
+		huQuitPlayers := majongSettle.getHuSettleQuitPlayers(deskPlayers, mjContext, sInfo.HuPlayers) // 胡牌且退出房间后的玩家
 
 		groupID := len(sInfo.GroupId) // 关联的一组结算id
 		if groupID <= 1 {
@@ -103,6 +103,7 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 			if majongSettle.handleRevert[revertID] {
 				continue
 			}
+			huQuitPlayers := majongSettle.getHuQuitPlayers(deskPlayers, mjContext) // 胡牌且退出房间后的玩家
 			// 退稅结算信息
 			gangSettle := GetSettleInfoByID(allSettleInfos, revertID)
 			rSettleInfo := majongSettle.generateRevertSettle2(revertID, gangSettle, huQuitPlayers, giveUpPlayers, revertIds, mjContext)
@@ -320,19 +321,40 @@ func (majongSettle *majongSettle) makeBillDetails(pid uint64, contextSInfos []*m
 	return
 }
 
-// getHuQuitPlayers  获取牌局胡牌且退出房间后的玩家id
-func (majongSettle *majongSettle) getHuQuitPlayers(dPlayers []interfaces.DeskPlayer, mjContext majongpb.MajongContext) map[uint64]bool {
+// getHuSettleQuitPlayers  获取牌局已结算胡且退出的玩家
+func (majongSettle *majongSettle) getHuSettleQuitPlayers(dPlayers []interfaces.DeskPlayer, mjContext majongpb.MajongContext, huPlayers []uint64) map[uint64]bool {
 	huQuitPids := make(map[uint64]bool, 0)
+	huPids := make(map[uint64]bool, 0)
+	for _, hplayer := range huPlayers {
+		huPids[hplayer] = true
+	}
 	for _, dPlayer := range dPlayers {
-		if dPlayer.IsQuit() {
-			pid := dPlayer.GetPlayerID()
-			mjPlayers := mjContext.GetPlayers()
-			mjPlayer := mjPlayers[gutils.GetPlayerIndex(pid, mjContext.GetPlayers())]
-			if len(mjPlayer.HuCards) != 0 {
-				huQuitPids[pid] = true
-			}
+		if dPlayer.IsQuit() && huPids[dPlayer.GetPlayerID()] {
+			huQuitPids[dPlayer.GetPlayerID()] = true
 		}
 	}
+
+	return huQuitPids
+}
+
+// getHuQuitPlayers  获取牌局已胡牌且退出的玩家
+func (majongSettle *majongSettle) getHuQuitPlayers(dPlayers []interfaces.DeskPlayer, mjContext majongpb.MajongContext) map[uint64]bool {
+	huPids := make(map[uint64]bool, 0)
+	for _, contextPlayer := range mjContext.GetPlayers() {
+		huCard := contextPlayer.GetHuCards()
+		if len(huCard) != 0 {
+			huPids[contextPlayer.GetPalyerId()] = true
+		}
+	}
+
+	huQuitPids := make(map[uint64]bool, 0)
+	for _, dPlayer := range dPlayers {
+		pid := dPlayer.GetPlayerID()
+		if dPlayer.IsQuit() && huPids[pid] {
+			huQuitPids[pid] = true
+		}
+	}
+
 	return huQuitPids
 }
 

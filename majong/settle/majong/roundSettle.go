@@ -198,6 +198,7 @@ func newRoundSettleInfo(params *interfaces.RoundSettleParams, scoreMap map[uint6
 		HuType:     -1,
 		SettleType: settleType,
 		CardValue:  uint32(cardValue),
+		HuPlayers:  params.HasHuPlayers,
 	}
 }
 

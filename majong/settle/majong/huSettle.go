@@ -176,6 +176,7 @@ func newHuSettleInfo(params *interfaces.HuSettleParams, scoreInfo map[uint64]int
 		Scores:     scoreInfo,
 		SettleType: params.SettleType,
 		HuType:     params.HuType,
+		HuPlayers:  params.HasHuPlayers,
 		CardType:   params.CardTypes[huPlayerID],
 		GenCount:   uint32(params.GenCount[huPlayerID]),
 		HuaCount:   uint32(params.HuaCount[huPlayerID]),
