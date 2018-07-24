@@ -8,9 +8,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/Sirupsen/logrus"
 	"steve/room2/util"
-	"steve/room2/desk/register"
-	"steve/room2/desk"
+	"steve/room2/register"
 	"steve/room/loader_balancer"
+	"steve/room2/common"
+	"steve/room2/models"
+	"steve/room2/fixed"
 )
 
 type roomCore struct {
@@ -36,7 +38,7 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	registerLbReporter(e)
 
 	rpcServer := e.RPCServer
-	deskRpc := desk.GetDeskMgr()
+	deskRpc := models.GetDeskMgr()
 	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, &deskRpc)
 	if err != nil {
 		return err
@@ -57,14 +59,14 @@ func (c *roomCore) Start() error {
 }
 
 func startPeipai() error {
-	peipaiAddr := viper.GetString(util.ListenPeipaiAddr)
+	peipaiAddr := viper.GetString(fixed.ListenPeipaiAddr)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "startPeipai",
 		"addr":      peipaiAddr,
 	})
 	if peipaiAddr != "" {
 		logEntry.Info("启动配牌服务")
-		err := util.RunPeiPai(peipaiAddr)
+		err := common.RunPeiPai(peipaiAddr)
 		if err != nil {
 			logEntry.WithError(err).Panic("配牌服务启动失败")
 		}
