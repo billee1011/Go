@@ -75,7 +75,7 @@ func (dp *deskPlayer) QuitDesk(needTuoguan bool) {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.quit = true
-	dp.tuoguan = needTuoguan // 退出后自动托管
+	dp.tuoguan = dp.tuoguan || needTuoguan // 退出后自动托管
 }
 
 // EnterDesk 进入牌桌
