@@ -187,6 +187,6 @@ func Test_ContinueCancel(t *testing.T) {
 	})
 	for i := 1; i < len(players); i++ {
 		expector := players[i].GetExpector(msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF)
-		expector.Recv(global.DefaultWaitMessageTime, nil)
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, nil))
 	}
 }
