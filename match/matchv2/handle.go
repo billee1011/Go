@@ -65,7 +65,6 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 			return
 		}
 	}
-
 	defaultMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
 	return
 }
