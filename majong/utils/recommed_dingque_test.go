@@ -453,3 +453,11 @@ func Test_TeShu_siTiaoVsSiWanVsLiuTong(t *testing.T) {
 	assert.Contains(t, []majongpb.CardColor{majongpb.CardColor_ColorWan, majongpb.CardColor_ColorTiao}, color)
 	fmt.Println(color)
 }
+
+func Test_B(t *testing.T) {
+	hanCard := []Card{11, 12, 13, 15, 21, 22, 23, 31, 32, 33, 34, 35, 36, 37, 38}
+	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
+	color := GetRecommedDingQueColor(cards)
+	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
+	fmt.Println(color)
+}

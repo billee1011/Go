@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"math/rand"
 	"sort"
 	majongpb "steve/server_pb/majong"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -21,13 +19,14 @@ func GetRecommedDingQueColor(handCards []*majongpb.Card) majongpb.CardColor {
 	sortPriority, colorPrioMap := GetColorPriorityInfo(colorCardsMap)
 	minPriority := sortPriority[len(sortPriority)-1] // 获取最小优先级 1为最大，18为最小优先级
 	colors := GetColorByPriority(colorPrioMap, minPriority)
-	if len(colors) != 1 {
-		// 最小优先级不止一个的情况
-		rd := rand.New(rand.NewSource(time.Now().UnixNano())) // 随机出颜色
-		towards := rd.Intn(len(colors))
-		return colors[towards]
+	if len(colors) == 1 {
+		return colors[0]
 	}
-	return colors[0]
+	currCards := CardTypeIsSame(colors, colorCardsMap)
+	if len(currCards) <= 0 {
+		return majongpb.CardColor_ColorWan
+	}
+	return currCards[0].GetColor()
 }
 
 //GetColorPriorityInfo 获取颜色优先级信息

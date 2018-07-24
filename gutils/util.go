@@ -459,3 +459,24 @@ func GetCardsGroup(player *majongpb.Player) []*room.CardsGroup {
 	cardsGroupList = append(cardsGroupList, huaCardGroups...)
 	return cardsGroupList
 }
+
+// DeleteHuType 移除番型中的胡类型
+func DeleteHuType(cardTypeOptionID int, fanTypes []int) []int {
+	cardTypeOption := mjoption.GetCardTypeOption(cardTypeOptionID)
+	showFan := make([]int, 0)
+	for _, fanType := range fanTypes {
+		_, isHuType := cardTypeOption.FanType2HuType[fanType]
+		_, isSettleType := cardTypeOption.FanType2Settle[fanType]
+		if !isHuType && !isSettleType {
+			showFan = append(showFan, fanType)
+		}
+	}
+	if len(fanTypes) != len(showFan) {
+		logrus.WithFields(logrus.Fields{
+			"func_name": "DeleteHuType",
+			"fanTypes":  fanTypes,
+			"showFan":   showFan,
+		}).Error("移除番型中的胡类型")
+	}
+	return showFan
+}
