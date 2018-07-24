@@ -252,6 +252,7 @@ message MajongContext {
     uint32 settle_option_id = 253;  // 结算选项 ID 
     MajongCommonOption option = 254; // 麻将通用玩法选项
     bytes majong_option = 255;   // 某个麻将特有的玩法选项
+    TempDatas TempData = 256;   // 临时数据
 }
 
 // MajongCommonOption 麻将通用玩法选项
@@ -314,4 +315,9 @@ message CardsGroup {
     CardsGroupType type = 2;    // 麻将组类型
     uint64 pid = 3;             // 吃碰杠谁的牌
     bool is_real = 4;           // 是否是实牌，仅用于胡牌
+}
+
+//TempDatas 临时数据存储
+message TempDatas {
+   repeated uint64 CartoonReqPlayerIDs = 1; // 动画完成请求的玩家ID
 }

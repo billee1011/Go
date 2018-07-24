@@ -46,11 +46,16 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 
 // OnExit 退出换三张状态
 func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
+	flow.GetMajongContext().TempData = new(majongpb.TempDatas) //清除临时数据
 
 }
 
 // nextState 下个状态
 func (s *HuansanzhangState) nextState(flow interfaces.MajongFlow) majongpb.StateID {
+	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
+	if !finished {
+		return s.curState()
+	}
 	xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
 	if xpOption.EnableDingque {
 		return majongpb.StateID_state_dingque
@@ -65,11 +70,13 @@ func (s *HuansanzhangState) curState() majongpb.StateID {
 
 // onCartoonFinish 动画播放完毕
 func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
-	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
-	if !finished {
-		return s.curState(), global.ErrInvalidEvent
+	cartoonFinishData := CartoonFinishData{
+		CurState:        s.curState(),
+		NextState:       s.nextState(flow),
+		NeedCartoonType: room.CartoonType_CTNT_HUANSANZHANG,
+		EventContext:    eventContext,
 	}
-	return OnCartoonFinish(s.curState(), s.nextState(flow), room.CartoonType_CTNT_HUANSANZHANG, eventContext)
+	return OnCartoonFinish(cartoonFinishData, flow.GetMajongContext())
 }
 
 // checkReq 检测玩家请求是否合法
