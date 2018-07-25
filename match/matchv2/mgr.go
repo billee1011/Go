@@ -1,6 +1,7 @@
 package matchv2
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
@@ -93,11 +94,16 @@ func (m *mgr) dismissContinueDesk(desk *desk, emitPlayer uint64) {
 	}).Debugln("解散续局牌桌")
 	notify := match.MatchContinueDeskDimissNtf{}
 
-	for _, player := range desk.players {
-		delete(m.playerDesk, player.playerID)
-		if player.playerID != emitPlayer {
-			gutils.SendMessage(player.playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
+	for _, deskPlayer := range desk.players {
+		delete(m.playerDesk, deskPlayer.playerID)
+		if deskPlayer.playerID != emitPlayer {
+			gutils.SendMessage(deskPlayer.playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
 		}
+		// 更新状态为空闲状态
+		player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
+			State:  int(common.PlayerState_PS_IDLE),
+			GameID: int(desk.gameID),
+		})
 	}
 	for playerID := range desk.continueWaitPlayers {
 		delete(m.playerDesk, playerID)
@@ -185,6 +191,11 @@ func (m *mgr) onPlayerLogin(playerID uint64) {
 	}
 	desk.removePlayer(playerID)
 	delete(m.playerDesk, playerID)
+	// 更新状态为空闲状态
+	player.SetPlayerPlayStates(playerID, player.PlayStates{
+		State:  int(common.PlayerState_PS_IDLE),
+		GameID: int(desk.gameID),
+	})
 	entry.Debugln("玩家重新登录，移出匹配")
 	if len(desk.players) == 0 {
 		delete(m.desks, deskID)
@@ -264,9 +275,13 @@ func (m *mgr) acceptApplyPlayer(gameID int, playerID uint64) {
 }
 
 // addDeskPlayer2Desk 将玩家添加到牌桌
-func (m *mgr) addDeskPlayer2Desk(player *deskPlayer, desk *desk) {
-	desk.players = append(desk.players, *player)
-	m.playerDesk[player.playerID] = desk.deskID
+func (m *mgr) addDeskPlayer2Desk(deskPlayer *deskPlayer, desk *desk) {
+	player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
+		State:  int(common.PlayerState_PS_MATCHING),
+		GameID: int(desk.gameID),
+	})
+	desk.players = append(desk.players, *deskPlayer)
+	m.playerDesk[deskPlayer.playerID] = desk.deskID
 	m.removeOfflines(desk)
 	config := m.gameConfig[desk.gameID]
 	if len(desk.players) >= config.needPlayerCount {
