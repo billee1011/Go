@@ -27,6 +27,6 @@ func init() {
 	viper.SetDefault(ListenClientPort, 36001)
 	viper.SetDefault(ListenPeipaiAddr, "")
 	viper.SetDefault(XingPaiTimeOut, 10)
-	viper.SetDefault(MaxFapaiCartoonTime, 10*1000)
+	viper.SetDefault(MaxFapaiCartoonTime, 6*1000)
 	viper.SetDefault(MaxHuansanzhangCartoonTime, 10*1000)
 }
