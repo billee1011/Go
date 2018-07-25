@@ -52,10 +52,6 @@ func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
 
 // nextState 下个状态
 func (s *HuansanzhangState) nextState(flow interfaces.MajongFlow) majongpb.StateID {
-	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
-	if !finished {
-		return s.curState()
-	}
 	xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
 	if xpOption.EnableDingque {
 		return majongpb.StateID_state_dingque
