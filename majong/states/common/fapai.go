@@ -51,6 +51,7 @@ func (f *FapaiState) OnEntry(flow interfaces.MajongFlow) {
 
 // OnExit 退出状态
 func (f *FapaiState) OnExit(flow interfaces.MajongFlow) {
+	flow.GetMajongContext().TempData = new(majongpb.TempDatas) //清除临时数据
 }
 
 // nextState 下个状态
@@ -70,7 +71,13 @@ func (f *FapaiState) curState() majongpb.StateID {
 
 // onCartoonFinish 动画播放完毕
 func (f *FapaiState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
-	return OnCartoonFinish(f.curState(), f.nextState(flow.GetMajongContext()), room.CartoonType_CTNT_FAPAI, eventContext)
+	cartoonFinishData := CartoonFinishData{
+		CurState:        f.curState(),
+		NextState:       f.getNextState(flow.GetMajongContext()),
+		NeedCartoonType: room.CartoonType_CTNT_FAPAI,
+		EventContext:    eventContext,
+	}
+	return OnCartoonFinish(cartoonFinishData, flow.GetMajongContext())
 }
 
 var errCardsNotEnough = errors.New("墙牌不足")

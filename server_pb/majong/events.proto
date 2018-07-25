@@ -116,6 +116,7 @@ message ChiRequestEvent {
 // CartoonFinishRequestEvent 动画完成时间
 message CartoonFinishRequestEvent {
     int32 cartoon_type = 1; // 动画类型 ，参考 client_pb.CartoonType
+    uint64 player_id = 2; // 请求的玩家ID
 }
 
 // SettleFinishEvent 结算完成事件
