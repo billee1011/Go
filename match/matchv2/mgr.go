@@ -191,6 +191,11 @@ func (m *mgr) onPlayerLogin(playerID uint64) {
 	}
 	desk.removePlayer(playerID)
 	delete(m.playerDesk, playerID)
+	// 更新状态为空闲状态
+	player.SetPlayerPlayStates(playerID, player.PlayStates{
+		State:  int(common.PlayerState_PS_IDLE),
+		GameID: int(desk.gameID),
+	})
 	entry.Debugln("玩家重新登录，移出匹配")
 	if len(desk.players) == 0 {
 		delete(m.desks, deskID)

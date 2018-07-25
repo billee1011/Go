@@ -1,0 +1,38 @@
+id: 2 # 选项 ID
+
+# 杠结算
+gang_value:
+  angang_value: 2            # 暗杠倍数2
+  minggang_value: 2          # 明杠倍数2
+  bugang_value: 1            # 补杠倍数1
+  
+# 总结算记录
+need_bill_deatils: true # 单局结算详情  
+
+# 已胡牌玩家(未退出)可参与的结算
+huPlayer_settle:
+ huPlayer_gang_settle: false #杠结算
+ huPlayer_hu_settle: false  #胡结算
+ huPlayer_round_settele: true #单局结算
+
+# 已胡牌玩家(退出)可参与的结算
+huquit_player_settle:
+ huquit_player_gang_settle: false #杠结算
+ huquit_playe_hu_settle: false  #胡结算
+ huquit_player_round_settele: false #单局结算
+
+# 认输玩家可参与的结算
+giveup_player_settle:
+ giveup_player_gang_settle: false #杠结算
+ giveup_player_hu_settle: false  #胡结算
+ giveup_player_round_settele: false #单局结算
+
+# 单局结算
+enable_gang: true           # 是否开启杠结算
+enable_chahuazhu: true      # 是否开启查花猪
+enable_chadajiao: true      # 是否开启查大叫
+enable_tuisui: true         # 是否开启退税
+
+#结算时刻
+gang_instant_settle: true  #杠立即结算
+hu_instant_settle: true    #胡立即结算
