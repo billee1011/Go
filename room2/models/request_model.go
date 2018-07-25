@@ -5,6 +5,7 @@ import (
 	"steve/structs/proto/gate_rpc"
 	player2 "steve/room2/player"
 	"steve/room2/fixed"
+	"steve/room2/desk"
 )
 
 type RequestModel struct {
@@ -18,6 +19,12 @@ func (model RequestModel) Start(){
 }
 func (model RequestModel) Stop(){
 
+}
+
+func NewRequestModel(desk *desk.Desk) DeskModel {
+	result := &RequestModel{}
+	result.SetDesk(desk)
+	return result
 }
 
 // HandlePlayerRequest 处理玩家请求

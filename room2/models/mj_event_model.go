@@ -22,17 +22,17 @@ type MjEventModel struct {
 	BaseModel
 }
 
-func NewMjEventModel(desk *desk.Desk) MjEventModel {
-	result := MjEventModel{}
+func NewMjEventModel(desk *desk.Desk) DeskModel {
+	result := &MjEventModel{}
 	result.SetDesk(desk)
 	return result
 }
 
-func (model MjEventModel) GetName() string {
+func (model *MjEventModel) GetName() string {
 	return fixed.Event
 }
 
-func (model MjEventModel) Start() {
+func (model *MjEventModel) Start() {
 	model.event = make(chan desk.DeskEvent, 16)
 
 	go func() {
@@ -41,26 +41,33 @@ func (model MjEventModel) Start() {
 	go func() {
 		model.timerTask(model.GetDesk().Context)
 	}()
+
+	event := desk.NewDeskEvent(int(server_pb.EventID_event_start_game),fixed.NormalEvent,model.GetDesk(),desk.CreateEventParams(
+		model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber,
+		[]byte{},
+		0,
+	))
+	model.PushEvent(event)
 }
 
-func (model MjEventModel) Stop() {
+func (model *MjEventModel) Stop() {
 	close(model.event)
 }
 
 
 // PushEvent 压入事件
-func (model MjEventModel) PushEvent(event desk.DeskEvent) {
+func (model *MjEventModel) PushEvent(event desk.DeskEvent) {
 	model.event <- event
 }
 
 // pushAutoEvent 一段时间后压入自动事件
-func (model MjEventModel) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNumber int) {
+func (model *MjEventModel) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNumber int) {
 	time.Sleep(time.Millisecond * time.Duration(autoEvent.GetWaitTime()))
-	if model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber != stateNumber {
+	if model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber != stateNumber {
 		return
 	}
 
-	event := desk.NewDeskEvent(int(autoEvent.EventId),fixed.NormalEvent,model.GetDesk(),desk.CreateEventParams(model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber,autoEvent.EventContext,0))
+	event := desk.NewDeskEvent(int(autoEvent.EventId),fixed.NormalEvent,model.GetDesk(),desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber,autoEvent.EventContext,0))
 
 	model.PushEvent(event)
 }
@@ -68,7 +75,7 @@ func (model MjEventModel) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNum
 
 
 // PushRequest 压入玩家请求
-func (model MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
+func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":  "desk.PushRequest",
 		"desk_uid":   model.GetDesk().GetUid(),
@@ -103,14 +110,14 @@ func (model MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterpc
 	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
 		fixed.NormalEvent,
 		model.GetDesk(),
-		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber,eventConetxtByte,playerID))
+		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber,eventConetxtByte,playerID))
 
 	model.PushEvent(event)
 }
 
 
 
-func (model MjEventModel) processEvents(ctx context.Context) {
+func (model *MjEventModel) processEvents(ctx context.Context) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.processEvent",
 		"desk_uid":  model.GetDesk().GetUid(),
@@ -150,7 +157,7 @@ func (model MjEventModel) processEvents(ctx context.Context) {
 
 
 // recordTuoguanOverTimeCount 记录托管超时计数
-func (model MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
+func (model *MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
 	if event.EventType != fixed.OverTimeEvent {
 		return
 	}
@@ -175,7 +182,7 @@ func (model MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
 // step 3. 调用 room 的结算逻辑来处理结算
 // step 4. 如果有自动事件， 将自动事件写入自动事件通道
 // step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
-func (model MjEventModel) processEvent(eventID int, eventContext []byte) {
+func (model *MjEventModel) processEvent(eventID int, eventContext []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.ProcessEvent",
 		"event_id":  eventID,
@@ -197,14 +204,14 @@ func (model MjEventModel) processEvent(eventID int, eventContext []byte) {
 		if result.AutoEvent.GetWaitTime() == 0 {
 			model.processEvent(int(result.AutoEvent.GetEventId()), result.AutoEvent.GetEventContext())
 		} else {
-			go model.pushAutoEvent(result.AutoEvent, model.GetDesk().GetConfig().Context.(context2.MjContext).StateNumber)
+			go model.pushAutoEvent(result.AutoEvent, model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber)
 		}
 	}
 }
 
 // checkGameOver 检查游戏结束
 func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
-	mjContext := model.GetDesk().GetConfig().Context.(context2.MjContext).MjContext
+	mjContext := model.GetDesk().GetConfig().Context.(*context2.MjContext).MjContext
 	// 游戏结束
 	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
 		model.GetDesk().GetConfig().Settle.(*MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
@@ -215,7 +222,7 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	return false
 }
 
-func (model MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
+func (model *MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 	if replyMsgs == nil {
 		return
 	}
@@ -227,7 +234,7 @@ func (model MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 
 
 // callEventHandler 调用事件处理器
-func (model MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
+func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
 	succ = false
 	conte := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 	stateNumber, mjContext, stateTime := conte.StateNumber, conte.MjContext, conte.StateTime
@@ -267,7 +274,7 @@ func needCompareStateNumber(event *desk.DeskEvent) bool {
 
 
 // timerTask 定时任务，产生自动事件
-func (model MjEventModel) timerTask(ctx context.Context) {
+func (model *MjEventModel) timerTask(ctx context.Context) {
 	defer func() {
 		if x := recover(); x != nil {
 			debug.PrintStack()
@@ -291,9 +298,9 @@ func (model MjEventModel) timerTask(ctx context.Context) {
 }
 
 // genTimerEvent 生成计时事件
-func (model MjEventModel) genTimerEvent() {
+func (model *MjEventModel) genTimerEvent() {
 	// 先将 context 指针读出来拷贝， 后面的 context 修改都会分配一块新的内存
-	dContext := model.GetDesk().GetConfig().Context.(context2.MjContext)
+	dContext := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 	tuoGuanPlayers := GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetTuoguanPlayers()
 
 	deskPlayers := GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayers()

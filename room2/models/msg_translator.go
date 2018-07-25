@@ -9,7 +9,7 @@ import (
 	"steve/structs/proto/gate_rpc"
 	"steve/client_pb/room"
 	"steve/room2/player"
-	"steve/room/req_event_translator/majong"
+	"steve/room2/util"
 )
 
 type msgTranslator struct {
@@ -103,11 +103,11 @@ func (t *translator) addTranslator(msgID msgid.MsgID, f interface{}) {
 
 func (t *translator) addTranslators() {
 	// majong
-	t.addTranslator(msgid.MsgID_ROOM_HUANSANZHANG_REQ, majong.TranslateHuansanzhangReq)
-	t.addTranslator(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ, majong.TranslateXingpaiActionReq)
-	t.addTranslator(msgid.MsgID_ROOM_CHUPAI_REQ, majong.TranslateChupaiReq)
-	t.addTranslator(msgid.MsgID_ROOM_DINGQUE_REQ, majong.TranslateDingqueReq)
-	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, majong.TranslateCartoonFinishReq)
+	t.addTranslator(msgid.MsgID_ROOM_HUANSANZHANG_REQ, util.TranslateHuansanzhangReq)
+	t.addTranslator(msgid.MsgID_ROOM_XINGPAI_ACTION_REQ, util.TranslateXingpaiActionReq)
+	t.addTranslator(msgid.MsgID_ROOM_CHUPAI_REQ, util.TranslateChupaiReq)
+	t.addTranslator(msgid.MsgID_ROOM_DINGQUE_REQ, util.TranslateDingqueReq)
+	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, util.TranslateCartoonFinishReq)
 
 	// 斗地主
 	/*t.addTranslator(msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ, ddz.TranslateGrabRequest)

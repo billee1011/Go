@@ -43,7 +43,7 @@ func NewMajongSettle() *MajongSettle {
 
 // Settle 单次结算
 func (majongSettle *MajongSettle) Settle(desk *desk.Desk, config *desk.DeskConfig) {
-	mjContext := config.Context.(contexts.MjContext).MjContext
+	mjContext := config.Context.(*contexts.MjContext).MjContext
 
 	settleOption := GetSettleOption(int(desk.GetGameId())) // 游戏结算玩法
 
@@ -242,7 +242,7 @@ func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, broke
 		}*/
 
 		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish),fixed.NormalEvent,desks,desk.CreateEventParams(
-			desks.GetConfig().Context.(contexts.MjContext).StateNumber,
+			desks.GetConfig().Context.(*contexts.MjContext).StateNumber,
 			eventContext,
 			0,
 		))
@@ -359,7 +359,7 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 
 // RoundSettle 单局结算
 func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.DeskConfig) {
-	mjContext := config.Context.(contexts.MjContext).MjContext
+	mjContext := config.Context.(*contexts.MjContext).MjContext
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
 	// 牌局玩家

@@ -8,6 +8,7 @@ import (
 	"steve/room2/util"
 	"steve/room2/player"
 	"steve/room2/fixed"
+	"steve/room2/desk"
 )
 
 var gMessageSender util.MessageSender
@@ -26,7 +27,11 @@ func (model MessageModel) Stop() {
 
 }
 
-
+func NewMessageModel(desk *desk.Desk) DeskModel {
+	result := &MessageModel{}
+	result.SetDesk(desk)
+	return result
+}
 
 // BroadCastDeskMessage 广播消息给牌卓玩家
 func (model *MessageModel) BroadCastDeskMessage(playerIDs []uint64, msgID msgid.MsgID, body proto.Message, exceptQuit bool) error {
@@ -55,7 +60,9 @@ func (model *MessageModel) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgI
 	})
 	// 是否针对所有玩家
 	if playerIDs == nil || len(playerIDs) == 0 {
-		playerIDs = GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
+		deskId := model.GetDesk().GetUid()
+		m:=GetModelManager().GetPlayerModel(deskId)
+		playerIDs = m.GetDeskPlayerIDs()
 		logEntry = logEntry.WithField("all_player_ids", playerIDs)
 	}
 	playerIDs = model.removeQuit(playerIDs)

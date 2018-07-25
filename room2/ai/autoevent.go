@@ -72,7 +72,7 @@ func (aeg *AutoEventGenerator) getStateDuration() time.Duration {
 func (aeg *AutoEventGenerator) addAIEvents(result *AutoEventGenerateResult, aiResult *AIEventGenerateResult, player *playerPkg.Player, eventType int) {
 	for _, aiEvent := range aiResult.Events {
 		event := desk.NewDeskEvent(int(aiEvent.ID),eventType,player.GetDesk(),desk.CreateEventParams(
-			player.GetDesk().GetConfig().Context.(contexts.MjContext).StateNumber,aiEvent.Context,player.GetPlayerID(),
+			player.GetDesk().GetConfig().Context.(*contexts.MjContext).StateNumber,aiEvent.Context,player.GetPlayerID(),
 		))
 		result.Events = append(result.Events, event)
 	}

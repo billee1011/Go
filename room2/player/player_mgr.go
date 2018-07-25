@@ -33,13 +33,17 @@ func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {
 	if !ok {
 		return nil
 	}
-	player := result.(Player)
-	return &player
+	player := result.(*Player)
+	return player
 }
 
 func (pm *PlayerMgr) InitDeskData(players []uint64,maxOverTime int,robotLv []int){
 	for seat,playerId := range players{
 		player := pm.GetPlayer(playerId)
+		if player == nil{
+			pm.InitPlayer(playerId)
+			player = pm.GetPlayer(playerId)
+		}
 		player.SetSeat(uint32(seat))
 		player.SetEcoin(int(player.GetCoin()))
 		player.SetMaxOverTime(maxOverTime)
@@ -49,7 +53,7 @@ func (pm *PlayerMgr) InitDeskData(players []uint64,maxOverTime int,robotLv []int
 
 //TODO 第一次进入房间服初始化
 func (pm *PlayerMgr) InitPlayer(playerID uint64) {
-	player := Player{
+	player := &Player{
 		PlayerID:playerID,
 	}
 	pm.playerMap.Store(playerID,player)

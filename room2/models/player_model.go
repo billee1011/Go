@@ -11,6 +11,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"steve/room2/player"
 	"steve/room2/fixed"
+	"steve/room2/desk"
 )
 
 type PlayerModel struct {
@@ -20,9 +21,9 @@ type PlayerModel struct {
 func (model PlayerModel) GetName() string{
 	return fixed.Player
 }
-func (model PlayerModel) Start(){
+func (model *PlayerModel) Start(){
 	model.players = make([]*player.Player,model.GetDesk().GetConfig().Num)
-	ids:=GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
+	ids:=model.GetDesk().GetConfig().PlayerIds//GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
 	for i:=0;i<len(model.players);i++{
 		model.players[i] = player.GetPlayerMgr().GetPlayer(ids[i])
 	}
@@ -31,9 +32,15 @@ func (model PlayerModel) Stop(){
 
 }
 
-func (model PlayerModel) PlayerEnter(player *player.Player){
+func NewPlayertModel(desk *desk.Desk) DeskModel {
+	result := &PlayerModel{}
+	result.SetDesk(desk)
+	return result
+}
+
+func (model *PlayerModel) PlayerEnter(player *player.Player){
 	// 判断行牌状态, 选项化后需修改
-	context := player.GetDesk().GetConfig().Context.(contexts.MjContext).MjContext
+	context := player.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext
 	mjPlayer := util.GetMajongPlayer(player.PlayerID, &context)
 	// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
 	// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌,重新进入后把托管取消
@@ -47,12 +54,12 @@ func (model PlayerModel) PlayerEnter(player *player.Player){
 	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_ENTER)
 }
 
-func (model PlayerModel) recoverGameForPlayer(playerID uint64) {
+func (model *PlayerModel) recoverGameForPlayer(playerID uint64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "recoverGameForPlayer",
 		"playerID":  playerID,
 	})
-	ctx := model.GetDesk().GetConfig().Context.(contexts.MjContext).MjContext
+	ctx := model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext
 	mjContext := &ctx
 	bankerSeat := mjContext.GetZhuangjiaIndex()
 	totalCardsNum := mjContext.GetCardTotalNum()
@@ -67,7 +74,7 @@ func (model PlayerModel) recoverGameForPlayer(playerID uint64) {
 		EastSeat:    &bankerSeat,
 		TotalCards:  &totalCardsNum,
 		RemainCards: proto.Uint32(uint32(len(mjContext.GetWallCards()))),
-		CostTime:    proto.Uint32(GetStateCostTime(model.GetDesk().GetConfig().Context.(contexts.MjContext).StateTime.Unix())),
+		CostTime:    proto.Uint32(GetStateCostTime(model.GetDesk().GetConfig().Context.(*contexts.MjContext).StateTime.Unix())),
 		OperatePid:  GetOperatePlayerID(mjContext),
 		DoorCard:    GetDoorCard(mjContext),
 		NeedHsz:     proto.Bool(gutils.GameHasHszState(mjContext)),
@@ -98,7 +105,7 @@ func (model PlayerModel) recoverGameForPlayer(playerID uint64) {
 
 
 
-func (model PlayerModel) PlayerQuit(player *player.Player){
+func (model *PlayerModel) PlayerQuit(player *player.Player){
 	player.QuitDesk(model.GetDesk())
 	//d.setMjPlayerQuitDesk(eqi.PlayerID, true)
 	model.setContextPlayerQuit(player,true)
@@ -106,7 +113,7 @@ func (model PlayerModel) PlayerQuit(player *player.Player){
 	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_QUIT)
 }
 
-func (model PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType room.QuitEnterType) {
+func (model *PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType room.QuitEnterType) {
 	if player == nil {
 		return
 	}
@@ -120,20 +127,20 @@ func (model PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType ro
 	GetModelManager().GetMessageModel(model.GetDesk().GetUid()).BroadCastDeskMessageExcept([]uint64{playerId}, true, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF, &ntf)
 }
 
-func (model PlayerModel) setContextPlayerQuit(player *player.Player,value bool){
-	for _,p:= range model.GetDesk().GetConfig().Context.(contexts.MjContext).MjContext.Players{
+func (model *PlayerModel) setContextPlayerQuit(player *player.Player,value bool){
+	for _,p:= range model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext.Players{
 		if p.GetPalyerId() == player.GetPlayerID(){
 			p.IsQuit = value
 		}
 	}
 }
 
-func (model PlayerModel) GetDeskPlayers() []*player.Player {
+func (model *PlayerModel) GetDeskPlayers() []*player.Player {
 	return model.players
 }
 
 // GetDeskPlayerIDs 获取牌桌玩家 ID 列表， 座号作为索引
-func (model PlayerModel) GetDeskPlayerIDs() []uint64 {
+func (model *PlayerModel) GetDeskPlayerIDs() []uint64 {
 	players := model.GetDeskPlayers()
 	result := make([]uint64, len(players))
 	for _, player := range players {
@@ -143,7 +150,7 @@ func (model PlayerModel) GetDeskPlayerIDs() []uint64 {
 }
 
 // GetTuoguanPlayers 获取牌桌所有托管玩家
-func (model PlayerModel) GetTuoguanPlayers() []uint64 {
+func (model *PlayerModel) GetTuoguanPlayers() []uint64 {
 	players := GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayers()
 	result := make([]uint64, 0, len(players))
 	for _, pla := range players {

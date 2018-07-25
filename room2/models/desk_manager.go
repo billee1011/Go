@@ -6,10 +6,10 @@ import (
 	"steve/room2/contexts"
 	"steve/server_pb/room_mgr"
 	"context"
-	"steve/client_pb/room"
-	"steve/client_pb/msgid"
 	"steve/room2/player"
 	deskpkg "steve/room2/desk"
+	"steve/client_pb/room"
+	"steve/client_pb/msgid"
 )
 
 type DeskMgr struct {
@@ -48,25 +48,26 @@ func (mgr DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskReques
 		robotLvs = append(robotLvs,int(pbPlayer.GetRobotLevel()))
 	}
 	desk,err := mgr.CreateDeskObj(length, playerIds[:], int(req.GetGameId()), robotLvs[:])
-	if err != nil{
+	if err != nil && desk != nil{
 		rsp.ErrCode = roommgr.RoomError_FAILED // 默认是失败的
 		return
 	}
 
 	rsp.ErrCode = roommgr.RoomError_SUCCESS
-	pbPlayers := []*room.RoomPlayerInfo{}
-	//通知玩家
-	for _, tempPlayer := range GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers() {
-		roomPlayer := TranslateToRoomPlayer(tempPlayer)
-		pbPlayers = append(pbPlayers, &roomPlayer)
+
+
+	roomPlayers := []*room.RoomPlayerInfo{}
+	deskPlayers := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
+	for _, player := range deskPlayers {
+		roomPlayer := TranslateToRoomPlayer(player)
+		roomPlayers = append(roomPlayers, &roomPlayer)
 	}
 	ntf := room.RoomDeskCreatedNtf{
 		GameId:  room.GameId(desk.GetGameId()).Enum(),
-		Players: pbPlayers,
+		Players: roomPlayers,
 	}
-	GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessage( nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
 
-	desk.Start(nil)
+	GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessage(nil,msgid.MsgID_ROOM_DESK_CREATED_NTF,&ntf,true)
 	//mgr.deskMap.Store(desk.GetUid(),desk)
 	return
 }
@@ -84,16 +85,20 @@ func (mgr DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robotL
 	case GameId_GAMEID_DOUDIZHU:
 		config = deskpkg.NewDDZMDeskCreateConfig(context, length)
 	default:
-		config = deskpkg.NewMjDeskCreateConfig(context, NewMajongSettle(),length)
 		ctx,err = contexts.CreateMajongContext(playerSli,gameID)
+		config = deskpkg.NewMjDeskCreateConfig(ctx, NewMajongSettle(),length)
 	}
 	if err != nil{
 		return nil,err
 	}
 	desk.GetConfig().Context = ctx
+	desk.GetConfig().PlayerIds = players
 	player.GetPlayerMgr().InitDeskData(players, gameID, robotLvs)
-	GetModelManager().InitDeskModel(desk.GetUid(),desk.GetConfig().Models,&desk)
-	return &desk,nil
+	var deskPoint *deskpkg.Desk = &desk
+	deskPoint.InitContext()
+	GetModelManager().InitDeskModel(desk.GetUid(),desk.GetConfig().Models,deskPoint)
+	deskPoint.Start(nil)
+	return deskPoint,nil
 }
 
 func (mgr DeskMgr) allocDeskID() (uint64, error) {

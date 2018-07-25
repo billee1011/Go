@@ -5,20 +5,21 @@ import (
 	"steve/room2/desk"
 )
 
-const (
 
-)
-
-func CreateModel(name string, desk *desk.Desk) DeskModel {
+func CreateModel(name string, desks *desk.Desk) DeskModel {
 	var result DeskModel = nil
 	switch name {
 	case fixed.Event:
-		result = NewMjEventModel(desk)
+		result = NewMjEventModel(desks)
 	case fixed.Player:
+		result = NewPlayertModel(desks)
 	case fixed.Request:
+		result = NewRequestModel(desks)
 	case fixed.Message:
-	case fixed.Trusteeship:
+		result = NewMessageModel(desks)
 	case fixed.Chat:
+		result = NewChatModel(desks)
 	}
+	print(result.GetDesk() == nil)
 	return result
 }
