@@ -1,7 +1,7 @@
 package ai
 
 import (
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 )
 
 // AIType AI 类型

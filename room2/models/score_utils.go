@@ -1,8 +1,8 @@
 package models
 
 import (
+	majongpb "steve/entity/majong"
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
 	"steve/room2/player"
 )
 
@@ -131,11 +131,10 @@ func GetDeskPlayer(deskPlayers []*player.Player, pid uint64) *player.Player {
 	return nil
 }
 
-
 func getWinMax(winPlayer *player.Player, winScore int64) (winMax int64) {
 	winMax = int64(0)
 	currentCoin := int64(winPlayer.GetCoin()) // 当前豆子数
-	enterCoin := int64(winPlayer.GetEcoin())                                // 进房豆子数
+	enterCoin := int64(winPlayer.GetEcoin())  // 进房豆子数
 	if currentCoin >= enterCoin {
 		winMax = currentCoin
 	} else {
@@ -184,7 +183,7 @@ func calcSocreWinner1(winPlayer uint64, losePlayers []uint64, maxScore map[uint6
 	// 破产玩家
 	brokePlayers := make([]uint64, 0)
 	for _, losePid := range losePlayers {
-		loseScore := abs(maxScore[losePid])                                   // 输家输的分
+		loseScore := abs(maxScore[losePid]) // 输家输的分
 		roomPlayer := player.GetPlayerMgr().GetPlayer(losePid)
 		loseCoin := int64(roomPlayer.GetCoin()) // 输家金币数
 		if loseScore < loseCoin {

@@ -1,34 +1,36 @@
 package models
 
 import (
-	"steve/client_pb/room"
-	"steve/room2/contexts"
 	"steve/client_pb/msgid"
-	"steve/room2/util"
-	server_pb "steve/server_pb/majong"
-	"github.com/golang/protobuf/proto"
+	"steve/client_pb/room"
+	server_pb "steve/entity/majong"
 	"steve/gutils"
-	"github.com/Sirupsen/logrus"
-	"steve/room2/player"
-	"steve/room2/fixed"
+	"steve/room2/contexts"
 	"steve/room2/desk"
+	"steve/room2/fixed"
+	"steve/room2/player"
+	"steve/room2/util"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type PlayerModel struct {
 	BaseModel
 	players []*player.Player
 }
-func (model PlayerModel) GetName() string{
+
+func (model PlayerModel) GetName() string {
 	return fixed.Player
 }
-func (model *PlayerModel) Start(){
-	model.players = make([]*player.Player,model.GetDesk().GetConfig().Num)
-	ids:=model.GetDesk().GetConfig().PlayerIds//GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
-	for i:=0;i<len(model.players);i++{
+func (model *PlayerModel) Start() {
+	model.players = make([]*player.Player, model.GetDesk().GetConfig().Num)
+	ids := model.GetDesk().GetConfig().PlayerIds //GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
+	for i := 0; i < len(model.players); i++ {
 		model.players[i] = player.GetPlayerMgr().GetPlayer(ids[i])
 	}
 }
-func (model PlayerModel) Stop(){
+func (model PlayerModel) Stop() {
 
 }
 
@@ -38,7 +40,7 @@ func NewPlayertModel(desk *desk.Desk) DeskModel {
 	return result
 }
 
-func (model *PlayerModel) PlayerEnter(player *player.Player){
+func (model *PlayerModel) PlayerEnter(player *player.Player) {
 	// 判断行牌状态, 选项化后需修改
 	context := player.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext
 	mjPlayer := util.GetMajongPlayer(player.PlayerID, &context)
@@ -49,9 +51,9 @@ func (model *PlayerModel) PlayerEnter(player *player.Player){
 	}
 	player.EnterDesk(model.GetDesk())
 	model.recoverGameForPlayer(player.GetPlayerID())
-	model.setContextPlayerQuit(player,false)
+	model.setContextPlayerQuit(player, false)
 	//d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
-	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_ENTER)
+	model.playerQuitEnterDeskNtf(player, room.QuitEnterType_QET_ENTER)
 }
 
 func (model *PlayerModel) recoverGameForPlayer(playerID uint64) {
@@ -101,16 +103,12 @@ func (model *PlayerModel) recoverGameForPlayer(playerID uint64) {
 	})
 }
 
-
-
-
-
-func (model *PlayerModel) PlayerQuit(player *player.Player){
+func (model *PlayerModel) PlayerQuit(player *player.Player) {
 	player.QuitDesk(model.GetDesk())
 	//d.setMjPlayerQuitDesk(eqi.PlayerID, true)
-	model.setContextPlayerQuit(player,true)
+	model.setContextPlayerQuit(player, true)
 	//d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
-	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_QUIT)
+	model.playerQuitEnterDeskNtf(player, room.QuitEnterType_QET_QUIT)
 }
 
 func (model *PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType room.QuitEnterType) {
@@ -127,9 +125,9 @@ func (model *PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType r
 	GetModelManager().GetMessageModel(model.GetDesk().GetUid()).BroadCastDeskMessageExcept([]uint64{playerId}, true, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF, &ntf)
 }
 
-func (model *PlayerModel) setContextPlayerQuit(player *player.Player,value bool){
-	for _,p:= range model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext.Players{
-		if p.GetPalyerId() == player.GetPlayerID(){
+func (model *PlayerModel) setContextPlayerQuit(player *player.Player, value bool) {
+	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext.Players {
+		if p.GetPalyerId() == player.GetPlayerID() {
 			p.IsQuit = value
 		}
 	}

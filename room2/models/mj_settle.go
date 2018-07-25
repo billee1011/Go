@@ -1,21 +1,23 @@
 package models
 
 import (
-	"steve/room2/contexts"
-	"steve/common/mjoption"
-	majongpb "steve/server_pb/majong"
-	"steve/client_pb/room"
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
+	"steve/client_pb/room"
+	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
-	"github.com/Sirupsen/logrus"
-	playerpkg "steve/room2/player"
+	"steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/fixed"
+	playerpkg "steve/room2/player"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // MajongCoin   key:playerID value:score
 type MajongCoin map[uint64]int64
+
 // MajongSettle 麻将结算
 type MajongSettle struct {
 	settleMap map[uint64]MajongCoin // setttleInfo实际扣分 key:结算id value:MajongCoin
@@ -39,7 +41,6 @@ func NewMajongSettle() *MajongSettle {
 		revertScore:  make(map[uint64]MajongCoin),
 	}
 }
-
 
 // Settle 单次结算
 func (majongSettle *MajongSettle) Settle(desk *desk.Desk, config *desk.DeskConfig) {
@@ -101,7 +102,6 @@ func (majongSettle *MajongSettle) Settle(desk *desk.Desk, config *desk.DeskConfi
 
 }
 
-
 func (majongSettle *MajongSettle) generateRevertSettle2(revertID uint64, gangSettle *majongpb.SettleInfo, huQuitPlayers, giveUpPlayers map[uint64]bool, revertIds []uint64, mjContext majongpb.MajongContext) *majongpb.SettleInfo {
 	// 扣除的豆子数
 	coinCost := make(map[uint64]int64, 0)
@@ -140,7 +140,6 @@ func (majongSettle *MajongSettle) generateRevertSettle2(revertID uint64, gangSet
 		SettleType: majongpb.SettleType_settle_taxrebeat,
 	}
 }
-
 
 func (majongSettle *MajongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int64, contextPlayer []*majongpb.Player) (coinCost map[uint64]int64) {
 	coinCost = make(map[uint64]int64, 0)
@@ -196,7 +195,6 @@ func (majongSettle *MajongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers [
 	return
 }
 
-
 // GetSettleInfoByID 根据settleID获取对应settleInfo
 func GetSettleInfoByID(settleInfos []*majongpb.SettleInfo, ID uint64) *majongpb.SettleInfo {
 	for _, s := range settleInfos {
@@ -206,7 +204,6 @@ func GetSettleInfoByID(settleInfos []*majongpb.SettleInfo, ID uint64) *majongpb.
 	}
 	return nil
 }
-
 
 // GenerateSettleEvent 结算finish事件
 func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, brokerPlayers []uint64) {
@@ -241,7 +238,7 @@ func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, broke
 			PlayerID:  0,
 		}*/
 
-		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish),fixed.NormalEvent,desks,desk.CreateEventParams(
+		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish), fixed.NormalEvent, desks, desk.CreateEventParams(
 			desks.GetConfig().Context.(*contexts.MjContext).StateNumber,
 			eventContext,
 			0,
@@ -304,7 +301,6 @@ func settleType2BillType(settleType majongpb.SettleType) room.BillType {
 	}[settleType]
 }
 
-
 // apartScore2Settle  将score分配到各自settleInfo中
 func (majongSettle *MajongSettle) apartScore2Settle(groupSettleInfos []*majongpb.SettleInfo, allScores map[uint64]int64) {
 	for _, sInfo := range groupSettleInfos {
@@ -356,7 +352,6 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 	return huQuitPids
 }
 
-
 // RoundSettle 单局结算
 func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.DeskConfig) {
 	mjContext := config.Context.(*contexts.MjContext).MjContext
@@ -395,13 +390,13 @@ func (majongSettle *MajongSettle) sendRounSettleMessage(contextSInfos []*majongp
 		needBillDetails := mjoption.GetSettleOption(int(mjContext.SettleOptionId)).NeedBillDetails
 		if needBillDetails {
 			balanceRsp.BillDetail, totalValue = majongSettle.makeBillDetails(pid, contextSInfos)
-			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(desk,pid, totalValue, nil, mjContext)
+			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(desk, pid, totalValue, nil, mjContext)
 		} else if len(contextSInfos) != 0 {
 			sinfo := contextSInfos[0]
 			cardOption := mjoption.GetCardTypeOption(int(mjContext.GetCardtypeOptionId()))
 			fans := make([]*room.Fan, 0)
 			fans, totalValue = makeFanType(sinfo.CardType, cardOption)
-			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(desk,pid, totalValue, fans, mjContext)
+			balanceRsp.BillPlayersInfo = majongSettle.makeBillPlayerInfo(desk, pid, totalValue, fans, mjContext)
 		}
 		// 通知该玩家单局结算信息
 		GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessage([]uint64{pid}, msgid.MsgID_ROOM_ROUND_SETTLE, balanceRsp, true)
@@ -423,9 +418,8 @@ func makeFanType(fanTypes []int64, cardOption *mjoption.CardTypeOption) (fan []*
 	return
 }
 
-
 // makeBillPlayerInfo 获得单局结算玩家详情,包括玩家自己牌型,输赢分数，以及其余每个玩家的输赢分数
-func (majongSettle *MajongSettle) makeBillPlayerInfo(desk *desk.Desk,currentPid uint64, cardValue int32, fans []*room.Fan, context majongpb.MajongContext) []*room.BillPlayerInfo {
+func (majongSettle *MajongSettle) makeBillPlayerInfo(desk *desk.Desk, currentPid uint64, cardValue int32, fans []*room.Fan, context majongpb.MajongContext) []*room.BillPlayerInfo {
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
 		playerID := player.GetPalyerId()
@@ -450,7 +444,6 @@ func (majongSettle *MajongSettle) makeBillPlayerInfo(desk *desk.Desk,currentPid 
 	}
 	return billPlayerInfos
 }
-
 
 func (majongSettle *MajongSettle) makeBillDetails(pid uint64, contextSInfos []*majongpb.SettleInfo) (billDetails []*room.BillDetail, totalValue int32) {
 	// 记录该玩家单局结算总倍数
@@ -549,7 +542,6 @@ func (majongSettle *MajongSettle) makeBillDetail(pid uint64, sInfo *majongpb.Set
 	}
 	return billDetail
 }
-
 
 func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, payScore map[uint64]int64) {
 	for _, player := range players {

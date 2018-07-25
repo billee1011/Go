@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/majong/global"
+	"steve/room/majong/global"
 	"time"
 
 	"github.com/Sirupsen/logrus"

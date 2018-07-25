@@ -1,13 +1,12 @@
 package util
 
 import (
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/room"
-	server_pb "steve/server_pb/majong"
+	server_pb "steve/entity/majong"
 	"steve/structs/proto/gate_rpc"
+
+	"github.com/golang/protobuf/proto"
 )
-
-
 
 // TranslateXingpaiActionReq 转换行牌动作请求
 func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Header,

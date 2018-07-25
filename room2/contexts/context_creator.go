@@ -3,14 +3,15 @@ package contexts
 import (
 	"errors"
 	"steve/common/mjoption"
-	"steve/server_pb/majong"
-	server_pb "steve/server_pb/majong"
+	"steve/entity/majong"
+	server_pb "steve/entity/majong"
+	"steve/room2/common"
+	"steve/room2/fixed"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
-	"time"
-	"steve/room2/common"
-	"steve/room2/fixed"
 )
 
 var errInitMajongContext = errors.New("初始化麻将现场失败")
@@ -18,7 +19,7 @@ var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
 var errPlayerNeedXingPai = errors.New("玩家需要参与行牌")
 
-func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
+func CreateMajongContext(players []uint64, gameId int) (*MjContext, error) {
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(gameId),
 		Players: players,
@@ -42,17 +43,17 @@ func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
 	var mjContext server_pb.MajongContext
 	var err error
 	if mjContext, err = initMajongContext(param); err != nil {
-		return nil,err
+		return nil, err
 	}
 	if err := fillContextOptions(gameId, &mjContext); err != nil {
-		return nil,err
+		return nil, err
 	}
 	result := &MjContext{
 		MjContext:   mjContext,
 		StateNumber: 0,
 		StateTime:   time.Now(),
 	}
-	return result,nil
+	return result, nil
 }
 
 var errCreateEmptyContextFailed = errors.New("创建空的麻将现场失败")

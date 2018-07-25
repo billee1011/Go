@@ -5,7 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/gutils"
-	"steve/majong/utils"
+	"steve/room/majong/utils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"

@@ -3,13 +3,14 @@ package scxlai
 import (
 	"fmt"
 	"steve/common/mjoption"
+	"steve/entity/majong"
 	"steve/gutils"
-	"steve/server_pb/majong"
 	"time"
+
+	"steve/room2/ai"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type zixunStateAI struct {

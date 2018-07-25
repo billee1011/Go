@@ -1,12 +1,13 @@
 package scxlai
 
 import (
+	"steve/entity/majong"
 	"steve/gutils"
-	"steve/server_pb/majong"
+
+	"steve/room2/ai"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type chupaiWenxunStateAI struct {

@@ -1,20 +1,21 @@
 package models
 
 import (
-	"runtime/debug"
-	"github.com/Sirupsen/logrus"
 	"context"
-	server_pb "steve/server_pb/majong"
-	majong_process "steve/majong/export/process"
-	context2 "steve/room2/contexts"
-	"time"
+	"runtime/debug"
 	"steve/client_pb/msgid"
-	"github.com/golang/protobuf/proto"
-	"steve/structs/proto/gate_rpc"
+	server_pb "steve/entity/majong"
+	majong_process "steve/room/majong/export/process"
 	"steve/room2/ai"
-	"steve/room2/player"
+	context2 "steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/fixed"
+	"steve/room2/player"
+	"steve/structs/proto/gate_rpc"
+	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type MjEventModel struct {
@@ -42,7 +43,7 @@ func (model *MjEventModel) Start() {
 		model.timerTask(model.GetDesk().Context)
 	}()
 
-	event := desk.NewDeskEvent(int(server_pb.EventID_event_start_game),fixed.NormalEvent,model.GetDesk(),desk.CreateEventParams(
+	event := desk.NewDeskEvent(int(server_pb.EventID_event_start_game), fixed.NormalEvent, model.GetDesk(), desk.CreateEventParams(
 		model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber,
 		[]byte{},
 		0,
@@ -53,7 +54,6 @@ func (model *MjEventModel) Start() {
 func (model *MjEventModel) Stop() {
 	close(model.event)
 }
-
 
 // PushEvent 压入事件
 func (model *MjEventModel) PushEvent(event desk.DeskEvent) {
@@ -67,12 +67,10 @@ func (model *MjEventModel) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNu
 		return
 	}
 
-	event := desk.NewDeskEvent(int(autoEvent.EventId),fixed.NormalEvent,model.GetDesk(),desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber,autoEvent.EventContext,0))
+	event := desk.NewDeskEvent(int(autoEvent.EventId), fixed.NormalEvent, model.GetDesk(), desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber, autoEvent.EventContext, 0))
 
 	model.PushEvent(event)
 }
-
-
 
 // PushRequest 压入玩家请求
 func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
@@ -106,16 +104,14 @@ func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterp
 		EventType: interfaces.NormalEvent,
 		PlayerID:  playerID,
 	}
-*/
+	*/
 	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
 		fixed.NormalEvent,
 		model.GetDesk(),
-		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber,eventConetxtByte,playerID))
+		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber, eventConetxtByte, playerID))
 
 	model.PushEvent(event)
 }
-
-
 
 func (model *MjEventModel) processEvents(ctx context.Context) {
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -138,9 +134,9 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 				return
 			}
 		/*case enterQuitInfo := <-model.GetDesk().PlayerEnterQuitChannel():
-			{
-				d.handleEnterQuit(enterQuitInfo)
-			}*/
+		{
+			d.handleEnterQuit(enterQuitInfo)
+		}*/
 		case event := <-model.event:
 			{
 				stateNumber := event.Params.Params[0].(int)
@@ -154,7 +150,6 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 		}
 	}
 }
-
 
 // recordTuoguanOverTimeCount 记录托管超时计数
 func (model *MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
@@ -174,7 +169,6 @@ func (model *MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
 		deskPlayer.OnPlayerOverTime()
 	}
 }
-
 
 // processEvent 处理单个事件
 // step 1. 调用麻将逻辑的接口来处理事件(返回最新麻将现场, 自动事件， 发送给玩家的消息)， 并且更新 mjContext
@@ -231,8 +225,6 @@ func (model *MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 	}
 }
 
-
-
 // callEventHandler 调用事件处理器
 func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
 	succ = false
@@ -271,7 +263,6 @@ func needCompareStateNumber(event *desk.DeskEvent) bool {
 	}
 	return true
 }
-
 
 // timerTask 定时任务，产生自动事件
 func (model *MjEventModel) timerTask(ctx context.Context) {

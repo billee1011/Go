@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"steve/gutils"
 
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 	"time"
+
+	"steve/room2/ai"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type waitQiangganghuStateAI struct {
