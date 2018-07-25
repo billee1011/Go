@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"steve/structs/service"
@@ -13,6 +13,7 @@ import (
 	"steve/room2/common"
 	"steve/room2/models"
 	"steve/room2/fixed"
+	_"steve/room2/contexts"
 )
 
 type roomCore struct {

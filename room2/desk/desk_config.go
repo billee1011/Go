@@ -9,11 +9,12 @@ type DeskConfig struct {
 	Models  []string
 	Context interface{} //预留gameContext
 	Settle  interface{}
+	PlayerIds []uint64
 	Num     int
 }
 
 //默认自带的
-var defaultModels = []string{fixed.Event,fixed.Message,fixed.Request,fixed.Player,fixed.Trusteeship}
+var defaultModels = []string{fixed.Event,fixed.Message,fixed.Request,fixed.Player,fixed.Chat}
 
 //麻将
 func NewMjDeskCreateConfig(context interface{},settle interface{},num int) DeskConfig {
