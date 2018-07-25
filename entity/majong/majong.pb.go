@@ -829,6 +829,7 @@ type MajongContext struct {
 	SettleOptionId      uint32              `protobuf:"varint,253,opt,name=settle_option_id,json=settleOptionId" json:"settle_option_id,omitempty"`
 	Option              *MajongCommonOption `protobuf:"bytes,254,opt,name=option" json:"option,omitempty"`
 	MajongOption        []byte              `protobuf:"bytes,255,opt,name=majong_option,json=majongOption,proto3" json:"majong_option,omitempty"`
+	TempData            *TempDatas          `protobuf:"bytes,256,opt,name=TempData" json:"TempData,omitempty"`
 }
 
 func (m *MajongContext) GetGameId() int32 {
@@ -1044,6 +1045,13 @@ func (m *MajongContext) GetOption() *MajongCommonOption {
 func (m *MajongContext) GetMajongOption() []byte {
 	if m != nil {
 		return m.MajongOption
+	}
+	return nil
+}
+
+func (m *MajongContext) GetTempData() *TempDatas {
+	if m != nil {
+		return m.TempData
 	}
 	return nil
 }
@@ -1285,4 +1293,16 @@ func (m *CardsGroup) GetIsReal() bool {
 		return m.IsReal
 	}
 	return false
+}
+
+// TempDatas 临时数据存储
+type TempDatas struct {
+	CartoonReqPlayerIDs []uint64 `protobuf:"varint,1,rep,packed,name=CartoonReqPlayerIDs" json:"CartoonReqPlayerIDs,omitempty"`
+}
+
+func (m *TempDatas) GetCartoonReqPlayerIDs() []uint64 {
+	if m != nil {
+		return m.CartoonReqPlayerIDs
+	}
+	return nil
 }

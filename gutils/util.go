@@ -467,7 +467,10 @@ func DeleteHuType(cardTypeOptionID int, fanTypes []int) []int {
 	for _, fanType := range fanTypes {
 		_, isHuType := cardTypeOption.FanType2HuType[fanType]
 		_, isSettleType := cardTypeOption.FanType2Settle[fanType]
-		if !isHuType && !isSettleType {
+		//TODO:建议此处选项化不要以胡类型结算类型来排除行牌过程的胡牌提示，添加一个在行牌阶段可以查番的番型列表或者不可查番型的番型列表
+		//将天胡，报听一发这些在行牌阶段不确定的番型进行归类，查的时候直接排除不去查就行了，这里暂时先将报听一发写死在代码里进行排除，后面
+		//会统一在番型选项化中对这些不确定番型进行排除
+		if !isHuType && !isSettleType && fanType != int(room.FanType_FT_BAOTINGYIFA) {
 			showFan = append(showFan, fanType)
 		}
 	}

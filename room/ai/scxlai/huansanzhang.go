@@ -1,6 +1,7 @@
 package scxlai
 
 import (
+	"steve/client_pb/room"
 	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/interfaces"
@@ -18,11 +19,30 @@ func (h *huansanzhangStateAI) GenerateAIEvent(params interfaces.AIEventGenerateP
 
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	if player.GetHuansanzhangSure() {
+	if !player.GetHuansanzhangSure() { // 玩家没选换牌情况下,生成换牌请求
+		if event := h.huansanzhang(player); event != nil {
+			result.Events = append(result.Events, *event)
+		}
 		return
 	}
-	if event := h.huansanzhang(player); event != nil {
-		result.Events = append(result.Events, *event)
+	if params.AIType != interfaces.RobotAI { //不是机器人不能发送动画完成请求
+		return
+	}
+	finished := mjContext.GetExcutedHuansanzhang() // 是否所有人已经执行换牌
+	if finished {
+		crPlayerIDs := mjContext.GetTempData().GetCartoonReqPlayerIDs()
+		if len(crPlayerIDs) == len(mjContext.GetPlayers()) { //所有玩家都发送过动画完成请求
+			return
+		}
+		for _, playerID := range crPlayerIDs {
+			if playerID == player.GetPalyerId() { // 当前玩家已经发送过
+				return
+			}
+		}
+		// 发送动画完成请求
+		if event := CartoonFinsh(player, int32(room.CartoonType_CTNT_HUANSANZHANG)); event != nil {
+			result.Events = append(result.Events, *event)
+		}
 	}
 	return
 }

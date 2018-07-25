@@ -55,6 +55,7 @@ func InitMajongContext(param server_pb.InitMajongContextParams) (mjContext serve
 
 	mjContext.Option = param.GetOption()
 	mjContext.MajongOption = param.GetMajongOption()
+	mjContext.TempData = new(server_pb.TempDatas) //初始化临时数据
 	logEntry.Debugln("初始化麻将现场")
 	return
 }

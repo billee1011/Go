@@ -72,7 +72,6 @@ func calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int
 			coinCost[losePlayer] = -loseCoin
 		} else if winSum > 1 {
 			divideScore(losePlayer, winPlayers, nil, contextPlayer)
-
 		}
 	}
 	return
@@ -244,7 +243,7 @@ func divideScore(losePlayer uint64, winPlayers []uint64, maxScore map[uint64]int
 		coinCost[losePlayer] = coinCost[losePlayer] - abs(coinCost[winPid])
 	}
 	// 剩余分数，余 1 情况赔付于赢钱最多的玩家, 余 2 情况赔付于第一、第二胡牌玩家
-	surplusScore := loseCoin - coinCost[losePlayer]
+	surplusScore := loseCoin - abs(coinCost[losePlayer])
 	resortWinnerPlayers := resortWinnerPlayers(losePlayer, winPlayers, contextPlayer)
 	firstWinner := resortWinnerPlayers[0]
 	if surplusScore%2 == 0 {

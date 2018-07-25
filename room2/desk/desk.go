@@ -35,11 +35,15 @@ func (desk Desk) GetGameId() int {
 	return desk.gameID
 }
 
-func (desk Desk) Start(onOver func()) {
+func (desk *Desk) Start(onOver func()) {
+
+}
+
+func (desk *Desk) InitContext(){
 	desk.Context, desk.Cancel = context.WithCancel(context.Background())
 }
 
-func (desk Desk) Stop() {
+func (desk *Desk) Stop() {
 	desk.Cancel()
 }
 

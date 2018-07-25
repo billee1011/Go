@@ -7,7 +7,7 @@ import (
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	majongpb "steve/entity/majong"
-	"steve/majong/global"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
 	"time"
@@ -45,6 +45,7 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 
 // OnExit 退出换三张状态
 func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
+	flow.GetMajongContext().TempData = new(majongpb.TempDatas) //清除临时数据
 
 }
 
@@ -64,11 +65,13 @@ func (s *HuansanzhangState) curState() majongpb.StateID {
 
 // onCartoonFinish 动画播放完毕
 func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventContext interface{}) (newState majongpb.StateID, err error) {
-	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
-	if !finished {
-		return s.curState(), global.ErrInvalidEvent
+	cartoonFinishData := CartoonFinishData{
+		CurState:        s.curState(),
+		NextState:       s.nextState(flow),
+		NeedCartoonType: room.CartoonType_CTNT_HUANSANZHANG,
+		EventContext:    eventContext,
 	}
-	return OnCartoonFinish(s.curState(), s.nextState(flow), room.CartoonType_CTNT_HUANSANZHANG, eventContext)
+	return OnCartoonFinish(cartoonFinishData, flow.GetMajongContext())
 }
 
 // checkReq 检测玩家请求是否合法
@@ -277,7 +280,7 @@ func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow
 	// 广播通知客户端进入定缺
 	for _, player := range flow.GetMajongContext().GetPlayers() {
 		// 获取推荐换三张
-		hszCards := utils.GetRecommedHuanSanZhang(player.GetHandCards())
+		hszCards := gutils.GetRecommedHuanSanZhang(player.GetHandCards())
 		// 先设置，用于超时AI
 		player.HuansanzhangCards = hszCards
 		if len(hszCards) != 3 {

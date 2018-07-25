@@ -51,53 +51,68 @@ func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 	switch mjContext.GetZixunType() {
 	case majong.ZixunType_ZXT_PENG, majong.ZixunType_ZXT_CHI:
 		{
-			//有定缺牌，出最大的定缺牌
-			hasChuPai := false
-			for i := len(handCards) - 1; i >= 0; i-- {
-				hc := handCards[i]
-				if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
-					hc.GetColor() == player.GetDingqueColor() {
-					aiEvent = h.chupai(player, hc)
-					hasChuPai = true
-					break
-				}
-			}
-			if !hasChuPai {
-				aiEvent = h.chupai(player, handCards[len(handCards)-1])
-			}
+			aiEvent = h.handleOtherZixun(player, mjContext)
 		}
 	case majong.ZixunType_ZXT_NORMAL:
 		{
-			zxRecord := player.GetZixunRecord()
-			canHu := zxRecord.GetEnableZimo()
-			if (gutils.IsTing(player) || gutils.IsHu(player)) && canHu && !gutils.CheckHasDingQueCard(mjContext, player) {
-				aiEvent = h.hu(player)
-			} else {
-				//先判断是否有定缺牌，有的话，先出定缺牌
-				//有定缺牌，出最大的定缺牌
-				hasChuPai := false
-				for i := len(handCards) - 1; i >= 0; i-- {
-					hc := handCards[i]
-					if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
-						hc.GetColor() == player.GetDingqueColor() {
-						aiEvent = h.chupai(player, hc)
-						hasChuPai = true
-						break
-					}
-				}
-				if !hasChuPai {
-					if player.GetMopaiCount() == 0 {
-						aiEvent = h.chupai(player, handCards[len(handCards)-1])
-					} else {
-						aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
-					}
-				}
-			}
+			aiEvent = h.handleNormalZixun(player, mjContext)
 		}
 	default:
 		return
 	}
 	result.Events = append(result.Events, aiEvent)
+	return
+}
+
+func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	zxRecord := player.GetZixunRecord()
+	handCards := player.GetHandCards()
+	if gutils.IsHu(player) || gutils.IsTing(player) {
+		canHu := zxRecord.GetEnableZimo()
+		if canHu {
+			aiEvent = h.hu(player)
+		} else {
+			aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
+		}
+		return
+	}
+
+	// 优先出定缺牌
+	if gutils.CheckHasDingQueCard(mjContext, player) {
+		for i := len(handCards) - 1; i >= 0; i-- {
+			hc := handCards[i]
+			if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
+				hc.GetColor() == player.GetDingqueColor() {
+				aiEvent = h.chupai(player, hc)
+				return
+			}
+		}
+	}
+
+	// 正常出牌
+	if player.GetMopaiCount() == 0 {
+		aiEvent = h.chupai(player, handCards[len(handCards)-1])
+	} else {
+		aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
+	}
+	return
+}
+
+func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	//有定缺牌，出最大的定缺牌
+	handCards := player.GetHandCards()
+
+	//优先出定缺牌
+	for i := len(handCards) - 1; i >= 0; i-- {
+		hc := handCards[i]
+		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
+			hc.GetColor() == player.GetDingqueColor() {
+			aiEvent = h.chupai(player, hc)
+			return
+		}
+	}
+
+	aiEvent = h.chupai(player, handCards[len(handCards)-1])
 	return
 }
 

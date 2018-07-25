@@ -11,6 +11,7 @@ func TranslateCartoonFinishReq(playerID uint64, header *steve_proto_gaterpc.Head
 	req room.RoomCartoonFinishReq) (eventID int, eventContext interface{}, err error) {
 	eventContext = server_pb.CartoonFinishRequestEvent{
 		CartoonType: int32(req.GetCartoonType()),
+		PlayerId:    playerID,
 	}
 	eventID = int(server_pb.EventID_event_cartoon_finish_request)
 	return

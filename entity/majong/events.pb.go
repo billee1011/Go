@@ -301,12 +301,20 @@ func (m *ChiRequestEvent) GetCards() []*Card {
 
 // CartoonFinishRequestEvent 动画完成时间
 type CartoonFinishRequestEvent struct {
-	CartoonType int32 `protobuf:"varint,1,opt,name=cartoon_type,json=cartoonType" json:"cartoon_type,omitempty"`
+	CartoonType int32  `protobuf:"varint,1,opt,name=cartoon_type,json=cartoonType" json:"cartoon_type,omitempty"`
+	PlayerId    uint64 `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 }
 
 func (m *CartoonFinishRequestEvent) GetCartoonType() int32 {
 	if m != nil {
 		return m.CartoonType
+	}
+	return 0
+}
+
+func (m *CartoonFinishRequestEvent) GetPlayerId() uint64 {
+	if m != nil {
+		return m.PlayerId
 	}
 	return 0
 }

@@ -5,7 +5,7 @@ log_stderr: true
 
 rpc_addr: 192.168.8.152
 rpc_port: 36100
-rpc_server_name: room2
+rpc_server_name: room
 
 peipai_addr: 0.0.0.0:36102
 
