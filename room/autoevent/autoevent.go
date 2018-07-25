@@ -1,9 +1,9 @@
 package autoevent
 
 import (
+	"steve/entity/majong"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
-	"steve/entity/majong"
 	"time"
 
 	"steve/client_pb/room"
@@ -230,7 +230,6 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 			return result
 		}
 		result = aeg.handleTuoGuan(params.Desk, AI, params.StartTime, params.MajongContext)
-
 		// 超过 1s 处理机器人事件
 		if time.Now().Sub(params.StartTime) > 1*time.Second {
 			players := params.MajongContext.GetPlayers()

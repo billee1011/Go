@@ -9,7 +9,7 @@ import (
 // TranslateCartoonFinishReq 转换动画完成请求
 func TranslateCartoonFinishReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	req room.RoomCartoonFinishReq) (eventID int, eventContext interface{}, err error) {
-	eventContext = server_pb.CartoonFinishRequestEvent{
+	eventContext = &server_pb.CartoonFinishRequestEvent{
 		CartoonType: int32(req.GetCartoonType()),
 		PlayerId:    playerID,
 	}

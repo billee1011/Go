@@ -117,7 +117,7 @@ func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong
 }
 
 func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) interfaces.AIEvent {
-	eventContext := majong.ChupaiRequestEvent{
+	eventContext := &majong.ChupaiRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
@@ -131,7 +131,7 @@ func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) interfac
 }
 
 func (h *zixunStateAI) hu(player *majong.Player) interfaces.AIEvent {
-	eventContext := majong.HuRequestEvent{
+	eventContext := &majong.HuRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},

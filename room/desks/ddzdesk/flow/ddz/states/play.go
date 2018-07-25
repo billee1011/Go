@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/majong/global"
+	"steve/room/majong/global"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -37,7 +37,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_playing), global.ErrInvalidEvent
 	}
 
-	message := event.EventData.(ddz.PlayCardRequestEvent)
+	message := event.EventData.(*ddz.PlayCardRequestEvent)
 
 	context := getDDZContext(m)
 	playerID := message.GetHead().GetPlayerId()

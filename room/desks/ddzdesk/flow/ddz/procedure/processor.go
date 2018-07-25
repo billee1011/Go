@@ -97,7 +97,7 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 		"func_name": "dealResumeRequest",
 	})
 
-	message := param.EventContext.(ddz.ResumeRequestEvent)
+	message := param.EventContext.(*ddz.ResumeRequestEvent)
 
 	// 请求的玩家ID
 	reqPlayerID := message.GetHead().GetPlayerId()

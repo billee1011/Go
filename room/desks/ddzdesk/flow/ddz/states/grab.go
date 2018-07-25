@@ -7,7 +7,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/entity/majong"
-	"steve/majong/global"
+	"steve/room/majong/global"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -39,7 +39,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_grab), global.ErrInvalidEvent
 	}
 
-	message := (event.EventData).(ddz.GrabRequestEvent)
+	message := (event.EventData).(*ddz.GrabRequestEvent)
 
 	context := getDDZContext(m)
 	playerID := message.GetHead().GetPlayerId()

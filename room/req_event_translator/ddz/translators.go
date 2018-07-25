@@ -20,7 +20,7 @@ func TranslateGrabRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	req room.DDZGrabLordReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
-	eventContext = ddz.GrabRequestEvent{
+	eventContext = &ddz.GrabRequestEvent{
 		Head: &head,
 		Grab: req.GetGrab(),
 	}
@@ -33,7 +33,7 @@ func TranslateDoubleRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	req room.DDZDoubleReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
-	eventContext = ddz.DoubleRequestEvent{
+	eventContext = &ddz.DoubleRequestEvent{
 		Head:     &head,
 		IsDouble: req.GetIsDouble(),
 	}
@@ -46,7 +46,7 @@ func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Heade
 	req room.DDZPlayCardReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
-	eventContext = ddz.PlayCardRequestEvent{
+	eventContext = &ddz.PlayCardRequestEvent{
 		Head:     &head,
 		Cards:    req.Cards,
 		CardType: ddz.CardType(int32(req.GetCardType())),
@@ -60,7 +60,7 @@ func TranslateResumeRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 	req room.DDZResumeGameReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
-	eventContext = ddz.ResumeRequestEvent{
+	eventContext = &ddz.ResumeRequestEvent{
 		Head: &head,
 	}
 	eventID = int(ddz.EventID_event_resume_request)

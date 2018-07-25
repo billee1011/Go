@@ -208,7 +208,7 @@ func OnCartoonFinish(curState int, nextState int, needCartoonType room.CartoonTy
 		"need_cartoon_type": needCartoonType,
 	})
 
-	req := eventContext.(majong.CartoonFinishRequestEvent)
+	req := eventContext.(*majong.CartoonFinishRequestEvent)
 	reqCartoonType := req.GetCartoonType()
 	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
 	if reqCartoonType != int32(needCartoonType) {

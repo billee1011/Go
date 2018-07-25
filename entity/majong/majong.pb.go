@@ -703,6 +703,13 @@ func (m *AutoEvent) GetWaitTime() uint32 {
 	return 0
 }
 
+func (m *AutoEvent) GetEventContext() interface{} {
+	if m != nil {
+		return m.EventContext
+	}
+	return nil
+}
+
 // SettleInfo 结算信息
 type SettleInfo struct {
 	Id           uint64           `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`

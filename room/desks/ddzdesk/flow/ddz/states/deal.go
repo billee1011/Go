@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/majong/global"
+	"steve/room/majong/global"
 	"steve/room/peipai/handle"
 	"steve/entity/majong"
 	"time"

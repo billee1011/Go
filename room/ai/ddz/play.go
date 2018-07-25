@@ -175,7 +175,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 
 	logrus.Info("托管被动出牌：%v", resultCards)
 
-	request := ddz.PlayCardRequestEvent{
+	request := &ddz.PlayCardRequestEvent{
 		Head: &ddz.RequestEventHead{
 			PlayerId: player.GetPlayerId()},
 		Cards:    resultCards,    // 打出去的牌
@@ -211,7 +211,7 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 	resultCardType := ddz.CardType_CT_SINGLE
 
 	// 下面是回复消息
-	request := ddz.PlayCardRequestEvent{
+	request := &ddz.PlayCardRequestEvent{
 		Head: &ddz.RequestEventHead{
 			PlayerId: player.GetPlayerId()},
 		Cards:    resultCards,    // 打出去的牌

@@ -1,7 +1,7 @@
 package scxlai
 
 import (
-	"steve/server_pb/majong"
+	"steve/entity/majong"
 	"steve/room2/ai"
 )
 

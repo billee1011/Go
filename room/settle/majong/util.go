@@ -39,7 +39,7 @@ func GenerateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, b
 		majongpb.SettleType_settle_zimo:     true,
 	}
 	if needEvent[settleType] {
-		eventContext := majongpb.SettleFinishEvent{
+		eventContext := &majongpb.SettleFinishEvent{
 			PlayerId: brokerPlayers,
 		}
 		event := majongpb.AutoEvent{

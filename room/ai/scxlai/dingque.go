@@ -42,7 +42,7 @@ func (h *dingqueStateAI) getColor(player *majong.Player) majong.CardColor {
 // dingque 生成定缺请求事件
 func (h *dingqueStateAI) dingque(player *majong.Player) *interfaces.AIEvent {
 	color := h.getColor(player)
-	eventContext := majong.DingqueRequestEvent{
+	eventContext := &majong.DingqueRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},

@@ -1,19 +1,19 @@
-package core
+package main
 
 import (
-	"steve/structs/service"
+	"steve/room2/common"
+	_ "steve/room2/contexts"
+	"steve/room2/fixed"
+	"steve/room2/models"
+	"steve/room2/register"
+	"steve/room2/util"
+	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/net"
-	"steve/server_pb/room_mgr"
-	"github.com/spf13/viper"
+	"steve/structs/service"
+
 	"github.com/Sirupsen/logrus"
-	"steve/room2/util"
-	"steve/room2/register"
-	"steve/room/loader_balancer"
-	"steve/room2/common"
-	"steve/room2/models"
-	"steve/room2/fixed"
-	_"steve/room2/contexts"
+	"github.com/spf13/viper"
 )
 
 type roomCore struct {
@@ -49,9 +49,9 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 }
 
 func registerLbReporter(exposer *structs.Exposer) {
-	if err := lb.RegisterLBReporter(exposer.RPCServer); err != nil {
-		logrus.WithError(err).Panicln("注册负载上报服务失败")
-	}
+	// if err := lb.RegisterLBReporter(exposer.RPCServer); err != nil {
+	// 	logrus.WithError(err).Panicln("注册负载上报服务失败")
+	// }
 }
 
 func (c *roomCore) Start() error {

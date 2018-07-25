@@ -34,7 +34,7 @@ func (h *grabStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (
 		return result, nil
 	}
 
-	request := ddz.GrabRequestEvent{
+	request := &ddz.GrabRequestEvent{
 		Head: &ddz.RequestEventHead{
 			PlayerId: playerID,
 		}, Grab: false,
