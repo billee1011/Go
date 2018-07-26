@@ -5,8 +5,7 @@ import (
 )
 
 type TGameSumary struct {
-	Id         int64     `xorm:"pk autoincr BIGINT(20)"`
-	Sumaryid   int64     `xorm:"BIGINT(20)"`
+	Sumaryid   int64     `xorm:"not null pk BIGINT(20)"`
 	Deskid     int64     `xorm:"BIGINT(20)"`
 	Gameid     int       `xorm:"INT(11)"`
 	Levelid    int       `xorm:"comment('场次ID') INT(11)"`

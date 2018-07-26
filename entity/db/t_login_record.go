@@ -5,8 +5,7 @@ import (
 )
 
 type TLoginRecord struct {
-	Id             int64     `xorm:"pk autoincr BIGINT(20)"`
-	Recordid       int64     `xorm:"not null BIGINT(20)"`
+	Recordid       int64     `xorm:"not null pk unique BIGINT(20)"`
 	Playerid       int64     `xorm:"not null BIGINT(20)"`
 	Onlineduration int       `xorm:"default 0 comment('在线时长') INT(11)"`
 	Gamingduration int       `xorm:"default 0 comment('游戏时长') INT(11)"`
