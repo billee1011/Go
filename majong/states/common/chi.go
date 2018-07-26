@@ -3,6 +3,7 @@ package common
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/gutils"
 	"steve/majong/interfaces"
 	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
@@ -65,7 +66,7 @@ func (s *ChiState) doChi(flow interfaces.MajongFlow) {
 		"chied_player_id": srcPlayerID,
 	})
 	logEntry = utils.WithMajongContext(logEntry, mjContext)
-	utils.SortCards(chiPlayer.GetDesignChiCards())
+	gutils.SortCards(chiPlayer.GetDesignChiCards())
 	checkCards := utils.ServerCards2Numbers(chiPlayer.GetDesignChiCards())
 	if len(checkCards) != 3 {
 		return

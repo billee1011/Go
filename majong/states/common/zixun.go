@@ -116,7 +116,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	//检查玩家是否胡过牌,胡过牌的话,摸啥打啥,能胡不让打
 	card := message.GetCards()
 	activePlayer := utils.GetPlayerByID(mjContext.GetPlayers(), pid)
-	if len(activePlayer.GetHuCards()) > 0 {
+	if gutils.IsHu(activePlayer) || gutils.IsTing(activePlayer) {
 		if !utils.CardEqual(card, mjContext.GetLastMopaiCard()) {
 			return majongpb.StateID_state_zixun, nil
 		}
@@ -306,7 +306,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		zixunNtf.EnableQi = proto.Bool(canQi)
 	}
 	//分三种情况,1胡过,且摸到牌能胡,chupaicard字段不给值
-	if len(player.GetHuCards()) > 0 {
+	if gutils.IsHu(player) || gutils.IsTing(player) {
 		if !*zixunNtf.EnableZimo {
 			//2胡过,且不能自摸,摸什么打什么
 			zixunNtf.EnableChupaiCards = []uint32{utils.ServerCard2Uint32(mjContext.GetLastMopaiCard())}
@@ -688,7 +688,7 @@ func (s *ZiXunState) sortCards(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	playerID := gutils.GetZixunPlayer(mjContext)
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
-	utils.SortCards(player.GetHandCards())
+	gutils.SortCards(player.GetHandCards())
 }
 
 //AddZiXunCount 自询次数递增1
