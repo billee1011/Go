@@ -14,6 +14,9 @@ var StageTime = map[room.DDZStage]uint32{
 }
 
 func GenNextStage(stage room.DDZStage) *room.NextStage {
+	if stage == room.DDZStage_DDZ_STAGE_NONE {
+		return nil
+	}
 	stageTime := StageTime[stage]
 	return &room.NextStage{
 		Stage: stage.Enum(),

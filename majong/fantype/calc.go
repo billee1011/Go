@@ -1,9 +1,9 @@
 package fantype
 
 import (
-	"steve/majong/global"
 	"steve/majong/interfaces"
 	majongpb "steve/server_pb/majong"
+	"steve/majong/bus"
 )
 
 type fanTypeCalculator struct {
@@ -19,6 +19,6 @@ func (fc fanTypeCalculator) CardTypeValue(mjContext *majongpb.MajongContext, fan
 
 func init() {
 	fc := fanTypeCalculator{}
-	global.SetFanTypeCalculator(fc)
+	bus.SetFanTypeCalculator(fc)
 
 }

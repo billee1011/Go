@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -17,7 +18,7 @@ import (
 // 期望不出现换三张
 func Test_SCXZ_StartGame_NoHsz(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN
+	params.GameID = common.GameId_GAMEID_XUEZHAN
 	params.Cards = [][]uint32{
 		{11, 11, 11, 37, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14},
 		{15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 18},
@@ -60,7 +61,7 @@ func Test_SCXZ_StartGame_NoHsz(t *testing.T) {
 // 期望出现换三张
 func Test_SCXZ_StartGame_Hsz(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN
+	params.GameID = common.GameId_GAMEID_XUEZHAN
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = true // 换三张
 	deskData, err := utils.StartGame(params)

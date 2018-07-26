@@ -1,7 +1,7 @@
 package ddzdesk
 
 import (
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/procedure"
 	"steve/room/desks/deskbase"
@@ -217,6 +217,7 @@ func (d *desk) PushEvent(event interfaces.Event) {
 
 // run 执行牌桌逻辑
 func (d *desk) run() {
+	defer d.consumeAllEnterQuit() // 消费完所有的退出进入数据
 
 forstart:
 	for {
@@ -226,11 +227,63 @@ forstart:
 				d.processEvent(&event)
 				d.recordTuoguanOverTimeCount(event)
 			}
+		case enterQuitInfo := <-d.PlayerEnterQuitChannel():
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}
 		case <-d.closingChannel:
 			{
 				break forstart
 			}
 		}
+	}
+}
+
+func (d *desk) consumeAllEnterQuit() {
+	for {
+		select {
+		case enterQuitInfo := <-d.PlayerEnterQuitChannel():
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}
+		default:
+			return
+		}
+	}
+}
+
+// handleEnterQuit 处理退出进入信息
+func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "handleEnterQuit",
+		"player_id": eqi.PlayerID,
+		"quit":      eqi.Quit,
+	})
+	deskPlayer := facade.GetDeskPlayerByID(d, eqi.PlayerID)
+	defer close(eqi.FinishChannel)
+
+	if deskPlayer == nil {
+		logEntry.Errorln("玩家不在牌桌上")
+		return
+	}
+	if eqi.Quit {
+		deskPlayer.SetTuoguan(true, true)
+		logEntry.Debugln("玩家退出")
+	} else {
+		deskPlayer.SetTuoguan(false, true)
+
+		//生成恢复对局事件
+		eventMessage := &ddz.ResumeRequestEvent{
+			Head: &ddz.RequestEventHead{PlayerId: eqi.PlayerID},
+		}
+		eventID := int(ddz.EventID_event_resume_request)
+		eventContext, err := proto.Marshal(eventMessage)
+		if err != nil {
+			logEntry.WithError(err).Errorln("事件消息序列化失败")
+			return
+		}
+		d.processEvent(&deskEvent{eventID: eventID, eventContext: eventContext})
+		logEntry.Debugln("玩家进入")
 	}
 }
 
@@ -256,8 +309,9 @@ func (d *desk) processEvent(e *deskEvent) {
 	})
 
 	params := procedure.Params{
+		PlayerMgr:    d.DeskPlayerMgr,
 		Context:      *d.ddzContext,
-		Sender:       d.getMessageSender(),
+		Sender:       d.getMessageSender(), //TODO: 尽量不要把一个参数拆成多个参数
 		EventID:      e.eventID,
 		EventContext: e.eventContext,
 	}
@@ -271,6 +325,7 @@ func (d *desk) processEvent(e *deskEvent) {
 	d.ddzContext = &result.Context
 	// 游戏结束
 	if d.ddzContext.GetCurState() == ddz.StateID_state_over {
+		d.ContinueDesk(false, 0, d.getWinners())
 		go func() { d.Stop() }()
 		return
 	}
@@ -291,6 +346,18 @@ func (d *desk) processEvent(e *deskEvent) {
 			}()
 		}
 	}
+}
+
+func (d *desk) getWinners() []uint64 {
+	players := d.ddzContext.GetPlayers()
+	winners := make([]uint64, 0, len(players))
+
+	for _, player := range players {
+		if player.GetWin() {
+			winners = append(winners, player.GetPlayerId())
+		}
+	}
+	return winners
 }
 
 func (d *desk) getMessageSender() ddzmachine.MessageSender {

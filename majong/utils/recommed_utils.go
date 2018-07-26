@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	majongpb "steve/server_pb/majong"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 //GetColorStatistics 统计各花色
@@ -139,7 +141,7 @@ func CheckShunGroup(cardCountMap map[int32]int) (bool, int) {
 		return true, 12
 	}
 	if duiCount == 1 { //顺+对
-		return true, 11
+		return true, 13
 	}
 	return false, 18
 }
@@ -230,4 +232,48 @@ func GetDuiNumByShunJiaDui(cardCountMap map[int32]int) int {
 		}
 	}
 	return duiCount
+}
+
+//CopyColorCardMap 复制ColorCardMap
+func CopyColorCardMap(currMap map[majongpb.CardColor][]*majongpb.Card) map[majongpb.CardColor][]*majongpb.Card {
+	newMap := make(map[majongpb.CardColor][]*majongpb.Card)
+	for key, value := range currMap {
+		newMap[key] = value
+	}
+	return newMap
+}
+
+// NotDuplicatesCards 去除重复的牌
+func NotDuplicatesCards(cards []*majongpb.Card) []*majongpb.Card {
+	newCards := make([]*majongpb.Card, 0)
+	for _, card := range cards {
+		flag := true
+		for _, nCard := range newCards {
+			if CardEqual(card, nCard) {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			newCards = append(newCards, card)
+		}
+	}
+	return newCards
+}
+
+// CardTypeIsSame 牌型一样
+func CardTypeIsSame(colors []majongpb.CardColor, colorCardsMap map[majongpb.CardColor][]*majongpb.Card) []*majongpb.Card {
+	// 牌数不一样，选择最小牌数
+	if flag, minCards := IsCardNumEqualAndMinCards(colors, colorCardsMap); !flag {
+		logrus.WithFields(logrus.Fields{"func_name": "GetRecommedHuanSanZhang",
+			"minCards": minCards, "colors": colors}).Info("牌型一样，牌数不一样，选择最小牌数")
+		return minCards
+	}
+	//牌数一样，随机
+	rd := rand.New(rand.NewSource(time.Now().UnixNano())) // 随机出颜色
+	towards := rd.Intn(len(colors))
+	cards := colorCardsMap[colors[towards]]
+	logrus.WithFields(logrus.Fields{"func_name": "GetRecommedHuanSanZhang",
+		"cards": cards, "towards": towards, "colors": colors}).Info("牌型一样，牌数一样，随机")
+	return cards
 }

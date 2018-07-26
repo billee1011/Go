@@ -17,7 +17,11 @@ func NewRPCServer(opts ...grpc.ServerOption) *RPCServerImpl {
 
 type RPCServerImpl struct {
 	svr *grpc.Server
+	isRetire bool			// 是否退休
+	score  int64 			// 负载值
 }
+
+
 
 func isValidRegister(f interface{}, service interface{}) error {
 	tf := reflect.TypeOf(f)
@@ -35,6 +39,25 @@ func isValidRegister(f interface{}, service interface{}) error {
 		return fmt.Errorf("RPCServerImpl.RegisterService error service type or func type")
 	}
 	return nil
+}
+
+// 设置退休
+func (rsi *RPCServerImpl) EnableRetire(bEnable bool) {
+	rsi.isRetire = bEnable
+}
+
+// 是否退休
+func (rsi *RPCServerImpl) IsRetire() bool {
+	return rsi.isRetire
+}
+
+// 设置负载值
+func (rsi *RPCServerImpl) SetScore(score int64) {
+	rsi.score = score
+}
+// 获取负载值
+func (rsi *RPCServerImpl) GetScore() int64 {
+	return rsi.score
 }
 
 func (rsi *RPCServerImpl) RegisterService(f interface{}, service interface{}) error {

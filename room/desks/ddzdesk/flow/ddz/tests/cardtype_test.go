@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"math/rand"
 	"steve/room/desks/ddzdesk/flow/ddz/states"
 	"steve/server_pb/ddz"
 )
@@ -136,4 +137,21 @@ func Test_ShunZi(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x13, 0x24, 0x35, 0x46, 0x17, 0x28, 0x39, 0x4A, 0x1B, 0x2C, 0x3D, 0x41})
 	cardType, _ := states.GetCardType(cards)
 	assert.Equal(t, ddz.CardType_CT_SHUNZI, cardType)
+}
+
+func randCard() uint32 {
+	suit := rand.Intn(4) + 1
+	point := rand.Intn(13) + 1
+	return uint32(suit*16 + point)
+}
+
+func Benchmark_GetCardType(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		cards := []uint32{}
+		for j := 0; j < 13; j++ {
+			cards = append(cards, randCard())
+		}
+		states.GetCardType(states.ToDDZCards(cards))
+	}
+
 }

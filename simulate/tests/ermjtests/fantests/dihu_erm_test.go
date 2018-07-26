@@ -1,6 +1,7 @@
 package fantests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -11,7 +12,7 @@ import (
 
 func dihu(t *testing.T) *utils.DeskData {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_ERRENMJ // 二人
+	params.GameID = common.GameId_GAMEID_ERRENMJ // 二人
 	params.PeiPaiGame = "ermj"
 	params.PlayerNum = 2
 	params.BankerSeat = 0
@@ -25,7 +26,6 @@ func dihu(t *testing.T) *utils.DeskData {
 	deskData, err2 := utils.StartGame(params)
 	assert.NotNil(t, deskData)
 	assert.Nil(t, err2)
-
 	return deskData
 }
 
@@ -45,5 +45,5 @@ func TestFan_DiHu_Zimo_ERM(t *testing.T) {
 	// 检测分数
 	winScro := 184 * (len(deskData.Players) - 1)
 
-	utils.CheckFanSettle(t, deskData, 4, 1, int64(winScro), room.FanType_FT_DIHU)
+	utils.CheckFanSettle(t, deskData, 4, 1, int64(winScro), room.FanType_FT_DAQIXING)
 }

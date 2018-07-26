@@ -6,6 +6,8 @@ import (
 	"steve/structs/proto/base"
 	"sync"
 
+	"steve/serviceloader/pprof"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -40,11 +42,6 @@ type clientCallbackImpl struct {
 }
 
 func (cc *clientCallbackImpl) onRecvPkg(header *steve_proto_base.Header, body []byte) {
-	// logrus.WithFields(logrus.Fields{
-	// 	"func_name": "clientCallbackImpl.onRecvPkg",
-	// 	"msg_id":    header.GetMsgId(),
-	// 	"client_id": cc.clientID,
-	// }).Debugln("收到客户端消息")
 	if cc.dog.msgObserver != nil {
 		cc.dog.msgObserver.OnRecv(cc.clientID, header, body)
 	}
@@ -60,8 +57,15 @@ func (cc *clientCallbackImpl) onClientClose() {
 	}
 }
 
+func (cc *clientCallbackImpl) afterSendPkg(header *steve_proto_base.Header, body []byte, err error) {
+	if cc.dog.msgObserver != nil {
+		cc.dog.msgObserver.AfterSend(cc.clientID, header, body, err)
+	}
+}
+
 func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 	clientID := dog.alloc.NewClientID()
+	pprof.AddClient(clientID)
 	client := newClientV2(e, &clientCallbackImpl{
 		dog:      dog,
 		clientID: clientID,
@@ -76,6 +80,7 @@ func (dog *watchDogImpl) workOnExchanger(e exchanger) error {
 	go func() {
 		// 由 run 函数自己处理异常
 		err := client.run(func() {
+			pprof.RemoveClient(clientID)
 			dog.clientMap.Delete(clientID)
 		})
 		logrus.WithField("client_id", clientID).WithError(err).Debug("client finished")

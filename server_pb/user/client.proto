@@ -8,3 +8,7 @@ message ClientDisconnect {
     uint64 client_id = 1;  // 客户端 ID 
 }
 
+// PlayerLogin 玩家登录消息
+message PlayerLogin {
+    uint64 player_id = 1; // 玩家 ID 
+}

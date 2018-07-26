@@ -40,12 +40,21 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	isDouble := message.IsDouble
+
+	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerId, "double": isDouble})
 	if !isValidPlayer(context, playerId) {
-		logrus.Error("玩家不在本牌桌上!")
+		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_double), global.ErrInvalidRequestPlayer
 	}
+	for _, doubledPlayer := range context.DoubledPlayers {
+		if doubledPlayer == playerId {
+			logEntry.WithField("DoubledPlayers", context.DoubledPlayers).Warnln("玩家重复加倍")
+			return int(ddz.StateID_state_double), nil
+		}
+	}
+	logEntry.Infoln("斗地主玩家加倍")
 
-	isDouble := message.IsDouble
 	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble //记录该玩家加倍
 	context.DoubledPlayers = append(context.DoubledPlayers, playerId)
 	if isDouble {
@@ -56,8 +65,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	context.CountDownPlayers = remove(context.CountDownPlayers, playerId)
 
 	var nextStage *room.NextStage
-	context.DoubledCount++
-	if context.DoubledCount >= 3 {
+	if len(context.DoubledPlayers) >= 3 {
 		nextStage = GenNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_DOUBLE_NTF, &room.DDZDoubleNtf{
@@ -67,8 +75,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 		NextStage:   nextStage,
 	})
 
-	if context.DoubledCount >= 3 {
-		context.CurrentPlayerId = context.LordPlayerId
+	if len(context.DoubledPlayers) >= 3 {
 		context.Duration = 0 //清除倒计时
 		return int(ddz.StateID_state_playing), nil
 	} else {

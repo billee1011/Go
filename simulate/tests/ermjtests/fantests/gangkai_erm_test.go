@@ -1,6 +1,7 @@
 package fantests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -11,7 +12,7 @@ import (
 
 func gangkai(t *testing.T) *utils.DeskData {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_ERRENMJ // 二人
+	params.GameID = common.GameId_GAMEID_ERRENMJ // 二人
 	params.PeiPaiGame = "ermj"
 	params.PlayerNum = 2
 	params.BankerSeat = 0
@@ -45,5 +46,5 @@ func TestFan_GangKai_Zimo_ERM(t *testing.T) {
 	// 检测分数
 	winScro := 280 * (len(deskData.Players) - 1)
 
-	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_GANGSHANGKAIHUA)
+	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_ZIYISE)
 }

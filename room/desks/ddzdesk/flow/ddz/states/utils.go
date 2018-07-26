@@ -2,7 +2,7 @@ package states
 
 import (
 	"fmt"
-	msgid "steve/client_pb/msgid"
+	"steve/client_pb/msgid"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
@@ -64,7 +64,7 @@ func getPlayerIds(m machine.Machine) []uint64 {
 		return nil
 	}
 
-	players := []uint64{}
+	var players []uint64
 	for _, player := range dm.GetDDZContext().GetPlayers() {
 		players = append(players, player.GetPlayerId())
 	}
@@ -155,7 +155,7 @@ func ContainsAll(handCards []Poker, outCards []Poker) bool {
 // Contains cards是否包含card
 func Contains(cards []Poker, card Poker) bool {
 	for _, value := range cards {
-		if value.equals(card) {
+		if value.Equals(card) {
 			return true
 		}
 	}

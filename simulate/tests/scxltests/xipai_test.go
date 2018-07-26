@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/interfaces"
@@ -23,7 +24,7 @@ func Test_Xipai(t *testing.T) {
 		expector, err := client.ExpectMessage(msgid.MsgID_ROOM_XIPAI_NTF)
 		assert.Nil(t, err)
 		xipaiExpectors[i] = expector
-		gameID := room.GameId(1)
+		gameID := common.GameId(1)
 		_, err = utils.ApplyJoinDesk(player, gameID)
 		assert.Nil(t, err)
 	}

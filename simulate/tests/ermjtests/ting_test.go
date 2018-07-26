@@ -1,6 +1,7 @@
 package ermjtest
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -16,7 +17,7 @@ func TestTing(t *testing.T) {
 	params.PlayerNum = 2
 	params.BankerSeat = 0
 	params.PeiPaiGame = "ermj"
-	params.GameID = room.GameId_GAMEID_ERRENMJ
+	params.GameID = common.GameId_GAMEID_ERRENMJ
 	params.IsDq = false
 	params.IsHsz = false
 	params.Cards = [][]uint32{

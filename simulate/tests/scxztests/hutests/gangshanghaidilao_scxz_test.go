@@ -1,6 +1,7 @@
 package hutests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -22,7 +23,7 @@ func Test_SCXZ_Gangshanghaidilao(t *testing.T) {
 	var Int1W uint32 = 11
 	var Int8W uint32 = 18
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	gangSeat := 1

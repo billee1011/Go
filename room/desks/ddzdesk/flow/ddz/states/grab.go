@@ -18,6 +18,7 @@ type grabState struct{}
 func (s *grabState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_CALL
+	context.CurrentPlayerId = context.CallPlayerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -35,29 +36,30 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_grab), nil
 	}
 	if event.EventID != int(ddz.EventID_event_grab_request) {
-		logrus.Error("grabState can only handle ddz.EventID_event_grab_request, invalid event")
 		return int(ddz.StateID_state_grab), global.ErrInvalidEvent
 	}
 
 	message := &ddz.GrabRequestEvent{}
 	err := proto.Unmarshal(event.EventData, message)
 	if err != nil {
-		logrus.Error("grabState unmarshal event error!")
 		return int(ddz.StateID_state_grab), global.ErrUnmarshalEvent
 	}
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	grab := message.GetGrab()
+
+	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerId, "grab": grab})
 	if !isValidPlayer(context, playerId) {
-		logrus.Error("玩家不在本牌桌上!")
+		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
 	}
 	if context.CurrentPlayerId != playerId {
-		logrus.WithField("expected player:", context.CurrentPlayerId).WithField("fact player", playerId).Error("未到本玩家抢地主")
+		logEntry.WithField("expected player:", context.CurrentPlayerId).Errorln("未到本玩家抢地主")
 		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
 	}
+	logEntry.Infoln("玩家叫/抢地主")
 
-	grab := message.GetGrab()
 	GetPlayerByID(context.GetPlayers(), playerId).Grab = grab //记录该玩家已叫/弃地主
 	context.GrabbedCount++                                    //记录完毕
 
@@ -108,16 +110,18 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
 	}
 
-	if lordPlayerId != 0 {
-		context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
+	if lordPlayerId != 0 || context.AllAbandonCount > 3 {
+		context.CurStage = ddz.DDZStage_DDZ_STAGE_NONE //最后一个人的抢地主广播NextStage为NONE
 	}
-	if context.AllAbandonCount > 3 {
-		context.CurStage = ddz.DDZStage_DDZ_STAGE_GRAB //应客户端要求，三次全弃地主广播前，返回grab阶段
+
+	totalGrab := context.TotalGrab
+	if totalGrab == 0 { //产品要求不能显示0倍
+		totalGrab = 1
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_GRAB_LORD_NTF, &room.DDZGrabLordNtf{
 		PlayerId:     &playerId,
 		Grab:         &grab,
-		TotalGrab:    &context.TotalGrab,
+		TotalGrab:    &totalGrab,
 		NextPlayerId: &nextPlayerId,
 		NextStage:    GenNextStage(room.DDZStage(int32(context.CurStage))),
 	})
@@ -137,7 +141,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if lordPlayerId != 0 {
 		lordPlayer := GetPlayerByID(context.GetPlayers(), lordPlayerId)
 		lordPlayer.Lord = true
-		for _, card := range context.WallCards {
+		for _, card := range context.Dipai {
 			lordPlayer.HandCards = append(lordPlayer.HandCards, card)
 		}
 		lordPlayer.HandCards = DDZSortDescend(lordPlayer.HandCards)
@@ -147,11 +151,9 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		broadcast(m, msgid.MsgID_ROOM_DDZ_LORD_NTF, &room.DDZLordNtf{
 			PlayerId:  &lordPlayerId,
 			TotalGrab: &context.TotalGrab,
-			Dipai:     context.WallCards,
+			Dipai:     context.Dipai,
 			NextStage: GenNextStage(room.DDZStage_DDZ_STAGE_DOUBLE),
 		})
-		context.Dipai = context.WallCards
-		context.WallCards = []uint32{}
 		return int(ddz.StateID_state_double), nil
 	} else {
 		return int(ddz.StateID_state_grab), nil

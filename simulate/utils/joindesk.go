@@ -1,8 +1,9 @@
 package utils
 
 import (
+	"steve/client_pb/common"
+	"steve/client_pb/match"
 	"steve/client_pb/msgid"
-	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
 
@@ -10,15 +11,15 @@ import (
 )
 
 // ApplyJoinDesk 申请加入牌桌，从match
-func ApplyJoinDesk(player interfaces.ClientPlayer, gameID room.GameId) (*room.RoomJoinDeskRsp, error) {
+func ApplyJoinDesk(player interfaces.ClientPlayer, gameID common.GameId) (*match.MatchRsp, error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "ApplyJoinDesk",
 		"user_id":   player.GetID(),
 	})
-	req := room.RoomJoinDeskReq{
+	req := match.MatchReq{
 		GameId: &gameID,
 	}
-	rsp := room.RoomJoinDeskRsp{}
+	rsp := match.MatchRsp{}
 
 	client := player.GetClient()
 	err := client.Request(createMsgHead(msgid.MsgID_MATCH_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_MATCH_RSP), &rsp)
@@ -30,14 +31,14 @@ func ApplyJoinDesk(player interfaces.ClientPlayer, gameID room.GameId) (*room.Ro
 }
 
 // ApplyJoinDeskPlayers 多个玩家同时加入游戏
-func ApplyJoinDeskPlayers(players []interfaces.ClientPlayer, gameID room.GameId) error {
+func ApplyJoinDeskPlayers(players []interfaces.ClientPlayer, gameID common.GameId) error {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "ApplyJoinDeskPlayers",
 	})
-	req := room.RoomJoinDeskReq{
+	req := match.MatchReq{
 		GameId: &gameID,
 	}
-	rsp := room.RoomJoinDeskRsp{}
+	rsp := match.MatchRsp{}
 	for _, player := range players {
 		client := player.GetClient()
 		err := client.Request(createMsgHead(msgid.MsgID_MATCH_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_MATCH_RSP), &rsp)

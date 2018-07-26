@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -28,7 +29,7 @@ func Test_Fapai(t *testing.T) {
 		assert.Nil(t, err)
 		fapaiNtfExpectors[i] = expector
 
-		_, err = utils.ApplyJoinDesk(player, room.GameId_GAMEID_XUELIU)
+		_, err = utils.ApplyJoinDesk(player, common.GameId_GAMEID_XUELIU)
 		assert.Nil(t, err)
 	}
 

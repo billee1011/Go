@@ -17,7 +17,7 @@ import (
 // 	1. 托管后，所有用户收到玩家0的出牌通知
 func Test_ZixunTuoguan01(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

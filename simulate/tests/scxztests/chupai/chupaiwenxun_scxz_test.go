@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -21,7 +22,7 @@ func Test_SCXZ_Hued_CPWX_NotGang(t *testing.T) {
 		{25, 25, 25, 25, 26, 26, 26, 26, 27, 27, 27, 27, 28},
 	}
 	params.HszCards = [][]uint32{}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	params.WallCards = []uint32{31, 31, 32, 33}
@@ -60,7 +61,7 @@ func Test_SCXZ_Hued_CPWX_NotHu(t *testing.T) {
 		{25, 25, 25, 25, 26, 26, 26, 26, 27, 27, 27, 27, 28},
 	}
 	params.HszCards = [][]uint32{}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	params.WallCards = []uint32{31, 31, 32, 33}

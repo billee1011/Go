@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"steve/client_pb/common"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -307,7 +308,7 @@ func CreateAndLoginUsersNum(num int) ([]interfaces.ClientPlayer, error) {
 
 // 加入牌桌
 // 返回：座位ID 与 playerID的map
-func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
+func joinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]uint64, error) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "joinDesk",
@@ -349,7 +350,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]ui
 
 // DDZjoinDesk 斗地主加入牌桌
 // 返回：座位ID 与 playerID的map
-func DDZjoinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
+func DDZjoinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]uint64, error) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "joinDesk",

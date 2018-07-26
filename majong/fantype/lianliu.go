@@ -21,8 +21,8 @@ func checkLianLiu(tc *typeCalculator) bool {
 		newPoints := sortRemoveDuplicate(points)
 		if l := len(newPoints); l >= 6 {
 			// 从最大值递减下去，是否连续6张
-			count := diff(newPoints, 1)
-			if count >= 6 {
+			flag := diff(newPoints, 1, 6)
+			if flag {
 				return true
 			}
 		}

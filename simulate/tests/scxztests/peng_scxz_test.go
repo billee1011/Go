@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -16,7 +17,7 @@ import (
 func Test_SCXZ_Peng(t *testing.T) {
 	var Int5w uint32 = 15
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.IsHsz = false // 不换三张
 	// 0 号玩家的最后一张牌改成 5W， 打出后 1 号玩家可碰

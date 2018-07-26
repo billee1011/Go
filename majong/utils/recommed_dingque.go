@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"math/rand"
 	"sort"
 	majongpb "steve/server_pb/majong"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -18,20 +16,21 @@ func GetRecommedDingQueColor(handCards []*majongpb.Card) majongpb.CardColor {
 		return color
 	}
 	// 获取每种比较的颜色的优先级
-	sortPriority, colorPrioMap := GetSortPrioAndColorPrioMapByColorCardMap(colorCardsMap)
+	sortPriority, colorPrioMap := GetColorPriorityInfo(colorCardsMap)
 	minPriority := sortPriority[len(sortPriority)-1] // 获取最小优先级 1为最大，18为最小优先级
 	colors := GetColorByPriority(colorPrioMap, minPriority)
-	if len(colors) != 1 {
-		// 最小优先级不止一个的情况
-		rd := rand.New(rand.NewSource(time.Now().UnixNano())) // 随机出颜色
-		towards := rd.Intn(len(colors))
-		return colors[towards]
+	if len(colors) == 1 {
+		return colors[0]
 	}
-	return colors[0]
+	currCards := CardTypeIsSame(colors, colorCardsMap)
+	if len(currCards) <= 0 {
+		return majongpb.CardColor_ColorWan
+	}
+	return currCards[0].GetColor()
 }
 
-//GetSortPrioAndColorPrioMapByColorCardMap 根据颜色与牌的映射，获取排序后的优先级，和优先级Map
-func GetSortPrioAndColorPrioMapByColorCardMap(colorCardsMap map[majongpb.CardColor][]*majongpb.Card) ([]int, map[majongpb.CardColor]int) {
+//GetColorPriorityInfo 获取颜色优先级信息
+func GetColorPriorityInfo(colorCardsMap map[majongpb.CardColor][]*majongpb.Card) ([]int, map[majongpb.CardColor]int) {
 	// 优先级MAP
 	colorPrioMap := make(map[majongpb.CardColor]int)
 	sortPriority := make([]int, 0)
@@ -39,8 +38,8 @@ func GetSortPrioAndColorPrioMapByColorCardMap(colorCardsMap map[majongpb.CardCol
 		priority := GetPriorityByColorCard(cards)
 		colorPrioMap[color] = priority
 		sortPriority = append(sortPriority, priority)
-		logrus.WithFields(logrus.Fields{"func_name": "GetSortPrioAndColorPrioMapByColorCardMap",
-			"color": color, "priority": priority}).Info("获取推荐定缺颜色的优先级")
+		logrus.WithFields(logrus.Fields{"func_name": "GetColorPriorityInfo",
+			"color": color, "priority": priority}).Info("获取颜色的优先级")
 	}
 	sort.Ints(sortPriority) // 升序，排序优先级
 	return sortPriority, colorPrioMap
@@ -54,7 +53,7 @@ func ColorSort(colorCardsMap map[majongpb.CardColor][]*majongpb.Card) (min, mid,
 	// 获取 各花色的数量差异
 	cardLen := []int{wanLen, tiaoLen, tongLen}
 	sort.Ints(cardLen) // 升序
-	logrus.WithFields(logrus.Fields{"func_name": "ColorSort", "cardLen": cardLen}).Info("获取推荐定缺颜色的长度")
+	logrus.WithFields(logrus.Fields{"func_name": "ColorSort", "cardLen": cardLen}).Info("获取颜色的长度")
 	return cardLen[0], cardLen[1], cardLen[2]
 }
 

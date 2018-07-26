@@ -1,7 +1,7 @@
 package qitests
 
 import (
-	"steve/client_pb/room"
+	"steve/client_pb/common"
 	"steve/simulate/global"
 	"steve/simulate/utils"
 	"testing"
@@ -18,7 +18,7 @@ func Test_SCXZ_AnGang_Qi(t *testing.T) {
 	// utils.StartGameParams
 	thisParams := global.NewCommonStartGameParams()
 	thisParams.WallCards = []uint32{31, 39}
-	thisParams.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	thisParams.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	thisParams.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)
