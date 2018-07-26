@@ -39,7 +39,7 @@ func Test_QuitRecover(t *testing.T) {
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, ntf2))
 
 	// TODO 匹配功能还未完善，先不测这个
-	// rsp, err := utils.ApplyJoinDesk(quitPlayer.Player, room.GameId_GAMEID_XUELIU)
+	// rsp, err := utils.ApplyJoinDesk(quitPlayer.Player, common.GameId_GAMEID_XUELIU)
 	// assert.Nil(t, err)
 	// assert.Equal(t, room.RoomError_DESK_GAME_PLAYING, rsp.GetErrCode())
 	assert.Nil(t, utils.SendRecoverGameReq(quitSeat, deskData))

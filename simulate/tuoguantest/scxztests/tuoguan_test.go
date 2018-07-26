@@ -19,7 +19,7 @@ import (
 //  1. 玩家 1 收到托管通知进入托管状态
 func Test_OverTimeTuoguan(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

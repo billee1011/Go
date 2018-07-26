@@ -5,6 +5,7 @@ import (
 	"steve/server_pb/ddz"
 
 	"errors"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
@@ -18,6 +19,7 @@ type playState struct{}
 func (s *playState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_PLAYING
+	context.CurrentPlayerId = context.LordPlayerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -32,28 +34,48 @@ func (s *playState) OnExit(m machine.Machine) {
 
 func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error) {
 	if event.EventID != int(ddz.EventID_event_chupai_request) {
-		logrus.Error("playState can only handle ddz.EventID_event_chupai_request, invalid event")
 		return int(ddz.StateID_state_playing), global.ErrInvalidEvent
 	}
 
 	message := &ddz.PlayCardRequestEvent{}
 	err := proto.Unmarshal(event.EventData, message)
 	if err != nil {
-		logrus.Error("playState unmarshal event error!")
 		return int(ddz.StateID_state_playing), global.ErrUnmarshalEvent
 	}
 
 	context := getDDZContext(m)
 	playerId := message.GetHead().GetPlayerId()
+	outCards := ToDDZCards(message.GetCards())
+	logEntry := logrus.WithField("playerId", playerId).WithField("outCards", outCards)
+
+	//修复玩家有手牌黑桃3时，伪造四个黑桃3能成功出炸弹的问题
+	counts := make(map[uint32]uint32) //Map<card, count>
+	for _, card := range message.GetCards() {
+		count, exists := counts[card]
+		if !exists {
+			counts[card] = 1
+		} else {
+			counts[card] = count + 1
+		}
+	}
+	for card, count := range counts {
+		if count > 1 {
+			msg := fmt.Sprintf("存在重复牌%s", ToDDZCard(card))
+			logEntry.Warnln(msg)
+			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+				Result: genResult(7, msg),
+			})
+			return int(ddz.StateID_state_playing), global.ErrInvalidEvent
+		}
+	}
+
 	if !isValidPlayer(context, playerId) {
-		logrus.Error("玩家不在本牌桌上!")
+		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
 
-	outCards := ToDDZCards(message.GetCards())
-	logrus.WithField("playerId", playerId).WithField("outCards", outCards).Debug("玩家出牌")
 	if context.CurrentPlayerId != playerId {
-		logrus.WithField("expected player:", context.CurrentPlayerId).WithField("fact player", playerId).Error("未到本玩家出牌")
+		logEntry.WithField("expected player:", context.CurrentPlayerId).Errorln("未到本玩家出牌")
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(1, "未轮到本玩家出牌"),
 		})
@@ -61,13 +83,16 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId
+	player := GetPlayerByID(context.GetPlayers(), playerId)
 	if len(outCards) == 0 { //pass
+		logEntry.Infoln("玩家过牌")
 		if context.CurCardType == ddz.CardType_CT_NONE { //该你出牌时不出牌，报错
 			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 				Result: genResult(6, "首轮出牌玩家不能过牌"),
 			})
 			return int(ddz.StateID_state_playing), errors.New("首轮出牌玩家不能过牌")
 		}
+		player.OutCards = ToInts(outCards)
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{ //成功pass
 			Result: genResult(0, ""),
 		})
@@ -97,8 +122,8 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 		return int(ddz.StateID_state_playing), nil
 	}
+	logEntry.Infoln("玩家出牌")
 
-	player := GetPlayerByID(context.GetPlayers(), playerId)
 	handCards := ToDDZCards(player.HandCards)
 	if !ContainsAll(handCards, outCards) { //检查所出的牌是否在手牌中
 		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
@@ -132,13 +157,13 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	} else if context.CurCardType == ddz.CardType_CT_KINGBOMB {
 		bigger = false
 	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
-		bigger = currPivot.pointBiggerThan(lastPivot)
+		bigger = currPivot.PointBiggerThan(lastPivot)
 	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
 		bigger = true
 	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
 		bigger = false
 	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
-		bigger = currPivot.pointBiggerThan(lastPivot)
+		bigger = currPivot.PointBiggerThan(lastPivot)
 	}
 
 	if !bigger {

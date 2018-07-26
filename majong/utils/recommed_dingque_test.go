@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"steve/gutils"
 	majongpb "steve/server_pb/majong"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 func Test_LiangMengWeiLing(t *testing.T) {
 	hanCard := []Card{21, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 25, 25}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Contains(t, []majongpb.CardColor{majongpb.CardColor_ColorWan, majongpb.CardColor_ColorTong}, color)
 	fmt.Println(color)
 }
@@ -21,7 +22,7 @@ func Test_LiangMengWeiLing(t *testing.T) {
 func Test_yiMengWeiLing(t *testing.T) {
 	hanCard := []Card{21, 21, 21, 22, 22, 22, 23, 23, 23, 34, 34, 34, 35, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -30,7 +31,7 @@ func Test_yiMengWeiLing(t *testing.T) {
 func Test_LiangMengPaiShuChaDaYuDeng2(t *testing.T) {
 	hanCard := []Card{21, 21, 21, 22, 22, 22, 11, 11, 12, 34, 34, 34, 35, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -39,7 +40,7 @@ func Test_LiangMengPaiShuChaDaYuDeng2(t *testing.T) {
 func Test_paiXing_3vs4_gangVsKe(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 22, 22, 22, 22, 31, 31, 31, 32, 32, 32, 33, 33}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -48,7 +49,7 @@ func Test_paiXing_3vs4_gangVsKe(t *testing.T) {
 func Test_paiXing_3vs4_keVsShunJiaDan(t *testing.T) {
 	hanCard := []Card{11, 11, 11, 22, 23, 24, 28, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -57,7 +58,7 @@ func Test_paiXing_3vs4_keVsShunJiaDan(t *testing.T) {
 func Test_paiXing_3vs4_keVsShunJiaDan2(t *testing.T) {
 	hanCard := []Card{11, 11, 11, 22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -66,7 +67,7 @@ func Test_paiXing_3vs4_keVsShunJiaDan2(t *testing.T) {
 func Test_paiXing_3vs4_ShunJiaDan2VsDuiJiaDan(t *testing.T) {
 	hanCard := []Card{12, 13, 14, 18, 22, 22, 23, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -75,7 +76,7 @@ func Test_paiXing_3vs4_ShunJiaDan2VsDuiJiaDan(t *testing.T) {
 func Test_paiXing_3vs4_DuiJiaDanVsDanJiaDan(t *testing.T) {
 	hanCard := []Card{11, 13, 15, 15, 22, 23, 25, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -84,7 +85,7 @@ func Test_paiXing_3vs4_DuiJiaDanVsDanJiaDan(t *testing.T) {
 func Test_paiXing_3vs4_KeVsLiangDui(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 23, 23, 24, 24, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -93,7 +94,7 @@ func Test_paiXing_3vs4_KeVsLiangDui(t *testing.T) {
 func Test_paiXing_3vs4_LiangDuiVsShun(t *testing.T) {
 	hanCard := []Card{15, 15, 18, 18, 21, 22, 23, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -102,7 +103,7 @@ func Test_paiXing_3vs4_LiangDuiVsShun(t *testing.T) {
 func Test_paiXing_3vs4_LiangDuiVsShun2(t *testing.T) {
 	hanCard := []Card{14, 14, 16, 16, 21, 22, 23, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -111,7 +112,7 @@ func Test_paiXing_3vs4_LiangDuiVsShun2(t *testing.T) {
 func Test_paiXing_3vs4_DuiJiaDanVsShun(t *testing.T) {
 	hanCard := []Card{11, 11, 12, 14, 21, 22, 23, 31, 32, 33, 34, 35, 36, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -120,7 +121,7 @@ func Test_paiXing_3vs4_DuiJiaDanVsShun(t *testing.T) {
 func Test_LiangMengXiangTong_3Vs3_keVsShun(t *testing.T) {
 	hanCard := []Card{11, 11, 11, 22, 23, 24, 31, 32, 33, 34, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -129,7 +130,7 @@ func Test_LiangMengXiangTong_3Vs3_keVsShun(t *testing.T) {
 func Test_LiangMengXiangTong_3Vs3_ShunVsDui(t *testing.T) {
 	hanCard := []Card{11, 12, 13, 21, 21, 22, 31, 32, 33, 34, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -138,7 +139,7 @@ func Test_LiangMengXiangTong_3Vs3_ShunVsDui(t *testing.T) {
 func Test_LiangMengXiangTong_3Vs3_DuiJiaDanVsDan(t *testing.T) {
 	hanCard := []Card{12, 12, 13, 21, 14, 17, 31, 32, 33, 34, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -147,7 +148,7 @@ func Test_LiangMengXiangTong_3Vs3_DuiJiaDanVsDan(t *testing.T) {
 func Test_LiangMengXiangTong_3Vs3_KeVsDuiJiaDan(t *testing.T) {
 	hanCard := []Card{13, 13, 13, 22, 23, 23, 31, 32, 33, 34, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -156,7 +157,7 @@ func Test_LiangMengXiangTong_3Vs3_KeVsDuiJiaDan(t *testing.T) {
 func Test_LiangMengXiangTong_3Vs3_KeVsDan(t *testing.T) {
 	hanCard := []Card{13, 13, 13, 21, 23, 25, 31, 32, 33, 34, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -165,7 +166,7 @@ func Test_LiangMengXiangTong_3Vs3_KeVsDan(t *testing.T) {
 func Test_LiangMengXiangTong_3Vs3_ShunVsDan(t *testing.T) {
 	hanCard := []Card{12, 13, 14, 21, 25, 26, 31, 32, 33, 34, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -174,7 +175,7 @@ func Test_LiangMengXiangTong_3Vs3_ShunVsDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_KeJiaDanVsLiangDui(t *testing.T) {
 	hanCard := []Card{11, 18, 18, 18, 21, 21, 28, 28, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -183,7 +184,7 @@ func Test_LiangMengXiangTong_4Vs4_KeJiaDanVsLiangDui(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_KeJiaDanVsShunJiaDan(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 14, 21, 24, 25, 26, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -192,7 +193,7 @@ func Test_LiangMengXiangTong_4Vs4_KeJiaDanVsShunJiaDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_KeJiaDanVsShunJiaDan2(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 11, 24, 25, 26, 28, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -201,7 +202,7 @@ func Test_LiangMengXiangTong_4Vs4_KeJiaDanVsShunJiaDan2(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_GangVsKeJiaDan(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 12, 27, 28, 28, 28, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -210,7 +211,7 @@ func Test_LiangMengXiangTong_4Vs4_GangVsKeJiaDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_GangVsKeJiaDan2(t *testing.T) {
 	hanCard := []Card{17, 18, 18, 18, 22, 22, 22, 22, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -219,7 +220,7 @@ func Test_LiangMengXiangTong_4Vs4_GangVsKeJiaDan2(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_GangVsLiangDui(t *testing.T) {
 	hanCard := []Card{25, 25, 27, 27, 23, 23, 23, 23, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -228,7 +229,7 @@ func Test_LiangMengXiangTong_4Vs4_GangVsLiangDui(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_LiangDuiVsShunJiaDan(t *testing.T) {
 	hanCard := []Card{14, 14, 15, 15, 23, 24, 25, 26, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -237,7 +238,7 @@ func Test_LiangMengXiangTong_4Vs4_LiangDuiVsShunJiaDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_ShunJiaDanVsDan(t *testing.T) {
 	hanCard := []Card{11, 12, 13, 14, 21, 24, 25, 28, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -246,7 +247,7 @@ func Test_LiangMengXiangTong_4Vs4_ShunJiaDanVsDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_GangVsDan(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 12, 25, 26, 28, 29, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -255,7 +256,7 @@ func Test_LiangMengXiangTong_4Vs4_GangVsDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_shunJiaDanVsDuiJiaDan(t *testing.T) {
 	hanCard := []Card{11, 11, 12, 13, 21, 21, 23, 24, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -264,7 +265,7 @@ func Test_LiangMengXiangTong_4Vs4_shunJiaDanVsDuiJiaDan(t *testing.T) {
 func Test_LiangMengXiangTong_4Vs4_shunJiaDanVsDuiJiaDan2(t *testing.T) {
 	hanCard := []Card{13, 14, 15, 15, 26, 26, 28, 29, 31, 32, 33, 34, 35, 36}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -274,7 +275,7 @@ func Test_LiangMengXiangTong_4Vs4_shunJiaDanVsDuiJiaDan2(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_GangVsKeJiaDangVsShunJiaDui(t *testing.T) {
 	hanCard := []Card{12, 12, 12, 12, 24, 24, 24, 28, 31, 32, 33, 34, 34}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -284,7 +285,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_GangVsKeJiaDangVsShunJiaDui(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_KeJiaDuiVsLiangDuiVsShunJiaDan(t *testing.T) {
 	hanCard := []Card{13, 13, 13, 15, 15, 23, 23, 24, 24, 31, 32, 33, 33}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -294,7 +295,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_KeJiaDuiVsLiangDuiVsShunJiaDan(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_GangVsGangJiaDangVsLiangDui(t *testing.T) {
 	hanCard := []Card{11, 11, 11, 11, 21, 21, 21, 21, 22, 33, 33, 35, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -304,7 +305,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_GangVsGangJiaDangVsLiangDui(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_LiangDuiVsKeJiaDanVsShunJiaDan(t *testing.T) {
 	hanCard := []Card{12, 12, 13, 13, 21, 24, 24, 24, 33, 34, 35, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -314,7 +315,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_LiangDuiVsKeJiaDanVsShunJiaDan(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_LiangDuiVsShunJiaDanVsDuiJiaDan(t *testing.T) {
 	hanCard := []Card{16, 16, 17, 17, 21, 23, 24, 25, 32, 32, 34, 45}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -324,7 +325,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_LiangDuiVsShunJiaDanVsDuiJiaDan(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_ShunJiaDuiVsKeJiaDanVsGang(t *testing.T) {
 	hanCard := []Card{13, 14, 15, 15, 15, 26, 26, 26, 28, 34, 34, 34, 34}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }
@@ -334,7 +335,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_ShunJiaDuiVsKeJiaDanVsGang(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_LiangJiaDangVsLianDuiVsGang(t *testing.T) {
 	hanCard := []Card{11, 11, 12, 12, 13, 24, 24, 25, 25, 34, 34, 34, 34}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Contains(t, []majongpb.CardColor{majongpb.CardColor_ColorWan, majongpb.CardColor_ColorTiao}, color)
 	fmt.Println(color)
 }
@@ -344,7 +345,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_LiangJiaDangVsLianDuiVsGang(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_GangVsShunJiaDuiVsKeJiaDan(t *testing.T) {
 	hanCard := []Card{11, 11, 11, 11, 25, 26, 27, 28, 28, 34, 34, 34, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -354,7 +355,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_GangVsShunJiaDuiVsKeJiaDan(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_LiangDuiVsKeJiaDuiVsShunJiaDui(t *testing.T) {
 	hanCard := []Card{13, 13, 14, 14, 22, 22, 22, 24, 24, 35, 35, 36, 37, 38}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -364,7 +365,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_LiangDuiVsKeJiaDuiVsShunJiaDui(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_GangVsGangJiaDangVsKeJiaDui(t *testing.T) {
 	hanCard := []Card{15, 15, 15, 15, 21, 24, 24, 24, 24, 36, 36, 36, 37, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -374,7 +375,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_GangVsGangJiaDangVsKeJiaDui(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_ShunJiaDanVsShunJiaDuiVsKeJiaDui(t *testing.T) {
 	hanCard := []Card{11, 15, 16, 17, 23, 24, 25, 25, 25, 36, 36, 36, 37, 37}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 }
@@ -384,12 +385,12 @@ func Test_chaYiAndEqual_4Vs4Vs5_ShunJiaDanVsShunJiaDuiVsKeJiaDui(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_DuiJiaDangVsShunJiaDanVsLiangDuiJiaDan(t *testing.T) {
 	hanCard := []Card{15, 15, 17, 18, 23, 25, 26, 27, 33, 33, 34, 34, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color)
 	fmt.Println(color)
 	hanCard2 := []Card{15, 15, 17, 18, 23, 25, 26, 27, 35, 35, 38, 38, 39}
 	cards2, _ := CheckHuUtilCardsToHandCards(hanCard2)
-	color2 := GetRecommedDingQueColor(cards2)
+	color2 := gutils.GetRecommedDingQueColor(cards2)
 	assert.Equal(t, majongpb.CardColor_ColorWan, color2)
 	fmt.Println(color)
 }
@@ -399,7 +400,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_DuiJiaDangVsShunJiaDanVsLiangDuiJiaDan(t *testin
 func Test_chaYiAndEqual_4Vs4Vs5_DuiJiaDanVsShunJiaDanVsDan(t *testing.T) {
 	hanCard := []Card{13, 13, 15, 16, 24, 25, 26, 27, 28, 31, 34, 37, 36, 39}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -409,7 +410,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_DuiJiaDanVsShunJiaDanVsDan(t *testing.T) {
 func Test_chaYiAndEqual_4Vs4Vs5_ShunJiaDuiVsShunJiaDuiVsGang(t *testing.T) {
 	hanCard := []Card{11, 11, 12, 13, 14, 22, 22, 22, 23, 24, 34, 34, 34, 34}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Contains(t, []majongpb.CardColor{majongpb.CardColor_ColorWan, majongpb.CardColor_ColorTiao}, color)
 	fmt.Println(color)
 }
@@ -419,7 +420,7 @@ func Test_chaYiAndEqual_4Vs4Vs5_ShunJiaDuiVsShunJiaDuiVsGang(t *testing.T) {
 func Test_TeShu_siZhangWanVsJiuTiao(t *testing.T) {
 	hanCard := []Card{11, 11, 11, 11, 21, 22, 23, 24, 25, 26, 27, 28, 29}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, color, majongpb.CardColor_ColorTong)
 	fmt.Println(color)
 }
@@ -429,7 +430,7 @@ func Test_TeShu_siZhangWanVsJiuTiao(t *testing.T) {
 func Test_TeShu_siTiaoVsWuWanVsWuTong(t *testing.T) {
 	hanCard := []Card{21, 21, 21, 21, 11, 11, 11, 11, 15, 31, 31, 31, 31, 35}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Contains(t, []majongpb.CardColor{majongpb.CardColor_ColorWan, majongpb.CardColor_ColorTong}, color)
 	fmt.Println(color)
 }
@@ -439,7 +440,7 @@ func Test_TeShu_siTiaoVsWuWanVsWuTong(t *testing.T) {
 func Test_TeShu_siTiaoVsSiWanVsWuTong(t *testing.T) {
 	hanCard := []Card{21, 21, 21, 21, 11, 11, 11, 11, 31, 31, 31, 31, 32}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Equal(t, majongpb.CardColor_ColorTong, color)
 	fmt.Println(color)
 }
@@ -449,7 +450,15 @@ func Test_TeShu_siTiaoVsSiWanVsWuTong(t *testing.T) {
 func Test_TeShu_siTiaoVsSiWanVsLiuTong(t *testing.T) {
 	hanCard := []Card{21, 21, 21, 21, 11, 11, 11, 11, 31, 31, 31, 31, 32, 32}
 	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
-	color := GetRecommedDingQueColor(cards)
+	color := gutils.GetRecommedDingQueColor(cards)
 	assert.Contains(t, []majongpb.CardColor{majongpb.CardColor_ColorWan, majongpb.CardColor_ColorTiao}, color)
+	fmt.Println(color)
+}
+
+func Test_B(t *testing.T) {
+	hanCard := []Card{11, 12, 13, 15, 21, 22, 23, 31, 32, 33, 34, 35, 36, 37, 38}
+	cards, _ := CheckHuUtilCardsToHandCards(hanCard)
+	color := gutils.GetRecommedDingQueColor(cards)
+	assert.Equal(t, majongpb.CardColor_ColorTiao, color)
 	fmt.Println(color)
 }

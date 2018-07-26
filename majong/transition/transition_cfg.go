@@ -583,6 +583,11 @@ var transitionCfg = `
           events: 
             - event_settle_finish
           next_state: state_mopai
+        - 
+          # 结算事件 转移到 结束
+          events: 
+            - event_settle_finish
+          next_state: state_gameover
     - 
       # 自摸结算状态
       state: state_zimo_settle
@@ -593,6 +598,11 @@ var transitionCfg = `
           events: 
             - event_settle_finish
           next_state: state_mopai
+        - 
+          # 结算事件 转移到 结束
+          events: 
+            - event_settle_finish
+          next_state: state_gameover
     - 
       # 胡结算状态
       state: state_hu_settle
@@ -603,6 +613,11 @@ var transitionCfg = `
           events: 
             - event_settle_finish
           next_state: state_mopai
+        - 
+          # 结算事件 转移到 结束
+          events: 
+            - event_settle_finish
+          next_state: state_gameover
     - 
       # 抢杠胡结算状态
       state: state_qiangganghu_settle
@@ -613,6 +628,11 @@ var transitionCfg = `
           events: 
             - event_settle_finish
           next_state: state_mopai
+        - 
+          # 结算事件 转移到 结束
+          events: 
+            - event_settle_finish
+          next_state: state_gameover
           
           
 -

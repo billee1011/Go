@@ -33,6 +33,18 @@ func (d *desk) String() string {
 	return fmt.Sprintf("game_id: %d player:%v desk_id:%d continue:%v fixBanker:%v bankerSeat:%v", d.gameID, d.players, d.deskID, d.isContinue, d.fixBanker, d.bankerSeat)
 }
 
+// removePlayer 移除玩家
+func (d *desk) removePlayer(playerID uint64) {
+	newPlayers := make([]deskPlayer, 0, 4)
+	for _, player := range d.players {
+		if playerID == player.playerID {
+			continue
+		}
+		newPlayers = append(newPlayers, player)
+	}
+	d.players = newPlayers
+}
+
 // createDesk 创建牌桌
 func createDesk(gameID int, deskID uint64) *desk {
 	// logrus.WithFields(logrus.Fields{

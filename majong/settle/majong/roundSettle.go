@@ -198,6 +198,7 @@ func newRoundSettleInfo(params *interfaces.RoundSettleParams, scoreMap map[uint6
 		HuType:     -1,
 		SettleType: settleType,
 		CardValue:  uint32(cardValue),
+		HuPlayers:  params.HasHuPlayers,
 	}
 }
 
@@ -205,17 +206,17 @@ func newRoundSettleInfo(params *interfaces.RoundSettleParams, scoreMap map[uint6
 func (roundSettle *RoundSettle) canRoundSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
 	for _, giveupPlayer := range givePlayers {
 		if giveupPlayer != playerID {
-			break
+			continue
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerRoundSettle
 	}
 	for _, hasHupalyer := range hasHuPlayers {
 		if hasHupalyer != playerID {
-			break
+			continue
 		}
 		for _, quitPlayer := range quitPlayers {
 			if quitPlayer != playerID {
-				break
+				continue
 			}
 			return settleOption.HuQuitPlayerSettle.HuQuitPlayerRoundSettle
 		}

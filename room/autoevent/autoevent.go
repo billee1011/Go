@@ -167,7 +167,7 @@ func (aeg *autoEventGenerator) handleDDZTuoGuan(desk interfaces.Desk, AI interfa
 	}
 
 	// 托管时的操作等待时间
-	tuoguanOprTime := 1 * time.Second
+	tuoguanOprTime := 2 * time.Second
 
 	if time.Now().Sub(stateTime) < tuoguanOprTime {
 		return result

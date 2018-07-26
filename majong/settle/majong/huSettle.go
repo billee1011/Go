@@ -22,7 +22,7 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 		"winnersID":      params.HuPlayers,
 		"settleType":     params.SettleType,
 		"huType":         params.HuType,
-		"allPlayers":     params.HuPlayers,
+		"allPlayers":     params.AllPlayers,
 		"hasHuPlayers":   params.HasHuPlayers,
 		"quitPlayers":    params.QuitPlayers,
 		"cardTypes":      params.CardTypes,
@@ -84,7 +84,9 @@ func (huSettle *HuSettle) Settle(params interfaces.HuSettleParams) []*majongpb.S
 	}
 	if params.HuType == majongpb.HuType_hu_ganghoupao { // 杠后炮需呼叫转移
 		cSettleInfo := huSettle.newCallTransferSettleInfo(&params, settleOption)
-		settleInfos = append(settleInfos, cSettleInfo)
+		if cSettleInfo != nil {
+			settleInfos = append(settleInfos, cSettleInfo)
+		}
 	}
 	return settleInfos
 }
@@ -106,6 +108,9 @@ func (huSettle *HuSettle) newCallTransferSettleInfo(params *interfaces.HuSettleP
 	gangCard := params.GangCard
 	// 杠倍数
 	gangValue := GetGangValue(settleOption, gangCard.GetType())
+	if gangValue == 0 {
+		return nil
+	}
 	// 赢家人数
 	winSum := int64(len(params.HuPlayers))
 	// 底数
@@ -171,6 +176,7 @@ func newHuSettleInfo(params *interfaces.HuSettleParams, scoreInfo map[uint64]int
 		Scores:     scoreInfo,
 		SettleType: params.SettleType,
 		HuType:     params.HuType,
+		HuPlayers:  params.HasHuPlayers,
 		CardType:   params.CardTypes[huPlayerID],
 		GenCount:   uint32(params.GenCount[huPlayerID]),
 		HuaCount:   uint32(params.HuaCount[huPlayerID]),
@@ -208,17 +214,17 @@ func (huSettle *HuSettle) divideScore(gangScore, winSum int64, params *interface
 func (huSettle *HuSettle) canHuSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uint64, settleOption *mjoption.SettleOption) bool {
 	for _, giveupPlayer := range givePlayers {
 		if giveupPlayer != playerID {
-			break
+			continue
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerHuSettle
 	}
 	for _, hasHupalyer := range hasHuPlayers {
 		if hasHupalyer != playerID {
-			break
+			continue
 		}
 		for _, quitPlayer := range quitPlayers {
 			if quitPlayer != playerID {
-				break
+				continue
 			}
 			return settleOption.HuQuitPlayerSettle.HuQuitPlayeHuSettle
 		}

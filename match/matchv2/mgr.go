@@ -1,6 +1,7 @@
 package matchv2
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
@@ -25,6 +26,11 @@ type continueApply struct {
 	cancel   bool   // 是否退出
 }
 
+// playerOffline 玩家离线
+type playerLogin struct {
+	playerID uint64 // 玩家 ID
+}
+
 // gameConfig 游戏数据
 type gameConfig struct {
 	needPlayerCount int // 所需玩家数量
@@ -34,6 +40,7 @@ type gameConfig struct {
 type mgr struct {
 	applyChannel    chan applyPlayer   // 申请通道
 	continueChannel chan continueApply // 续局通道
+	loginChannel    chan playerLogin   // 玩家登录通道
 	maxDeskID       uint64             // 最大牌桌 ID
 	gameConfig      map[int]gameConfig // gameID -> gameConfig
 	desks           map[uint64]*desk   // 当前匹配中的牌桌
@@ -44,6 +51,7 @@ type mgr struct {
 var defaultMgr = &mgr{
 	applyChannel:    make(chan applyPlayer, 128),
 	continueChannel: make(chan continueApply, 128),
+	loginChannel:    make(chan playerLogin, 128),
 	maxDeskID:       0,
 	gameConfig: map[int]gameConfig{
 		int(room.GameId_GAMEID_XUELIU):   gameConfig{needPlayerCount: 4},
@@ -86,11 +94,11 @@ func (m *mgr) dismissContinueDesk(desk *desk, emitPlayer uint64) {
 	}).Debugln("解散续局牌桌")
 	notify := match.MatchContinueDeskDimissNtf{}
 
-	for _, player := range desk.players {
-		delete(m.playerDesk, player.playerID)
-		if player.playerID != emitPlayer {
-			gutils.SendMessage(player.playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
+	for _, deskPlayer := range desk.players {
+		if deskPlayer.playerID != emitPlayer {
+			gutils.SendMessage(deskPlayer.playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
 		}
+		m.detachPlayer(deskPlayer.playerID)
 	}
 	for playerID := range desk.continueWaitPlayers {
 		delete(m.playerDesk, playerID)
@@ -120,6 +128,13 @@ func (m *mgr) addContinueApply(playerID uint64, cancel bool, gameID int) {
 	return
 }
 
+// addLoginData 添加玩家登录信息
+func (m *mgr) addLoginData(playerID uint64) {
+	m.loginChannel <- playerLogin{
+		playerID: playerID,
+	}
+}
+
 // run 执行匹配流程
 func (m *mgr) run() {
 	robotTick := time.NewTicker(time.Second * 1)
@@ -134,6 +149,10 @@ func (m *mgr) run() {
 			{
 				m.acceptContinuePlayer(cp.gameID, cp.playerID, cp.cancel)
 			}
+		case pl := <-m.loginChannel:
+			{
+				m.onPlayerLogin(pl.playerID)
+			}
 		case <-robotTick.C:
 			{
 				m.handleRobotTick()
@@ -146,7 +165,39 @@ func (m *mgr) run() {
 	}
 }
 
-// acceptContinuePlayer 接收续局匹配玩家， 返回是否接收成功
+// onPlayerLogin 玩家登录，取消玩家匹配
+func (m *mgr) onPlayerLogin(playerID uint64) {
+	entry := logrus.WithField("player_id", playerID)
+	deskID, ok := m.playerDesk[playerID]
+	if !ok {
+		return
+	}
+	desk, ok := m.desks[deskID]
+	if !ok {
+		delete(m.playerDesk, playerID)
+		entry.Errorln("没有对应的牌桌")
+		return
+	}
+	// 续局牌桌直接解散
+	if desk.isContinue {
+		entry.Debugln("玩家重新登录，解散续局牌桌")
+		m.dismissContinueDesk(desk, playerID)
+		return
+	}
+	desk.removePlayer(playerID)
+	delete(m.playerDesk, playerID)
+	// 更新状态为空闲状态
+	player.SetPlayerPlayStates(playerID, player.PlayStates{
+		State:  int(common.PlayerState_PS_IDLE),
+		GameID: int(desk.gameID),
+	})
+	entry.Debugln("玩家重新登录，移出匹配")
+	if len(desk.players) == 0 {
+		delete(m.desks, deskID)
+	}
+}
+
+// acceptContinuePlayer 接收续局匹配玩家
 func (m *mgr) acceptContinuePlayer(gameID int, playerID uint64, cancel bool) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "mgr.acceptContinuePlayer",
@@ -219,9 +270,13 @@ func (m *mgr) acceptApplyPlayer(gameID int, playerID uint64) {
 }
 
 // addDeskPlayer2Desk 将玩家添加到牌桌
-func (m *mgr) addDeskPlayer2Desk(player *deskPlayer, desk *desk) {
-	desk.players = append(desk.players, *player)
-	m.playerDesk[player.playerID] = desk.deskID
+func (m *mgr) addDeskPlayer2Desk(deskPlayer *deskPlayer, desk *desk) {
+	player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
+		State:  int(common.PlayerState_PS_MATCHING),
+		GameID: int(desk.gameID),
+	})
+	desk.players = append(desk.players, *deskPlayer)
+	m.playerDesk[deskPlayer.playerID] = desk.deskID
 	m.removeOfflines(desk)
 	config := m.gameConfig[desk.gameID]
 	if len(desk.players) >= config.needPlayerCount {
@@ -259,10 +314,18 @@ func (m *mgr) removeOfflines(desk *desk) {
 		if online {
 			newPlayers = append(newPlayers, deskPlayer)
 		} else {
-			delete(m.playerDesk, deskPlayer.playerID)
+			m.detachPlayer(deskPlayer.playerID)
 		}
 	}
 	desk.players = newPlayers
+}
+
+func (m *mgr) detachPlayer(playerID uint64) {
+	delete(m.playerDesk, playerID)
+	// 更新状态为空闲状态
+	player.SetPlayerPlayStates(playerID, player.PlayStates{
+		State: int(common.PlayerState_PS_IDLE),
+	})
 }
 
 // onDeskFinish 牌桌匹配完成

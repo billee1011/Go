@@ -20,7 +20,7 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	var Int1B uint32 = 31
 	var Int9W uint32 = 19
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	zimoSeat := 1
@@ -74,12 +74,12 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
 	// assert.False(t, rsp1.GetIsNeed())
 
-	utils.ApplyJoinDesk(zimoPlayer.Player, room.GameId_GAMEID_XUELIU)
+	utils.ApplyJoinDesk(zimoPlayer.Player, common.GameId_GAMEID_XUELIU)
 
 	// 再加入3个玩家凑够4人开局避免影响其他测试用例
 	newPlayers, err := utils.CreateAndLoginUsers(3)
 	assert.Nil(t, err)
-	err = utils.ApplyJoinDeskPlayers(newPlayers, room.GameId_GAMEID_XUELIU)
+	err = utils.ApplyJoinDeskPlayers(newPlayers, common.GameId_GAMEID_XUELIU)
 	assert.Nil(t, err)
 	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_CREATED_NTF]
 	ntf1 := room.RoomDeskCreatedNtf{}

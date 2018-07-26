@@ -39,6 +39,16 @@ func requestPeipai(url string) error {
 	return err
 }
 
+// ClearPeiPai 配牌
+func ClearPeiPai(game string) error {
+	//不传cards视为清除
+	url := fmt.Sprintf("%s?game=%s", config.GetPeipaiURL(), game)
+	fmt.Println("utils.ClearPeiPai() url = ", url)
+
+	// 发出url请求
+	return requestPeipai(url)
+}
+
 // translatePeipaiCards 将卡牌转换成配牌接口字符串
 // 返回：  cards=11,22,33,44,...&len=22
 func translatePeipaiCards(seatCards [][]uint32, wallCards []uint32) string {

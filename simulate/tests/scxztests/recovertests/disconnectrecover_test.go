@@ -1,6 +1,7 @@
 package recovertests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -19,7 +20,7 @@ import (
 // step5: 0号玩家收到 恢复牌局应答 判断数据的正确性
 func Test_DisconnectRecover(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.WallCards = []uint32{31, 31, 31, 31, 32, 32, 32, 32}
 	disconnectSeat := params.BankerSeat
@@ -63,7 +64,7 @@ func Test_DisconnectRecover(t *testing.T) {
 	// ntf4 := room.RoomDeskNeedReusmeRsp{}
 	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf4))
 	// assert.True(t, ntf4.GetIsNeed())
-	// assert.Equal(t, room.GameId_GAMEID_XUEZHAN, ntf4.GetGameId())
+	// assert.Equal(t, common.GameId_GAMEID_XUEZHAN, ntf4.GetGameId())
 
 	assert.Nil(t, utils.SendRecoverGameReq(disconnectSeat, deskData))
 	// step 5

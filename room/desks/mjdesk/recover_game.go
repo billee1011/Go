@@ -257,6 +257,28 @@ func getQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *ro
 	return proto.Bool(true), qghInfo
 }
 
+func getHuansanzhangInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomHuansanzhangNtf) {
+	player := gutils.GetMajongPlayer(playerID, mjContext)
+	if mjContext.GetCurState() != server_pb.StateID_state_huansanzhang || player.GetHuansanzhangSure() {
+		return proto.Bool(false), nil
+	}
+	hszInfo := &room.RoomHuansanzhangNtf{
+		HszCard: gutils.CardsToRoomCards(player.GetHuansanzhangCards()),
+	}
+	return proto.Bool(true), hszInfo
+}
+
+func getDingqueInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomDingqueNtf) {
+	player := gutils.GetMajongPlayer(playerID, mjContext)
+	if mjContext.GetCurState() != server_pb.StateID_state_dingque || player.GetHasDingque() {
+		return proto.Bool(false), nil
+	}
+	dqInfo := &room.RoomDingqueNtf{
+		Color: gutils.ServerColor2ClientColor(player.GetDingqueColor()).Enum(),
+	}
+	return proto.Bool(true), dqInfo
+}
+
 func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 	zixunNtf := &room.RoomZixunNtf{}
 	zixunNtf.EnableAngangCards = record.GetEnableAngangCards()

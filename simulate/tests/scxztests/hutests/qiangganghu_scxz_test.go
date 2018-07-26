@@ -1,6 +1,7 @@
 package hutests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -22,7 +23,7 @@ import (
 // 2. 2号玩家请求胡，所有玩家收到胡通知，胡的玩家为2号玩家，胡的牌为9W， 胡牌来源是1号玩家，胡类型为抢杠胡
 func Test_SCXZ_Qiangganghu(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	// 庄家的初始手牌： 11,11,11,11,12,12,12,12,13,13,13,39,31,19
@@ -98,7 +99,7 @@ func Test_SCXZ_Hued_NotQiangGangHu(t *testing.T) {
 		{21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 13, 14, 15},
 		{29, 29, 29, 29, 28, 28, 28, 28, 27, 27, 14, 15, 15},
 	}
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.WallCards = []uint32{15, 37, 39, 39, 39, 38, 38}
 	params.IsHsz = true // 换三张

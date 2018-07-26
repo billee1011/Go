@@ -1,6 +1,7 @@
 package tingtest
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -15,7 +16,7 @@ import (
 // 流程:　玩家起手听牌　，期待：打出1t,可以听胡的牌除了１ｗ和９ｗ时８倍，其他都是４倍
 func Test_SCXZ_Ting_times(t *testing.T) {
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	thisParams.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	thisParams.PeiPaiGame = "scxz"
 	thisParams.Cards[0] = []uint32{11, 11, 11, 12, 13, 14, 15, 16, 17, 18, 33, 33, 34, 21}
 	thisParams.Cards[1] = []uint32{21, 21, 21, 22, 23, 24, 25, 26, 27, 28, 37, 37, 36}
@@ -57,7 +58,7 @@ func Test_SCXZ_Ting_times(t *testing.T) {
 // 期待: 庄家只能胡牌,对家可胡可弃
 func Test_SCXZ_ChuPaiwenxun_Actions(t *testing.T) {
 	thisParams := global.NewCommonStartGameParams()
-	thisParams.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	thisParams.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	thisParams.PeiPaiGame = "scxz"
 	thisParams.Cards[0] = []uint32{11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 36, 37, 38}
 	thisParams.Cards[1] = []uint32{23, 23, 24, 12, 25, 25, 26, 26, 26, 27, 27, 27, 28}

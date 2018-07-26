@@ -64,6 +64,7 @@ type RoundSettleParams struct {
 	NotTingPlayers   []uint64               // 未听玩家,排除花猪玩家
 	SettleInfos      []*majongpb.SettleInfo // 历史结算信息
 	SettleID         uint64                 // 结算信息id
+	HasHuPlayers     []uint64               // 已胡牌玩家
 }
 
 // RoundSettle 单局结算

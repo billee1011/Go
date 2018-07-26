@@ -6,8 +6,9 @@ import (
 	"steve/structs/proto/base"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	"steve/serviceloader/pprof"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type defaultIDAllocator struct {
@@ -41,11 +42,6 @@ type clientCallbackImpl struct {
 }
 
 func (cc *clientCallbackImpl) onRecvPkg(header *steve_proto_base.Header, body []byte) {
-	// logrus.WithFields(logrus.Fields{
-	// 	"func_name": "clientCallbackImpl.onRecvPkg",
-	// 	"msg_id":    header.GetMsgId(),
-	// 	"client_id": cc.clientID,
-	// }).Debugln("收到客户端消息")
 	if cc.dog.msgObserver != nil {
 		cc.dog.msgObserver.OnRecv(cc.clientID, header, body)
 	}
@@ -58,6 +54,12 @@ func (cc *clientCallbackImpl) onError(err error) {
 func (cc *clientCallbackImpl) onClientClose() {
 	if cc.dog.connObserver != nil {
 		cc.dog.connObserver.OnClientDisconnect(cc.clientID)
+	}
+}
+
+func (cc *clientCallbackImpl) afterSendPkg(header *steve_proto_base.Header, body []byte, err error) {
+	if cc.dog.msgObserver != nil {
+		cc.dog.msgObserver.AfterSend(cc.clientID, header, body, err)
 	}
 }
 

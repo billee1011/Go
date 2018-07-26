@@ -1,19 +1,20 @@
 package desk
 
 import (
-	"steve/room2/desk/models"
 	"steve/room2/util"
+	"steve/room2/fixed"
 )
 
 type DeskConfig struct {
 	Models  []string
 	Context interface{} //预留gameContext
 	Settle  interface{}
+	PlayerIds []uint64
 	Num     int
 }
 
 //默认自带的
-var defaultModels = []string{models.Event,models.Message,models.Request,models.Player,models.Trusteeship}
+var defaultModels = []string{fixed.Player,fixed.Message,fixed.Request,fixed.Chat,fixed.Event}
 
 //麻将
 func NewMjDeskCreateConfig(context interface{},settle interface{},num int) DeskConfig {

@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/room"
 	"steve/common/mjoption"
 	"steve/gutils"
+	"steve/majong/utils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
@@ -62,8 +63,6 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 
 	deskPlayers := desk.GetDeskPlayers() // 牌局玩家
 
-	huQuitPlayers := majongSettle.getHuQuitPlayers(deskPlayers, mjContext) // 胡牌且退出房间后的玩家
-
 	giveUpPlayers := getGiveupPlayers(deskPlayers, mjContext) // 认输玩家
 
 	revertIds := mjContext.RevertSettles   // 退税id
@@ -74,12 +73,14 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 		if IsGangSettle(sInfo.SettleType) {
 			majongSettle.lastGangSettleID = sInfo.Id
 		}
-		// if sInfo.SettleType == majongpb.SettleType_settle_calldiver {
-		// 	sInfo.Scores = handleCallDiver(majongSettle.lastGangSettleID, allSettleInfos)
-		// }
+		if sInfo.SettleType == majongpb.SettleType_settle_calldiver {
+			sInfo.Scores = majongSettle.handleCallDiver(majongSettle.lastGangSettleID, sInfo, allSettleInfos, mjContext)
+		}
 		score := make(map[uint64]int64, 0) // 玩家输赢分数
 
 		brokerPlayers := make([]uint64, 0) // 破产的玩家id
+
+		huQuitPlayers := majongSettle.getHuSettleQuitPlayers(deskPlayers, mjContext, sInfo.HuPlayers) // 胡牌且退出房间后的玩家
 
 		groupID := len(sInfo.GroupId) // 关联的一组结算id
 		if groupID <= 1 {
@@ -102,6 +103,7 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 			if majongSettle.handleRevert[revertID] {
 				continue
 			}
+			huQuitPlayers := majongSettle.getHuQuitPlayers(deskPlayers, mjContext) // 胡牌且退出房间后的玩家
 			// 退稅结算信息
 			gangSettle := GetSettleInfoByID(allSettleInfos, revertID)
 			rSettleInfo := majongSettle.generateRevertSettle2(revertID, gangSettle, huQuitPlayers, giveUpPlayers, revertIds, mjContext)
@@ -117,6 +119,78 @@ func (majongSettle *majongSettle) Settle(desk interfaces.Desk, mjContext majongp
 		}
 	}
 
+}
+
+// handleCallDiver 处理呼叫转移
+func (majongSettle *majongSettle) handleCallDiver(lastGangSettleID uint64, sinfo *majongpb.SettleInfo, allSinfo []*majongpb.SettleInfo, mjContext majongpb.MajongContext) map[uint64]int64 {
+	gangSettle := GetSettleInfoByID(allSinfo, lastGangSettleID) // 杠的结算信息
+
+	_, gangWinScore := getWinners(majongSettle.settleMap[lastGangSettleID]) // 杠实际赢的钱
+
+	dianGangPlayer, _ := getLosers(gangSettle.Scores) // 点杠者
+
+	dianPaoPlayer, _ := getLosers(sinfo.Scores) // 点炮者
+
+	huPlayers, _ := getWinners(sinfo.Scores) // 赢家
+
+	winSum := int64(len(huPlayers))
+
+	callDiverScore := make(map[uint64]int64, 0)
+
+	if winSum == 1 {
+		callDiverScore[huPlayers[0]] = gangWinScore
+		callDiverScore[dianPaoPlayer[0]] = -gangWinScore
+	} else {
+		// 一炮多响
+		if gangSettle.SettleType == majongpb.SettleType_settle_minggang {
+			contain := false
+			for _, huPlayerID := range huPlayers {
+				if dianGangPlayer[0] != huPlayerID {
+					continue
+				}
+				contain = true
+				break
+			}
+			if contain {
+				callDiverScore[dianGangPlayer[0]] = gangWinScore
+				callDiverScore[dianPaoPlayer[0]] = -gangWinScore
+			} else {
+				// 平分
+				callDiverScore = majongSettle.divideScore(dianPaoPlayer[0], huPlayers, gangWinScore, winSum, callDiverScore, mjContext)
+			}
+		} else if gangSettle.SettleType == majongpb.SettleType_settle_angang || gangSettle.SettleType == majongpb.SettleType_settle_bugang {
+			// （暗杠、补杠）先收杠钱,平分,杠钱后还有多余，多余的杠钱按位置给第一个胡牌玩家
+			// 平分
+			callDiverScore = majongSettle.divideScore(dianPaoPlayer[0], huPlayers, gangWinScore, winSum, callDiverScore, mjContext)
+		}
+	}
+	return callDiverScore
+}
+
+func (majongSettle *majongSettle) divideScore(dianPaoPlayer uint64, huPlayers []uint64, gangScore, winSum int64, callDiverScore map[uint64]int64, mjContext majongpb.MajongContext) map[uint64]int64 {
+	// 平分
+	equallyTotal := gangScore / winSum
+	// 剩余分数
+	surplusTotal := gangScore - (equallyTotal * int64(winSum))
+	// 所有玩家
+	allPlayers := make([]uint64, 0)
+
+	for _, player := range mjContext.GetPlayers() {
+		allPlayers = append(allPlayers, player.GetPalyerId())
+	}
+	for _, huPlayerID := range huPlayers {
+		callDiverScore[huPlayerID] = equallyTotal
+		callDiverScore[dianPaoPlayer] = callDiverScore[dianPaoPlayer] - equallyTotal
+	}
+	if surplusTotal != 0 {
+		startIndex, _ := utils.GetPlayerIDIndex(dianPaoPlayer, allPlayers)
+		firstPlayerID := utils.GetPalyerCloseFromTarget(startIndex, allPlayers, huPlayers)
+		if firstPlayerID != 0 {
+			callDiverScore[firstPlayerID] = callDiverScore[firstPlayerID] + surplusTotal
+			callDiverScore[dianPaoPlayer] = callDiverScore[dianPaoPlayer] - surplusTotal
+		}
+	}
+	return callDiverScore
 }
 
 // RoundSettle 单局结算
@@ -197,19 +271,24 @@ func (majongSettle *majongSettle) instantSettle(desk interfaces.Desk, sInfo *maj
 	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_INSTANT_SETTLE, &room.RoomSettleInstantRsp{
 		BillPlayersInfo: billInfo,
 	})
-	logrus.WithFields(logrus.Fields{
-		"roomSettleInstantRsp": billInfo,
-	}).Debugln("通知及时结算信息")
 	needSend := make([]uint64, 0)
 	for _, brokerPlayer := range brokerPlayers {
 		if !giveUpPlayers[brokerPlayer] {
 			needSend = append(needSend, brokerPlayer)
 		}
 	}
-	// 广播认输
-	facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
-		PlayerId: needSend,
-	})
+	// 查花猪、查大叫、退税阶段不需要发送认输
+	notNeedSend := map[majongpb.SettleType]bool{
+		majongpb.SettleType_settle_yell:      true,
+		majongpb.SettleType_settle_flowerpig: true,
+		majongpb.SettleType_settle_taxrebeat: true,
+	}
+	if !notNeedSend[sInfo.SettleType] {
+		// 广播认输
+		facade.BroadCastDeskMessageExcept(desk, []uint64{}, true, msgid.MsgID_ROOM_PLAYER_GIVEUP_NTF, &room.RoomGiveUpNtf{
+			PlayerId: needSend,
+		})
+	}
 }
 
 func (majongSettle *majongSettle) makeBillDetails(pid uint64, contextSInfos []*majongpb.SettleInfo) (billDetails []*room.BillDetail, totalValue int32) {
@@ -242,19 +321,40 @@ func (majongSettle *majongSettle) makeBillDetails(pid uint64, contextSInfos []*m
 	return
 }
 
-// getHuQuitPlayers  获取牌局胡牌且退出房间后的玩家id
-func (majongSettle *majongSettle) getHuQuitPlayers(dPlayers []interfaces.DeskPlayer, mjContext majongpb.MajongContext) map[uint64]bool {
+// getHuSettleQuitPlayers  获取牌局已结算胡且退出的玩家
+func (majongSettle *majongSettle) getHuSettleQuitPlayers(dPlayers []interfaces.DeskPlayer, mjContext majongpb.MajongContext, huPlayers []uint64) map[uint64]bool {
 	huQuitPids := make(map[uint64]bool, 0)
+	huPids := make(map[uint64]bool, 0)
+	for _, hplayer := range huPlayers {
+		huPids[hplayer] = true
+	}
 	for _, dPlayer := range dPlayers {
-		if dPlayer.IsQuit() {
-			pid := dPlayer.GetPlayerID()
-			mjPlayers := mjContext.GetPlayers()
-			mjPlayer := mjPlayers[gutils.GetPlayerIndex(pid, mjContext.GetPlayers())]
-			if len(mjPlayer.HuCards) != 0 {
-				huQuitPids[pid] = true
-			}
+		if dPlayer.IsQuit() && huPids[dPlayer.GetPlayerID()] {
+			huQuitPids[dPlayer.GetPlayerID()] = true
 		}
 	}
+
+	return huQuitPids
+}
+
+// getHuQuitPlayers  获取牌局已胡牌且退出的玩家
+func (majongSettle *majongSettle) getHuQuitPlayers(dPlayers []interfaces.DeskPlayer, mjContext majongpb.MajongContext) map[uint64]bool {
+	huPids := make(map[uint64]bool, 0)
+	for _, contextPlayer := range mjContext.GetPlayers() {
+		huCard := contextPlayer.GetHuCards()
+		if len(huCard) != 0 {
+			huPids[contextPlayer.GetPalyerId()] = true
+		}
+	}
+
+	huQuitPids := make(map[uint64]bool, 0)
+	for _, dPlayer := range dPlayers {
+		pid := dPlayer.GetPlayerID()
+		if dPlayer.IsQuit() && huPids[pid] {
+			huQuitPids[pid] = true
+		}
+	}
+
 	return huQuitPids
 }
 
@@ -345,67 +445,13 @@ func (majongSettle *majongSettle) generateRevertSettle2(revertID uint64, gangSet
 		}
 	}
 	scoreCost[rlosePid] = scoreCost[rlosePid] + rloseScore
-	coinCost = majongSettle.calcTaxbetCoin(rlosePid, rWinnerPids, scoreCost, mjContext.GetPlayers())
+	coinCost = calcTaxbetCoin(rlosePid, rWinnerPids, scoreCost, mjContext.GetPlayers())
 	majongSettle.revertScore[revertID] = coinCost
 
 	return &majongpb.SettleInfo{
 		Scores:     coinCost,
 		SettleType: majongpb.SettleType_settle_taxrebeat,
 	}
-}
-
-func (majongSettle *majongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int64, contextPlayer []*majongpb.Player) (coinCost map[uint64]int64) {
-	coinCost = make(map[uint64]int64, 0)
-	loseCoin := int64(global.GetPlayerMgr().GetPlayer(losePlayer).GetCoin()) // 输家金币数
-	loseScore := score[losePlayer]
-	if abs(loseScore) < loseCoin {
-		// 金币数够扣
-		for _, win := range winPlayers {
-			coinCost[win] = score[win]
-		}
-		coinCost[losePlayer] = score[losePlayer]
-	} else {
-		winSum := len(winPlayers)
-		// 金币数不够扣，赢家为1时直接输家的金币全部给赢家，否则平分
-		if winSum == 1 {
-			coinCost[winPlayers[0]] = loseCoin
-			coinCost[losePlayer] = -loseCoin
-		} else if winSum > 1 {
-			// 多个赢家，按照赢家人数平分
-			for _, winPid := range winPlayers {
-				winScore := int64(loseCoin / int64(winSum))
-				coinCost[winPid] = winScore
-				coinCost[losePlayer] = coinCost[losePlayer] - coinCost[winPid]
-			}
-			// 剩余分数，余 1 情况赔付于靠近的第一的玩家, 余 2 情况赔付于靠近第一、第二玩家
-			surplusScore := loseCoin - abs(coinCost[losePlayer])
-			if surplusScore > 0 {
-				loseIndex := gutils.GetPlayerIndex(losePlayer, contextPlayer)
-				resortPlayers := make([]uint64, 0)
-				for i := 0; i < len(contextPlayer); i++ {
-					index := (loseIndex + i) % len(contextPlayer)
-					resortPlayers = append(resortPlayers, contextPlayer[index].GetPalyerId())
-				}
-				resortHuPlayers := make([]uint64, 0)
-				for _, resortPID := range resortPlayers {
-					for _, winPlayer := range winPlayers {
-						if resortPID == winPlayer {
-							resortHuPlayers = append(resortHuPlayers, resortPID)
-						}
-					}
-				}
-				if surplusScore%2 == 0 {
-					coinCost[resortHuPlayers[0]] = coinCost[resortHuPlayers[0]] + surplusScore/2
-					coinCost[resortHuPlayers[1]] = coinCost[resortHuPlayers[1]] + surplusScore/2
-					coinCost[losePlayer] = coinCost[losePlayer] - surplusScore
-				} else {
-					coinCost[resortHuPlayers[0]] = coinCost[resortHuPlayers[0]] + surplusScore
-					coinCost[losePlayer] = coinCost[losePlayer] - surplusScore
-				}
-			}
-		}
-	}
-	return
 }
 
 // getBillDetail 获得玩家单次结算详情，包括番型，分数，倍数，以及输赢玩家

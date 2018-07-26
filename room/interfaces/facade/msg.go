@@ -27,7 +27,7 @@ func BroadCastMessageBare(playerIDs []uint64, msgID msgid.MsgID, body []byte) er
 }
 
 // BroadCastDeskMessage 广播消息给牌卓玩家
-func BroadCastDeskMessage(desk interfaces.Desk, playerIDs []uint64, msgID msgid.MsgID, body proto.Message, exceptQuit bool) error {
+func BroadCastDeskMessage(desk interfaces.DeskPlayerMgr, playerIDs []uint64, msgID msgid.MsgID, body proto.Message, exceptQuit bool) error {
 	msgBody, err := proto.Marshal(body)
 	if err != nil {
 		return err

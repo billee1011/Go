@@ -1,6 +1,7 @@
 package fantests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -11,7 +12,7 @@ import (
 
 func ziyise(t *testing.T) *utils.DeskData {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_ERRENMJ // 二人
+	params.GameID = common.GameId_GAMEID_ERRENMJ // 二人
 	params.PeiPaiGame = "ermj"
 	params.PlayerNum = 2
 	params.BankerSeat = 0

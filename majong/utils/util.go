@@ -49,28 +49,10 @@ func HuCardsToUtilCards(cards []*majongpb.HuCard) []Card {
 	cardsCard := make([]Card, 0)
 	for _, v := range cards {
 
-		cardInt, _ := CardToInt(*v.Card)
-		cardsCard = append(cardsCard, Card(*cardInt))
+		cardInt := ServerCard2Uint32(v.Card)
+		cardsCard = append(cardsCard, Card(cardInt))
 	}
 	return cardsCard
-}
-
-//CardToInt 将Card转换成牌值（int32）
-func CardToInt(card majongpb.Card) (*int32, error) {
-	var color int32
-	switch card.GetColor() {
-	case majongpb.CardColor_ColorWan:
-		color = 1
-	case majongpb.CardColor_ColorTiao:
-		color = 2
-	case majongpb.CardColor_ColorTong:
-		color = 3
-	default:
-		return &color, fmt.Errorf("cant trans card ")
-	}
-	tValue := card.Point
-	value := color*10 + tValue
-	return &value, nil
 }
 
 //DeleteIntCardFromLast 从int32类型的牌组中，找到对应的目标牌，并且移除
@@ -262,7 +244,7 @@ func CardsToRoomCards(cards []*majongpb.Card) []*room.Card {
 	var rCards []*room.Card
 	for i := 0; i < len(cards); i++ {
 		rCards = append(rCards, &room.Card{
-			Color: room.CardColor(cards[i].Color).Enum(),
+			Color: gutils.ServerColor2ClientColor(cards[i].Color).Enum(),
 			Point: &cards[i].Point,
 		})
 	}

@@ -12,8 +12,20 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
+//CartoonFinishData 动画完成数据
+type CartoonFinishData struct {
+	CurState        majongpb.StateID
+	NextState       majongpb.StateID
+	NeedCartoonType room.CartoonType
+	EventContext    []byte
+}
+
 // OnCartoonFinish 在某个状态上， 动画播放完成
-func OnCartoonFinish(curState majongpb.StateID, nextState majongpb.StateID, needCartoonType room.CartoonType, eventContext []byte) (newState majongpb.StateID, err error) {
+func OnCartoonFinish(cartoonFinishData CartoonFinishData, mjContext *majongpb.MajongContext) (newState majongpb.StateID, err error) {
+	curState := cartoonFinishData.CurState
+	nextState := cartoonFinishData.NextState
+	needCartoonType := cartoonFinishData.NeedCartoonType
+	eventContext := cartoonFinishData.EventContext
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":         "OnCartoonFinish",
 		"cur_state":         curState,
@@ -26,6 +38,14 @@ func OnCartoonFinish(curState majongpb.StateID, nextState majongpb.StateID, need
 		logEntry.WithError(marshalErr).Errorln(global.ErrUnmarshalEvent)
 		return curState, global.ErrUnmarshalEvent
 	}
+	reqPlayerID := req.GetPlayerId()
+	cartoonReqPlayerIDs := AddCartoonPlayerID(mjContext, reqPlayerID) //玩家发送请求，添加到临时数据中
+	logrus.WithFields(logrus.Fields{"func_name": "OnCartoonFinish",
+		"cfPlayerIDs": cartoonReqPlayerIDs, "req": req}).Infoln("动画结束请求信息")
+	if len(cartoonReqPlayerIDs) < len(mjContext.GetPlayers()) {
+		return curState, nil
+	}
+	// 接收到所有人，进行下一步
 	reqCartoonType := req.GetCartoonType()
 	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
 	if reqCartoonType != int32(needCartoonType) {
@@ -106,4 +126,16 @@ func removeLastCard(logEntry *logrus.Entry, srcCards []*majongpb.Card, rmCard *m
 		logEntry.Errorln("最后一张牌与目标牌不同，无法移除")
 	}
 	return srcCards
+}
+
+// AddCartoonPlayerID 添加动画完成请求玩家
+func AddCartoonPlayerID(mjContext *majongpb.MajongContext, currPlayerID uint64) []uint64 {
+	cfPlayerIDs := mjContext.GetTempData().GetCartoonReqPlayerIDs()
+	for _, playerID := range cfPlayerIDs {
+		if playerID == currPlayerID { // 用于判断玩家是否发过动画完成请求
+			return cfPlayerIDs
+		}
+	}
+	mjContext.GetTempData().CartoonReqPlayerIDs = append(cfPlayerIDs, currPlayerID)
+	return mjContext.GetTempData().GetCartoonReqPlayerIDs()
 }

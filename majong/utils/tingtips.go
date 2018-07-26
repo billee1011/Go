@@ -6,11 +6,11 @@ import (
 	"steve/common/mjoption"
 	"steve/gutils"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
 	majongpb "steve/server_pb/majong"
 
-	"github.com/golang/protobuf/proto"
 	"steve/majong/bus"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // calcHuTimes 计算胡牌倍数
@@ -36,7 +36,9 @@ func calcHuTimes(card *majongpb.Card, player *majongpb.Player, mjContext *majong
 			Type: majongpb.HuType_hu_dianpao,
 		},
 	}
-	value, _, _ := facade.CalculateCardValue(calcor, mjContext, params)
+	types, gen, hua := calcor.Calculate(params)
+	types = gutils.DeleteHuType(int(mjContext.GetCardtypeOptionId()), types) // 移除胡类型的番型
+	value := calcor.CardTypeValue(mjContext, types, gen, hua)
 	return uint32(value)
 }
 
@@ -53,7 +55,6 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 	}
 	// wuhongwei 增加七对提示
 	tingCards, _ := GetTingCards(playerCards, nil) // TODO, 目前没有包括特殊牌型
-
 	ntf := room.RoomTingInfoNtf{}
 	for _, utilscard := range tingCards {
 		card, _ := IntToCard(int32(utilscard))
@@ -61,16 +62,16 @@ func NotifyTingCards(flow interfaces.MajongFlow, playerID uint64) {
 		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque && card.GetColor() == player.GetDingqueColor() {
 			continue
 		}
-		newCard, _ := CardToInt(*card)
+		newCard := ServerCard2Uint32(card)
 		times := calcHuTimes(card, player, mjContext)
 		tingCardInfo := &room.TingCardInfo{
-			TingCard: proto.Uint32(uint32(*newCard)),
+			TingCard: proto.Uint32(newCard),
 			Times:    proto.Uint32(times),
 		}
 		ntf.TingCardInfos = append(ntf.TingCardInfos, tingCardInfo)
 		// 记录听牌信息
 		mjTingInfo := &majongpb.TingCardInfo{
-			TingCard: uint32(*newCard),
+			TingCard: newCard,
 			Times:    times,
 		}
 		player.TingCardInfo = append(player.TingCardInfo, mjTingInfo)
