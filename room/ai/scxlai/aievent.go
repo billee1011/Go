@@ -7,7 +7,7 @@ import (
 	"steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 func (h *zixunStateAI) getNormalZiXunAIEvent(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
