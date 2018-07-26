@@ -48,8 +48,7 @@ func OnCartoonFinish(cartoonFinishData CartoonFinishData, mjContext *majongpb.Ma
 	// 接收到所有人，进行下一步
 	reqCartoonType := req.GetCartoonType()
 	logEntry.WithField("req_cartoon_type", reqCartoonType).Debugln("收到动画完成请求")
-	finished := mjContext.GetExcutedHuansanzhang()
-	if reqCartoonType != int32(needCartoonType) || (needCartoonType == room.CartoonType_CTNT_HUANSANZHANG && !finished) {
+	if reqCartoonType != int32(needCartoonType) {
 		return curState, nil
 	}
 	return nextState, nil

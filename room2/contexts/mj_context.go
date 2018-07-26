@@ -11,3 +11,8 @@ type MjContext struct {
 	StateNumber int                     // 状态序号
 	StateTime   time.Time               // 状态时间
 }
+
+func (c *MjContext) SetStateNumber(state int){
+	c.StateNumber = state
+	println("更新statenumber-------->",c.StateNumber)
+}

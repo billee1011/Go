@@ -14,7 +14,7 @@ type DeskConfig struct {
 }
 
 //默认自带的
-var defaultModels = []string{fixed.Event,fixed.Message,fixed.Request,fixed.Player,fixed.Chat}
+var defaultModels = []string{fixed.Player,fixed.Message,fixed.Request,fixed.Chat,fixed.Event}
 
 //麻将
 func NewMjDeskCreateConfig(context interface{},settle interface{},num int) DeskConfig {
