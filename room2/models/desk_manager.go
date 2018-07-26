@@ -24,17 +24,17 @@ const (
 	GameId_GAMEID_ERRENMJ  = 4
 )
 
-var deskMgr DeskMgr
+var deskMgr *DeskMgr
 
 func init() {
-	deskMgr = DeskMgr{maxID: 0}
+	deskMgr = &DeskMgr{maxID: 0}
 }
 
-func GetDeskMgr() DeskMgr {
+func GetDeskMgr() *DeskMgr {
 	return deskMgr
 }
 
-func (mgr DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
+func (mgr *DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
 	players := req.GetPlayers()
 	// 回复match服的消息
 	rsp = &roommgr.CreateDeskResponse{
@@ -73,7 +73,7 @@ func (mgr DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskReques
 }
 
 //创建桌子并初始化所有model
-func (mgr DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robotLvs []int) (*deskpkg.Desk,error) {
+func (mgr *DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robotLvs []int) (*deskpkg.Desk,error) {
 	var config deskpkg.DeskConfig
 	var context interface{}
 	id, _ := mgr.allocDeskID()
@@ -94,6 +94,7 @@ func (mgr DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robotL
 	desk.GetConfig().Context = ctx
 	desk.GetConfig().PlayerIds = players
 	player.GetPlayerMgr().InitDeskData(players, gameID, robotLvs)
+	player.GetPlayerMgr().BindPlayerRoomAddr(players,gameID)
 	var deskPoint *deskpkg.Desk = &desk
 	deskPoint.InitContext()
 	GetModelManager().InitDeskModel(desk.GetUid(),desk.GetConfig().Models,deskPoint)
@@ -101,6 +102,6 @@ func (mgr DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robotL
 	return deskPoint,nil
 }
 
-func (mgr DeskMgr) allocDeskID() (uint64, error) {
+func (mgr *DeskMgr) allocDeskID() (uint64, error) {
 	return atomic.AddUint64(&mgr.maxID, 1), nil
 }

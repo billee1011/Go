@@ -49,9 +49,10 @@ func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
 	}
 	result := &MjContext{
 		MjContext:   mjContext,
-		StateNumber: 0,
+		//StateNumber: 0,
 		StateTime:   time.Now(),
 	}
+	result.SetStateNumber(0)
 	return result,nil
 }
 

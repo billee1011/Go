@@ -25,7 +25,9 @@ func (model *PlayerModel) Start(){
 	model.players = make([]*player.Player,model.GetDesk().GetConfig().Num)
 	ids:=model.GetDesk().GetConfig().PlayerIds//GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
 	for i:=0;i<len(model.players);i++{
-		model.players[i] = player.GetPlayerMgr().GetPlayer(ids[i])
+		playerObj := player.GetPlayerMgr().GetPlayer(ids[i])
+		playerObj.EnterDesk(model.GetDesk())
+		model.players[i] = playerObj
 	}
 }
 func (model PlayerModel) Stop(){
