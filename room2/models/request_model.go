@@ -11,13 +11,13 @@ import (
 type RequestModel struct {
 	BaseModel
 }
-func (model RequestModel) GetName() string{
+func (model *RequestModel) GetName() string{
 	return fixed.Request
 }
-func (model RequestModel) Start(){
+func (model *RequestModel) Start(){
 
 }
-func (model RequestModel) Stop(){
+func (model *RequestModel) Stop(){
 
 }
 
@@ -28,7 +28,7 @@ func NewRequestModel(desk *desk.Desk) DeskModel {
 }
 
 // HandlePlayerRequest 处理玩家请求
-func (model RequestModel) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
+func (model *RequestModel) HandlePlayerRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name":  "deskMgr.HandlePlayerRequest",
 		"player_id":  playerID,
@@ -38,7 +38,7 @@ func (model RequestModel) HandlePlayerRequest(playerID uint64, head *steve_proto
 	//iDeskID, ok := dm.playerDeskMap.Load(playerID)
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	desk := player.GetDesk()
-	if !(desk==nil) {
+	if desk==nil {
 		logEntry.Infoln("玩家不在牌桌上")
 		return
 	}

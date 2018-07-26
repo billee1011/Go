@@ -9,7 +9,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"steve/room2/util"
 	"steve/room2/register"
-	"steve/room/loader_balancer"
 	"steve/room2/common"
 	"steve/room2/models"
 	"steve/room2/fixed"
@@ -36,11 +35,11 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	c.e = e
 	util.SetMessageSender(e.Exchanger)
 	registers.RegisterHandlers(e.Exchanger)
-	registerLbReporter(e)
+	//registerLbReporter(e)
 
 	rpcServer := e.RPCServer
 	deskRpc := models.GetDeskMgr()
-	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, &deskRpc)
+	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, deskRpc)
 	if err != nil {
 		return err
 	}
@@ -48,11 +47,11 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	return nil
 }
 
-func registerLbReporter(exposer *structs.Exposer) {
+/*func registerLbReporter(exposer *structs.Exposer) {
 	if err := lb.RegisterLBReporter(exposer.RPCServer); err != nil {
 		logrus.WithError(err).Panicln("注册负载上报服务失败")
 	}
-}
+}*/
 
 func (c *roomCore) Start() error {
 	go startPeipai()
