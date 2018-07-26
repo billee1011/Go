@@ -7,15 +7,18 @@ import (
 	"sync"
 )
 
-func main() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
+var incr func(string) error
 
-	var incr func(string) error
+func notWatch(client *redis.Client) error {
+	n, err := client.Get("counter3").Int64()
+	if err != nil && err != redis.Nil {
+		return err
+	}
+	client.Set("counter3", strconv.FormatInt(n+1, 10), 0)
+	return nil
+}
 
+func useWatch(client *redis.Client) {
 	incr = func(key string) error {
 		err := client.Watch(func(tx *redis.Tx) error {
 			n, err := tx.Get(key).Int64()
@@ -34,6 +37,16 @@ func main() {
 		}
 		return err
 	}
+}
+
+func main() {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	useWatch(client)
 
 	var wg sync.WaitGroup
 	for i := 0; i < 100; i++ {
