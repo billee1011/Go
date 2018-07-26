@@ -1,8 +1,8 @@
 package interfaces
 
 import (
-	"steve/server_pb/majong"
 	"steve/server_pb/ddz"
+	"steve/server_pb/majong"
 )
 
 // AIType AI 类型
@@ -15,6 +15,10 @@ const (
 	TuoGuangAI
 	// RobotAI 机器人 AI
 	RobotAI
+	// HuAI 胡牌状态下的AI
+	HuAI
+	// TingAI 听状态下的AI
+	TingAI
 )
 
 // PlayerAIInfo 玩家 AI 信息
@@ -26,7 +30,7 @@ type PlayerAIInfo struct {
 // AIEventGenerateParams 生成 AI 事件需要的参数
 type AIEventGenerateParams struct {
 	MajongContext *majong.MajongContext
-	DDZContext *ddz.DDZContext
+	DDZContext    *ddz.DDZContext
 	PlayerID      uint64
 	AIType        AIType
 	RobotLv       int
