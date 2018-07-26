@@ -23,16 +23,17 @@ func GetModelManager() *ModelManager {
 
 func (manager *ModelManager) InitDeskModel(deskId uint64, modelName []string, desk *desk.Desk) {
 	modelMap := make(map[string]interface{}, len(modelName))
+	manager.modelMap.Store(deskId, modelMap)
 	for _, name := range modelName {
 		model := CreateModel(name, desk)
 		if model == nil {
 			logrus.Error("创建Model失败[" + name + "]")
 			continue
 		}
-		model.Start()
 		modelMap[name] = model
+		model.Start()
+		println(model.GetName()," ---------------------> started")
 	}
-	manager.modelMap.Store(deskId, modelMap)
 }
 
 func (manager *ModelManager) RemoveDeskModel(deskId uint64){

@@ -23,15 +23,15 @@ func NewDesk(uid uint64, gameId int,playerIds []uint64,config *DeskConfig) Desk 
 	return desk
 }
 
-func (desk Desk) GetPlayerIds() []uint64{
+func (desk *Desk) GetPlayerIds() []uint64{
 	return desk.playerIds
 }
 
-func (desk Desk) GetUid() uint64 {
+func (desk *Desk) GetUid() uint64 {
 	return desk.uid
 }
 
-func (desk Desk) GetGameId() int {
+func (desk *Desk) GetGameId() int {
 	return desk.gameID
 }
 
@@ -47,6 +47,6 @@ func (desk *Desk) Stop() {
 	desk.Cancel()
 }
 
-func (desk Desk) GetConfig() *DeskConfig {
+func (desk *Desk) GetConfig() *DeskConfig {
 	return desk.config
 }

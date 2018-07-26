@@ -46,6 +46,7 @@ func (dp *Player) EnterDesk(desk *desk.Desk) {
 	dp.quit = false
 	dp.desk = desk
 	dp.ecoin = dp.GetCoin()
+	println("设置桌子--------->")
 }
 
 // GetPlayerID 获取玩家 ID

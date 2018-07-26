@@ -29,6 +29,12 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 
 func handleRoomReq(playerID uint64, header *steve_proto_gaterpc.Header, body []byte) (rspMsg []exchanger.ResponseMsg) {
 	player := player.GetPlayerMgr().GetPlayer(playerID)
-	modelmanager.GetModelManager().GetRequestModel(player.GetDesk().GetUid()).HandlePlayerRequest(playerID, header, body)
+	if player.GetDesk() == nil{
+		println("not found player desk")
+	}
+	deskId := player.GetDesk().GetUid()
+	modelManager := modelmanager.GetModelManager()
+	requestModel := modelManager.GetRequestModel(deskId)
+	requestModel.HandlePlayerRequest(playerID, header, body)
 	return []exchanger.ResponseMsg{}
 }
