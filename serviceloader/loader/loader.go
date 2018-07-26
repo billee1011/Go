@@ -2,6 +2,7 @@ package loader
 
 import (
 	"runtime/debug"
+	"steve/serviceloader/mysql"
 	"steve/serviceloader/net/watchdog"
 	"steve/serviceloader/pubsub"
 	"steve/serviceloader/redisfactory"
@@ -11,7 +12,6 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
-
 )
 
 func createConfiguration() *configuration.ConfigurationImpl {
@@ -30,7 +30,7 @@ func recoverPanic() {
 	}
 }
 
-// createExposer 创建 exposer 对象
+// CreateExposer 创建 exposer 对象
 func CreateExposer(opt Option) *structs.Exposer {
 	exposer := &structs.Exposer{}
 	exposer.Configuration = createConfiguration()
@@ -39,17 +39,18 @@ func CreateExposer(opt Option) *structs.Exposer {
 	exposer.WatchDogFactory = watchdog.NewFactory()
 	exposer.Exchanger = createExchanger(exposer.RPCServer)
 	exposer.RedisFactory = redisfactory.NewFactory(opt.redisAddr, opt.redisPasswd)
+	exposer.MysqlEngineMgr = mysql.CreateMysqlEngineMgr()
 	exposer.Publisher = pubsub.CreatePublisher()
 	exposer.Subscriber = pubsub.CreateSubscriber()
+
 	structs.SetGlobalExposer(exposer)
 	// 开启通用的负载报告服务
 	RegisterLBReporter(exposer.RPCServer)
 
-
 	return exposer
 }
 
-// run 启动服务循环
+// Run 启动服务循环
 func Run(service service.Service, exposer *structs.Exposer, opt Option) {
 	wg := sync.WaitGroup{}
 	wg.Add(2)

@@ -17,6 +17,7 @@ type Exposer struct {
 	Configuration   configuration.Configuration
 	WatchDogFactory net.WatchDogFactory
 	Exchanger       exchanger.Exchanger
+	MysqlEngineMgr  MysqlEngineMgr
 	RedisFactory    redisfactory.RedisFactory
 	Publisher       pubsub.Publisher
 	Subscriber      pubsub.Subscriber

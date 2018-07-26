@@ -1,0 +1,8 @@
+mysql_list:
+  mysql1:
+    user: root
+    passwd: 123456
+    addr: 127.0.0.1:3306
+    db: database1 
+    params:
+      charset: utf8
