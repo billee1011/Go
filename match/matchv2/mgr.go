@@ -95,15 +95,10 @@ func (m *mgr) dismissContinueDesk(desk *desk, emitPlayer uint64) {
 	notify := match.MatchContinueDeskDimissNtf{}
 
 	for _, deskPlayer := range desk.players {
-		delete(m.playerDesk, deskPlayer.playerID)
 		if deskPlayer.playerID != emitPlayer {
 			gutils.SendMessage(deskPlayer.playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
 		}
-		// 更新状态为空闲状态
-		player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
-			State:  int(common.PlayerState_PS_IDLE),
-			GameID: int(desk.gameID),
-		})
+		m.detachPlayer(deskPlayer.playerID)
 	}
 	for playerID := range desk.continueWaitPlayers {
 		delete(m.playerDesk, playerID)
@@ -319,10 +314,18 @@ func (m *mgr) removeOfflines(desk *desk) {
 		if online {
 			newPlayers = append(newPlayers, deskPlayer)
 		} else {
-			delete(m.playerDesk, deskPlayer.playerID)
+			m.detachPlayer(deskPlayer.playerID)
 		}
 	}
 	desk.players = newPlayers
+}
+
+func (m *mgr) detachPlayer(playerID uint64) {
+	delete(m.playerDesk, playerID)
+	// 更新状态为空闲状态
+	player.SetPlayerPlayStates(playerID, player.PlayStates{
+		State: int(common.PlayerState_PS_IDLE),
+	})
 }
 
 // onDeskFinish 牌桌匹配完成
