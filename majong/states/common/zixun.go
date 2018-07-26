@@ -34,6 +34,8 @@ func (s *ZiXunState) ProcessEvent(eventID majongpb.EventID, eventContext []byte,
 		return s.doChupai(eventContext, flow)
 	case majongpb.EventID_event_gang_request:
 		return s.doGang(eventContext, flow)
+	case majongpb.EventID_event_qi_request:
+		s.doQi(eventContext, flow)
 	}
 	return majongpb.StateID_state_zixun, nil
 }
@@ -63,6 +65,16 @@ func (s *ZiXunState) doChupai(eventContext []byte, flow interfaces.MajongFlow) (
 		return majongpb.StateID_state_zixun, global.ErrInvalidEvent
 	}
 	return s.chupai(flow, message)
+}
+
+//TODO:前段並沒有發送出牌请求，正在查找原因，暂时不用后端驱动弃牌后自动出牌
+func (s *ZiXunState) doQi(eventContext []byte, flow interfaces.MajongFlow) {
+	message := &majongpb.QiRequestEvent{}
+	err := proto.Unmarshal(eventContext, message)
+	if err != nil {
+		return
+	}
+	s.qi(flow, message)
 }
 
 //angang 决策杠
@@ -120,7 +132,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		if !utils.CardEqual(card, mjContext.GetLastMopaiCard()) {
 			return majongpb.StateID_state_zixun, nil
 		}
-		if s.checkZiMo(flow) {
+		if activePlayer.GetZixunRecord().GetEnableZimo() {
 			return majongpb.StateID_state_zixun, fmt.Errorf("玩家当前只能选择胡牌,不能进行出牌操作")
 		}
 		mjContext.LastOutCard = card
@@ -158,6 +170,20 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		return majongpb.StateID_state_chupai, nil
 	}
 	return majongpb.StateID_state_zixun, nil
+}
+
+//zimo 决策自摸
+func (s *ZiXunState) qi(flow interfaces.MajongFlow, message *majongpb.QiRequestEvent) {
+	if gutils.GetZixunPlayer(flow.GetMajongContext()) != message.GetHead().GetPlayerId() {
+		return
+	}
+	player := gutils.GetMajongPlayer(message.GetHead().GetPlayerId(), flow.GetMajongContext())
+	record := player.GetZixunRecord()
+	record.EnableZimo = false
+	record.EnableZimo = false
+	record.EnableQi = false
+	record.EnableBugangCards = record.EnableBugangCards[:0]
+	record.EnableAngangCards = record.EnableAngangCards[:0]
 }
 
 //checkAnGang 检查暗杠 (判断当前事件是否可行)

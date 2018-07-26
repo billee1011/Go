@@ -27,6 +27,14 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateP
 	if len(player.GetPossibleActions()) == 0 {
 		return
 	}
+	if mjContext.GetCurState() != majong.StateID_state_chupaiwenxun {
+		return
+	}
+	if params.AIType == interfaces.TingAI {
+		if len(player.GetPossibleActions()) > 0 {
+			return
+		}
+	}
 	if event := h.chupaiWenxun(player); event != nil {
 		result.Events = append(result.Events, *event)
 	}
