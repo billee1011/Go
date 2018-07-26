@@ -81,8 +81,8 @@ func (s *BuGangState) doBugang(flow interfaces.MajongFlow) {
 	}
 	player.HandCards = newCards
 
-	s.removePengCard(card, player)
-	s.addGangCard(card, player, player.GetPalyerId())
+	pengPlayerID := s.removePengCard(card, player)
+	s.addGangCard(card, player, pengPlayerID)
 	s.notifyPlayers(flow, card, player)
 	return
 }
@@ -109,17 +109,19 @@ func (s *BuGangState) addGangCard(card *majongpb.Card, player *majongpb.Player, 
 }
 
 // removePengCard 移除碰的牌
-func (s *BuGangState) removePengCard(card *majongpb.Card, player *majongpb.Player) {
+func (s *BuGangState) removePengCard(card *majongpb.Card, player *majongpb.Player) (pengPlayer uint64) {
 	newPengCards := []*majongpb.PengCard{}
 	pengCards := player.GetPengCards()
 	for index, pengCard := range pengCards {
 		if utils.CardEqual(card, pengCard.GetCard()) {
+			pengPlayer = pengCard.GetSrcPlayer()
 			newPengCards = append(newPengCards, pengCards[index+1:]...)
 			break
 		}
 		newPengCards = append(newPengCards, pengCard)
 	}
 	player.PengCards = newPengCards
+	return
 }
 
 // setMopaiPlayer 设置摸牌玩家
