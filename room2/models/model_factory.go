@@ -20,6 +20,5 @@ func CreateModel(name string, desks *desk.Desk) DeskModel {
 	case fixed.Chat:
 		result = NewChatModel(desks)
 	}
-	print(result.GetDesk() == nil)
 	return result
 }
