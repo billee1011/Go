@@ -132,7 +132,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		if !utils.CardEqual(card, mjContext.GetLastMopaiCard()) {
 			return majongpb.StateID_state_zixun, nil
 		}
-		if activePlayer.GetZixunRecord().GetEnableZimo() {
+		if gutils.IsHu(activePlayer) && activePlayer.GetZixunRecord().GetEnableZimo() {
 			return majongpb.StateID_state_zixun, fmt.Errorf("玩家当前只能选择胡牌,不能进行出牌操作")
 		}
 		mjContext.LastOutCard = card
