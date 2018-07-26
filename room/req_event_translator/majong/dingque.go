@@ -13,7 +13,7 @@ func TranslateDingqueReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	eventHeader := translateHeader(playerID, header, &req)
 
 	cardColor := translateClientCardColor(req.GetColor())
-	eventContext = server_pb.DingqueRequestEvent{
+	eventContext = &server_pb.DingqueRequestEvent{
 		Head:  &eventHeader,
 		Color: cardColor,
 	}

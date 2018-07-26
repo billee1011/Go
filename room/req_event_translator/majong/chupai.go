@@ -13,7 +13,7 @@ func TranslateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	eventHeader := translateHeader(playerID, header, &req)
 
 	card := translateCard(req.GetCard())
-	eventContext = server_pb.ChupaiRequestEvent{
+	eventContext = &server_pb.ChupaiRequestEvent{
 		Head:       &eventHeader,
 		Cards:      &card,
 		TingAction: translateTingAction(req.GetTingAction()),

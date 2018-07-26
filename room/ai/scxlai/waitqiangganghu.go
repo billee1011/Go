@@ -74,7 +74,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 }
 
 func (h *waitQiangganghuStateAI) qi(player *majong.Player) interfaces.AIEvent {
-	eventContext := majong.QiRequestEvent{
+	eventContext := &majong.QiRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
@@ -87,7 +87,7 @@ func (h *waitQiangganghuStateAI) qi(player *majong.Player) interfaces.AIEvent {
 }
 
 func (h *waitQiangganghuStateAI) hu(player *majong.Player) interfaces.AIEvent {
-	eventContext := majong.HuRequestEvent{
+	eventContext := &majong.HuRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},

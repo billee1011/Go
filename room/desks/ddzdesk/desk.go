@@ -264,7 +264,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		deskPlayer.SetTuoguan(false, true)
 
 		//生成恢复对局事件
-		eventMessage := ddz.ResumeRequestEvent{
+		eventMessage := &ddz.ResumeRequestEvent{
 			Head: &ddz.RequestEventHead{PlayerId: eqi.PlayerID},
 		}
 		eventID := int(ddz.EventID_event_resume_request)

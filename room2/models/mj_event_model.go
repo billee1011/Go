@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type MjEventModel struct {
@@ -88,15 +87,6 @@ func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterp
 		logEntry.WithError(err).Errorln("消息转事件失败")
 		return
 	}
-	eventMessage, ok := eventContext.(proto.Message)
-	if !ok {
-		logEntry.Errorln("转换事件函数返回值类型错误")
-		return
-	}
-	eventConetxtByte, err := proto.Marshal(eventMessage)
-	if err != nil {
-		logEntry.WithError(err).Errorln("序列化事件现场失败")
-	}
 
 	/*interfaces.Event{
 		ID:        server_pb.EventID(eventID),
@@ -108,7 +98,7 @@ func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterp
 	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
 		fixed.NormalEvent,
 		model.GetDesk(),
-		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber, eventConetxtByte, playerID))
+		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber, eventContext, playerID))
 
 	model.PushEvent(event)
 }
@@ -176,7 +166,7 @@ func (model *MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
 // step 3. 调用 room 的结算逻辑来处理结算
 // step 4. 如果有自动事件， 将自动事件写入自动事件通道
 // step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
-func (model *MjEventModel) processEvent(eventID int, eventContext []byte) {
+func (model *MjEventModel) processEvent(eventID int, eventContext interface{}) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.ProcessEvent",
 		"event_id":  eventID,
@@ -226,7 +216,7 @@ func (model *MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 }
 
 // callEventHandler 调用事件处理器
-func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
+func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext interface{}) (result majong_process.HandleMajongEventResult, succ bool) {
 	succ = false
 	conte := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 	stateNumber, mjContext, stateTime := conte.StateNumber, conte.MjContext, conte.StateTime

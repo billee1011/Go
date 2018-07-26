@@ -4,13 +4,11 @@ import (
 	"steve/client_pb/room"
 	server_pb "steve/entity/majong"
 	"steve/structs/proto/gate_rpc"
-
-	"github.com/golang/protobuf/proto"
 )
 
 // TranslateXingpaiActionReq 转换行牌动作请求
 func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomXingpaiActionReq) (eventID int, eventContext proto.Message, err error) {
+	req room.RoomXingpaiActionReq) (eventID int, eventContext interface{}, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 	switch req.GetActionId() {
@@ -59,7 +57,7 @@ func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 
 // TranslateDingqueReq 转换定缺请求
 func TranslateDingqueReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomDingqueReq) (eventID int, eventContext proto.Message, err error) {
+	req room.RoomDingqueReq) (eventID int, eventContext interface{}, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
@@ -74,7 +72,7 @@ func TranslateDingqueReq(playerID uint64, header *steve_proto_gaterpc.Header,
 
 // TranslateChupaiReq 转换出牌请求
 func TranslateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomChupaiReq) (eventID int, eventContext proto.Message, err error) {
+	req room.RoomChupaiReq) (eventID int, eventContext interface{}, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
@@ -90,7 +88,7 @@ func TranslateChupaiReq(playerID uint64, header *steve_proto_gaterpc.Header,
 
 // TranslateCartoonFinishReq 转换动画完成请求
 func TranslateCartoonFinishReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomCartoonFinishReq) (eventID int, eventContext proto.Message, err error) {
+	req room.RoomCartoonFinishReq) (eventID int, eventContext interface{}, err error) {
 	eventContext = &server_pb.CartoonFinishRequestEvent{
 		CartoonType: int32(req.GetCartoonType()),
 	}
@@ -100,7 +98,7 @@ func TranslateCartoonFinishReq(playerID uint64, header *steve_proto_gaterpc.Head
 
 // TranslateHuansanzhangReq 转换换三张请求
 func TranslateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomHuansanzhangReq) (eventID int, eventContext proto.Message, err error) {
+	req room.RoomHuansanzhangReq) (eventID int, eventContext interface{}, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
@@ -114,7 +112,7 @@ func TranslateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Heade
 }
 
 // translateHeader 生成事件头
-func translateHeader(playerID uint64, header *steve_proto_gaterpc.Header, body proto.Message) server_pb.RequestEventHead {
+func translateHeader(playerID uint64, header *steve_proto_gaterpc.Header, body interface{}) server_pb.RequestEventHead {
 	return server_pb.RequestEventHead{
 		PlayerId: playerID,
 	}

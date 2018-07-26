@@ -26,7 +26,7 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 		}
 	}
 
-	request := ddz.DoubleRequestEvent{Head: &ddz.RequestEventHead{
+	request := &ddz.DoubleRequestEvent{Head: &ddz.RequestEventHead{
 		PlayerId: playerID,
 	}, IsDouble: false,
 	}

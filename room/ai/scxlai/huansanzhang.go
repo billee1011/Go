@@ -86,7 +86,7 @@ func (h *huansanzhangStateAI) getHszCards(player *majong.Player) (hszCards []*ma
 func (h *huansanzhangStateAI) huansanzhang(player *majong.Player) *interfaces.AIEvent {
 	hszCards := h.getHszCards(player)
 
-	eventContext := majong.HuansanzhangRequestEvent{
+	eventContext := &majong.HuansanzhangRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},

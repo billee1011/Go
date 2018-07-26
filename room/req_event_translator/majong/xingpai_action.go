@@ -16,7 +16,7 @@ func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 		{
 			eventID = int(server_pb.EventID_event_chi_request)
 			cards := translateCards(req.GetChiCards())
-			eventContext = server_pb.ChiRequestEvent{
+			eventContext = &server_pb.ChiRequestEvent{
 				Head:  &eventHeader,
 				Cards: cards,
 			}
@@ -24,7 +24,7 @@ func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 	case room.XingpaiAction_XA_PENG:
 		{
 			eventID = int(server_pb.EventID_event_peng_request)
-			eventContext = server_pb.PengRequestEvent{
+			eventContext = &server_pb.PengRequestEvent{
 				Head: &eventHeader,
 			}
 		}
@@ -32,7 +32,7 @@ func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 		{
 			eventID = int(server_pb.EventID_event_gang_request)
 			card := translateCard(req.GetGangCard())
-			eventContext = server_pb.GangRequestEvent{
+			eventContext = &server_pb.GangRequestEvent{
 				Head: &eventHeader,
 				Card: &card,
 			}
@@ -40,14 +40,14 @@ func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Head
 	case room.XingpaiAction_XA_HU:
 		{
 			eventID = int(server_pb.EventID_event_hu_request)
-			eventContext = server_pb.HuRequestEvent{
+			eventContext = &server_pb.HuRequestEvent{
 				Head: &eventHeader,
 			}
 		}
 	case room.XingpaiAction_XA_QI:
 		{
 			eventID = int(server_pb.EventID_event_qi_request)
-			eventContext = server_pb.QiRequestEvent{
+			eventContext = &server_pb.QiRequestEvent{
 				Head: &eventHeader,
 			}
 		}

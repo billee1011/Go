@@ -3,11 +3,18 @@ package scxlai
 import (
 	"steve/entity/majong"
 	"steve/gutils"
+<<<<<<< HEAD
 
 	"steve/room2/ai"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+=======
+
+	"steve/room2/ai"
+
+	"github.com/Sirupsen/logrus"
+>>>>>>> majong
 )
 
 type chupaiWenxunStateAI struct {
@@ -58,21 +65,19 @@ func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *ai.AIEvent {
 
 	switch action {
 	case majong.Action_action_hu:
-		mjContext := majong.HuRequestEvent{
+		eventContext := &majong.HuRequestEvent{
 			Head: &majong.RequestEventHead{
 				PlayerId: player.GetPalyerId(),
 			},
 		}
 		eventID = majong.EventID_event_hu_request
-		data, err = proto.Marshal(&mjContext)
 	default:
-		mjContext := majong.QiRequestEvent{
+		eventContext := majong.QiRequestEvent{
 			Head: &majong.RequestEventHead{
 				PlayerId: player.GetPalyerId(),
 			},
 		}
 		eventID = majong.EventID_event_qi_request
-		data, err = proto.Marshal(&mjContext)
 	}
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -84,6 +89,6 @@ func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *ai.AIEvent {
 	}
 	return &ai.AIEvent{
 		ID:      eventID,
-		Context: data,
+		Context: eventContext,
 	}
 }

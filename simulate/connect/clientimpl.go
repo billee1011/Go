@@ -330,7 +330,7 @@ func (c *client) checkExpects(header *steve_proto_base.Header, bodyData []byte) 
 	msgID := header.GetMsgId()
 	iExpector, ok := c.expectInfos.Load(msgid.MsgID(msgID))
 	if iExpector == nil || !ok {
-		logEntry.WithField("msgID", msgID).Infoln("没有对应的Expector，需要添加")
+		logEntry.WithField("msgID", msgID).Infoln("没有对应的Expector，如果需要接受，请添加")
 		return
 	}
 	me := iExpector.(messageExpector)

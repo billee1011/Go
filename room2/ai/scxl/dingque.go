@@ -6,9 +6,12 @@ import (
 	"time"
 
 	"steve/room2/ai"
+<<<<<<< HEAD
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+=======
+>>>>>>> majong
 )
 
 type dingqueStateAI struct {
@@ -46,24 +49,15 @@ func (h *dingqueStateAI) getColor(player *majong.Player) majong.CardColor {
 // dingque 生成定缺请求事件
 func (h *dingqueStateAI) dingque(player *majong.Player) *ai.AIEvent {
 	color := h.getColor(player)
-	mjContext := majong.DingqueRequestEvent{
+	eventContext := &majong.DingqueRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
 		Color: color,
 	}
 
-	data, err := proto.Marshal(&mjContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "dingqueStateAI.dingque",
-			"player_id": player.GetPalyerId(),
-			"color":     color,
-		}).Errorln("事件序列化失败")
-		return nil
-	}
 	return &ai.AIEvent{
 		ID:      majong.EventID_event_dingque_request,
-		Context: data,
+		Context: eventContext,
 	}
 }

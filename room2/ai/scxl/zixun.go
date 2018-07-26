@@ -8,9 +8,12 @@ import (
 	"time"
 
 	"steve/room2/ai"
+<<<<<<< HEAD
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+=======
+>>>>>>> majong
 )
 
 type zixunStateAI struct {
@@ -105,40 +108,28 @@ func (h *zixunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 }
 
 func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) ai.AIEvent {
-	eventContext := majong.ChupaiRequestEvent{
+	eventContext := &majong.ChupaiRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
 		Cards: card,
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "zixunStateAI.chupai",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
-	}
+
 	return ai.AIEvent{
 		ID:      majong.EventID_event_chupai_request,
-		Context: data,
+		Context: eventContext,
 	}
 }
 
 func (h *zixunStateAI) hu(player *majong.Player) ai.AIEvent {
-	eventContext := majong.HuRequestEvent{
+	eventContext := &majong.HuRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "zixunStateAI.hu",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
-	}
+
 	return ai.AIEvent{
 		ID:      majong.EventID_event_hu_request,
-		Context: data,
+		Context: eventContext,
 	}
 }

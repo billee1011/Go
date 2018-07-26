@@ -32,7 +32,7 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 		return int(ddz.StateID_state_double), global.ErrInvalidEvent
 	}
 
-	message := (event.EventData).(ddz.DoubleRequestEvent)
+	message := (event.EventData).(*ddz.DoubleRequestEvent)
 
 	context := getDDZContext(m)
 	playerID := message.GetHead().GetPlayerId()

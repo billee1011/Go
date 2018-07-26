@@ -11,7 +11,6 @@ import (
 	"steve/room2/fixed"
 	playerpkg "steve/room2/player"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -215,16 +214,8 @@ func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, broke
 		majongpb.SettleType_settle_zimo:     true,
 	}
 	if needEvent[settleType] {
-		eventContext, err := proto.Marshal(&majongpb.SettleFinishEvent{
+		eventContext := &majongpb.SettleFinishEvent{
 			PlayerId: brokerPlayers,
-		})
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"func_name":     "GenerateSettleEvent",
-				"settleType":    settleType,
-				"brokerPlayers": brokerPlayers,
-			}).WithError(err).Errorln("消息序列化失败")
-			return
 		}
 		/*event := majongpb.AutoEvent{
 			EventId:      majongpb.EventID_event_settle_finish,

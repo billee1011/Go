@@ -53,14 +53,14 @@ func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *interfaces.AI
 
 	switch action {
 	case majong.Action_action_hu:
-		eventContext = majong.HuRequestEvent{
+		eventContext = &majong.HuRequestEvent{
 			Head: &majong.RequestEventHead{
 				PlayerId: player.GetPalyerId(),
 			},
 		}
 		eventID = majong.EventID_event_hu_request
 	default:
-		eventContext = majong.QiRequestEvent{
+		eventContext = &majong.QiRequestEvent{
 			Head: &majong.RequestEventHead{
 				PlayerId: player.GetPalyerId(),
 			},

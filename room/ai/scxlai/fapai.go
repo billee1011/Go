@@ -41,7 +41,7 @@ func (f *fapaiStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 
 //CartoonFinsh 动画完成请求事件
 func CartoonFinsh(player *majong.Player, cartoonType int32) *interfaces.AIEvent {
-	event := majong.CartoonFinishRequestEvent{
+	event := &majong.CartoonFinishRequestEvent{
 		CartoonType: cartoonType,
 		PlayerId:    player.GetPalyerId(),
 	}

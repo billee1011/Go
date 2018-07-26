@@ -3,11 +3,16 @@ package scxlai
 import (
 	"steve/entity/majong"
 	"steve/gutils"
+<<<<<<< HEAD
 
 	"steve/room2/ai"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+=======
+
+	"steve/room2/ai"
+>>>>>>> majong
 )
 
 type huansanzhangStateAI struct {
@@ -70,7 +75,7 @@ func (h *huansanzhangStateAI) getHszCards(player *majong.Player) (hszCards []*ma
 func (h *huansanzhangStateAI) huansanzhang(player *majong.Player) *ai.AIEvent {
 	hszCards := h.getHszCards(player)
 
-	mjContext := majong.HuansanzhangRequestEvent{
+	eventContext := &majong.HuansanzhangRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
@@ -78,18 +83,8 @@ func (h *huansanzhangStateAI) huansanzhang(player *majong.Player) *ai.AIEvent {
 		Sure:  true,
 	}
 
-	data, err := proto.Marshal(&mjContext)
-
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "huansanzhangStateAI.huansanzhang",
-			"player_id": player.GetPalyerId(),
-			"hszCards":  hszCards,
-		}).Errorln("事件序列化失败")
-		return nil
-	}
 	return &ai.AIEvent{
 		ID:      majong.EventID_event_huansanzhang_request,
-		Context: data,
+		Context: eventContext,
 	}
 }

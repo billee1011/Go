@@ -33,7 +33,7 @@ type AIEventGenerateParams struct {
 // AIEvent AI 事件
 type AIEvent struct {
 	ID      majong.EventID
-	Context []byte
+	Context interface{}
 }
 
 // AIEventGenerateResult AI 事件生成结果
