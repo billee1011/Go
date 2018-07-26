@@ -9,4 +9,7 @@ import "github.com/go-redis/redis"
 // NewClient 会校验是否能连接成功， 如果连接不成功会返回错误
 type RedisFactory interface {
 	NewClient() (*redis.Client, error)
+
+	// GetRedisClient 根据名称获取 redis 客户端
+	GetRedisClient(name string, db int) (*redis.Client, error)
 }
