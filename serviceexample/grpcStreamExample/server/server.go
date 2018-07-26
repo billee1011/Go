@@ -21,7 +21,7 @@ func (s *Streamer) BidStream(stream proto.Chat_BidStreamServer) error {
 			log.Println("收到客户端通过context发出的终止信号")
 			return ctx.Err()
 		default:
-			输入, err := stream.Recv()
+			input, err := stream.Recv()
 			if err == io.EOF {
 				log.Println("客户端发送的数据流结束")
 				return nil
@@ -30,7 +30,7 @@ func (s *Streamer) BidStream(stream proto.Chat_BidStreamServer) error {
 				log.Println("接收数据出错:", err)
 				return err
 			}
-			switch 输入.Input {
+			switch input.Input {
 			case "结束对话\n":
 				log.Println("收到'结束对话'指令")
 				if err := stream.Send(&proto.Response{Output: "收到结束指令"}); err != nil {
@@ -45,8 +45,8 @@ func (s *Streamer) BidStream(stream proto.Chat_BidStreamServer) error {
 					}
 				}
 			default:
-				log.Printf("[收到消息]: %s", 输入.Input)
-				if err := stream.Send(&proto.Response{Output: "服务端返回: " + 输入.Input}); err != nil {
+				log.Printf("[收到消息]: %s", input.Input)
+				if err := stream.Send(&proto.Response{Output: "服务端返回: " + input.Input}); err != nil {
 					return err
 				}
 			}
