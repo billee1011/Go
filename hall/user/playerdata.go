@@ -13,6 +13,9 @@ import (
 
 type playerDataService struct{}
 
+// Default 默认服务
+var Default user.PlayerDataServer = new(playerDataService)
+
 // GetPlayerByAccount 根据账号获取玩家 ID
 func (pds *playerDataService) GetPlayerByAccount(ctx context.Context, req *user.GetPlayerByAccountReq) (rsp *user.GetPlayerByAccountRsp, err error) {
 	rsp, err = &user.GetPlayerByAccountRsp{
