@@ -12,12 +12,12 @@ import (
 )
 
 type recvdata struct {
-	header *steve_proto_base.Header
+	header *base.Header
 	data   []byte
 }
 
 type senddata struct {
-	header *steve_proto_base.Header
+	header *base.Header
 	body   []byte
 }
 
@@ -56,7 +56,7 @@ func newClientV2(e exchanger, callback clientCallback) *clientV2 {
 	}
 }
 
-func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err error) {
+func (c *clientV2) pushMessage(head *base.Header, body []byte) (err error) {
 	defer func() {
 		// 通道被关闭了
 		if x := recover(); x != nil {
@@ -72,7 +72,7 @@ func (c *clientV2) pushMessage(head *steve_proto_base.Header, body []byte) (err 
 
 	// 为了保证消息有序，不能使用 goroutine， 而要使用带缓冲区的通道
 	c.csend <- &senddata{
-		header: proto.Clone(head).(*steve_proto_base.Header),
+		header: proto.Clone(head).(*base.Header),
 		body:   body,
 	}
 	return
@@ -236,7 +236,7 @@ func (c *clientV2) recv() *recvdata {
 		c.callback.onError(fmt.Errorf("消息头大小超过消息包数据大小"))
 		return nil
 	}
-	header := new(steve_proto_base.Header)
+	header := new(base.Header)
 	err = proto.Unmarshal(d[1:1+headsz], header)
 	if err != nil {
 		c.callback.onError(fmt.Errorf("消息头反序列化失败"))

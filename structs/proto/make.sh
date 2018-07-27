@@ -1,7 +1,7 @@
 CLIENT_PB_PATH=~/steve.protos/client_pb 
 
-mkdir base -p 
-protoc -I $CLIENT_PB_PATH/base --go_out=plugins=grpc:./base/ $CLIENT_PB_PATH/base/*.proto
+# mkdir base -p 
+# protoc -I $CLIENT_PB_PATH/base --go_out=plugins=grpc:./base/ $CLIENT_PB_PATH/base/*.proto
 
 mkdir gate_rpc -p 
 protoc -I ../../server_pb/gate_rpc --go_out=plugins=grpc:./gate_rpc/ ../../server_pb/gate_rpc/*.proto

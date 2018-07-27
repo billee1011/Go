@@ -77,7 +77,7 @@ func AnotherLogin(playerID uint64) {
 		return
 	}
 	dog := watchdog.Get()
-	dog.SendPackage(connectionID, &steve_proto_base.Header{
+	dog.SendPackage(connectionID, &base.Header{
 		MsgId:   proto.Uint32(uint32(msgid.MsgID_GATE_ANOTHER_LOGIN_NTF)),
 		Version: proto.String("1.0"),
 	}, data)

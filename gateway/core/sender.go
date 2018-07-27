@@ -24,7 +24,7 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 		"msg_id":     msgid.MsgID(msgID),
 		"player_ids": req.GetPlayerId(),
 	})
-	header := steve_proto_base.Header{
+	header := base.Header{
 		MsgId:   proto.Uint32(msgID),
 		Version: proto.String("1.0"), // TODO
 	}

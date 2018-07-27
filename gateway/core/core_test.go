@@ -11,7 +11,7 @@ import (
 )
 
 func Test_Any(t *testing.T) {
-	header := steve_proto_base.Header{
+	header := base.Header{
 		MsgId: proto.Uint32(111),
 	}
 	buf1, err := proto.Marshal(&header)
@@ -26,7 +26,7 @@ func Test_Any(t *testing.T) {
 	// 用 Any 序列化出来的内容和直接序列化出来的内容不同
 	assert.NotEqual(t, buf1, buf2)
 
-	header2 := steve_proto_base.Header{}
+	header2 := base.Header{}
 	assert.Nil(t, proto.Unmarshal(buf2, &header2))
 
 	assert.Equal(t, header2, header)
