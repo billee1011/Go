@@ -48,5 +48,5 @@ func TestFan_DAQIXING_Zimo_ERM(t *testing.T) {
 	// 0玩家摸到46,自摸
 	assert.Nil(t, utils.SendHuReq(deskData, 0))
 
-	utils.CheckFanSettle(t, deskData, 4, 0, 104, room.FanType_FT_DAQIXING)
+	utils.CheckFanSettle(t, deskData, 4, 0, 104, deskData.DiFen, room.FanType_FT_DAQIXING)
 }

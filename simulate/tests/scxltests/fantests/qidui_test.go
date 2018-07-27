@@ -75,7 +75,7 @@ func TestFan_Qidui_Zimo(t *testing.T) {
 
 	// 检测七对自摸分数
 	winScro := 4 * 2 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro), deskData.DiFen)
 }
 
 //TestFan_Qidui_Dianpao 七对立即点炮自摸测试
@@ -95,5 +95,5 @@ func TestFan_Qidui_Dianpao(t *testing.T) {
 	// 检测所有玩家收到点炮通知x
 	utils.CheckHuNotify(t, deskData, []int{1}, 0, 14, room.HuType_HT_DIANPAO)
 	// 检测七对点炮分数
-	utils.CheckInstantSettleScoreNotify(t, deskData, 1, 4)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 1, 4, deskData.DiFen)
 }
