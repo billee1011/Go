@@ -6,31 +6,49 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
+// Option 选项
 type Option struct {
+	node            int // 节点编号，同一种服务的节点编号不能相同
 	rpcCertiFile    string
 	rpcKeyFile      string
 	rpcAddr         string // RPC服务监听地址
 	rpcPort         int    // RPC端口号
 	rpcServerName   string // 服务器名称
 	params          []string
-	rpcCAFile       string // RPC客户端的CA文件
-	rpcCAServerName string // 证书中的服务器名称
-	redisAddr       string // redis 服务地址
-	redisPasswd     string // redis 密码
-	consulAddr      string // consul api 地址
-	healthPort       int  // server health http port
-	pprofExposeType string // pprof 输出类型，空不输出
-	pprofHttpPort   int    // pprof http输出端口
+	rpcCAFile       string   // RPC客户端的CA文件
+	rpcCAServerName string   // 证书中的服务器名称
+	redisAddr       string   // redis 服务地址
+	redisPasswd     string   // redis 密码
+	consulAddr      string   // consul api 地址
+	tags            []string // tags，用来注册 consul
+	healthPort      int      // server health http port
+	pprofExposeType string   // pprof 输出类型，空不输出
+	pprofHttpPort   int      // pprof http输出端口
 }
 
 var defaultOption = Option{
 	redisAddr:   "127.0.0.1:6379",
 	redisPasswd: "",
 	consulAddr:  "127.0.0.1:8500",
+	tags:        []string{},
 }
 
 // ServiceOption ...
 type ServiceOption func(opt *Option)
+
+// WithTags with tags for register
+func WithTags(tags []string) ServiceOption {
+	return func(opt *Option) {
+		opt.tags = tags
+	}
+}
+
+// WithNode with node
+func WithNode(node int) ServiceOption {
+	return func(opt *Option) {
+		opt.node = node
+	}
+}
 
 // WithConsulAddr  with cosnul address
 func WithConsulAddr(consulAddr string) ServiceOption {
@@ -38,13 +56,13 @@ func WithConsulAddr(consulAddr string) ServiceOption {
 		opt.consulAddr = consulAddr
 	}
 }
-// WithConsulAddr  with cosnul address
+
+// WithHealthPort  with health port
 func WithHealthPort(port int) ServiceOption {
 	return func(opt *Option) {
 		opt.healthPort = port
 	}
 }
-
 
 // WithParams 参数选项， 参数将透传给 plugin
 func WithParams(params []string) ServiceOption {
@@ -107,7 +125,7 @@ func infoOption(opt Option) {
 func LoadOptions(options ...ServiceOption) Option {
 	op := defaultOption
 
-	for _,f  := range options {
+	for _, f := range options {
 		f(&op)
 	}
 	infoOption(op)

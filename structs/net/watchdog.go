@@ -17,10 +17,10 @@ const (
 // MessageObserver 消息观察者
 type MessageObserver interface {
 	// OnRecv 收到消息回调
-	OnRecv(clientID uint64, header *steve_proto_base.Header, body []byte)
+	OnRecv(clientID uint64, header *base.Header, body []byte)
 	// AfterSend 消息发送完成之后的回调
 	// err 表示消息发送错误信息
-	AfterSend(clientID uint64, header *steve_proto_base.Header, body []byte, err error)
+	AfterSend(clientID uint64, header *base.Header, body []byte, err error)
 }
 
 // ConnectObserver 连接观察者
@@ -39,8 +39,8 @@ type IDAllocator interface {
 type WatchDog interface {
 	Start(addr string, serverType ServerType) error
 	Stop(serverType ServerType) error
-	SendPackage(clientID uint64, header *steve_proto_base.Header, body []byte) error
-	BroadPackage(clientIDs []uint64, header *steve_proto_base.Header, body []byte) error
+	SendPackage(clientID uint64, header *base.Header, body []byte) error
+	BroadPackage(clientIDs []uint64, header *base.Header, body []byte) error
 	Disconnect(clientID uint64) error
 }
 
