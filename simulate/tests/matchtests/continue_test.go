@@ -48,7 +48,7 @@ func startAndFinishGame(t *testing.T) []interfaces.ClientPlayer {
 func startDDZAndFinishGame(t *testing.T) []interfaces.ClientPlayer {
 
 	// 配牌1
-	params := doudizhu.NewStartDDZGameParamsTest1()
+	params := doudizhu.NewStartDDZGameParamsTest2()
 
 	// 开始游戏
 	deskData, err := utils.StartDDZGame(params)
