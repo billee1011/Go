@@ -133,6 +133,11 @@ func (s *HuansanzhangState) onReq(eventID majongpb.EventID, eventContext []byte,
 		onHuanSanZhangRsq(playerID, flow)
 		player.HuansanzhangSure = true
 	}
+	logrus.WithFields(logrus.Fields{
+		"req_player":    playerID,
+		"req_hsz_cards": gutils.FmtMajongpbCards(reqCards),
+		"sure":          player.GetHuansanzhangSure(),
+	}).Infoln("--换三张中")
 	return s.execute(flow)
 }
 
@@ -280,17 +285,15 @@ func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 	}
 	// 推送消息应答
 	flow.PushMessages([]uint64{playerID}, toClientRsq)
-	logrus.WithFields(logrus.Fields{
-		"msgID":      msgid.MsgID_ROOM_HUANSANZHANG_RSP,
-		"dingQueNtf": toClientRsq,
-	}).Info("-----换三张成功应答")
 }
 
 // notifyPlayerHuangSanZhang 通知玩家换三张
 func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow) {
+	players := flow.GetMajongContext().GetPlayers()
+	idHszMap := make(map[uint64]string)
 	log := logrus.WithFields(logrus.Fields{})
 	// 广播通知客户端进入定缺
-	for _, player := range flow.GetMajongContext().GetPlayers() {
+	for _, player := range players {
 		// 获取推荐换三张
 		hszCards := gutils.GetRecommedHuanSanZhang(player.GetHandCards())
 		// 检验换牌是否符合
@@ -303,14 +306,14 @@ func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow
 		hszNtf := &room.RoomHuansanzhangNtf{
 			HszCard: utils.CardsToRoomCards(player.GetHuansanzhangCards()),
 		}
+		idHszMap[player.GetPalyerId()] = gutils.FmtMajongpbCards(player.GetHandCards())
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_NTF),
 			Msg:   hszNtf,
 		})
-		// 日志
-		logrus.WithFields(logrus.Fields{
-			"msgID":             msgid.MsgID_ROOM_HUANSANZHANG_NTF,
-			"HuansanzhangCards": hszNtf,
-		}).Info("-----换三张开始-进入换三张状态")
 	}
+	// 日志
+	log.WithFields(logrus.Fields{
+		"idHszMap": idHszMap,
+	}).Info("-----换三张开始-获取推荐换三张")
 }
