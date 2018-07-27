@@ -256,7 +256,7 @@ forstart:
 	entry.Infoln("发送循环完成")
 }
 
-func (c *client) checkRequests(header *steve_proto_base.Header, body []byte) {
+func (c *client) checkRequests(header *base.Header, body []byte) {
 	rspSeq := header.GetRspSeq()
 	d, ok := c.requestInfos.Load(rspSeq)
 	if !ok {
@@ -300,7 +300,7 @@ func (c *client) recvLoop() {
 			entry.Errorln("消息头大小超过消息包数据大小")
 			break
 		}
-		header := new(steve_proto_base.Header)
+		header := new(base.Header)
 		err = proto.Unmarshal(data[1:1+headsz], header)
 		if err != nil {
 			entry.WithError(err).Errorln("消息头反序列化失败")
@@ -323,7 +323,7 @@ func (c *client) recvLoop() {
 	}
 }
 
-func (c *client) checkExpects(header *steve_proto_base.Header, bodyData []byte) {
+func (c *client) checkExpects(header *base.Header, bodyData []byte) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"fun_name": "client.checkExpects",
 	})
@@ -344,7 +344,7 @@ func (c *client) send(data sendingData) error {
 	if err != nil {
 		return fmt.Errorf("消息序列化失败: %v", err)
 	}
-	wireHeader := steve_proto_base.Header{
+	wireHeader := base.Header{
 		MsgId:      proto.Uint32(data.header.MsgID),
 		SendSeq:    proto.Uint64(data.sendSeq),
 		RecvSeq:    proto.Uint64(c.lastRecvSeq),
