@@ -1,6 +1,7 @@
 package redisfactory
 
 import (
+	"sync"
 	"testing"
 	"unsafe"
 
@@ -32,13 +33,17 @@ func Test_NewClientConcurrcy(t *testing.T) {
 		}
 	}()
 
+	wg := sync.WaitGroup{}
+	wg.Add(100)
 	for i := 0; i < 100; i++ {
 		go func() {
 			client, err := f.NewClient()
 			assert.Nil(t, err)
 			clientChannel <- client
+			wg.Done()
 		}()
 	}
+	wg.Wait()
 	close(clientChannel)
 }
 

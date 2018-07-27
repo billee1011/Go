@@ -12,3 +12,4 @@ message ClientDisconnect {
 message PlayerLogin {
     uint64 player_id = 1; // 玩家 ID 
 }
+

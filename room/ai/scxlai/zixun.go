@@ -7,9 +7,6 @@ import (
 	"steve/room/interfaces"
 	"steve/server_pb/majong"
 	"time"
-
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type zixunStateAI struct {
@@ -38,67 +35,43 @@ type zixunStateAI struct {
 // 								1,出摸到的那张牌
 //								2,如果是庄家首次出牌,出最右侧的牌
 func (h *zixunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (result interfaces.AIEventGenerateResult, err error) {
-	result, err = interfaces.AIEventGenerateResult{
-		Events: []interfaces.AIEvent{},
-	}, nil
-	var aiEvent interfaces.AIEvent
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	handCards := player.GetHandCards()
-	if gutils.GetZixunPlayer(mjContext) != params.PlayerID {
-		return result, fmt.Errorf("当前玩家不允许进行自动操作")
+	if h.checkAIEvent(player, mjContext, params) != nil {
+		return
 	}
-	if len(handCards) < 2 {
-		return result, fmt.Errorf("手牌数量少于2")
-	}
+	var aiEvent interfaces.AIEvent
 	switch mjContext.GetZixunType() {
 	case majong.ZixunType_ZXT_PENG, majong.ZixunType_ZXT_CHI:
-		{
-			aiEvent = h.handleOtherZixun(player, mjContext)
-		}
+		aiEvent = h.handleOtherZixun(player, mjContext)
 	case majong.ZixunType_ZXT_NORMAL:
-		{
-			aiEvent = h.handleNormalZixun(player, mjContext)
-		}
+		aiEvent = h.handleNormalZixun(player, mjContext, params)
 	default:
 		return
 	}
+
+	result, err = interfaces.AIEventGenerateResult{
+		Events: []interfaces.AIEvent{},
+	}, nil
+
 	result.Events = append(result.Events, aiEvent)
 	return
 }
 
-func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
-	zxRecord := player.GetZixunRecord()
-	handCards := player.GetHandCards()
-	if gutils.IsHu(player) || gutils.IsTing(player) {
-		canHu := zxRecord.GetEnableZimo()
-		if canHu {
-			aiEvent = h.hu(player)
-		} else {
-			aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
-		}
-		return
+func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext, params interfaces.AIEventGenerateParams) (aiEvent interfaces.AIEvent) {
+	switch params.AIType {
+	case interfaces.OverTimeAI:
+		aiEvent = h.generateOverTime(player, mjContext)
+	case interfaces.TuoGuangAI:
+		aiEvent = h.generateTuoGuang(player, mjContext)
+	case interfaces.RobotAI:
+		aiEvent = h.generateRobot(player, mjContext)
+	case interfaces.TingAI:
+		aiEvent = h.generateTing(player, mjContext)
+	case interfaces.HuAI:
+		aiEvent = h.generateHu(player, mjContext)
 	}
-
-	// 优先出定缺牌
-	if gutils.CheckHasDingQueCard(mjContext, player) {
-		for i := len(handCards) - 1; i >= 0; i-- {
-			hc := handCards[i]
-			if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
-				hc.GetColor() == player.GetDingqueColor() {
-				aiEvent = h.chupai(player, hc)
-				return
-			}
-		}
-	}
-
-	// 正常出牌
-	if player.GetMopaiCount() == 0 {
-		aiEvent = h.chupai(player, handCards[len(handCards)-1])
-	} else {
-		aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
-	}
-	return
+	return aiEvent
 }
 
 func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
@@ -119,41 +92,54 @@ func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong
 	return
 }
 
-func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) interfaces.AIEvent {
-	eventContext := majong.ChupaiRequestEvent{
-		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
-		},
-		Cards: card,
-	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "zixunStateAI.chupai",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
-	}
-	return interfaces.AIEvent{
-		ID:      int32(majong.EventID_event_chupai_request),
-		Context: data,
-	}
+func (h *zixunStateAI) generateOverTime(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	// 生成超时AI事件
+	// 超时时，可以胡就是胡，否则是出牌
+	return h.getNormalZiXunAIEvent(player, mjContext)
 }
 
-func (h *zixunStateAI) hu(player *majong.Player) interfaces.AIEvent {
-	eventContext := majong.HuRequestEvent{
-		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
-		},
+func (h *zixunStateAI) generateTuoGuang(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	// 生成托管AI事件
+	// 无状态下才会托管，因此托管就是出牌
+	return h.getNormalZiXunAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateRobot(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	// 生成机器人AI事件
+	// 一直无状态，所以只会出摸到的牌
+	return h.getNormalZiXunAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateTing(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	// 生成听AI事件
+	// 听状态下，能胡不做操作等玩家自行选择或者等超时事件，不能胡就打出摸到的牌
+	return h.getNormalZiXunTingStateAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateHu(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
+	// 生成胡AI事件
+	// 胡状态下，能胡直接让胡，不能胡就打出摸到的牌
+	return h.getNormalZiXunHuStateAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params interfaces.AIEventGenerateParams) error {
+
+	if mjContext.GetCurState() != majong.StateID_state_zixun {
+		return fmt.Errorf("当前不是自询状态")
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "zixunStateAI.hu",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
+	if gutils.GetZixunPlayer(mjContext) != params.PlayerID {
+		return fmt.Errorf("当前玩家不允许进行自动操作")
 	}
-	return interfaces.AIEvent{
-		ID:      int32(majong.EventID_event_hu_request),
-		Context: data,
+	if len(player.GetHandCards()) < 2 {
+		return fmt.Errorf("手牌数量少于2")
 	}
+
+	if params.AIType == interfaces.TingAI {
+		record := player.GetZixunRecord()
+		if record.GetEnableZimo() || len(record.GetEnableAngangCards()) > 0 ||
+			len(record.GetEnableBugangCards()) > 0 {
+			return fmt.Errorf("听的类型下，玩家有特殊操作的时候不处理")
+		}
+	}
+	return nil
 }

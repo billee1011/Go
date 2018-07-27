@@ -1,6 +1,7 @@
 package gutils
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 )
 
@@ -15,6 +16,7 @@ const (
 	ERMJGameID = 4
 )
 
+// GameIDServer2Client gameID转换函数
 func GameIDServer2Client(sGameID int) (cGameID room.GameId) {
 	switch sGameID {
 	case SCXLGameID:
@@ -25,6 +27,21 @@ func GameIDServer2Client(sGameID int) (cGameID room.GameId) {
 		cGameID = room.GameId_GAMEID_DOUDIZHU
 	case ERMJGameID:
 		cGameID = room.GameId_GAMEID_ERRENMJ
+	}
+	return
+}
+
+// GameIDServer2ClientV2 gameID转换函数
+func GameIDServer2ClientV2(sGameID int) (cGameID common.GameId) {
+	switch sGameID {
+	case SCXLGameID:
+		cGameID = common.GameId_GAMEID_XUELIU
+	case SCXZGameID:
+		cGameID = common.GameId_GAMEID_XUEZHAN
+	case DDZGameID:
+		cGameID = common.GameId_GAMEID_DOUDIZHU
+	case ERMJGameID:
+		cGameID = common.GameId_GAMEID_ERRENMJ
 	}
 	return
 }

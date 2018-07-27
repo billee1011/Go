@@ -271,6 +271,8 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 			totalGrab = 1
 		}
 
+		curCardType := room.CardType(ddzContext.GetCurCardType())
+
 		// 发送游戏信息
 		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
 			Result: &room.Result{ErrCode: proto.Uint32(0), ErrDesc: proto.String("")},
@@ -280,11 +282,13 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 					Stage: &curStage,
 					Time:  proto.Uint32(leftTimeInt32),
 				},
-				CurPlayerId: proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
-				Dipai:       ddzContext.GetDipai(),
-				TotalGrab:   &totalGrab,
-				TotalDouble: proto.Uint32(ddzContext.GetTotalDouble()),
-				TotalBomb:   proto.Uint32(ddzContext.GetTotalBomb()),
+				CurPlayerId:  proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
+				Dipai:        ddzContext.GetDipai(),
+				TotalGrab:    &totalGrab,
+				TotalDouble:  proto.Uint32(ddzContext.GetTotalDouble()),
+				TotalBomb:    proto.Uint32(ddzContext.GetTotalBomb()),
+				CurCardType:  &curCardType,
+				CurCardPivot: proto.Uint32(ddzContext.GetCardTypePivot()),
 			},
 		})
 	}

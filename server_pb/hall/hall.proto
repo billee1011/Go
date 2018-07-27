@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package hall;
+
+// PlayerState 玩家状态
+enum PlayerState{
+    PS_IDIE = 0;     // 空闲中
+    PS_MATCHING = 1; // 匹配中
+    PS_GAMEING = 2;  // 游戏中
+}
+
+// ServerType 服务类型
+enum ServerType{
+    ST_GATE = 0;  // 网关服
+    ST_MATCH = 1; // 匹配服
+    ST_ROOM = 2;  // 房间服
+}
+
+// PlayerLoginReq 玩家登录
+message PlayerLoginReq {
+    uint64 account_id = 1;
+}
+
+// InitPlayerLoginRsp 玩家登录应答
+message PlayerLoginRsp {
+    uint64 player_id = 1;
+}
+
+// GetPlayerInfoReq 获取玩家信息
+message GetPlayerInfoReq {
+    uint64 player_id = 1;         // 玩家id
+   
+}
+
+// GetPlayeInfoRsp 获取玩家信息应答
+message GetPlayeInfoRsp {
+    uint64 player_id = 1;         // 玩家id
+    string nick_name = 2;         // 玩家昵称
+    string head_image = 3;        // 玩家头像
+    uint64 coin = 4;              // 玩家金币数
+    PlayerState player_state = 5; // 玩家状态
+}
+
+// SetPlayerInfoReq 修改玩家信息
+message SetPlayerInfoReq {
+    uint64 player_id = 1;        // 玩家id
+    string nick_name = 2;        // 玩家昵称
+    string head_image = 3;       // 玩家头像
+}
+
+// SetPlayerInfoRsp 修改玩家信息应答
+message SetPlayerInfoRsp {
+    bool result = 1; // 返回修改成功或失败
+}
+
+// GetPlayerStateReq 获取玩家状态
+message GetPlayerStateReq{
+    uint64 player_id = 1;
+}
+
+// GetPlayerStateRsp 获取玩家状态应答
+message GetPlayerStateRsp{
+    PlayerState state = 1;
+}
+
+// SetPlayerStateReq 设置玩家状态
+message SetPlayerStateReq{
+    uint64 player_id = 1;          // 玩家id
+    PlayerState old_state = 2;     // 旧状态    
+    PlayerState new_state = 3;     // 新状态
+    ServerType server_type = 4;    // 服务类型 
+    string server_addr = 5;               // 服务地址
+}
+
+// SetPlayerStateRsp 设置玩家状态应答
+message SetPlayerStateRsp{
+    bool result = 1; // 返回成功或失败
+}
+
+// GetGameListInfoReq 获取游戏列表信息
+message GetGameListInfoReq{
+
+}
+
+// GetGameListInfoRsp 获取游戏列表信息应答
+message GetGameListInfoRsp{
+    repeated uint64 game_id = 1;         // 游戏id
+}
+service HallService {
+    rpc PlayerLogin(PlayerLoginReq) returns (PlayerLoginRsp) {}
+    rpc GetPlayerInfo(GetPlayerInfoReq) returns (GetPlayeInfoRsp) {}
+    rpc SetPlayerInfo(SetPlayerInfoReq) returns (SetPlayerInfoRsp) {}
+    rpc GetPlayerState(GetPlayerStateReq) returns (GetPlayerStateRsp) {}
+    rpc SetPlayerState(SetPlayerStateReq) returns (SetPlayerStateRsp) {}
+    rpc GetGameListInfo(GetGameListInfoReq) returns (GetGameListInfoRsp) {}
+}
