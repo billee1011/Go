@@ -29,6 +29,10 @@ import (
 
 var cfgFile string
 
+var mapArgs =  map[string] *string{
+
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "serviceloader",
@@ -44,6 +48,10 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		// 处理命令行
+		for k, v := range  mapArgs {
+			loader.SetArg(k, *v)
+		}
 		plugin.LoadService(args[0],
 			loader.WithRPCParams(viper.GetString("rpc_certi_file"), viper.GetString("rpc_key_file"), viper.GetString("rpc_addr"), viper.GetInt("rpc_port"),
 				viper.GetString("rpc_server_name")),
@@ -51,7 +59,9 @@ to quickly create a Cobra application.`,
 			loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
 			loader.WithConsulAddr(viper.GetString("consul_addr")),
 			loader.WithHealthPort(viper.GetInt("health_port")),
+			loader.WithGroupName(viper.GetString("group_name")),
 			loader.WithParams(args[1:]))
+
 	},
 }
 
@@ -71,6 +81,15 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.serviceloader.yaml)")
+
+	// 添加通用的命令行启动参数
+	mapArgs["port"] = rootCmd.Flags().String("port", "", "server rpc port")
+	mapArgs["hport"] = rootCmd.Flags().String("hport", "", "server rpc health port")
+	mapArgs["gid"] = rootCmd.Flags().String("gid", "", "group id")
+	mapArgs["sid"] = rootCmd.Flags().String("sid", "", "server id")
+	mapArgs["type"] = rootCmd.Flags().String("type", "", "server type")
+	mapArgs["data"] = rootCmd.Flags().String("data", "", "server data")
+	mapArgs["level"] = rootCmd.Flags().String("level", "", "server level")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

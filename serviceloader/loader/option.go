@@ -19,8 +19,36 @@ type Option struct {
 	redisPasswd     string // redis 密码
 	consulAddr      string // consul api 地址
 	healthPort       int  // server health http port
+	groupName       string // 服务组名列表：用,分割
 	pprofExposeType string // pprof 输出类型，空不输出
 	pprofHttpPort   int    // pprof http输出端口
+}
+
+
+// yml文件选项参数
+func (o *Option)StringOption(key string) string {
+	if key == "rpc_server_name" {
+		return o.rpcServerName
+	} else if key == "group_name" {
+		return o.groupName
+	}
+	return ""
+}
+func  (o *Option)IntOption(key string) int64 {
+	if key == "rpc_port" {
+		return int64(o.rpcPort)
+	}
+	return 0
+}
+
+// 命令行启动参数
+func  (o *Option)StringArg(key string) string {
+	a , _ := StringArg(key)
+	return a
+}
+func  (o *Option)IntArg(key string) int64 {
+	a , _ := IntArg(key)
+	return a
 }
 
 var defaultOption = Option{
@@ -38,10 +66,16 @@ func WithConsulAddr(consulAddr string) ServiceOption {
 		opt.consulAddr = consulAddr
 	}
 }
-// WithConsulAddr  with cosnul address
+// 服务健康监测Port
 func WithHealthPort(port int) ServiceOption {
 	return func(opt *Option) {
 		opt.healthPort = port
+	}
+}
+// 服务组名
+func WithGroupName( groupName string) ServiceOption {
+	return func(opt *Option) {
+		opt.groupName = groupName
 	}
 }
 

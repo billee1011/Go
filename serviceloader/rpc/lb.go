@@ -37,6 +37,53 @@ func (lb *loadBalancer) getServerAddr(serverName string) (string, error) {
 	return servers[0].GetAddress(), nil
 }
 
+// 通过制定服务ID获取服务连接地址
+func (lb *loadBalancer) getServerAddrByServerId(serverName string, serverId string) (string, error) {
+	lb.lbsInit.Do(lb.initLbs)
+
+	servers, err := lb.lbs.GetServers(serverName)
+	if err != nil {
+		return "", err
+	}
+	if len(servers) == 0 {
+		return "", fmt.Errorf("no server")
+	}
+	logrus.Debugf("server=%s,svrId=%s",serverName, serverId)
+
+	for _, addr := range  servers {
+		strScore := fmt.Sprintf("%d", addr.GetScore())
+		if strScore == serverId {
+			return addr.GetAddress(), nil
+		}
+	}
+	logrus.Errorf("err={find no server},server=%s,svrId=%s",serverName, serverId)
+	return "", fmt.Errorf("no server")
+}
+
+// 通过HashID获取服务连接地址
+func (lb *loadBalancer) getServerAddrByHashId(serverName string, hashId uint64) (string, error) {
+	lb.lbsInit.Do(lb.initLbs)
+
+	servers, err := lb.lbs.GetServers(serverName)
+	if err != nil {
+		return "", err
+	}
+	if len(servers) == 0 {
+		return "", fmt.Errorf("no server")
+	}
+	logrus.Debugf("server=%s,hashId=%d",serverName, hashId)
+
+	svrSum := uint64(len(servers))
+	index := hashId % svrSum
+	for _, addr := range  servers {
+		if addr.GetScore() == int64(index) {
+			return addr.GetAddress(), nil
+		}
+	}
+	logrus.Errorf("err={find no server},server=%s,hashId=%d,index=%d",serverName, hashId, index)
+	return "", fmt.Errorf("no server")
+}
+
 func (lb *loadBalancer) initLbs() {
 
 	config := api.DefaultConfig()
