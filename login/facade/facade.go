@@ -9,7 +9,7 @@ import (
 )
 
 // SendPackage send package to client
-func SendPackage(sender interfaces.MessageSender, clientID uint64, header *steve_proto_base.Header, message proto.Message) error {
+func SendPackage(sender interfaces.MessageSender, clientID uint64, header *base.Header, message proto.Message) error {
 	data, err := proto.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("message marshal failed: %v", err)

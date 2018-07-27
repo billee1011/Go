@@ -5,14 +5,14 @@ import (
 )
 
 type clientCallback interface {
-	onRecvPkg(header *steve_proto_base.Header, body []byte)
-	afterSendPkg(header *steve_proto_base.Header, body []byte, err error)
+	onRecvPkg(header *base.Header, body []byte)
+	afterSendPkg(header *base.Header, body []byte, err error)
 	onClientClose()
 	onError(err error)
 }
 
 // type sendingPkg struct {
-// 	header *steve_proto_base.Header
+// 	header *base.Header
 // 	body   []byte
 // }
 
@@ -68,7 +68,7 @@ type clientCallback interface {
 // 	return err
 // }
 
-// func (c *client) pushMessage(head *steve_proto_base.Header, body []byte) (err error) {
+// func (c *client) pushMessage(head *base.Header, body []byte) (err error) {
 // 	defer func() {
 // 		if x := recover(); x != nil {
 // 			err = fmt.Errorf("client closed")
@@ -76,7 +76,7 @@ type clientCallback interface {
 // 	}()
 
 // 	c.sendChan <- sendingPkg{
-// 		header: proto.Clone(head).(*steve_proto_base.Header),
+// 		header: proto.Clone(head).(*base.Header),
 // 		body:   body,
 // 	}
 
@@ -118,7 +118,7 @@ type clientCallback interface {
 // 			c.callError(fmt.Errorf("消息头大小超过消息包数据大小"))
 // 			break
 // 		}
-// 		header := new(steve_proto_base.Header)
+// 		header := new(base.Header)
 // 		err = proto.Unmarshal(data[1:1+headsz], header)
 // 		if err != nil {
 // 			c.callError(fmt.Errorf("消息头反序列化失败"))
