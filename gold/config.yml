@@ -19,6 +19,16 @@ health_port: 16301
 redis_addr: 192.168.7.108:6379
 redis_passwd:
 
+# mysql 数据库列表, db用户名和密码中不能带@符号
+mysql_list:
+  steve:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: steve
+    params:
+      charset: utf8
+
 #consul 服务中心配置
 consul_addr: 192.168.7.108:8500
 

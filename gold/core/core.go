@@ -12,11 +12,6 @@ import (
 )
 
 
-// 全局控制总线
-var gExposer *structs.Exposer
-func GetExposer() *structs.Exposer {
-	return gExposer
-}
 
 type goldCore struct {
 }
@@ -48,9 +43,6 @@ func (c *goldCore) dispatchClientMsg(e exchanger.Exchanger) error {
 // 服务初始化
 func (c *goldCore) Init(e *structs.Exposer, param ...string) error {
 	entry := logrus.WithField("name", "goldCore.Init")
-
-	gExposer = e
-
 	// 1.[RPC API]注册当前模块RPC服务处理器
 	if pbService != nil {
 		if err := e.RPCServer.RegisterService(pbService, pbServerImp); err != nil {

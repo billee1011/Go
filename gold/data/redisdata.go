@@ -5,14 +5,18 @@ import (
 	"steve/common/data/redis"
 	"strconv"
 	"strings"
+	"time"
 )
 
 /*
-	功能： 服务数据保存到redis.
+	功能： 服务数据保存到redis.必须对Redis设置过期时间
 	作者： SkyWang
 	日期： 2018-7-25
 
 */
+
+// redis 过期时间
+var redisTimeOut time.Duration = time.Minute * 60 * 24 * 30
 
 // 从redis加载玩家金币
 func LoadGoldFromRedis(uid uint64) (map[int16]int64, error) {
@@ -63,6 +67,7 @@ func SaveGoldToRedis(uid uint64, goldList map[int16]int64) error {
 		//logic.ErrNoUser.WithError(cmd.Err()).Errorln(errRedisOperation)
 		return fmt.Errorf("set redis err:%v", cmd.Err())
 	}
+	r.Expire(key, redisTimeOut)
 	return nil
 }
 

@@ -27,7 +27,15 @@ func init() {
 }
 
 // 支持的货币类型
-var gTypeList = map[int16]bool{0: true, 1: true, 2: true, 3: true}
+var gTypeList = map[int16]string{
+	1: "coins",
+	2: "ingots",
+	3: "keyCards",
+}
+
+func init() {
+	data.SetGoldTypeList(gTypeList)
+}
 
 // 加金币
 func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, funcId int32, channel int64, createTm int64) (int64, error) {
@@ -52,19 +60,20 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 
 	if !gm.checkGoldType(goldType) {
 		entry.Errorln("gold type error")
-		return 0,  define.ErrGoldType
+		return 0, define.ErrGoldType
 	}
 
 	// 判断交易流水号是否有冲突?
 
-	u, _ := gm.getUser(uid)
+	u, err := gm.getUser(uid)
 	if u == nil {
 		entry.Errorln("get user error")
+		_ = err
 		return 0, define.ErrNoUser
 	}
 
 	// 加金币前，玩家当前金币值
-	before, err := u.Get(goldType)
+	before, err = u.Get(goldType)
 	if err != nil {
 		entry.Errorln("get gold error")
 		return 0, err
@@ -82,7 +91,7 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 
 	// 交易记录写到redis
 	// 交易记录写到DB
-	err = gm.saveUserToCacheAndDB(entry, u)
+	err = gm.saveUserToCacheAndDB(entry, u, goldType)
 	if err != nil {
 		entry.Errorln("save cacheordb error")
 	}
@@ -115,17 +124,22 @@ func (gm *GoldMgr) GetGold(uid uint64, goldType int16) (int64, error) {
 }
 
 // 保存玩家变化到Redis和DB
-func (gm *GoldMgr) saveUserToCacheAndDB(entry *logrus.Entry, u *userGold) error {
+func (gm *GoldMgr) saveUserToCacheAndDB(entry *logrus.Entry, u *userGold, goldType int16) error {
 
 	// 暂时先保存到Redis
-	err := data.SaveGoldToRedis(u.uid, u.goldList)
+	list := u.goldList
+	if goldType >= 0 {
+		list = make(map[int16]int64)
+		list[goldType] = u.goldList[goldType]
+	}
+	err := data.SaveGoldToRedis(u.uid, list)
 	if err != nil {
 		// 记录redis写入失败
 		entry.Errorln("save redis error")
 	}
 
 	// 后续再保存到DB
-	err = data.SaveGoldToDB(u.uid, u.goldList)
+	err = data.SaveGoldToDB(u.uid, list)
 	if err != nil {
 		// 记录DB写入失败
 		entry.Errorln("save db error")
@@ -174,5 +188,8 @@ func (gm *GoldMgr) getUserFromCacheOrDB(uid uint64) (*userGold, error) {
 
 // 检测货币类型是否有效
 func (gm *GoldMgr) checkGoldType(goldType int16) bool {
-	return gTypeList[goldType]
+	if _, ok := gTypeList[goldType]; ok {
+		return true
+	}
+	return false
 }
