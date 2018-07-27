@@ -17,3 +17,16 @@ consul_addr: 192.168.7.108:8500
 nsqd_addr: 192.168.7.108:4150
 nsqlookupd_addrs: 
   - 127.0.0.1:4161
+
+
+# mysql 数据库列表
+mysql_list:
+  log:
+    user: root
+    passwd: 123456
+    addr: 127.0.0.1:3306
+    db: log 
+    params:
+      charset: utf8
+
+node: 1

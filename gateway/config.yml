@@ -24,3 +24,5 @@ nsqlookupd_addrs:
 
 pprofExposeType:
 pprofHttpPort: 9909
+
+node: 1
