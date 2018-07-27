@@ -15,12 +15,28 @@ import (
 
 var mapID2Name = map[int16]string{}
 var mapName2ID = map[string]int16{}
+
+// 累计获得的货币类型
+var gGetList = map[int16]string{
+	2: "obtainIngots",
+	3: "obtainKeyCards",
+}
+
+// 累计消耗的货币类型
+var gCostList = map[int16]string{
+	2: "costIngots",
+	3: "costKeyCards",
+}
+
 // 如果玩家账号不存在，向DB中加入此玩家初始金币值
 var bInitGold = true
+const dbName = "steve"
 
 // 设置货币类型列表
-func SetGoldTypeList(list map[int16]string) {
+func SetGoldTypeList(list, get, cost map[int16]string) {
 	mapID2Name = list
+	gGetList = get
+	gCostList = cost
 
 	for k, v := range mapID2Name {
 		mapName2ID[v] = k
@@ -31,7 +47,7 @@ func SetGoldTypeList(list map[int16]string) {
 func LoadGoldFromDB(uid uint64) (map[int16]int64, error) {
 
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine("steve")
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
 	if err != nil {
 		return nil, fmt.Errorf("connect db error")
 	}
@@ -44,7 +60,7 @@ func LoadGoldFromDB(uid uint64) (map[int16]int64, error) {
 		strCol += col
 	}
 
-	sql := fmt.Sprintf("select %s from t_player_currency  where playerID='%d';", strCol,  uid)
+	sql := fmt.Sprintf("select %s from t_player_currency  where playerID='%d';", strCol, uid)
 	res, err := engine.QueryString(sql)
 	if err != nil {
 		if bInitGold {
@@ -54,10 +70,12 @@ func LoadGoldFromDB(uid uint64) (map[int16]int64, error) {
 	}
 
 	if len(res) != 1 {
+		if bInitGold && len(res) == 0  {
+			return InitGoldToDB(uid)
+		}
 		return nil, fmt.Errorf("db result num != 1")
 	}
 	row := res[0]
-
 	m := make(map[int16]int64)
 	for k, v := range row {
 		id := mapName2ID[k]
@@ -72,30 +90,45 @@ func LoadGoldFromDB(uid uint64) (map[int16]int64, error) {
 }
 
 // 将玩家金币同步到DB
-func SaveGoldToDB(uid uint64, goldList map[int16]int64) error {
-
-	if len(goldList) == 0 {
-		return fmt.Errorf("gold list = 0")
-	}
+func SaveGoldToDB(uid uint64, goldType int16, goldValue int64, changeValue int64) error {
 
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine("steve")
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
 	if err != nil {
 		return fmt.Errorf("connect db error")
 	}
 
+	c, ok := mapID2Name[goldType]
+	if !ok {
+		return fmt.Errorf("gold type no db col")
+	}
+
 	strCol := ""
-	for k, v := range goldList {
-		if len(strCol) > 0 {
+	strCol += c
+	strCol += "="
+	strCol += fmt.Sprintf("'%d' ", goldValue)
+
+	if changeValue >= 0 {
+		c, ok := gGetList[goldType]
+		if ok {
 			strCol += ","
+			strCol += c
+			strCol += "="
+			strCol += c
+			strCol += "+"
+			strCol += fmt.Sprintf("%d", changeValue)
 		}
-		c, ok := mapID2Name[k]
-		if !ok {
-			return fmt.Errorf("gold type no db col")
+
+	} else {
+		c, ok := gCostList[goldType]
+		if ok {
+			strCol += ","
+			strCol += c
+			strCol += "="
+			strCol += c
+			strCol += "+"
+			strCol += fmt.Sprintf("%d", -changeValue)
 		}
-		strCol += c
-		strCol += "="
-		strCol += fmt.Sprintf("'%d'", v)
 	}
 
 	sql := fmt.Sprintf("update t_player_currency set %s  where playerID=?;", strCol)
@@ -117,7 +150,7 @@ func InitGoldToDB(uid uint64) (map[int16]int64, error) {
 	goldList[3] = 100000
 
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine("steve")
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
 	if err != nil {
 		return nil, fmt.Errorf("connect db error")
 	}
@@ -129,7 +162,27 @@ func InitGoldToDB(uid uint64) (map[int16]int64, error) {
 		}
 		c, ok := mapID2Name[k]
 		if !ok {
-			return nil,  fmt.Errorf("gold type no db col")
+			return nil, fmt.Errorf("gold type no db col")
+		}
+		strCol += c
+	}
+	for k := range goldList {
+		c, ok := gGetList[k]
+		if !ok {
+			continue
+		}
+		if len(strCol) > 0 {
+			strCol += ","
+		}
+		strCol += c
+	}
+	for k := range goldList {
+		c, ok := gCostList[k]
+		if !ok {
+			continue
+		}
+		if len(strCol) > 0 {
+			strCol += ","
 		}
 		strCol += c
 	}
@@ -140,6 +193,26 @@ func InitGoldToDB(uid uint64) (map[int16]int64, error) {
 			strValue += ","
 		}
 		strValue += fmt.Sprintf("'%d'", v)
+	}
+	for k, v := range goldList {
+		_, ok := gGetList[k]
+		if !ok {
+			continue
+		}
+		if len(strValue) > 0 {
+			strValue += ","
+		}
+		strValue += fmt.Sprintf("'%d'", v)
+	}
+	for k := range goldList {
+		_, ok := gCostList[k]
+		if !ok {
+			continue
+		}
+		if len(strValue) > 0 {
+			strValue += ","
+		}
+		strValue += fmt.Sprintf("'%d'", 0)
 	}
 
 	sql := fmt.Sprintf("insert into t_player_currency (%s) values(%s);", strCol, strValue)

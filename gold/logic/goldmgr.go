@@ -7,10 +7,29 @@ import (
 )
 
 /*
-  功能： 金币管理： 加减金币，获取金币.支持redis，db同步存储。
+  功能： 金币管理： 加减金币，获取金币.支持redis，db同步存储。交易流水日志对账等.
   作者： SkyWang
   日期： 2018-7-24
 */
+
+
+// 支持的货币类型
+var gTypeList = map[int16]string{
+	1: "coins",
+	2: "ingots",
+	3: "keyCards",
+}
+// 累计获得的货币类型
+var gGetList = map[int16]string{
+	2: "obtainIngots",
+	3: "obtainKeyCards",
+}
+
+// 累计消耗的货币类型
+var gCostList = map[int16]string{
+	2: "costIngots",
+	3: "costKeyCards",
+}
 
 var goldMgr GoldMgr
 
@@ -24,17 +43,7 @@ type GoldMgr struct {
 
 func init() {
 	goldMgr.userList = make(map[uint64]*userGold)
-}
-
-// 支持的货币类型
-var gTypeList = map[int16]string{
-	1: "coins",
-	2: "ingots",
-	3: "keyCards",
-}
-
-func init() {
-	data.SetGoldTypeList(gTypeList)
+	data.SetGoldTypeList(gTypeList, gGetList, gCostList)
 }
 
 // 加金币
@@ -91,7 +100,7 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 
 	// 交易记录写到redis
 	// 交易记录写到DB
-	err = gm.saveUserToCacheAndDB(entry, u, goldType)
+	err = gm.saveUserToCacheAndDB(entry, u, goldType, value)
 	if err != nil {
 		entry.Errorln("save cacheordb error")
 	}
@@ -124,14 +133,12 @@ func (gm *GoldMgr) GetGold(uid uint64, goldType int16) (int64, error) {
 }
 
 // 保存玩家变化到Redis和DB
-func (gm *GoldMgr) saveUserToCacheAndDB(entry *logrus.Entry, u *userGold, goldType int16) error {
+func (gm *GoldMgr) saveUserToCacheAndDB(entry *logrus.Entry, u *userGold, goldType int16, changeValue int64) error {
 
 	// 暂时先保存到Redis
-	list := u.goldList
-	if goldType >= 0 {
-		list = make(map[int16]int64)
-		list[goldType] = u.goldList[goldType]
-	}
+	list := make(map[int16]int64)
+	list[goldType] = u.goldList[goldType]
+
 	err := data.SaveGoldToRedis(u.uid, list)
 	if err != nil {
 		// 记录redis写入失败
@@ -139,7 +146,7 @@ func (gm *GoldMgr) saveUserToCacheAndDB(entry *logrus.Entry, u *userGold, goldTy
 	}
 
 	// 后续再保存到DB
-	err = data.SaveGoldToDB(u.uid, list)
+	err = data.SaveGoldToDB(u.uid, goldType,list[goldType], changeValue)
 	if err != nil {
 		// 记录DB写入失败
 		entry.Errorln("save db error")

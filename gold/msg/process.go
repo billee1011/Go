@@ -4,6 +4,7 @@ package msg
  功能：
 		1. 完成从GateWay(网关）过来的所有Client的请求消息的处理。
  		2. 通过core.coreConfig配置需要处理的消息列表。
+		3. 需要在GateWay配置消息ID开始~ 结束区间 关联到当前服务名,GateWay才会把消息转发到此服务
 */
 
 /*
