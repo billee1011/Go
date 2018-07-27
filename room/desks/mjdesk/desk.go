@@ -356,11 +356,8 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
 		logEntry.Debugln("玩家退出")
 	} else {
-		// 判断行牌状态, 选项化后需修改
-		mjPlayer := gutils.GetMajongPlayer(eqi.PlayerID, &d.dContext.mjContext)
 		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
-		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌,重新进入后把托管取消
-		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
+		if !deskPlayer.IsQuit() {
 			deskPlayer.SetTuoguan(false, false)
 		}
 		deskPlayer.EnterDesk()
