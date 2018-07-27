@@ -49,25 +49,25 @@ func shibaluohan(t *testing.T) *utils.DeskData {
 	// 0 暗杠11
 	utils.SendGangReq(deskData, 0, 11, room.GangType_AnGang)
 	// 暗杠立即结算6分
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6, deskData.DiFen)
 	// 0 自询能暗杠
 	utils.CheckZixunNtf(t, deskData, 0, false, true, false)
 	// 0 暗杠22
 	utils.SendGangReq(deskData, 0, 22, room.GangType_AnGang)
 	// 暗杠立即结算6分
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6, deskData.DiFen)
 	// 0 自询能暗杠
 	utils.CheckZixunNtf(t, deskData, 0, false, true, false)
 	// 0 暗杠13
 	utils.SendGangReq(deskData, 0, 13, room.GangType_AnGang)
 	// 暗杠立即结算6分
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6, deskData.DiFen)
 	// 0 自询能暗杠
 	utils.CheckZixunNtf(t, deskData, 0, false, true, false)
 	// 0 暗杠14
 	utils.SendGangReq(deskData, 0, 14, room.GangType_AnGang)
 	// 暗杠立即结算6分
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 6, deskData.DiFen)
 	// 0 自询
 	utils.CheckZixunNtf(t, deskData, 0, false, false, false)
 	// 0 出牌 36
@@ -100,7 +100,7 @@ func TestFan_Shibaluohan_Zimo_SCXZ(t *testing.T) {
 
 	// 检测十八罗汉自摸分数,十八罗汉64倍*自摸2倍
 	winScro := 64 * 2 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro), deskData.DiFen)
 }
 
 //TestFan_Shibaluohan_Dianpao 十八罗汉立即点炮自摸测试
@@ -122,5 +122,5 @@ func TestFan_Shibaluohan_Dianpao_SCXZ(t *testing.T) {
 	// 检测所有玩家收到点炮通知x
 	utils.CheckHuNotify(t, deskData, []int{0}, 1, 15, room.HuType_HT_DIANPAO)
 	// 检测十八罗汉点炮分数
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 64)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 64, deskData.DiFen)
 }

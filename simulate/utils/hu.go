@@ -76,7 +76,7 @@ func CheckDianPaoSettleNotify(t *testing.T, deskData *DeskData, huSeats []int, f
 }
 
 // CheckInstantSettleScoreNotify 检查立即分数结算通知
-func CheckInstantSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int, winScore int64) {
+func CheckInstantSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int, winScore int64, difen uint64) {
 	winplayer := GetDeskPlayerBySeat(winSeat, deskData)
 	winID := winplayer.Player.GetID()
 	expector, _ := winplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
@@ -85,14 +85,14 @@ func CheckInstantSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int
 	for _, billInfo := range ntf.BillPlayersInfo {
 		// 赢的分数
 		if billInfo.GetPid() == winID {
-			assert.Equal(t, billInfo.GetScore(), winScore)
+			assert.Equal(t, billInfo.GetScore(), winScore*int64(difen))
 		}
 		fmt.Println(billInfo)
 	}
 }
 
 // CheckRoundSettleScoreNotify 检查单局分数结算通知
-func CheckRoundSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int, winScore int64) {
+func CheckRoundSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int, winScore int64, difen uint64) {
 	winplayer := GetDeskPlayerBySeat(winSeat, deskData)
 	winID := winplayer.Player.GetID()
 	expector, _ := winplayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
@@ -101,7 +101,7 @@ func CheckRoundSettleScoreNotify(t *testing.T, deskData *DeskData, winSeat int, 
 	for _, billInfo := range ntf.BillPlayersInfo {
 		// 赢的分数
 		if billInfo.GetPid() == winID {
-			assert.Equal(t, billInfo.GetScore(), winScore)
+			assert.Equal(t, billInfo.GetScore(), winScore*int64(difen))
 		}
 		fmt.Println(billInfo)
 	}

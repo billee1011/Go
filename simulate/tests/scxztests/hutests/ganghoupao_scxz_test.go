@@ -77,9 +77,9 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	gangWinScore := 6
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
-			assert.Equal(t, billInfo.GetScore(), int64(gangWinScore))
+			assert.Equal(t, billInfo.GetScore(), int64(gangWinScore)*int64(deskData.DiFen))
 		} else {
-			assert.Equal(t, billInfo.GetScore(), -int64((gangWinScore / 3)))
+			assert.Equal(t, billInfo.GetScore(), -int64((gangWinScore/3))*int64(deskData.DiFen))
 		}
 	}
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
@@ -88,11 +88,11 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	dianpaoWinScore := 16
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
-			assert.Equal(t, billInfo.GetScore(), int64(-dianpaoWinScore))
+			assert.Equal(t, billInfo.GetScore(), int64(-dianpaoWinScore)*int64(deskData.DiFen))
 		} else if billInfo.GetPid() == huPlayerID {
-			assert.Equal(t, billInfo.GetScore(), int64((dianpaoWinScore)))
+			assert.Equal(t, billInfo.GetScore(), int64((dianpaoWinScore))*int64(deskData.DiFen))
 		} else {
-			assert.Equal(t, billInfo.GetScore(), int64(0))
+			assert.Equal(t, billInfo.GetScore(), int64(0)*int64(deskData.DiFen))
 		}
 	}
 
@@ -104,9 +104,9 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	fmt.Println(ntf.BillPlayersInfo)
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
-			assert.Equal(t, billInfo.GetScore(), int64(-callTransferScore))
+			assert.Equal(t, billInfo.GetScore(), int64(-callTransferScore)*int64(deskData.DiFen))
 		} else if billInfo.GetPid() == huPlayerID {
-			assert.Equal(t, billInfo.GetScore(), int64((callTransferScore)))
+			assert.Equal(t, billInfo.GetScore(), int64((callTransferScore))*int64(deskData.DiFen))
 		} else {
 			assert.Equal(t, billInfo.GetScore(), int64(0))
 		}

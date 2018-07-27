@@ -356,10 +356,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
 		logEntry.Debugln("玩家退出")
 	} else {
-		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
-		if !deskPlayer.IsQuit() {
-			deskPlayer.SetTuoguan(false, false)
-		}
+		deskPlayer.SetTuoguan(false, false)
 		deskPlayer.EnterDesk()
 		d.recoverGameForPlayer(eqi.PlayerID)
 		d.setMjPlayerQuitDesk(eqi.PlayerID, false)
