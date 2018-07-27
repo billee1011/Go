@@ -44,31 +44,71 @@ func Test_IsTriples(t *testing.T) {
 }
 
 func Test_IsTriplesAndPairs1(t *testing.T) {
-	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x45}) // 3334445555视为飞机带对子
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x17, 0x37}) // 3334445577 常规牌型
 	is, pivot := states.IsTriplesAndPairs(cards)
 	assert.Equal(t, true, is)
 	assert.Equal(t, uint32(4), pivot.PointWeight)
 }
 
 func Test_IsTriplesAndPairs2(t *testing.T) {
-	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x17, 0x37})
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x45}) // 3334445555 含一个炸弹牌型
 	is, pivot := states.IsTriplesAndPairs(cards)
 	assert.Equal(t, true, is)
 	assert.Equal(t, uint32(4), pivot.PointWeight)
 }
 
+func Test_IsTriplesAndPairs3(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x16, 0x26, 0x36, 0x18, 0x28, 0x38, 0x48, 0x19, 0x29, 0x39, 0x49}) // 33344455566688889999 含两个炸弹牌型
+	is, pivot := states.IsTriplesAndPairs(cards)
+	assert.Equal(t, true, is)
+	assert.Equal(t, uint32(6), pivot.PointWeight)
+}
+
+func Test_IsTriplesAndPairs4(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x16, 0x26, 0x36, 0x18, 0x28, 0x38, 0x48, 0x17, 0x29, 0x3B, 0x4C}) // 333444555666 8888 79JQ 不符牌型
+	is, _ := states.IsTriplesAndPairs(cards)
+	assert.Equal(t, false, is)
+}
+
+func Test_IsTriplesAndPairs5(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x16, 0x26, 0x36, 0x18, 0x28, 0x38, 0x48, 0x19, 0x29, 0x3B, 0x4B}) // 333444555666 8888 99JJ 符牌型
+	is, _ := states.IsTriplesAndPairs(cards)
+	assert.Equal(t, true, is)
+}
+
 func Test_IsTriplesAndSingles1(t *testing.T) {
-	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44, 0x15, 0x25, 0x35, 0x45}) // 333344445555视为飞机带翅膀
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x17, 0x29}) // 33344479 常规牌型
+	is, pivot := states.IsTriplesAndSingles(cards)
+	assert.Equal(t, true, is)
+	assert.Equal(t, uint32(4), pivot.PointWeight)
+}
+
+func Test_IsTriplesAndSingles2(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44, 0x15, 0x25, 0x35, 0x45}) // 333344445555 全是炸弹牌型
 	is, pivot := states.IsTriplesAndSingles(cards)
 	assert.Equal(t, true, is)
 	assert.Equal(t, uint32(5), pivot.PointWeight)
 }
 
-func Test_IsTriplesAndSingles2(t *testing.T) {
-	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x17, 0x29, 0x43}) //333444555793
+func Test_IsTriplesAndSingles3(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44, 0x15, 0x25, 0x35, 0x45, 0x16, 0x26, 0x36, 0x46}) // 3333444455556666
+	is, pivot := states.IsTriplesAndSingles(cards)
+	assert.Equal(t, true, is)
+	assert.Equal(t, uint32(6), pivot.PointWeight)
+}
+
+func Test_IsTriplesAndSingles4(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x17, 0x29, 0x43}) //333444555793 一个炸弹牌型
 	is, pivot := states.IsTriplesAndSingles(cards)
 	assert.Equal(t, true, is)
 	assert.Equal(t, uint32(5), pivot.PointWeight)
+}
+
+func Test_IsTriplesAndSingles5(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x15, 0x25, 0x35, 0x16, 0x26, 0x36, 0x17, 0x27, 0x37, 0x18, 0x28, 0x38, 0x1D, 0x2D, 0x4D, 0x4D}) //555666777888KKKK 特殊炸弹牌型
+	is, pivot := states.IsTriplesAndSingles(cards)
+	assert.Equal(t, true, is)
+	assert.Equal(t, uint32(8), pivot.PointWeight)
 }
 
 func Test_IsPairs(t *testing.T) {
