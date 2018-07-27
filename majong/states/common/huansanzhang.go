@@ -6,6 +6,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/gutils"
 	"steve/majong/global"
 	"steve/majong/interfaces"
 	"steve/majong/utils"
@@ -46,11 +47,16 @@ func (s *HuansanzhangState) ProcessEvent(eventID majongpb.EventID, eventContext 
 
 // OnExit 退出换三张状态
 func (s *HuansanzhangState) OnExit(flow interfaces.MajongFlow) {
+	flow.GetMajongContext().TempData = new(majongpb.TempDatas) //清除临时数据
 
 }
 
 // nextState 下个状态
 func (s *HuansanzhangState) nextState(flow interfaces.MajongFlow) majongpb.StateID {
+	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
+	if !finished {
+		return s.curState()
+	}
 	xpOption := mjoption.GetXingpaiOption(int(flow.GetMajongContext().GetXingpaiOptionId()))
 	if xpOption.EnableDingque {
 		return majongpb.StateID_state_dingque
@@ -65,11 +71,13 @@ func (s *HuansanzhangState) curState() majongpb.StateID {
 
 // onCartoonFinish 动画播放完毕
 func (s *HuansanzhangState) onCartoonFinish(flow interfaces.MajongFlow, eventContext []byte) (newState majongpb.StateID, err error) {
-	finished := flow.GetMajongContext().GetExcutedHuansanzhang()
-	if !finished {
-		return s.curState(), global.ErrInvalidEvent
+	cartoonFinishData := CartoonFinishData{
+		CurState:        s.curState(),
+		NextState:       s.nextState(flow),
+		NeedCartoonType: room.CartoonType_CTNT_HUANSANZHANG,
+		EventContext:    eventContext,
 	}
-	return OnCartoonFinish(s.curState(), s.nextState(flow), room.CartoonType_CTNT_HUANSANZHANG, eventContext)
+	return OnCartoonFinish(cartoonFinishData, flow.GetMajongContext())
 }
 
 // checkReq 检测玩家请求是否合法
@@ -280,19 +288,18 @@ func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 
 // notifyPlayerHuangSanZhang 通知玩家换三张
 func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow) {
+	log := logrus.WithFields(logrus.Fields{})
 	// 广播通知客户端进入定缺
 	for _, player := range flow.GetMajongContext().GetPlayers() {
 		// 获取推荐换三张
-		hszCards := utils.GetRecommedHuanSanZhang(player.GetHandCards())
+		hszCards := gutils.GetRecommedHuanSanZhang(player.GetHandCards())
+		// 检验换牌是否符合
+		if !s.checkReq(log, player, hszCards) {
+			log.WithFields(logrus.Fields{"hszCards": hszCards}).Infoln("换牌不符合")
+			continue
+		}
 		// 先设置，用于超时AI
 		player.HuansanzhangCards = hszCards
-		if len(hszCards) != 3 {
-			logrus.WithFields(logrus.Fields{
-				"func_name":         "HuansanzhangState.notifyPlayerHuangSanZhang",
-				"HuansanzhangCards": hszCards,
-			}).Info("-----换三张数量不对")
-			return
-		}
 		hszNtf := &room.RoomHuansanzhangNtf{
 			HszCard: utils.CardsToRoomCards(player.GetHuansanzhangCards()),
 		}

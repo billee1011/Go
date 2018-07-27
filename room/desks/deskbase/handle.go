@@ -17,7 +17,7 @@ import (
 func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
 	response := room.RoomDeskQuitRsp{
 		UserData: proto.Uint32(req.GetUserData()),
-		ErrCode:  room.RoomError_DESK_NO_GAME_PLAYING.Enum(),
+		ErrCode:  room.RoomError_SUCCESS.Enum(),
 	}
 	defer facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 
@@ -47,7 +47,7 @@ func ExistInDesk(playerID uint64) (interfaces.Desk, bool) {
 }
 
 // HandleResumeGameReq 恢复对局请求
-func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
+func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomResumeGameReq) (ret []exchanger.ResponseMsg) {
 	desk, exist := ExistInDesk(playerID)
 	if !exist {
 		body := &room.RoomResumeGameRsp{

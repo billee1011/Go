@@ -3,6 +3,7 @@ package match
 import (
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
+	"steve/common/data/player"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
@@ -24,7 +25,11 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		MsgID: uint32(msgid.MsgID_MATCH_RSP),
 		Body:  response,
 	}}
-
+	if player.GetPlayerCoin(playerID) == 0 {
+		response.ErrCode = proto.Int32(1)
+		response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
+		return
+	}
 	logEntry.WithField("playerID", playerID).Debugln("加入新的匹配玩家")
 
 	defaultManager.addPlayer(playerID, int(req.GetGameId()))

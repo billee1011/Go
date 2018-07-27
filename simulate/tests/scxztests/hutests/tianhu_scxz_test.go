@@ -1,6 +1,7 @@
 package hutests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -14,8 +15,8 @@ import (
 // 期望：庄家收到自摸，类型为天胡
 func Test_SCXZ_TianHu(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.Cards = [][]uint32{
 		{11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14},

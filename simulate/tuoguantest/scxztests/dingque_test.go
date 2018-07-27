@@ -20,7 +20,7 @@ import (
 func Test_DingqueTuoguan(t *testing.T) {
 	params := global.NewCommonStartGameParams()
 	params.DingqueColor = nil
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)

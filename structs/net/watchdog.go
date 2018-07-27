@@ -15,9 +15,12 @@ const (
 )
 
 // MessageObserver 消息观察者
-// 当收到客户端发来的消息时， OnRecv 函数会被调用
 type MessageObserver interface {
+	// OnRecv 收到消息回调
 	OnRecv(clientID uint64, header *steve_proto_base.Header, body []byte)
+	// AfterSend 消息发送完成之后的回调
+	// err 表示消息发送错误信息
+	AfterSend(clientID uint64, header *steve_proto_base.Header, body []byte, err error)
 }
 
 // ConnectObserver 连接观察者

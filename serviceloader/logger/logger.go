@@ -4,6 +4,8 @@ package logger
 import (
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -86,6 +88,7 @@ func SetupLog(fileName string, dir string, level string, outputErr bool) {
 		fmt.Println("parse level failed:", level, err)
 	}
 	logrus.SetOutput(writer)
+	logrus.StandardLogger().AddHook(&hook{})
 
 	logrus.WithFields(logrus.Fields{
 		"file_name": fileName,
@@ -93,4 +96,34 @@ func SetupLog(fileName string, dir string, level string, outputErr bool) {
 		"level":     level,
 		"outputErr": outputErr,
 	}).Debug("setup log")
+}
+
+type hook struct{}
+
+func (h *hook) Levels() []logrus.Level {
+	return []logrus.Level{logrus.DebugLevel, logrus.InfoLevel, logrus.WarnLevel, logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel}
+}
+
+func (h *hook) Fire(entry *logrus.Entry) error {
+	var i = 1
+	for {
+		pc, filePath, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		function := runtime.FuncForPC(pc)
+		funcName := function.Name()
+
+		if strings.Index(funcName, "logrus.") != -1 {
+			i++
+			continue
+		}
+		lastSlap := strings.LastIndex(filePath, "/")
+		fileName := filePath[lastSlap+1:]
+		funcName = funcName[strings.LastIndex(funcName, "/")+1:]
+
+		entry.Data["caller"] = fmt.Sprintf("%s:%d %s", fileName, line, funcName)
+		break
+	}
+	return nil
 }

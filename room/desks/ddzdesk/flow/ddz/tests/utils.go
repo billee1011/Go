@@ -9,10 +9,9 @@ import (
 
 func createMachine(stateID ddz.StateID) *ddzmachine.DDZMachine {
 	ddzContext := &ddz.DDZContext{
-		GameId:    int32(room.GameId_GAMEID_DOUDIZHU),
-		CurState:  stateID,
-		Players:   []*ddz.Player{{PlayerId: 1}, {PlayerId: 2}, {PlayerId: 3}},
-		WallCards: []uint32{},
+		GameId:   int32(room.GameId_GAMEID_DOUDIZHU),
+		CurState: stateID,
+		Players:  []*ddz.Player{{PlayerId: 1}, {PlayerId: 2}, {PlayerId: 3}},
 	}
 	statefactory := states.NewFactory()
 	return ddzmachine.CreateDDZMachine(ddzContext, statefactory, nil)

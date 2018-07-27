@@ -9,14 +9,14 @@ import (
 	"steve/majong/fantype"
 	"steve/majong/global"
 	"steve/majong/interfaces"
-	"steve/majong/interfaces/facade"
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/golang/protobuf/proto"
 	"steve/majong/bus"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // ZiXunState 摸牌状态
@@ -116,7 +116,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 	//检查玩家是否胡过牌,胡过牌的话,摸啥打啥,能胡不让打
 	card := message.GetCards()
 	activePlayer := utils.GetPlayerByID(mjContext.GetPlayers(), pid)
-	if len(activePlayer.GetHuCards()) > 0 {
+	if gutils.IsHu(activePlayer) || gutils.IsTing(activePlayer) {
 		if !utils.CardEqual(card, mjContext.GetLastMopaiCard()) {
 			return majongpb.StateID_state_zixun, nil
 		}
@@ -220,14 +220,9 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		return false, fmt.Errorf("碰的牌中没有请求中可以进行补杠的牌")
 	}
 	//判断当前玩家是否胡过牌，胡过牌了，当前玩家需要移除杠牌进行查胡，判断移除后是否会影响胡牌
-	if len(activePlayer.HuCards) > 0 {
+	if gutils.IsHu(activePlayer) || gutils.IsTing(activePlayer) {
 		//创建副本，移除相应的杠牌进行查胡
-		newcards := make([]*majongpb.Card, 0, len(handCards))
-		newcards = append(newcards, handCards...)
-		newcards, _ = utils.RemoveCards(newcards, bugangCard, 1)
-		laizi := make(map[utils.Card]bool)
-		huCards, _ := utils.GetTingCards(newcards, laizi)
-		if len(huCards) == 0 || !utils.ContainHuCards(huCards, utils.HuCardsToUtilCards(activePlayer.HuCards)) {
+		if !utils.CheckHuByRemoveGangCards(activePlayer, bugangCard, 1) {
 			return false, fmt.Errorf("当前的补杠杠操作会影响胡牌后的胡牌牌型，不允许补杠")
 		}
 	}
@@ -311,7 +306,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		zixunNtf.EnableQi = proto.Bool(canQi)
 	}
 	//分三种情况,1胡过,且摸到牌能胡,chupaicard字段不给值
-	if len(player.GetHuCards()) > 0 {
+	if gutils.IsHu(player) || gutils.IsTing(player) {
 		if !*zixunNtf.EnableZimo {
 			//2胡过,且不能自摸,摸什么打什么
 			zixunNtf.EnableChupaiCards = []uint32{utils.ServerCard2Uint32(mjContext.GetLastMopaiCard())}
@@ -540,9 +535,11 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				"func_name": "addTingInfo",
 			}).Error("牌型移除失败")
 		}
+		cardTypeOptionID := int(context.GetCardtypeOptionId())
 		for _, tt := range tingInfo {
 			hCard, _ := utils.IntToCard(int32(tt))
-			times, _, _ := facade.CalculateCardValue(bus.GetFanTypeCalculator(), context, interfaces.FantypeParams{
+			ctc := bus.GetFanTypeCalculator()
+			types, gen, hua := ctc.Calculate(interfaces.FantypeParams{
 				PlayerID:  player.GetPalyerId(),
 				MjContext: context,
 				HandCard:  newHand,
@@ -553,6 +550,9 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 					Type: majongpb.HuType_hu_dianpao,
 				},
 			})
+			// 移除胡类型的番型
+			types = gutils.DeleteHuType(cardTypeOptionID, types)
+			times := ctc.CardTypeValue(context, types, gen, hua)
 			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
 				TingCard: proto.Uint32(uint32(tt)),
 				Times:    proto.Uint32(uint32(times)),
@@ -688,7 +688,7 @@ func (s *ZiXunState) sortCards(flow interfaces.MajongFlow) {
 	mjContext := flow.GetMajongContext()
 	playerID := gutils.GetZixunPlayer(mjContext)
 	player := utils.GetPlayerByID(mjContext.GetPlayers(), playerID)
-	utils.SortCards(player.GetHandCards())
+	gutils.SortCards(player.GetHandCards())
 }
 
 //AddZiXunCount 自询次数递增1

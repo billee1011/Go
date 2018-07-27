@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"steve/structs/service"
@@ -8,9 +8,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/Sirupsen/logrus"
 	"steve/room2/util"
-	"steve/room2/desk/register"
-	"steve/room2/desk"
-	"steve/room/loader_balancer"
+	"steve/room2/register"
+	"steve/room2/common"
+	"steve/room2/models"
+	"steve/room2/fixed"
+	_"steve/room2/contexts"
 )
 
 type roomCore struct {
@@ -33,11 +35,11 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	c.e = e
 	util.SetMessageSender(e.Exchanger)
 	registers.RegisterHandlers(e.Exchanger)
-	registerLbReporter(e)
+	//registerLbReporter(e)
 
 	rpcServer := e.RPCServer
-	deskRpc := desk.GetDeskMgr()
-	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, &deskRpc)
+	deskRpc := models.GetDeskMgr()
+	err := rpcServer.RegisterService(roommgr.RegisterRoomMgrServer, deskRpc)
 	if err != nil {
 		return err
 	}
@@ -45,11 +47,11 @@ func (c *roomCore) Init(e *structs.Exposer, param ...string) error {
 	return nil
 }
 
-func registerLbReporter(exposer *structs.Exposer) {
+/*func registerLbReporter(exposer *structs.Exposer) {
 	if err := lb.RegisterLBReporter(exposer.RPCServer); err != nil {
 		logrus.WithError(err).Panicln("注册负载上报服务失败")
 	}
-}
+}*/
 
 func (c *roomCore) Start() error {
 	go startPeipai()
@@ -57,14 +59,14 @@ func (c *roomCore) Start() error {
 }
 
 func startPeipai() error {
-	peipaiAddr := viper.GetString(util.ListenPeipaiAddr)
+	peipaiAddr := viper.GetString(fixed.ListenPeipaiAddr)
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "startPeipai",
 		"addr":      peipaiAddr,
 	})
 	if peipaiAddr != "" {
 		logEntry.Info("启动配牌服务")
-		err := util.RunPeiPai(peipaiAddr)
+		err := common.RunPeiPai(peipaiAddr)
 		if err != nil {
 			logEntry.WithError(err).Panic("配牌服务启动失败")
 		}

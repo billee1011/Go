@@ -1,6 +1,7 @@
 package quittests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/interfaces"
@@ -14,7 +15,7 @@ import (
 // TestHuQuit 玩家点击胡牌后,退出游戏,再次加如桌子提示加入成功,进入匹配队列
 func TestHuQuit(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.IsHsz = false
 	params.PeiPaiGame = "scxz"
 	params.WallCards = []uint32{31, 31, 31, 31, 32, 32, 32, 32}
@@ -32,24 +33,24 @@ func TestHuQuit(t *testing.T) {
 	//此时离开的玩家可以加入新的队列,等待新的游戏
 	time.Sleep(time.Second * 1)
 	p := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
-	rsp, err := utils.ApplyJoinDesk(p.Player, room.GameId_GAMEID_XUEZHAN)
+	rsp, err := utils.ApplyJoinDesk(p.Player, common.GameId_GAMEID_XUEZHAN)
 	joinOther3Player(t, players)
 	assert.Nil(t, err)
-	assert.Equal(t, room.RoomError_SUCCESS, rsp.GetErrCode())
+	assert.Equal(t, int32(0), rsp.GetErrCode())
 }
 
 func joinOther3Player(t *testing.T, players []interfaces.ClientPlayer) {
 	for _, player := range players {
-		rsp, err := utils.ApplyJoinDesk(player, room.GameId_GAMEID_XUEZHAN)
+		rsp, err := utils.ApplyJoinDesk(player, common.GameId_GAMEID_XUEZHAN)
 		assert.Nil(t, err)
-		assert.Equal(t, room.RoomError_SUCCESS, rsp.GetErrCode())
+		assert.Equal(t, int32(0), rsp.GetErrCode())
 	}
 }
 
 // TestHuQuitRecover 玩家没有胡牌,没有认输,退出游戏后提示游戏进行中,需要进行恢复对局
 func TestHuQuitRecover(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.IsHsz = false
 	params.PeiPaiGame = "scxz"
 	params.WallCards = []uint32{31, 31, 31, 31, 32, 32, 32, 32}
@@ -66,7 +67,7 @@ func TestHuQuitRecover(t *testing.T) {
 	// 匹配功能还未完善，先不测试这个
 	// //此时离开的玩家可以加入新的队列,等待新的游戏
 	// p := utils.GetDeskPlayerBySeat(0, deskData)
-	// rsp, err := utils.ApplyJoinDesk(p.Player, room.GameId_GAMEID_XUEZHAN)
+	// rsp, err := utils.ApplyJoinDesk(p.Player, common.GameId_GAMEID_XUEZHAN)
 	// assert.Nil(t, err)
 	// assert.Equal(t, room.RoomError_DESK_GAME_PLAYING, rsp.GetErrCode())
 	// assert.Nil(t, utils.SendRecoverGameReq(0, deskData))

@@ -6,6 +6,8 @@ import (
 	matchcore "steve/match/core"
 	goldcore "steve/gold/core"
 	roomcore "steve/room/core"
+	hallcore "steve/hall/core"
+	logincore "steve/login/core"
 	"steve/serviceloader/loader"
 	"steve/structs/service"
 	"github.com/Sirupsen/logrus"
@@ -42,6 +44,10 @@ func LoadService(name string, options ...loader.ServiceOption) {
 	// service := initService(name, exposer)
 	var svr service.Service
 	switch name {
+	case "hall":
+		svr = hallcore.NewService()
+	case "login":
+		svr = logincore.NewService()
 	case "match":
 		svr = matchcore.NewService()
 	case "room":

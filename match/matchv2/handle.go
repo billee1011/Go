@@ -1,16 +1,20 @@
 package matchv2
 
 import (
+	"fmt"
 	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/common/data/player"
 	server_pb_match "steve/server_pb/match"
+	"steve/server_pb/user"
+	"steve/structs"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	nsq "github.com/nsqio/go-nsq"
 )
 
 // HandleMatchReq 匹配请求的处理(来自网关服)
@@ -31,6 +35,11 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		response.ErrDesc = proto.String("已经在游戏中了")
 		return
 	}
+	if player.GetPlayerCoin(playerID) == 0 {
+		response.ErrCode = proto.Int32(1)
+		response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
+		return
+	}
 
 	defaultMgr.addPlayer(playerID, int(req.GetGameId()))
 	return
@@ -48,6 +57,14 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 		Body:  response,
 	}}
 
+	// 不是取消先判断金币数
+	if !req.GetCancel() {
+		if player.GetPlayerCoin(playerID) == 0 {
+			response.ErrCode = proto.Int32(1)
+			response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
+			return
+		}
+	}
 	defaultMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
 	return
 }
@@ -72,4 +89,24 @@ func AddContinueDesk(request *server_pb_match.AddContinueDeskReq) *server_pb_mat
 	}
 	defaultMgr.addContinueDesk(players, int(request.GetGameId()), request.GetFixBanker(), int(request.GetBankerSeat()))
 	return response
+}
+
+type playerLoginHandler struct {
+}
+
+func (plh *playerLoginHandler) HandleMessage(message *nsq.Message) error {
+	loginPb := user.PlayerLogin{}
+	if err := proto.Unmarshal(message.Body, &loginPb); err != nil {
+		logrus.WithError(err).Errorln("消息反序列化失败")
+		return fmt.Errorf("消息反序列化失败：%v", err)
+	}
+	defaultMgr.addLoginData(loginPb.PlayerId)
+	return nil
+}
+
+func init() {
+	exposer := structs.GetGlobalExposer()
+	if err := exposer.Subscriber.Subscribe("player_login", "match", &playerLoginHandler{}); err != nil {
+		logrus.WithError(err).Panicln("订阅登录消息失败")
+	}
 }

@@ -41,19 +41,19 @@ type Poker struct {
 
 func (c Poker) String() string {
 	if c.Suit == sDiamond {
-		return "♦ " + c.getPointString()
+		return "♦" + c.GetPointString()
 	} else if c.Suit == sClub {
-		return "♣ " + c.getPointString()
+		return "♣" + c.GetPointString()
 	} else if c.Suit == sHeart {
-		return "♥ " + c.getPointString()
+		return "♥" + c.GetPointString()
 	} else if c.Suit == sSpade {
-		return "♠ " + c.getPointString()
+		return "♠" + c.GetPointString()
 	} else {
-		return c.getPointString()
+		return c.GetPointString()
 	}
 }
 
-func (c Poker) getPointString() string {
+func (c Poker) GetPointString() string {
 	if c.Point == pA {
 		return "A"
 	} else if c.Point == pJ {
@@ -75,17 +75,17 @@ func (c Poker) ToInt() uint32 {
 	return c.Suit + c.Point
 }
 
-func (c Poker) equals(other Poker) bool {
+func (c Poker) Equals(other Poker) bool {
 	return c.Suit == other.Suit && c.Point == other.Point
 }
 
 // 带花色比较，黑桃A 和 方块A比较返回true
-func (c Poker) biggerThan(other Poker) bool {
+func (c Poker) BiggerThan(other Poker) bool {
 	return c.Weight > other.Weight
 }
 
 // 无花色比较，黑桃A 和 方块A比较返回false
-func (c Poker) pointBiggerThan(other Poker) bool {
+func (c Poker) PointBiggerThan(other Poker) bool {
 	return c.PointWeight > other.PointWeight
 }
 

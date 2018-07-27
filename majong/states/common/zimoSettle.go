@@ -8,9 +8,10 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"steve/majong/settle"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/majong/settle"
 )
 
 // ZiMoSettleState 自摸结算状态
@@ -104,7 +105,7 @@ func (s *ZiMoSettleState) doZiMoSettle(flow interfaces.MajongFlow) {
 		HuPlayers:      []uint64{huPlayerID},
 		SrcPlayer:      huPlayerID,
 		AllPlayers:     utils.GetAllPlayers(mjContext),
-		HasHuPlayers:   utils.GetHuPlayers(mjContext),
+		HasHuPlayers:   utils.GetHuPlayers(mjContext, []uint64{huPlayerID}),
 		QuitPlayers:    utils.GetQuitPlayers(mjContext),
 		GiveupPlayers:  utils.GetGiveupPlayers(mjContext),
 		SettleType:     majongpb.SettleType_settle_zimo,

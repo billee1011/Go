@@ -1,6 +1,7 @@
 package gangtests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -20,7 +21,7 @@ import (
 //期待:所有人收到下家补杠的广播
 func Test_SCXZ_BuGang(t *testing.T) {
 	param := global.NewCommonStartGameParams()
-	param.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	param.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	param.PeiPaiGame = "scxz"
 	param.BankerSeat = 0
 	param.Cards[0][4] = 16

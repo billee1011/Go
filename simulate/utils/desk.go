@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"steve/client_pb/common"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -216,6 +217,8 @@ func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.
 		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
 		msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP,
 		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
+		msgid.MsgID_ROOM_HUANSANZHANG_NTF,
+		msgid.MsgID_ROOM_DINGQUE_NTF,
 	}
 	result := map[msgid.MsgID]interfaces.MessageExpector{}
 	for _, msg := range msgs {
@@ -307,7 +310,7 @@ func CreateAndLoginUsersNum(num int) ([]interfaces.ClientPlayer, error) {
 
 // 加入牌桌
 // 返回：座位ID 与 playerID的map
-func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
+func joinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]uint64, error) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "joinDesk",
@@ -349,7 +352,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]ui
 
 // DDZjoinDesk 斗地主加入牌桌
 // 返回：座位ID 与 playerID的map
-func DDZjoinDesk(players []interfaces.ClientPlayer, gameID room.GameId) (map[int]uint64, error) {
+func DDZjoinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]uint64, error) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "joinDesk",
@@ -542,6 +545,13 @@ func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 		logrus.Infoln("换三张牌没配置，不执行换三张")
 		return nil
 	}
+	for playerID, player := range deskData.Players {
+		hszNtf := room.RoomHuansanzhangNtf{}
+		e := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_NTF]
+		if err := e.Recv(global.DefaultWaitMessageTime, &hszNtf); err != nil {
+			return fmt.Errorf("玩家 %v 未收到换三张推荐通知:%v", playerID, err)
+		}
+	}
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
 	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))
@@ -587,6 +597,13 @@ func executeDingque(deskData *DeskData, colors []room.CardColor) error {
 	if colors == nil {
 		logrus.Infoln("定缺花色没配置，不执行定缺")
 		return nil
+	}
+	for playerID, player := range deskData.Players {
+		hszNtf := room.RoomDingqueNtf{}
+		e := player.Expectors[msgid.MsgID_ROOM_DINGQUE_NTF]
+		if err := e.Recv(global.DefaultWaitMessageTime, &hszNtf); err != nil {
+			return fmt.Errorf("玩家 %v 未收到定缺推荐通知:%v", playerID, err)
+		}
 	}
 	for _, player := range deskData.Players {
 		seat := player.Seat

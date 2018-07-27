@@ -8,9 +8,10 @@ import (
 	"steve/majong/utils"
 	majongpb "steve/server_pb/majong"
 
+	"steve/majong/settle"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/majong/settle"
 )
 
 // QiangGangHuSettleState 枪杠胡结算状态
@@ -90,7 +91,7 @@ func (s *QiangGangHuSettleState) doQiangGangHuSettle(flow interfaces.MajongFlow)
 		HuPlayers:      huPlayers,
 		SrcPlayer:      mjContext.GetLastGangPlayer(),
 		AllPlayers:     utils.GetAllPlayers(mjContext),
-		HasHuPlayers:   utils.GetHuPlayers(mjContext),
+		HasHuPlayers:   utils.GetHuPlayers(mjContext, append([]uint64{}, huPlayers...)),
 		QuitPlayers:    utils.GetQuitPlayers(mjContext),
 		GiveupPlayers:  utils.GetGiveupPlayers(mjContext),
 		SettleType:     majongpb.SettleType_settle_dianpao,

@@ -49,6 +49,7 @@ It has these top-level messages:
 	ReplyClientMessage
 	TimeCheckInfo
 	CardsGroup
+	TempDatas
 */
 package majong
 

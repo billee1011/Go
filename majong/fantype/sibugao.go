@@ -30,8 +30,8 @@ func checkSiBuGao(tc *typeCalculator) bool {
 		}
 		for _, cardPoints := range colorPointMap {
 			// 差值
-			one, two := diff(cardPoints, 1), diff(cardPoints, 2)
-			if one == 4 || two == 4 {
+			one, two := diff(cardPoints, 1, 4), diff(cardPoints, 2, 4)
+			if one || two {
 				return true
 			}
 		}
@@ -39,16 +39,19 @@ func checkSiBuGao(tc *typeCalculator) bool {
 	return false
 }
 
-func diff(cardPoints []int32, diff int32) int {
+func diff(cardPoints []int32, diff int32, num int) bool {
 	cardPoints = sortRemoveDuplicate(cardPoints)
 	count := 1
 	// 每次的差值1的次数
 	for i := len(cardPoints) - 1; i > 0; i-- {
 		if cardPoints[i]-cardPoints[i-1] == diff {
 			count++
+			if count == num {
+				return true
+			}
 		} else { //断了，重来
 			count = 1
 		}
 	}
-	return count
+	return false
 }

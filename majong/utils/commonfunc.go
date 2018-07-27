@@ -82,7 +82,7 @@ func IsGameOverReturnState(mjContext *majongpb.MajongContext) majongpb.StateID {
 // GetRealHuCardPlayer 获取亮实胡牌的玩家
 func GetRealHuCardPlayer(huPlayers []uint64, lostPlayer uint64, mjContext *majongpb.MajongContext) (isRealPlayerID uint64) {
 	nextPlayerID := lostPlayer
-	for i := 0; i < len(huPlayers); i++ {
+	for i := 0; i < len(mjContext.GetPlayers()); i++ {
 		p := GetNextXpPlayerByID(nextPlayerID, mjContext.GetPlayers(), mjContext)
 		if Contains(huPlayers, p.GetPalyerId()) {
 			isRealPlayerID = p.GetPalyerId()
@@ -90,6 +90,9 @@ func GetRealHuCardPlayer(huPlayers []uint64, lostPlayer uint64, mjContext *majon
 		}
 		nextPlayerID = p.GetPalyerId()
 	}
+	logrus.WithFields(logrus.Fields{
+		"RealHucardPlayer": isRealPlayerID,
+	}).Infoln("亮实牌的玩家")
 	return
 }
 

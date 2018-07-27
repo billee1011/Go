@@ -33,16 +33,17 @@ type SettleType struct {
 
 // CardTypeOption 牌型选项
 type CardTypeOption struct {
-	ID             int                `yaml:"id"`                     // 选项 ID
-	Fantypes       map[int]FanType    `yaml:"enable_fan_types"`       // 支持的番型
-	FanType2HuType map[int]HuType     `yaml:"fan_type_2_hu_type"`     // 番型转胡类型
-	FanType2Settle map[int]SettleType `yaml:"fan_type_2_settle_type"` // 番型转结算类型
-	EnableGeng     bool               `yaml:"enable_geng"`            // 是否启用根
-	GengScore      int                `yaml:"geng_score"`             // 根的番数
-	GengMethod     int                `yaml:"geng_method"`            // 根的计算方式，0为相加，1为相乘，2幂乘
-	EnableHua      bool               `yaml:"enable_hua"`             // 是否启用花
-	HuaScore       int                `yaml:"hua_score"`              // 花的番数
-	HuaMethod      int                `yaml:"hua_method"`             // 花的计算方式，0为相加，1为相乘，2幂乘
+	ID                int                `yaml:"id"`                     // 选项 ID
+	Fantypes          map[int]FanType    `yaml:"enable_fan_types"`       // 支持的番型
+	FanType2HuType    map[int]HuType     `yaml:"fan_type_2_hu_type"`     // 番型转胡类型
+	FanType2Settle    map[int]SettleType `yaml:"fan_type_2_settle_type"` // 番型转结算类型
+	EnableGeng        bool               `yaml:"enable_geng"`            // 是否启用根
+	GengScore         int                `yaml:"geng_score"`             // 根的番数
+	GengMethod        int                `yaml:"geng_method"`            // 根的计算方式，0为相加，1为相乘，2幂乘
+	EnableHua         bool               `yaml:"enable_hua"`             // 是否启用花
+	HuaScore          int                `yaml:"hua_score"`              // 花的番数
+	HuaMethod         int                `yaml:"hua_method"`             // 花的计算方式，0为相加，1为相乘，2幂乘
+	EnableFanTypeDeal bool               `yaml:"enable_fan_type_deal"`   // 番型处理，是否将胡类型从，番型拿出
 }
 
 // CardTypeOptionManager 选项管理器

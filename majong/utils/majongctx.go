@@ -148,10 +148,14 @@ func GetAllPlayers(mjContext *majongpb.MajongContext) (allPlayers []uint64) {
 }
 
 // GetHuPlayers 已胡牌玩家
-func GetHuPlayers(mjContext *majongpb.MajongContext) (huPlayers []uint64) {
+func GetHuPlayers(mjContext *majongpb.MajongContext, removeHuPlayers []uint64) (huPlayers []uint64) {
 	huPlayers = make([]uint64, 0)
+	remove := make(map[uint64]bool, 0)
+	for _, removeHuPlayer := range removeHuPlayers {
+		remove[removeHuPlayer] = true
+	}
 	for _, player := range mjContext.Players {
-		if player.XpState == majongpb.XingPaiState_hu {
+		if player.XpState == majongpb.XingPaiState_hu && !remove[player.PalyerId] {
 			huPlayers = append(huPlayers, player.GetPalyerId())
 		}
 	}

@@ -1,6 +1,7 @@
 package qitests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
 	"steve/simulate/utils"
@@ -16,7 +17,7 @@ import (
 // 下家弃胡，因为庄家胡过，所以期待摸牌玩家是下家
 func Test_qi_peng(t *testing.T) {
 	param := global.NewCommonStartGameParams()
-	param.GameID = room.GameId_GAMEID_XUEZHAN
+	param.GameID = common.GameId_GAMEID_XUEZHAN
 	param.PeiPaiGame = "scxz"
 	param.IsHsz = false
 	param.Cards[3][12] = 18

@@ -374,7 +374,7 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			bAllExist := true
 
 			// 后面的每张牌个数都>=2
-			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpecialPoke)+startPokePoint-1); secondPokePoint++ {
+			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpecialPoke/2)+startPokePoint-1); secondPokePoint++ {
 				count, _ := counts[secondPokePoint]
 
 				// 牌数不足则跳出
@@ -409,6 +409,7 @@ func GetMinBiggerPairs(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 
 			// 压入两张才下一个
 			if pushCount == 2 {
+				pushCount = 0
 				// 这样下次压入的就是下一张牌了
 				resultStartPokePoint++
 			}
@@ -702,13 +703,11 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 飞机检测
-	for i := 0; i < lenSpiciPoke; i += 3 {
-		if speciPoke[i].PointWeight != speciPoke[i+1].PointWeight ||
-			speciPoke[i].PointWeight != speciPoke[i+2].PointWeight {
-			logEntry.Errorln("参数错误2")
-			return false, nil
-		}
+	// 是否是飞机
+	bSuc, maxSamePoke := IsTriples(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是飞机")
+		return false, nil
 	}
 
 	// 先排序，从小到大
@@ -724,7 +723,7 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	var resultStartPokePoint uint32 = 0
 
 	// 办法：若333444555的飞机，则从666777888开始判断，一直判断到QQQKKKAAA
-	for startPokePoint := speciPoke[lenSpiciPoke-1].PointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpiciPoke/3)+1); startPokePoint++ {
+	for startPokePoint := maxSamePoke.PointWeight + 1; startPokePoint <= uint32(pointWeightA-(lenSpiciPoke/3)+1); startPokePoint++ {
 
 		// 飞机的开始牌>=3
 		count1, _ := counts[startPokePoint]
@@ -733,7 +732,7 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			bAllExist := true
 
 			// 后面的每张牌都>=3
-			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpiciPoke)+startPokePoint-2); secondPokePoint++ {
+			for secondPokePoint := startPokePoint + 1; secondPokePoint <= uint32(uint32(lenSpiciPoke/3)+startPokePoint-1); secondPokePoint++ {
 				count2, _ := counts[secondPokePoint]
 
 				// 牌数不足则跳出
@@ -765,8 +764,9 @@ func GetMinBiggerTriples(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			resultPoke = append(resultPoke, allPokes[i])
 			pushCount++
 
-			// 压入两张才下一个
-			if pushCount == 2 {
+			// 压入三张才下一个
+			if pushCount == 3 {
+				pushCount = 0
 				// 这样下次压入的就是下一张牌了
 				resultStartPokePoint++
 			}
@@ -835,7 +835,7 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(dealSpeciPoke)
 
 	// 剩下的牌，不再分析，默认是正常牌了，全部压入dealSpeciPoke
-	for i := 1; i <= len(lastPokes); i++ {
+	for i := 1; i < len(lastPokes); i++ {
 		dealSpeciPoke = append(dealSpeciPoke, lastPokes[i])
 	}
 
@@ -903,7 +903,7 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			}
 
 			// 主体牌数压够了，就跳出
-			if len(resultPoke) != (len(speciPoke) / 4 * 3) {
+			if len(resultPoke) == (len(speciPoke) / 4 * 3) {
 				break
 			}
 		}
@@ -1001,7 +1001,7 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	DDZPokerSort(dealSpeciPoke)
 
 	// 剩下的牌，不再分析，默认是正常牌了，全部压入dealSpeciPoke
-	for i := 1; i <= len(lastPokes); i++ {
+	for i := 1; i < len(lastPokes); i++ {
 		dealSpeciPoke = append(dealSpeciPoke, lastPokes[i])
 	}
 
@@ -1069,7 +1069,7 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			}
 
 			// 主体牌数压够了，就跳出
-			if len(resultPoke) != (len(speciPoke) / 5 * 3) {
+			if len(resultPoke) == (len(speciPoke) / 5 * 3) {
 				break
 			}
 		}
@@ -1217,7 +1217,7 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 				if lastPoke[i].PointWeight != findPointWeight {
 					resultPoke = append(resultPoke, lastPoke[i])
 
-					if len(resultPoke) == 2 {
+					if len(resultPoke) == 6 {
 						break
 					}
 				}
@@ -1226,7 +1226,7 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			// 现在应该是6张牌了，不是则置空，并报错
 			if len(resultPoke) != 6 {
 				lastPoke = []Poker{}
-				logEntry.Errorln("添加两个单牌后发现总牌数不足6张")
+				logEntry.Errorln("添加两个单牌后发现总牌数不是6张")
 			}
 		}
 
@@ -1371,7 +1371,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 				// 现在应该是8张牌了，不是则置空，并报错
 				if len(resultPoke) != 8 {
 					lastPoke = []Poker{}
-					logEntry.Errorln("添加两个对子后发现总牌数不足8张")
+					logEntry.Errorln("添加两个对子后发现总牌数不是8张")
 				}
 			}
 		}

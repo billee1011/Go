@@ -1,6 +1,7 @@
 package qitests
 
 import (
+	"steve/client_pb/common"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -22,7 +23,7 @@ import (
 // 2. 0,3号玩家请求胡,2号玩家选择弃，所有玩家收到胡通知，胡的玩家为0,3号玩家，胡的牌为9W， 胡牌来源是1号玩家，胡类型为抢杠胡
 func Test_SCXZ_Duo_Qiangganghu_Qi(t *testing.T) {
 	params := global.NewCommonStartGameParams()
-	params.GameID = room.GameId_GAMEID_XUEZHAN // 血战
+	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
 	// 庄家的初始手牌： 11,11,11,11,12,12,12,12,13,13,13,39,17,19 8w
