@@ -30,20 +30,20 @@ func OnCartoonFinish(cartoonFinishData CartoonFinishData, mjContext *majongpb.Ma
 	if marshalErr := proto.Unmarshal(eventContext, req); marshalErr != nil {
 		return curState, global.ErrUnmarshalEvent
 	}
-	reqPlayerID := req.GetPlayerId()
-	cartoonReqPlayerIDs := AddCartoonPlayerID(mjContext, reqPlayerID) //玩家发送请求，添加到临时数据中
-	if len(cartoonReqPlayerIDs) < len(mjContext.GetPlayers()) {
-		return curState, nil
-	}
-	// 接收到所有人，进行下一步
+	// reqPlayerID := req.GetPlayerId()
+	// cartoonReqPlayerIDs := AddCartoonPlayerID(mjContext, reqPlayerID) //玩家发送请求，添加到临时数据中
+	// if len(cartoonReqPlayerIDs) < len(mjContext.GetPlayers()) {
+	// 	return curState, nil
+	// }
 	reqCartoonType := req.GetCartoonType()
 	if reqCartoonType != int32(needCartoonType) {
 		return curState, nil
 	}
-	logrus.WithFields(logrus.Fields{"req_cartoon_type": "reqCartoonType",
-		"cur_state":   curState,
-		"next_state":  nextState,
-		"cfPlayerIDs": cartoonReqPlayerIDs, "req": req}).Infoln("动画结束请求信息")
+	// logrus.WithFields(logrus.Fields{"req_cartoon_type": "reqCartoonType",
+	// 	"cur_state":   curState,
+	// 	"next_state":  nextState,
+	// 	"cfPlayerIDs": cartoonReqPlayerIDs, "req": req}).Infoln("动画结束请求信息")
+	logrus.WithFields(logrus.Fields{"cartoonFinishData": cartoonFinishData}).Infoln("进入下一个状态")
 	return nextState, nil
 }
 
