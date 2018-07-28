@@ -216,12 +216,13 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 	clientCardType := room.CardType(int32(cardType))
 	broadcast(m, msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF, &room.DDZPlayCardNtf{ //广播出牌
-		PlayerId:     &playerId,
-		Cards:        message.GetCards(),
-		CardType:     &clientCardType,
-		TotalBomb:    &context.TotalBomb,
-		NextPlayerId: &nextPlayerId,
-		NextStage:    GenNextStage(nextStage),
+		PlayerId:      &playerId,
+		Cards:         message.GetCards(),
+		CardType:      &clientCardType,
+		CardTypePivot: &context.CardTypePivot,
+		TotalBomb:     &context.TotalBomb,
+		NextPlayerId:  &nextPlayerId,
+		NextStage:     GenNextStage(nextStage),
 	})
 
 	if len(player.HandCards) == 0 {

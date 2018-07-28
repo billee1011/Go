@@ -278,6 +278,7 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 				TotalBomb:    proto.Uint32(ddzContext.GetTotalBomb()),
 				CurCardType:  &curCardType,
 				CurCardPivot: proto.Uint32(ddzContext.GetCardTypePivot()),
+				CurOutCards:  ddzContext.CurOutCards,
 			},
 		}
 		// 发送游戏信息
