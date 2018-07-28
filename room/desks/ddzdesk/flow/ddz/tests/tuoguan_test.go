@@ -280,6 +280,40 @@ func Test_Tuoguan_3sAnd1s(t *testing.T) {
 	assert.Equal(t, int(0x45), int(outInts[7]))
 }
 
+// 测试托管的飞机带单张,用例1
+func Test_Tuoguan_3sAnd1s_1(t *testing.T) {
+
+	// 手中的牌（8888666677779999）
+	handCards := states.ToDDZCards([]uint32{0x18, 0x28, 0x38, 0x48, 0x16, 0x26, 0x36, 0x46, 0x17, 0x27, 0x37, 0x47, 0x19, 0x29, 0x39, 0x49})
+
+	// 上次出的牌（333344445555）
+	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44, 0x15, 0x25, 0x35, 0x45})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3sAnd1s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是666777888 678
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x26), int(outInts[1]))
+	assert.Equal(t, int(0x36), int(outInts[2]))
+	assert.Equal(t, int(0x17), int(outInts[3]))
+	assert.Equal(t, int(0x27), int(outInts[4]))
+	assert.Equal(t, int(0x37), int(outInts[5]))
+	assert.Equal(t, int(0x18), int(outInts[6]))
+	assert.Equal(t, int(0x28), int(outInts[7]))
+	assert.Equal(t, int(0x38), int(outInts[8]))
+
+	assert.Equal(t, int(0x46), int(outInts[9]))
+	assert.Equal(t, int(0x47), int(outInts[10]))
+	assert.Equal(t, int(0x48), int(outInts[11]))
+}
+
 // 测试托管的飞机带对子
 func Test_Tuoguan_3sAnd2s(t *testing.T) {
 
@@ -311,6 +345,83 @@ func Test_Tuoguan_3sAnd2s(t *testing.T) {
 	assert.Equal(t, int(0x26), int(outInts[7]))
 	assert.Equal(t, int(0x22), int(outInts[8]))
 	assert.Equal(t, int(0x32), int(outInts[9]))
+}
+
+// 测试托管的飞机带对子，用例1
+func Test_Tuoguan_3sAnd2s_1(t *testing.T) {
+
+	// 手中的牌（6667778888）
+	handCards := states.ToDDZCards([]uint32{0x16, 0x26, 0x36, 0x17, 0x27, 0x37, 0x18, 0x28, 0x38, 0x48})
+
+	// 上次出的牌（3334445555）
+	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x45})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3sAnd2s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是6667778888
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x26), int(outInts[1]))
+	assert.Equal(t, int(0x36), int(outInts[2]))
+	assert.Equal(t, int(0x17), int(outInts[3]))
+	assert.Equal(t, int(0x27), int(outInts[4]))
+	assert.Equal(t, int(0x37), int(outInts[5]))
+	assert.Equal(t, int(0x18), int(outInts[6]))
+	assert.Equal(t, int(0x28), int(outInts[7]))
+	assert.Equal(t, int(0x38), int(outInts[8]))
+	assert.Equal(t, int(0x48), int(outInts[9]))
+}
+
+// 测试托管的飞机带对子，用例2
+func Test_Tuoguan_3sAnd2s_2(t *testing.T) {
+
+	// 手中的牌（999101010JJJQQQKKKKAAAA）
+	handCards := states.ToDDZCards([]uint32{0x19, 0x29, 0x39, 0x1A, 0x2A, 0x3A, 0x1B, 0x2B, 0x3B, 0x1C, 0x2C, 0x3C, 0x1D, 0x2D, 0x3D, 0x4D, 0x11, 0x21, 0x31, 0x41})
+
+	// 上次出的牌（33344455566677778888）
+	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x16, 0x26, 0x36, 0x17, 0x27, 0x37, 0x47, 0x18, 0x28, 0x38, 0x48})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger3sAnd2s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是999101010JJJQQQKKKKAAAA
+	assert.Equal(t, int(0x19), int(outInts[0]))
+	assert.Equal(t, int(0x29), int(outInts[1]))
+	assert.Equal(t, int(0x39), int(outInts[2]))
+
+	assert.Equal(t, int(0x1A), int(outInts[3]))
+	assert.Equal(t, int(0x2A), int(outInts[4]))
+	assert.Equal(t, int(0x3A), int(outInts[5]))
+
+	assert.Equal(t, int(0x1B), int(outInts[6]))
+	assert.Equal(t, int(0x2B), int(outInts[7]))
+	assert.Equal(t, int(0x3B), int(outInts[8]))
+
+	assert.Equal(t, int(0x1C), int(outInts[9]))
+	assert.Equal(t, int(0x2C), int(outInts[10]))
+	assert.Equal(t, int(0x3C), int(outInts[11]))
+
+	assert.Equal(t, int(0x1D), int(outInts[12]))
+	assert.Equal(t, int(0x2D), int(outInts[13]))
+	assert.Equal(t, int(0x3D), int(outInts[14]))
+	assert.Equal(t, int(0x4D), int(outInts[15]))
+
+	assert.Equal(t, int(0x11), int(outInts[16]))
+	assert.Equal(t, int(0x21), int(outInts[17]))
+	assert.Equal(t, int(0x31), int(outInts[18]))
+	assert.Equal(t, int(0x41), int(outInts[19]))
 }
 
 // 测试托管的4带2单张

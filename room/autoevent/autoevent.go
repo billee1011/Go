@@ -1,6 +1,7 @@
 package autoevent
 
 import (
+	"steve/gutils"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
 	"steve/server_pb/majong"
@@ -38,6 +39,10 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *interfaces.AutoEventGenera
 			eventType = interfaces.RobotEvent
 		} else if aiType == interfaces.TuoGuangAI {
 			eventType = interfaces.TuoGuanEvent
+		} else if aiType == interfaces.HuAI {
+			eventType = interfaces.HuStateEvent
+		} else if aiType == interfaces.TingAI {
+			eventType = interfaces.TingStateEvent
 		}
 		aeg.addAIEvents(result, &aiResult, playerID, eventType)
 	}
@@ -101,7 +106,48 @@ func (aeg *autoEventGenerator) handleOverTime(AI interfaces.CommonAI, stateTime 
 	for _, player := range players {
 		aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), mjContext, interfaces.OverTimeAI, 0)
 	}
-	finish = true
+	finish = len(result.Events) > 0
+	return
+
+}
+
+// handleHuStateAuto 处理胡状态下的自动事件
+func (aeg *autoEventGenerator) handleHuStateAuto(AI interfaces.CommonAI, stateTime time.Time, mjContext *majong.MajongContext) (
+	finish bool, result interfaces.AutoEventGenerateResult) {
+	finish, result = false, interfaces.AutoEventGenerateResult{
+		Events: []interfaces.Event{},
+	}
+	duration := time.Second * time.Duration(viper.GetInt(config.HuStateTimeOut))
+	if duration == 0 || time.Now().Sub(stateTime) < duration {
+		return
+	}
+	players := mjContext.GetPlayers()
+	for _, player := range players {
+		if gutils.IsHu(player) {
+			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), mjContext, interfaces.HuAI, 0)
+		}
+	}
+	finish = len(result.Events) > 0
+	return
+}
+
+// handleTingStateAuto 处理听状态下的自动事件
+func (aeg *autoEventGenerator) handleTingStateAuto(AI interfaces.CommonAI, stateTime time.Time, mjContext *majong.MajongContext) (
+	finish bool, result interfaces.AutoEventGenerateResult) {
+	finish, result = false, interfaces.AutoEventGenerateResult{
+		Events: []interfaces.Event{},
+	}
+	duration := time.Second * time.Duration(viper.GetInt(config.TingStateTimeOut))
+	if duration == 0 || time.Now().Sub(stateTime) < duration {
+		return
+	}
+	players := mjContext.GetPlayers()
+	for _, player := range players {
+		if gutils.IsTing(player) {
+			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), mjContext, interfaces.TingAI, 0)
+		}
+	}
+	finish = len(result.Events) > 0
 	return
 }
 
@@ -227,6 +273,12 @@ func (aeg *autoEventGenerator) GenerateV2(params *interfaces.AutoEventGeneratePa
 		result = aeg.handleDDZTuoGuan(params.Desk, AI, params.StartTime, params.DDZContext)
 	} else {
 		if overTime, result := aeg.handleOverTime(AI, params.StartTime, params.MajongContext); overTime {
+			return result
+		}
+		if overTime, result := aeg.handleHuStateAuto(AI, params.StartTime, params.MajongContext); overTime {
+			return result
+		}
+		if overTime, result := aeg.handleTingStateAuto(AI, params.StartTime, params.MajongContext); overTime {
 			return result
 		}
 		result = aeg.handleTuoGuan(params.Desk, AI, params.StartTime, params.MajongContext)

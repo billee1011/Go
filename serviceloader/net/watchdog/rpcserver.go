@@ -13,16 +13,16 @@ type rpcServer struct {
 }
 
 var _ server = new(rpcServer)
-var _ steve_proto_base.ExchangerServer = new(rpcServer)
+var _ base.ExchangerServer = new(rpcServer)
 
 type rpcExchanger struct {
-	e steve_proto_base.Exchanger_ExchangeServer
+	e base.Exchanger_ExchangeServer
 }
 
 var _ exchanger = new(rpcExchanger)
 
 func (e *rpcExchanger) Recv() ([]byte, error) {
-	var ctx *steve_proto_base.ExchangeContext
+	var ctx *base.ExchangeContext
 	var err error
 	if ctx, err = e.e.Recv(); err != nil {
 		return []byte{}, err
@@ -31,12 +31,12 @@ func (e *rpcExchanger) Recv() ([]byte, error) {
 }
 
 func (e *rpcExchanger) Send(data []byte) error {
-	return e.e.Send(&steve_proto_base.ExchangeContext{
+	return e.e.Send(&base.ExchangeContext{
 		Data: data,
 	})
 }
 
-func (s *rpcServer) Exchange(e steve_proto_base.Exchanger_ExchangeServer) error {
+func (s *rpcServer) Exchange(e base.Exchanger_ExchangeServer) error {
 	return s.work(&rpcExchanger{
 		e: e,
 	})
@@ -50,7 +50,7 @@ func (s *rpcServer) Serve(addr string, worker workerFunc) error {
 	s.work = worker
 
 	server := grpc.NewServer()
-	steve_proto_base.RegisterExchangerServer(server, s)
+	base.RegisterExchangerServer(server, s)
 
 	s.grpcServer = server
 	return server.Serve(lis)

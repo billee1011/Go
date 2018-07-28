@@ -2,7 +2,6 @@ package doudizhu
 
 import (
 	"steve/client_pb/common"
-	"steve/client_pb/room"
 	"steve/simulate/structs"
 	"steve/simulate/utils"
 	"testing"
@@ -17,89 +16,83 @@ func NewStartDDZGameParamsTest1() structs.StartPukeGameParams {
 		Cards: [][]uint32{
 			// 第一个人的牌(地主)
 			{
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_A), // 方块A
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_A),    // 梅花A
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_A),   // 红桃A
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_A),   // 黑桃A
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_2), // 方块2
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_2),    // 梅花2
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_2),   // 红桃2
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_2),   // 黑桃2
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_3), // 方块3
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_3),    // 梅花3
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_3),   // 红桃3
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_3),   // 黑桃3
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_4), // 方块4
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_4),    // 梅花4
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_4),   // 红桃4
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_4),   // 黑桃4
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_5), // 方块5
-
+				0x11, 0x21, 0x31, 0x41,
+				0x12, 0x22, 0x32, 0x42,
+				0x13, 0x23, 0x33, 0x43,
+				0x14, 0x24, 0x34, 0x44,
+				0x15,
 			},
 
 			// 第二个人的牌
 			{
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_5),  // 梅花5
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_5), // 红桃5
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_5), // 黑桃5
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_6), // 方块6
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_6),    // 梅花6
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_6),   // 红桃6
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_6),   // 黑桃6
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_7), // 方块7
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_7),    // 梅花7
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_7),   // 红桃7
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_7),   // 黑桃7
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_8), // 方块8
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_8),    // 梅花8
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_8),   // 红桃8
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_8),   // 黑桃8
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_9), // 方块9
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_9),    // 梅花9
+				0x25, 0x35, 0x45,
+				0x16, 0x26, 0x36, 0x46,
+				0x17, 0x27, 0x37, 0x47,
+				0x18, 0x28, 0x38, 0x48,
+				0x19, 0x29,
 			},
 
 			// 第三个人的牌
 			{
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_9), // 红桃9
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_9), // 黑桃9
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_10), // 方块10
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_10),    // 梅花10
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_10),   // 红桃10
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_10),   // 黑桃10
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_J), // 方块J
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_J),    // 梅花J
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_J),   // 红桃J
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_J),   // 黑桃J
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_Q), // 方块Q
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_Q),    // 梅花Q
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_Q),   // 红桃Q
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_Q),   // 黑桃Q
-
-				uint32(room.PokerSuit_PS_DIAMOND) + uint32(room.PokerValue_PV_K), // 方块K
-				uint32(room.PokerSuit_PS_CLUB) + uint32(room.PokerValue_PV_K),    // 梅花K
-				uint32(room.PokerSuit_PS_HEART) + uint32(room.PokerValue_PV_K),   // 红桃K
+				0x39, 0x49,
+				0x1A, 0x2A, 0x3A, 0x4A,
+				0x1B, 0x2B, 0x3B, 0x4B,
+				0x1C, 0x2C, 0x3C, 0x4C,
+				0x1D, 0x2D, 0x3D,
 			},
 			{
 				// 三张底牌
-				uint32(room.PokerSuit_PS_SPADE) + uint32(room.PokerValue_PV_K),          // 红桃K
-				uint32(room.PokerSuit_PS_NONE) + uint32(room.PokerValue_PV_BLACK_JOKER), // 小王
-				uint32(room.PokerSuit_PS_NONE) + uint32(room.PokerValue_PV_RED_JOKER),   // 大王
+				0x4D, 0x0E, 0x0F,
 			},
 		},
 
 		// 金币数(座位ID 与 金币 的map)
 		PlayerSeatGold: map[int]uint64{0: 10000, 1: 5000, 2: 8000},
+
+		// 配牌游戏的名字
+		PeiPaiGame: "doudizhu",
+	}
+}
+
+// NewStartDDZGameParamsTest2 创建棋牌启动参数测试2
+func NewStartDDZGameParamsTest2() structs.StartPukeGameParams {
+	return structs.StartPukeGameParams{
+		GameID: common.GameId_GAMEID_DOUDIZHU, // 斗地主
+		Cards: [][]uint32{
+			// 第一个人的牌(地主)
+			{
+				0x11, 0x21, 0x31, 0x41,
+				0x12, 0x22, 0x32, 0x42,
+				0x13, 0x23, 0x33, 0x43,
+				0x14, 0x24, 0x34, 0x44,
+				0x15,
+			},
+
+			// 第二个人的牌
+			{
+				0x25, 0x35, 0x45,
+				0x16, 0x26, 0x36, 0x46,
+				0x17, 0x27, 0x37, 0x47,
+				0x18, 0x28, 0x38, 0x48,
+				0x19, 0x29,
+			},
+
+			// 第三个人的牌
+			{
+				0x39, 0x49,
+				0x1A, 0x2A, 0x3A, 0x4A,
+				0x1B, 0x2B, 0x3B, 0x4B,
+				0x1C, 0x2C, 0x3C, 0x4C,
+				0x1D, 0x2D, 0x3D,
+			},
+			{
+				// 三张底牌
+				0x4D, 0x0E, 0x0F,
+			},
+		},
+
+		// 金币数(座位ID 与 金币 的map)
+		PlayerSeatGold: map[int]uint64{0: 10000, 1: 10000, 2: 10000},
 
 		// 配牌游戏的名字
 		PeiPaiGame: "doudizhu",

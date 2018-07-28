@@ -117,7 +117,7 @@ func TestFan_Duiduihu_Zimo(t *testing.T) {
 
 	// 检测对对胡自摸分数
 	winScro := 2 * 2 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro), deskData.DiFen)
 }
 
 //TestFan_Duiduihu_Dianpao 对对胡立即点炮自摸测试
@@ -140,5 +140,5 @@ func TestFan_Duiduihu_Dianpao(t *testing.T) {
 	// 检测所有玩家收到点炮通知x
 	utils.CheckHuNotify(t, deskData, []int{3}, 0, 14, room.HuType_HT_DIANPAO)
 	// 检测对对胡点炮分数
-	utils.CheckInstantSettleScoreNotify(t, deskData, 3, 2)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 3, 2, deskData.DiFen)
 }

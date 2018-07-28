@@ -78,7 +78,7 @@ func TestFan_Qingyise_Zimo_SCXZ(t *testing.T) {
 
 	// 检测清一色自摸分数
 	winScro := 4 * 2 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, int64(winScro), deskData.DiFen)
 }
 
 //TestFan_Qingyise_Dianpao 清一色立即点炮自摸测试
@@ -98,5 +98,5 @@ func TestFan_Qingyise_Dianpao_SCXZ(t *testing.T) {
 	// 检测所有玩家收到点炮通知x
 	utils.CheckHuNotify(t, deskData, []int{1}, 0, 11, room.HuType_HT_DIANPAO)
 	// 检测清一色点炮分数
-	utils.CheckInstantSettleScoreNotify(t, deskData, 1, 4)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 1, 4, deskData.DiFen)
 }

@@ -35,6 +35,9 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 	var aiEvent interfaces.AIEvent
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
+	if mjContext.GetCurState() != majong.StateID_state_waitqiangganghu {
+		return
+	}
 	if player.GetPalyerId() == mjContext.GetLastGangPlayer() {
 		return result, fmt.Errorf("玩家%v是补杠的玩家,不允许抢杠", player.GetPalyerId())
 
@@ -45,6 +48,11 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 
 	if gutils.CheckHasDingQueCard(mjContext, player) {
 		return result, fmt.Errorf("")
+	}
+	if params.AIType == interfaces.TingAI {
+		if len(player.GetPossibleActions()) > 0 {
+			return
+		}
 	}
 	canhu := false
 	for _, act := range player.GetPossibleActions() {

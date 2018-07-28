@@ -30,6 +30,7 @@ type DeskData struct {
 	Players    map[uint64]DeskPlayer // playerid -> deskPlayer
 	BankerSeat int                   // 庄家/地主 的座位号
 	DDZData    DDZData               // 斗地主信息
+	DiFen      uint64                // 底分
 }
 
 // DDZData 斗地主信息
@@ -71,6 +72,7 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 
 	dd := DeskData{
 		BankerSeat: params.BankerSeat,
+		DiFen:      params.DiFen,
 	}
 	dd.Players = map[uint64]DeskPlayer{}
 	for _, player := range players {

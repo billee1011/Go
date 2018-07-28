@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package user;
+
+// GetPlayerByAccountReq 根据账号获取玩家请求
+message GetPlayerByAccountReq {
+    uint64 account_id = 1; // 账号 ID 
+}
+
+// GetPlayerByAccountRsp 根据账号获取玩家应答
+message GetPlayerByAccountRsp {
+    int32 err_code = 1; // 错误信息
+    uint64 player_id = 2; // 玩家 ID
+}
+
+// PlayerData 玩家数据服务
+service PlayerData {
+    // GetPlayerByAccount 根据账号获取玩家
+    rpc GetPlayerByAccount(GetPlayerByAccountReq) returns(GetPlayerByAccountRsp);
+}

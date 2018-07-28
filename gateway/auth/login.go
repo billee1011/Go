@@ -22,7 +22,7 @@ import (
 )
 
 // HandleLoginRequest 处理登录请求
-func HandleLoginRequest(clientID uint64, reqHeader *steve_proto_base.Header, body []byte) (responses []*steve_proto_gaterpc.ResponseMessage) {
+func HandleLoginRequest(clientID uint64, reqHeader *base.Header, body []byte) (responses []*steve_proto_gaterpc.ResponseMessage) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "handleLoginRequest",
 		"client_id": clientID,

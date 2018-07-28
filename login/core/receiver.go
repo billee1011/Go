@@ -1,12 +1,12 @@
 package core
 
-// type handler func(uint64, *steve_proto_base.Header, []byte)
+// type handler func(uint64, *base.Header, []byte)
 
 // type receiver struct {
 // 	handlers map[msgid.MsgID]handler
 // }
 
-// func (r *receiver) OnRecv(clientID uint64, header *steve_proto_base.Header, body []byte) {
+// func (r *receiver) OnRecv(clientID uint64, header *base.Header, body []byte) {
 // 	msg := msgid.MsgID(header.GetMsgId())
 // 	handler, ok := r.handlers[msg]
 // 	if !ok {

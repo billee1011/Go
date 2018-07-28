@@ -72,7 +72,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	ntf := room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	assert.Equal(t, len(deskData.Players), len(ntf.BillPlayersInfo))
-	gangWinScore := 6
+	gangWinScore := 6 * int64(deskData.DiFen)
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
 			assert.Equal(t, billInfo.GetScore(), int64(gangWinScore))
@@ -83,7 +83,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	expector, _ = gangplayer.Expectors[msgid.MsgID_ROOM_INSTANT_SETTLE]
 	ntf = room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
-	dianpaoWinScore := 16
+	dianpaoWinScore := 16 * int64(deskData.DiFen)
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
 			assert.Equal(t, billInfo.GetScore(), int64(-dianpaoWinScore))
@@ -98,7 +98,7 @@ func checkGangHouPaoSettleScoreNotify(t *testing.T, deskData *utils.DeskData, ga
 	ntf = room.RoomSettleInstantRsp{}
 	expector.Recv(global.DefaultWaitMessageTime, &ntf)
 	fmt.Println(ntf)
-	callTransferScore := 6
+	callTransferScore := 6 * int64(deskData.DiFen)
 	for _, billInfo := range ntf.BillPlayersInfo {
 		if billInfo.GetPid() == gangID {
 			assert.Equal(t, billInfo.GetScore(), int64(-callTransferScore))

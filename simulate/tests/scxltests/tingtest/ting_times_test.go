@@ -70,6 +70,8 @@ func Test_ChuPaiwenxun_Actions(t *testing.T) {
 		{16, 17, 17},
 		{31, 32, 33},
 	}
+	thisParams.PlayerSeatGold = map[int]uint64{0: 100 * 10000, 1: 100 * 10000, 2: 100 * 10000, 3: 100 * 10000}
+
 	deskData, err := utils.StartGame(thisParams)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)

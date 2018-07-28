@@ -145,7 +145,7 @@ func TestFan_Jingoudiao_Dianpao_SCXZ_SCXZ(t *testing.T) {
 	// 检测所有玩家收到点炮通知x
 	utils.CheckHuNotify(t, deskData, []int{0}, 1, 15, room.HuType_HT_DIANPAO)
 	// 检测金钩钓点炮分数
-	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 4)
+	utils.CheckInstantSettleScoreNotify(t, deskData, 0, 4, deskData.DiFen)
 }
 
 //TestFan_Jingoudiao_Zimo_SCXZ 金钩钓立即结算自摸测试
@@ -163,5 +163,5 @@ func TestFan_Jingoudiao_Zimo_SCXZ(t *testing.T) {
 
 	// 检测金钩钓自摸分数,金钩钓4倍*自摸2倍
 	winScro := 4 * 2 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, 1, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, 1, int64(winScro), deskData.DiFen)
 }
