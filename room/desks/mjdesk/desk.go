@@ -282,7 +282,7 @@ func (d *desk) processEvents(ctx context.Context) {
 	})
 	defer func() {
 		if x := recover(); x != nil {
-			logEntry.Errorln(x)
+			logEntry.Fatalln(x)
 			debug.PrintStack()
 		}
 	}()
@@ -544,7 +544,6 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 		RemainCards:       proto.Uint32(uint32(len(mjContext.GetWallCards()))),
 		CostTime:          proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
 		OperatePid:        getOperatePlayerID(mjContext),
-		DoorCard:          getDoorCard(mjContext),
 		NeedHsz:           proto.Bool(gutils.GameHasHszState(mjContext)),
 		LastOutCard:       proto.Uint32(getLastOutCard(mjContext.GetLastOutCard())),
 		LastOutCardPlayer: proto.Uint64(mjContext.GetLastChupaiPlayer()),
@@ -554,6 +553,9 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = getQghInfo(playerID, mjContext)
 	_, gameDeskInfo.HuansanzhangInfo = getHuansanzhangInfo(playerID, mjContext)
 	_, gameDeskInfo.DingqueInfo = getDingqueInfo(playerID, mjContext)
+	if gameDeskInfo.GetHasZixun() {
+		gameDeskInfo.DoorCard = getDoorCard(mjContext)
+	}
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
