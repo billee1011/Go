@@ -282,7 +282,7 @@ func (d *desk) processEvents(ctx context.Context) {
 	})
 	defer func() {
 		if x := recover(); x != nil {
-			logEntry.Errorln(x)
+			logEntry.Fatalln(x)
 			debug.PrintStack()
 		}
 	}()
