@@ -325,6 +325,7 @@ func (d *desk) processEvent(e *deskEvent) {
 	d.ddzContext = &result.Context
 	// 游戏结束
 	if d.ddzContext.GetCurState() == ddz.StateID_state_over {
+		d.cancelTuoguanGameOver()
 		d.ContinueDesk(false, 0, d.getWinners())
 		go func() { d.Stop() }()
 		return
@@ -344,6 +345,15 @@ func (d *desk) processEvent(e *deskEvent) {
 					eventContext: result.AutoEventContext,
 				})
 			}()
+		}
+	}
+}
+
+func (d *desk) cancelTuoguanGameOver() {
+	players := d.GetDeskPlayers()
+	for _, player := range players {
+		if player.IsTuoguan() {
+			player.SetTuoguan(false, true)
 		}
 	}
 }
