@@ -1064,9 +1064,6 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	// 压入所有的对子
 	for i := 0; i < len(pairPointWeight); i++ {
 
-		// 重新排序
-		DDZPokerSort(lastPokes)
-
 		// 压入牌的数量
 		pushCount := 0
 

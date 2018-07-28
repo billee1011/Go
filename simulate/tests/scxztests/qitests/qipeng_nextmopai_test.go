@@ -22,6 +22,9 @@ func Test_qi_peng(t *testing.T) {
 	param.IsHsz = false
 	param.Cards[3][12] = 18
 	param.WallCards = []uint32{31, 31, 31, 31}
+	param.PlayerSeatGold = map[int]uint64{
+		0: 1000 * 10000, 1: 1000 * 10000, 2: 1000 * 10000, 3: 1000 * 10000,
+	}
 	data, err := utils.StartGame(param)
 	assert.Nil(t, err)
 	utils.CheckZixunNotify(t, data, 0)
