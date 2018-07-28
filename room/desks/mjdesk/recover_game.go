@@ -57,7 +57,7 @@ func getGameStage(curState server_pb.StateID) (stage room.GameStage) {
 
 func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 	if mjContext.GetCurState() == server_pb.StateID_state_zixun {
-		DoorCard := uint32(mjContext.GetLastMopaiCard().GetPoint())
+		DoorCard := gutils.ServerCard2Number(mjContext.GetLastMopaiCard())
 		return &DoorCard
 	}
 	return nil
