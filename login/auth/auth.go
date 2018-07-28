@@ -36,6 +36,6 @@ func newPlayer(accountID uint64) uint64 {
 }
 
 func initPlayerData(playerID uint64) {
-	player.SetPlayerCoin(playerID, 10000)
+	player.SetPlayerCoin(playerID, 10*10000)
 	player.SetPlayerNickName(playerID, fmt.Sprintf("玩家%v", playerID))
 }

@@ -3,8 +3,6 @@ package gutils
 import (
 	"sort"
 	majongpb "steve/server_pb/majong"
-
-	"github.com/Sirupsen/logrus"
 )
 
 //GetRecommedDingQueColor 获取推荐定却颜色 牌数最少，优先级最低
@@ -38,8 +36,6 @@ func GetColorPriorityInfo(colorCardsMap map[majongpb.CardColor][]*majongpb.Card)
 		priority := GetPriorityByColorCard(cards)
 		colorPrioMap[color] = priority
 		sortPriority = append(sortPriority, priority)
-		logrus.WithFields(logrus.Fields{"func_name": "GetColorPriorityInfo",
-			"color": color, "priority": priority}).Info("获取颜色的优先级")
 	}
 	sort.Ints(sortPriority) // 升序，排序优先级
 	return sortPriority, colorPrioMap
@@ -53,7 +49,6 @@ func ColorSort(colorCardsMap map[majongpb.CardColor][]*majongpb.Card) (min, mid,
 	// 获取 各花色的数量差异
 	cardLen := []int{wanLen, tiaoLen, tongLen}
 	sort.Ints(cardLen) // 升序
-	logrus.WithFields(logrus.Fields{"func_name": "ColorSort", "cardLen": cardLen}).Info("获取颜色的长度")
 	return cardLen[0], cardLen[1], cardLen[2]
 }
 

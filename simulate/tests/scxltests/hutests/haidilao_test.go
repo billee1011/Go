@@ -86,8 +86,7 @@ func Test_Zimo_Haidilao(t *testing.T) {
 
 	// 检测所有玩家收到自摸结算通知,清一色-2根*自摸 = 2 * 4 *4 = 32
 	winScro := 2 * 4 * 4 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
-
+	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro), deskData.DiFen)
 	// 检测所有玩家收到海底捞胡类型通知
 	//TODO 测试用例需改，海底捞月跟地胡不能同时存在
 	utils.CheckHuNotify(t, deskData, []int{zimoSeat}, zimoSeat, Int9W, room.HuType_HT_HAIDILAO)

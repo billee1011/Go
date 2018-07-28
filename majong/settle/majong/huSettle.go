@@ -165,7 +165,7 @@ func (huSettle *HuSettle) newCallTransferSettleInfo(params *interfaces.HuSettleP
 // GetDi 获取底注
 func GetDi() int64 {
 	//return r.Option.(*pb.Option_SiChuangXueLiu).Di
-	return 1
+	return 100
 }
 
 // newHuSettleInfo 生成胡结算信息
