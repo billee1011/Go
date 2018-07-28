@@ -538,18 +538,20 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	gameStage := getGameStage(mjContext.GetCurState())
 	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
-		GameId:      &gameID,
-		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(playerID, d),
-		Dices:       mjContext.GetDices(),
-		BankerSeat:  &bankerSeat,
-		EastSeat:    &bankerSeat,
-		TotalCards:  &totalCardsNum,
-		RemainCards: proto.Uint32(uint32(len(mjContext.GetWallCards()))),
-		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
-		OperatePid:  getOperatePlayerID(mjContext),
-		DoorCard:    getDoorCard(mjContext),
-		NeedHsz:     proto.Bool(gutils.GameHasHszState(mjContext)),
+		GameId:            &gameID,
+		GameStage:         &gameStage,
+		Players:           getRecoverPlayerInfo(playerID, d),
+		Dices:             mjContext.GetDices(),
+		BankerSeat:        &bankerSeat,
+		EastSeat:          &bankerSeat,
+		TotalCards:        &totalCardsNum,
+		RemainCards:       proto.Uint32(uint32(len(mjContext.GetWallCards()))),
+		CostTime:          proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
+		OperatePid:        getOperatePlayerID(mjContext),
+		DoorCard:          getDoorCard(mjContext),
+		NeedHsz:           proto.Bool(gutils.GameHasHszState(mjContext)),
+		LastOutCard:       proto.Uint32(getLastOutCard(mjContext.GetLastOutCard())),
+		LastOutCardPlayer: proto.Uint64(mjContext.GetLastChupaiPlayer()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
