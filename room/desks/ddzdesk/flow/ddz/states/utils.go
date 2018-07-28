@@ -172,6 +172,17 @@ func ContainsPoint(cards []Poker, point uint32) bool {
 	return false
 }
 
+// RemoveByPoint 从cards中删除所有与removeCards相同点数的牌
+func RemoveByPoint(cards []Poker, removeCards []Poker) []Poker {
+	var result []Poker
+	for _, card := range cards {
+		if !ContainsPoint(removeCards, card.PointWeight) {
+			result = append(result, card)
+		}
+	}
+	return result
+}
+
 // RemoveAll 从cards中删除removeCards
 func RemoveAll(cards []Poker, removeCards []Poker) []Poker {
 	var result []Poker

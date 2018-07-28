@@ -1,6 +1,8 @@
 package core
 
 import (
+	localuser "steve/hall/user"
+	"steve/server_pb/user"
 	"steve/structs"
 	"steve/structs/service"
 
@@ -24,6 +26,7 @@ func (c *hallCore) Init(e *structs.Exposer, param ...string) error {
 		entry.WithError(err).Error("注册消息处理器失败")
 		return err
 	}
+	e.RPCServer.RegisterService(user.RegisterPlayerDataServer, localuser.Default)
 	return nil
 }
 

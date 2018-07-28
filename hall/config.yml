@@ -11,7 +11,27 @@ rpc_server_name: hall
 redis_addr: 127.0.0.1:6379
 redis_passwd: 
 
+redis_list:
+  player: 
+    addr: 127.0.0.1:6379
+    passwd: 
 
+# mysql 数据库列表
+mysql_list:
+  player:
+    user: root
+    passwd: 123456
+    addr: 127.0.0.1:3306
+    db: player 
+    params:
+      charset: utf8
+  hall:
+    user: root
+    passwd: 123456
+    addr: 127.0.0.1:3306
+    db: hall 
+    params:
+      charset: utf8
 # nsq 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
@@ -19,3 +39,5 @@ nsqlookupd_addrs:
 
 # consul 
 consul_addr: 127.0.0.1:8500
+
+node: 1

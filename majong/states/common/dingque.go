@@ -145,13 +145,11 @@ func checkDingQueReq(dingQueColor majongpb.CardColor) bool {
 		majongpb.CardColor_ColorTong: "筒",
 		majongpb.CardColor_ColorTiao: "条",
 	}
-	colorValue, ok := sichuangxueliuDingQueColor[dingQueColor]
+	_, ok := sichuangxueliuDingQueColor[dingQueColor]
 	if !ok {
+		logrus.WithFields(logrus.Fields{"dingQueColor": dingQueColor}).Errorln("--定缺颜色不合法")
 		return false
 	}
-	logrus.WithFields(logrus.Fields{
-		"DingQueColor": colorValue,
-	}).Info("--定缺颜色")
 	return true
 }
 
@@ -168,16 +166,14 @@ func onDingQueRsq(playerID uint64, flow interfaces.MajongFlow) {
 	}
 	// 推送消息应答
 	flow.PushMessages([]uint64{playerID}, toClientRsq)
-	logrus.WithFields(logrus.Fields{
-		"msgID":      msgid.MsgID_ROOM_DINGQUE_RSP,
-		"dingQueNtf": toClientRsq,
-	}).Info("-----定缺成功应答")
 }
 
 // notifyPlayerDingQueColor 通知玩家定缺
 func (s *DingqueState) notifyPlayerDingQue(flow interfaces.MajongFlow) {
+	players := flow.GetMajongContext().GetPlayers()
+	idDingQueMap := make(map[uint64]majongpb.CardColor)
 	// 广播通知客户端进入定缺
-	for _, player := range flow.GetMajongContext().GetPlayers() {
+	for _, player := range players {
 		// 获取推荐定缺
 		dqColor := gutils.GetRecommedDingQueColor(player.GetHandCards())
 		if ok := checkDingQueReq(dqColor); !ok {
@@ -189,14 +185,14 @@ func (s *DingqueState) notifyPlayerDingQue(flow interfaces.MajongFlow) {
 		dingQueNtf := &room.RoomDingqueNtf{
 			Color: gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 		}
+		idDingQueMap[player.GetPalyerId()] = player.GetDingqueColor()
 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_DINGQUE_NTF),
 			Msg:   dingQueNtf,
 		})
-		// 日志
-		logrus.WithFields(logrus.Fields{
-			"msgID":      msgid.MsgID_ROOM_DINGQUE_NTF,
-			"dingQueNtf": dingQueNtf,
-		}).Info("-----定缺开始-进入定缺状态")
 	}
+	// 日志
+	logrus.WithFields(logrus.Fields{
+		"idDingQueMap": idDingQueMap,
+	}).Info("-----定缺开始-获取推荐定缺颜色")
 }

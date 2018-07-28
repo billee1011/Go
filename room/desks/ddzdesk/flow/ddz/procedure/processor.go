@@ -93,10 +93,6 @@ func HandleEvent(params Params) (result Result) {
 // ddzContext	: 斗地主牌局信息
 // bool 		: 成功/失败
 func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext *ddz.DDZContext) error {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "dealResumeRequest",
-	})
-
 	message := &ddz.ResumeRequestEvent{}
 	err := proto.Unmarshal(param.EventContext, message)
 	if err != nil {
@@ -171,7 +167,7 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 				// 没人叫过地主
 				if firstPlayerID == 0 {
 					if player.GetGrab() {
-						logEntry.Error("出现错误！firstPlayerID为0，但是player.GetGrab()为true")
+						logrus.Error("出现错误！firstPlayerID为0，但是player.GetGrab()为true")
 						ddzPlayerInfo.GrabLord = &grabLord
 					} else {
 						// 操作过说明不叫，否则说明未操作
@@ -244,35 +240,30 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 		// 开始时间
 		startTime := time.Time{}
 		startTime.UnmarshalBinary(ddzContext.StartTime)
-		logEntry.Debugf("startTime = %v", startTime)
+		logrus.Debugf("startTime = %v", startTime)
 
 		// 限制时间
 		duration := time.Second * time.Duration(ddzContext.Duration)
-		logEntry.Debugf("duration = %v", duration)
+		logrus.Debugf("duration = %v", duration)
 
 		// 剩余时间
 		leftTime := duration - time.Now().Sub(startTime)
-		logEntry.Debugf("leftTime = %v", leftTime)
+		logrus.Debugf("leftTime = %v", leftTime)
 
 		if leftTime < 0 {
 			leftTime = 0
 		}
 		leftTimeInt32 := uint32(leftTime.Seconds())
-		logEntry.Debugf("leftTimeInt32 = %v", leftTimeInt32)
 
 		curStage := room.DDZStage(int32(ddzContext.CurStage))
-
-		// 打印出恢复对局的消息
-		logEntry.WithField("玩家信息", playersInfo).Infof("向玩家%v发送恢复对局的消息,当前状态：%v, 剩余时间：%v, 当前操作玩家：%v, 底牌：%v",
-			reqPlayerID, curStage, leftTimeInt32, ddzContext.GetCurrentPlayerId(), ddzContext.GetDipai())
+		curCardType := room.CardType(ddzContext.GetCurCardType())
 
 		totalGrab := ddzContext.GetTotalGrab()
 		if totalGrab == 0 {
 			totalGrab = 1
 		}
 
-		// 发送游戏信息
-		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, &room.DDZResumeGameRsp{
+		resumeMsg := &room.DDZResumeGameRsp{
 			Result: &room.Result{ErrCode: proto.Uint32(0), ErrDesc: proto.String("")},
 			GameInfo: &room.DDZDeskInfo{
 				Players: playersInfo, // 每个人的信息
@@ -280,13 +271,19 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 					Stage: &curStage,
 					Time:  proto.Uint32(leftTimeInt32),
 				},
-				CurPlayerId: proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
-				Dipai:       ddzContext.GetDipai(),
-				TotalGrab:   &totalGrab,
-				TotalDouble: proto.Uint32(ddzContext.GetTotalDouble()),
-				TotalBomb:   proto.Uint32(ddzContext.GetTotalBomb()),
+				CurPlayerId:  proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
+				Dipai:        ddzContext.GetDipai(),
+				TotalGrab:    &totalGrab,
+				TotalDouble:  proto.Uint32(ddzContext.GetTotalDouble()),
+				TotalBomb:    proto.Uint32(ddzContext.GetTotalBomb()),
+				CurCardType:  &curCardType,
+				CurCardPivot: proto.Uint32(ddzContext.GetCardTypePivot()),
+				CurOutCards:  ddzContext.CurOutCards,
 			},
-		})
+		}
+		// 发送游戏信息
+		machine.SendMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, resumeMsg)
+		logrus.WithField("resumeMsg", resumeMsg).WithField("playerId", reqPlayerID).Infoln("斗地主发送恢复对局消息")
 	}
 
 	return nil

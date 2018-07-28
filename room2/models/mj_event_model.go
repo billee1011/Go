@@ -37,6 +37,7 @@ func (model *MjEventModel) Start() {
 
 	go func() {
 		model.processEvents(model.GetDesk().Context)
+		model.Stop()
 	}()
 	go func() {
 		model.timerTask(model.GetDesk().Context)
@@ -52,6 +53,13 @@ func (model *MjEventModel) Start() {
 
 func (model *MjEventModel) Stop() {
 	close(model.event)
+	desk := model.GetDesk()
+	players := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
+	player.GetPlayerMgr().UnbindPlayerRoomAddr(desk.GetPlayerIds())
+	for _,playerBean := range players{
+		playerBean.QuitDesk(desk)
+
+	}
 }
 
 // PushEvent 压入事件
@@ -319,7 +327,9 @@ func (model *MjEventModel) genTimerEvent() {
 		RobotLv:        robotLvs,
 		TuoGuanPlayers: tuoGuanPlayers,
 	})
+	println("自动事件生成结果------>",len(result.Events),"托管玩家数量------>",len(tuoGuanPlayers))
 	for _, event := range result.Events {
+		println("写入自动事件------>",event.EventID)
 		GetModelManager().GetMjEventModel(model.GetDesk().GetUid()).PushEvent(event)
 	}
 }

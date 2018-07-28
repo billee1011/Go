@@ -2,7 +2,6 @@ package player
 
 import (
 	"sync"
-	"errors"
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	"fmt"
@@ -22,15 +21,6 @@ func init(){
 
 func GetPlayerMgr() *PlayerMgr {
 	return roomPlayerMgr
-}
-
-func (pm *PlayerMgr) SetPlayerGold(playerID uint64,gold uint64) error{
-	player := pm.GetPlayer(playerID)
-	if player == nil {
-		return errors.New("player not find")
-	}
-	player.SetCoin(gold)
-	return nil
 }
 
 func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {

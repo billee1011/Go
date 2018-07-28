@@ -41,7 +41,7 @@ type clientCallbackImpl struct {
 	clientID uint64
 }
 
-func (cc *clientCallbackImpl) onRecvPkg(header *steve_proto_base.Header, body []byte) {
+func (cc *clientCallbackImpl) onRecvPkg(header *base.Header, body []byte) {
 	if cc.dog.msgObserver != nil {
 		cc.dog.msgObserver.OnRecv(cc.clientID, header, body)
 	}
@@ -57,7 +57,7 @@ func (cc *clientCallbackImpl) onClientClose() {
 	}
 }
 
-func (cc *clientCallbackImpl) afterSendPkg(header *steve_proto_base.Header, body []byte, err error) {
+func (cc *clientCallbackImpl) afterSendPkg(header *base.Header, body []byte, err error) {
 	if cc.dog.msgObserver != nil {
 		cc.dog.msgObserver.AfterSend(cc.clientID, header, body, err)
 	}
@@ -138,11 +138,11 @@ func (dog *watchDogImpl) Stop(serverType net.ServerType) error {
 	return nil
 }
 
-func (dog *watchDogImpl) SendPackage(clientID uint64, header *steve_proto_base.Header, body []byte) error {
+func (dog *watchDogImpl) SendPackage(clientID uint64, header *base.Header, body []byte) error {
 	return dog.pushClientMessage(clientID, header, body)
 }
 
-func (dog *watchDogImpl) pushClientMessage(clientID uint64, header *steve_proto_base.Header, body []byte) error {
+func (dog *watchDogImpl) pushClientMessage(clientID uint64, header *base.Header, body []byte) error {
 	var c *clientV2
 	// TODO : 此处有一个 BUG， 拿出来后在发送消息前客户端可能已被关闭
 	if tmp, ok := dog.clientMap.Load(clientID); ok {
@@ -153,7 +153,7 @@ func (dog *watchDogImpl) pushClientMessage(clientID uint64, header *steve_proto_
 	return c.pushMessage(header, body)
 }
 
-func (dog *watchDogImpl) BroadPackage(clientIDs []uint64, header *steve_proto_base.Header, body []byte) error {
+func (dog *watchDogImpl) BroadPackage(clientIDs []uint64, header *base.Header, body []byte) error {
 	// logrus.WithFields(logrus.Fields{
 	// 	"func_name":  "watchDogImpl.BroadPackage",
 	// 	"client_ids": clientIDs,

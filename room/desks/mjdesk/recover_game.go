@@ -45,10 +45,14 @@ func getOperatePlayerID(mjContext *server_pb.MajongContext) *uint64 {
 
 func getGameStage(curState server_pb.StateID) (stage room.GameStage) {
 	switch curState {
+	case server_pb.StateID_state_init:
+		stage = room.GameStage_GAMESTAGE_INIT
 	case server_pb.StateID_state_huansanzhang:
 		stage = room.GameStage_GAMESTAGE_HUANSANZHANG
 	case server_pb.StateID_state_dingque:
 		stage = room.GameStage_GAMESTAGE_DINGQUE
+	case server_pb.StateID_state_gameover:
+		stage = room.GameStage_GAMESTAGE_END
 	default:
 		stage = room.GameStage_GAMESTAGE_PLAYCARD
 	}
@@ -57,7 +61,7 @@ func getGameStage(curState server_pb.StateID) (stage room.GameStage) {
 
 func getDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 	if mjContext.GetCurState() == server_pb.StateID_state_zixun {
-		DoorCard := uint32(mjContext.GetLastMopaiCard().GetPoint())
+		DoorCard := gutils.ServerCard2Number(mjContext.GetLastMopaiCard())
 		return &DoorCard
 	}
 	return nil

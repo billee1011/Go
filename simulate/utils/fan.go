@@ -98,7 +98,7 @@ func GetFanMulByGameID(gameID common.GameId, currFan room.FanType) int32 {
 }
 
 // CheckFanSettle 检测番型结算 winSeat赢家座位，winScore 赢家总赢分，currFan 指定确认都番型
-func CheckFanSettle(t *testing.T, deskData *DeskData, gameID common.GameId, winSeat int, winScore int64, currFan room.FanType) {
+func CheckFanSettle(t *testing.T, deskData *DeskData, gameID common.GameId, winSeat int, winScore int64, difen uint64, currFan room.FanType) {
 	winPlayer := GetDeskPlayerBySeat(winSeat, deskData)
 	expector, _ := winPlayer.Expectors[msgid.MsgID_ROOM_ROUND_SETTLE]
 	ntf := &room.RoomBalanceInfoRsp{}
@@ -106,13 +106,13 @@ func CheckFanSettle(t *testing.T, deskData *DeskData, gameID common.GameId, winS
 	for _, info := range ntf.BillPlayersInfo {
 		fmt.Println(info.GetFan())
 		if winPlayer.Player.GetID() == info.GetPid() {
-			assert.Equal(t, winScore, info.GetScore())
+			assert.Equal(t, winScore*int64(difen), info.GetScore())
 			assert.True(t, IsExistAssignFan(currFan, info.GetFan()))
 			flag, str := IsExistHuChiFan(gameID, currFan, info.GetFan())
 			assert.Falsef(t, flag, str)
 			assert.True(t, IsAssignFanMulRight(gameID, currFan, info.GetFan()))
 		} else {
-			assert.Equal(t, -winScore, info.GetScore())
+			assert.Equal(t, -winScore*int64(difen), info.GetScore())
 		}
 
 	}

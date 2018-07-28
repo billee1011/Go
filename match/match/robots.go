@@ -19,7 +19,7 @@ func GetIdleRobot(level int) uint64 {
 		entry.WithError(err).Errorln("分配玩家 ID 失败")
 		return 0
 	}
-	player.SetPlayerCoin(playerID, 10000)
+	player.SetPlayerCoin(playerID, 10*10000)
 	player.SetPlayerNickName(playerID, fmt.Sprintf("Robot%v", playerID))
 	return playerID
 }

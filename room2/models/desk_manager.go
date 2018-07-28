@@ -12,7 +12,7 @@ import (
 	"steve/client_pb/msgid"
 )
 
-type DeskMgr struct {
+type DeskManager struct {
 	deskMap sync.Map // deskID -> *desk
 	maxID   uint64
 }
@@ -24,17 +24,17 @@ const (
 	GameId_GAMEID_ERRENMJ  = 4
 )
 
-var deskMgr *DeskMgr
+var deskMgr *DeskManager
 
 func init() {
-	deskMgr = &DeskMgr{maxID: 0}
+	deskMgr = &DeskManager{maxID: 0}
 }
 
-func GetDeskMgr() *DeskMgr {
+func GetDeskMgr() *DeskManager {
 	return deskMgr
 }
 
-func (mgr *DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
+func (mgr *DeskManager) CreateDesk(ctx context.Context, req *roommgr.CreateDeskRequest) (rsp *roommgr.CreateDeskResponse, err error) {
 	players := req.GetPlayers()
 	// 回复match服的消息
 	rsp = &roommgr.CreateDeskResponse{
@@ -73,7 +73,7 @@ func (mgr *DeskMgr) CreateDesk(ctx context.Context, req *roommgr.CreateDeskReque
 }
 
 //创建桌子并初始化所有model
-func (mgr *DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robotLvs []int) (*deskpkg.Desk,error) {
+func (mgr *DeskManager) CreateDeskObj(length int,players []uint64, gameID int, robotLvs []int) (*deskpkg.Desk,error) {
 	var config deskpkg.DeskConfig
 	var context interface{}
 	id, _ := mgr.allocDeskID()
@@ -102,6 +102,6 @@ func (mgr *DeskMgr) CreateDeskObj(length int,players []uint64, gameID int, robot
 	return deskPoint,nil
 }
 
-func (mgr *DeskMgr) allocDeskID() (uint64, error) {
+func (mgr *DeskManager) allocDeskID() (uint64, error) {
 	return atomic.AddUint64(&mgr.maxID, 1), nil
 }

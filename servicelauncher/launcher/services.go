@@ -10,6 +10,7 @@ import (
 	"steve/serviceloader/loader"
 	"steve/structs/service"
 	"github.com/Sirupsen/logrus"
+	"steve/room2"
 )
 
 func Init(args []string) {
@@ -44,12 +45,14 @@ func LoadService(name string, options ...loader.ServiceOption) {
 		svr = roomcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
+	case "room2":
+		svr = core.NewService()
 	}
 	if svr != nil {
 		svr.Init(exposer)
 		loader.Run(svr, exposer, opt)
 	}else{
-		logrus.Errorln("no service found")
+		logrus.Errorln("no service found service name : ",svr)
 		panic("no service found")
 	}
 }

@@ -6,10 +6,14 @@ Package user is a generated protocol buffer package.
 
 It is generated from these files:
 	client.proto
+	errors.proto
+	service.proto
 
 It has these top-level messages:
 	ClientDisconnect
 	PlayerLogin
+	GetPlayerByAccountReq
+	GetPlayerByAccountRsp
 */
 package user
 

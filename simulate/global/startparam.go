@@ -37,5 +37,6 @@ func NewCommonStartGameParams() structs.StartGameParams {
 		DingqueColor:   []room.CardColor{room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO, room.CardColor_CC_TIAO},
 		PlayerSeatGold: map[int]uint64{0: 100000, 1: 100000, 2: 100000, 3: 100000},
 		PeiPaiGame:     "scxl",
+		DiFen:          100,
 	}
 }
