@@ -473,15 +473,44 @@ func Test_Tuoguan_4sAnd2s(t *testing.T) {
 	// 出的牌
 	outInts := states.ToInts(outCards)
 
-	// 应该是88886699
+	// 应该是88886666
 	assert.Equal(t, int(0x18), int(outInts[0]))
 	assert.Equal(t, int(0x28), int(outInts[1]))
 	assert.Equal(t, int(0x38), int(outInts[2]))
 	assert.Equal(t, int(0x48), int(outInts[3]))
 	assert.Equal(t, int(0x16), int(outInts[4]))
 	assert.Equal(t, int(0x26), int(outInts[5]))
-	assert.Equal(t, int(0x19), int(outInts[6]))
-	assert.Equal(t, int(0x29), int(outInts[7]))
+	assert.Equal(t, int(0x36), int(outInts[6]))
+	assert.Equal(t, int(0x46), int(outInts[7]))
+}
+
+// 测试托管的4带2对子，用例1
+func Test_Tuoguan_4sAnd2s_1(t *testing.T) {
+
+	// 手中的牌（88887777）
+	handCards := states.ToDDZCards([]uint32{0x48, 0x28, 0x18, 0x38, 0x17, 0x27, 0x37, 0x47})
+
+	// 上次出的牌（33334444）
+	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBigger4sAnd2s(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是77778888
+	assert.Equal(t, int(0x17), int(outInts[0]))
+	assert.Equal(t, int(0x27), int(outInts[1]))
+	assert.Equal(t, int(0x37), int(outInts[2]))
+	assert.Equal(t, int(0x47), int(outInts[3]))
+	assert.Equal(t, int(0x18), int(outInts[4]))
+	assert.Equal(t, int(0x28), int(outInts[5]))
+	assert.Equal(t, int(0x38), int(outInts[6]))
+	assert.Equal(t, int(0x48), int(outInts[7]))
 }
 
 // 测试托管的炸弹
