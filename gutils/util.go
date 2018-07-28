@@ -64,6 +64,9 @@ func CardToRoomCard(card *majongpb.Card) (*room.Card, error) {
 // ServerCard2Number 服务器的 Card 转换成数字
 func ServerCard2Number(card *majongpb.Card) uint32 {
 	var color uint32
+	if card == nil {
+		return 0
+	}
 	if card.Color == majongpb.CardColor_ColorWan {
 		color = 1
 	} else if card.Color == majongpb.CardColor_ColorTiao {
