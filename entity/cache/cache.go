@@ -12,12 +12,21 @@ type HallPlayer struct {
 	State     uint64 `protobuf:"varint,6,opt,name=state" json:"state,omitempty"`
 }
 
+// key formats
 const (
 	// AccountPlayerKey 账号关联的玩家
 	AccountPlayerKey = "account:player:%v"
+
+	// playerTokenKeyFmt
+	playerTokenKeyFmt = "playertoken:%d"
 )
 
 // FmtAccountPlayerKey 账号所关联玩家 key
 func FmtAccountPlayerKey(accountID uint64) string {
 	return fmt.Sprintf(AccountPlayerKey, accountID)
+}
+
+// FmtPlayerTokenKey format player's token key
+func FmtPlayerTokenKey(playerID uint64) string {
+	return fmt.Sprintf(playerTokenKeyFmt, playerID)
 }

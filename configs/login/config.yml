@@ -23,13 +23,18 @@ rpc_port: 36201
 rpc_server_name: login
 
 
+redis_list:
+  player: 
+    addr: 127.0.0.1:6379
+    passwd: 
+
 # mysql 数据库列表
 mysql_list:
   log:
     user: root
     passwd: 123456
     addr: 127.0.0.1:3306
-    db: log 
+    db: player 
     params:
       charset: utf8
 
