@@ -502,6 +502,8 @@ func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
 		if nextBankerSeat >= len(mjContext.GetPlayers()) {
 			nextBankerSeat = int(mjContext.GetZhuangjiaIndex())
 		}
+		// 游戏结束取消玩家托管，展示结算
+		d.cancelTuoguanGameOver()
 		d.settler.RoundSettle(d, mjContext)
 		d.ContinueDesk(true, nextBankerSeat, d.getWinners())
 		logEntry.Infoln("游戏结束状态")
@@ -612,4 +614,13 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	deskMgr.DetachPlayer(deskPlayer)
 	// getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil
+}
+
+func (d *desk) cancelTuoguanGameOver() {
+	players := d.GetDeskPlayers()
+	for _, player := range players {
+		if player.IsTuoguan() {
+			player.SetTuoguan(false, true)
+		}
+	}
 }
