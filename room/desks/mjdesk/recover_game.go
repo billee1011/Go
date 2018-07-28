@@ -299,3 +299,11 @@ func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 
 	return zixunNtf
 }
+
+func getLastOutCard(outCard *server_pb.Card) uint32 {
+	card := gutils.ServerCard2Number(outCard)
+	if card == 10 {
+		card = 0
+	}
+	return card
+}
