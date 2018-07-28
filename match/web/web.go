@@ -7,31 +7,37 @@ import (
 	"time"
 )
 
+// web配置信息
 var configs = struct {
 	robotJoinTime         time.Duration // 机器人加入匹配的时间
 	continueDismissTime   time.Duration // 续局牌桌解散时间
 	continueRobotTime     time.Duration // 续局牌桌机器人决策时间
 	robotContinueRateWin  float32       // 机器人胜利时续局概率
 	robotContinueRateLoss float32       // 机器人失败时续局概率
+	sameDeskLimitTime     time.Duration // 同桌限制时间
 }{
 	robotJoinTime:         20 * time.Second,
 	continueDismissTime:   20 * time.Second,
 	continueRobotTime:     3 * time.Second,
 	robotContinueRateWin:  0.9,
 	robotContinueRateLoss: 0.7,
+	sameDeskLimitTime:     60 * time.Second,
 }
 
 // GetRobotJoinTime 获取机器人加入匹配的时间
+// 超过这个时间，就要加入机器人
 func GetRobotJoinTime() time.Duration {
 	return configs.robotJoinTime
 }
 
 // GetContinueDismissTime 获取续局牌桌解散时间
+// 超过这个时间，等待中的续局牌桌需要解散
 func GetContinueDismissTime() time.Duration {
 	return configs.continueDismissTime
 }
 
 // GetContinueRobotTime 获取续局牌桌机器人决策时间
+//
 func GetContinueRobotTime() time.Duration {
 	return configs.continueRobotTime
 }
@@ -42,6 +48,12 @@ func GetRobotContinueRate(winner bool) float32 {
 		return configs.robotContinueRateWin
 	}
 	return configs.robotContinueRateLoss
+}
+
+// GetSameDeskLimitTime 获取同桌限制时间
+// 超过这个时间，匹配时不再限制同桌
+func GetSameDeskLimitTime() time.Duration {
+	return configs.sameDeskLimitTime
 }
 
 func handleChangeDurationVal(d *time.Duration, min, max time.Duration, w http.ResponseWriter, r *http.Request, formField string) {
