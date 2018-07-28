@@ -16,7 +16,7 @@ func NewService() service.Service {
 }
 
 func (s *loginService) Init(e *structs.Exposer, param ...string) error {
-	e.RPCServer.RegisterService(login.RegisterLoginServiceServer, &loginservice.LoginService{})
+	e.RPCServer.RegisterService(login.RegisterLoginServiceServer, loginservice.Default())
 	return nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"steve/client_pb/common"
+	"steve/gutils"
 	"steve/login/data"
 	"steve/server_pb/login"
 	"steve/server_pb/user"
@@ -31,9 +32,10 @@ var playerIDGetter = func(accID uint64) (uint64, int) {
 		return 0, int(common.ErrCode_EC_FAIL)
 	}
 	playerDataService := user.NewPlayerDataClient(hallCli)
-	rsp, err := playerDataService.GetPlayerByAccount(context.Background(), &user.GetPlayerByAccountReq{
-		AccountId: accID,
-	})
+	rsp, err := playerDataService.GetPlayerByAccount(context.Background(),
+		&user.GetPlayerByAccountReq{
+			AccountId: accID,
+		})
 	if err != nil {
 		entry.WithError(err).Errorln("请求玩家 ID 失败")
 		return 0, int(common.ErrCode_EC_FAIL)
@@ -45,12 +47,25 @@ var playerIDGetter = func(accID uint64) (uint64, int) {
 
 // LoginService 实现 login.LoginServiceServer
 type LoginService struct {
+	idAllocNode *gutils.Node
 }
 
-var _ login.LoginServiceServer = new(LoginService)
+var defaultLoginService *LoginService
+
+// Default return default object
+func Default() *LoginService {
+	return defaultLoginService
+}
 
 // Login 登录
-func (ls *LoginService) Login(ctx context.Context, request *login.LoginRequest) (response *login.LoginResponse, err error) {
+func (ls *LoginService) Login(ctx context.Context, request *login.LoginRequest) (
+	response *login.LoginResponse, err error) {
+
+	entry := logrus.WithFields(logrus.Fields{
+		"player_id": request.GetPlayerId(),
+		"token":     request.GetToken(),
+	})
+	entry.Debugln("收到登录请求")
 	response = &login.LoginResponse{
 		ErrCode:  uint32(common.ErrCode_EC_FAIL),
 		PlayerId: 0,
@@ -58,15 +73,16 @@ func (ls *LoginService) Login(ctx context.Context, request *login.LoginRequest) 
 	}
 	// auth by token success
 	if authByToken(request.GetToken(), request.GetPlayerId()) {
-		response.ErrCode, response.PlayerId, response.Token = uint32(common.ErrCode_EC_SUCCESS), request.GetPlayerId(), request.GetToken()
+		entry.Debugln("通过 token 认证成功")
+		response.ErrCode = uint32(common.ErrCode_EC_SUCCESS)
+		response.PlayerId = request.GetPlayerId()
 		response.Token = generateToken(request.GetPlayerId())
 		return
 	}
 
-	accID, errCode := authUser(request.GetAccountId(), request.GetRequestData())
-	if errCode != int(common.ErrCode_EC_SUCCESS) {
-		response.ErrCode = uint32(errCode)
-		return
+	accID := request.GetAccountId()
+	if accID == 0 {
+		accID = uint64(ls.idAllocNode.Generate())
 	}
 	playerID, errCode := playerIDGetter(accID)
 	if errCode != int(common.ErrCode_EC_SUCCESS) {
@@ -86,7 +102,10 @@ func (ls *LoginService) Login(ctx context.Context, request *login.LoginRequest) 
 func generateToken(playerID uint64) string {
 	entry := logrus.WithField("player_id", playerID)
 
-	tokenSrc := fmt.Sprintf("%d%d%s", playerID, time.Now().Nanosecond(), viper.GetString("auth_key"))
+	tokenSrc := fmt.Sprintf("%d%d%s", playerID,
+		time.Now().Nanosecond(),
+		viper.GetString("auth_key"))
+
 	token := fmt.Sprintf("%x", md5.Sum([]byte(tokenSrc)))
 	if err := tokenSetter(playerID, token, 24*time.Hour); err != nil {
 		entry.WithError(err).Errorln("存储玩家 token 失败")
@@ -101,19 +120,28 @@ func authByToken(token string, playerID uint64) bool {
 	if token == "" || playerID == 0 {
 		return false
 	}
+	entry := logrus.WithFields(logrus.Fields{
+		"token":     token,
+		"player_id": playerID,
+	})
+
 	saveToken, err := tokenGetter(playerID)
 	if err != nil {
+		entry.WithError(err).Debugln("获取玩家 token 失败")
 		return false
 	}
+	entry.WithField("save_token", saveToken).Debugln("token 认证")
 	return saveToken == token
-}
-
-// 到账号平台认证用户
-// 返回： 账号ID，错误码
-func authUser(accID uint64, requestData []byte) (uint64, int) {
-	return accID, 0 // TODO 向账号系统请求认证
 }
 
 func init() {
 	viper.SetDefault("auth_key", "some-secret-key")
+
+	idAllocNode, err := gutils.NewNode(viper.GetInt64("node"))
+	if err != nil {
+		logrus.Panicln(err)
+	}
+	defaultLoginService = &LoginService{
+		idAllocNode: idAllocNode,
+	}
 }

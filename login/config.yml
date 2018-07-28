@@ -28,14 +28,4 @@ redis_list:
     addr: 127.0.0.1:6379
     passwd: 
 
-# mysql 数据库列表
-mysql_list:
-  log:
-    user: root
-    passwd: 123456
-    addr: 127.0.0.1:3306
-    db: player 
-    params:
-      charset: utf8
-
 node: 1

@@ -24,7 +24,7 @@ func GetPlayerToken(playerID uint64) (string, error) {
 	if cmd.Err() != nil {
 		return "", fmt.Errorf("获取 redis 数据失败: %v", cmd.Err())
 	}
-	return cmd.String(), nil
+	return cmd.Val(), nil
 }
 
 // SetPlayerToken 设置玩家认证 token

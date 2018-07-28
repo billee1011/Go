@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"steve/common/data/player"
 	"steve/entity/db"
 	"steve/hall/data"
 	"steve/server_pb/user"
@@ -44,6 +45,9 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
+	// TODO: 使用正式的金币服
+	player.SetPlayerCoin(playerID, 10*10000)
+
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),

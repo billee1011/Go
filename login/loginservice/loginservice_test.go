@@ -12,15 +12,11 @@ import (
 
 func TestLoginService_Login(t *testing.T) {
 	const (
-		ACCOUNTID uint64 = 1
-		PLAYERID  uint64 = 100
+		PLAYERID uint64 = 100
 	)
-
 	playerIDGetter = func(accID uint64) (uint64, int) {
-		assert.Equal(t, accID, ACCOUNTID)
 		return PLAYERID, 0
 	}
-
 	var settedToken string
 	tokenSetter = func(playerID uint64, token string, duration time.Duration) error {
 		assert.Equal(t, playerID, PLAYERID)
@@ -35,10 +31,8 @@ func TestLoginService_Login(t *testing.T) {
 	}
 
 	// 测试普通登录
-	ls := LoginService{}
-	response, err := ls.Login(context.Background(), &login.LoginRequest{
-		AccountId: 1,
-	})
+	ls := Default()
+	response, err := ls.Login(context.Background(), &login.LoginRequest{})
 	assert.Nil(t, err)
 	assert.Equal(t, uint32(common.ErrCode_EC_SUCCESS), response.GetErrCode())
 	assert.Equal(t, PLAYERID, response.GetPlayerId())
