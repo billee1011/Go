@@ -5,10 +5,9 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	playerdata "steve/common/data/player"
-	"steve/room/interfaces/facade"
-
 	"sync"
 	"steve/room2/desk"
+	"steve/room2/util"
 )
 
 type Player struct {
@@ -37,6 +36,7 @@ func (dp *Player) QuitDesk(desk *desk.Desk) {
 	dp.quit = true
 	dp.tuoguan = true // 退出后自动托管
 	dp.desk = nil
+	dp.ecoin = 0
 }
 
 // EnterDesk 进入房间
@@ -149,7 +149,7 @@ func (p *Player) IsOnline() bool {
 }
 
 func (dp *Player) notifyTuoguan(playerID uint64, tuoguan bool) {
-	facade.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
+	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
 }
