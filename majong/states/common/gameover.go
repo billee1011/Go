@@ -61,11 +61,13 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 	// 广播牌局结束消息
 	facade.BroadcaseMessage(flow, msgid.MsgID_ROOM_GAMEOVER_NTF, roomGameOverNtf)
 	// 日志
-	logrus.WithFields(logrus.Fields{
-		"msgID":           msgid.MsgID_ROOM_GAMEOVER_NTF,
-		"roomGameOverNtf": roomGameOverNtf,
-	}).Info("-----牌局结束-推倒牌墙")
 	gutils.SetNextZhuangIndex([]uint64{}, 0, mjContext)
+	logrus.WithFields(logrus.Fields{
+		"msgID":              msgid.MsgID_ROOM_GAMEOVER_NTF,
+		"roomGameOverNtf":    roomGameOverNtf,
+		"nextZhuangjiaIndex": mjContext.GetNextBankerSeat(),
+		"zhuangjiaIndex":     mjContext.GetZhuangjiaIndex(),
+	}).Info("-----牌局结束-推倒牌墙")
 }
 
 // roundSettle 处理查花猪，查大叫，退税 结算

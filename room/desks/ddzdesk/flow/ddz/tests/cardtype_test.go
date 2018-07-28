@@ -111,6 +111,13 @@ func Test_IsTriplesAndSingles5(t *testing.T) {
 	assert.Equal(t, uint32(8), pivot.PointWeight)
 }
 
+func Test_IsTriplesAndSingles6(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x15, 0x25, 0x35, 0x17, 0x27, 0x37, 0x16, 0x26, 0x36, 0x2D, 0x4D, 0x4D}) //555666777KKK 全三牌型
+	is, pivot := states.IsTriplesAndSingles(cards)
+	assert.Equal(t, true, is)
+	assert.Equal(t, uint32(7), pivot.PointWeight)
+}
+
 func Test_IsPairs(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x14, 0x24, 0x35, 0x45})
 	is, pivot := states.IsPairs(cards)
