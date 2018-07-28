@@ -77,7 +77,6 @@ func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majon
 func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent interfaces.AIEvent) {
 	//有定缺牌，出最大的定缺牌
 	handCards := player.GetHandCards()
-
 	//优先出定缺牌
 	for i := len(handCards) - 1; i >= 0; i-- {
 		hc := handCards[i]
@@ -133,12 +132,17 @@ func (h *zixunStateAI) checkAIEvent(player *majong.Player, mjContext *majong.Maj
 	if len(player.GetHandCards()) < 2 {
 		return fmt.Errorf("手牌数量少于2")
 	}
-
+	record := player.GetZixunRecord()
 	if params.AIType == interfaces.TingAI {
-		record := player.GetZixunRecord()
 		if record.GetEnableZimo() || len(record.GetEnableAngangCards()) > 0 ||
 			len(record.GetEnableBugangCards()) > 0 {
 			return fmt.Errorf("听的类型下，玩家有特殊操作的时候不处理")
+		}
+	}
+	if params.AIType == interfaces.HuAI {
+		if len(record.GetEnableAngangCards()) > 0 ||
+			len(record.GetEnableBugangCards()) > 0 {
+			return fmt.Errorf("胡的类型下，玩家有除了胡之外的特殊操作不处理")
 		}
 	}
 	return nil
