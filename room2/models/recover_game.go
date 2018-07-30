@@ -2,14 +2,15 @@ package models
 
 import (
 	"steve/client_pb/room"
-	server_pb "steve/server_pb/majong"
-	"time"
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
-	"steve/majong/utils"
+	server_pb "steve/entity/majong"
+	"steve/room/majong/utils"
 	"steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/util"
+	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 func GetStateCostTime(entryTime int64) (costTime uint32) {
@@ -68,7 +69,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "getRecoverPlayerInfo",
 	})
-	ctx :=d.GetConfig().Context.(*contexts.MjContext).MjContext
+	ctx := d.GetConfig().Context.(*contexts.MjContext).MjContext
 	mjContext := &ctx
 	deskPlayers := GetModelManager().GetPlayerModel(d.GetUid()).GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {

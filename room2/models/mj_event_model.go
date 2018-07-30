@@ -1,20 +1,20 @@
 package models
 
 import (
-	"runtime/debug"
-	"github.com/Sirupsen/logrus"
 	"context"
-	server_pb "steve/server_pb/majong"
-	majong_process "steve/majong/export/process"
-	context2 "steve/room2/contexts"
-	"time"
+	"runtime/debug"
 	"steve/client_pb/msgid"
-	"github.com/golang/protobuf/proto"
-	"steve/structs/proto/gate_rpc"
+	server_pb "steve/entity/majong"
+	majong_process "steve/room/majong/export/process"
 	"steve/room2/ai"
-	"steve/room2/player"
+	context2 "steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/fixed"
+	"steve/room2/player"
+	"steve/structs/proto/gate_rpc"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type MjEventModel struct {
@@ -56,9 +56,8 @@ func (model *MjEventModel) Stop() {
 	desk := model.GetDesk()
 	players := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
 	player.GetPlayerMgr().UnbindPlayerRoomAddr(desk.GetPlayerIds())
-	for _,playerBean := range players{
+	for _, playerBean := range players {
 		playerBean.QuitDesk(desk)
-
 	}
 }
 
@@ -95,27 +94,11 @@ func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterp
 		logEntry.WithError(err).Errorln("消息转事件失败")
 		return
 	}
-	eventMessage, ok := eventContext.(proto.Message)
-	if !ok {
-		logEntry.Errorln("转换事件函数返回值类型错误")
-		return
-	}
-	eventConetxtByte, err := proto.Marshal(eventMessage)
-	if err != nil {
-		logEntry.WithError(err).Errorln("序列化事件现场失败")
-	}
 
-	/*interfaces.Event{
-		ID:        server_pb.EventID(eventID),
-		Context:   eventConetxtByte,
-		EventType: interfaces.NormalEvent,
-		PlayerID:  playerID,
-	}
-*/
 	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
 		fixed.NormalEvent,
 		model.GetDesk(),
-		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber, eventConetxtByte, playerID))
+		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber, eventContext, playerID))
 
 	model.PushEvent(event)
 }
@@ -141,9 +124,9 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 				return
 			}
 			/*case enterQuitInfo := <-model.GetDesk().PlayerEnterQuitChannel():
-				{
-					d.handleEnterQuit(enterQuitInfo)
-				}*/
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}*/
 		case event := <-model.event:
 			{
 				println("收到事件 : ", event.EventID)
@@ -152,8 +135,8 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 				}
 				mjContext := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 				stateNumber := event.Params.Params[0].(int)
-				context := event.Params.Params[1].([]byte)
-				println("event state:",stateNumber,"-----context state:",mjContext.StateNumber)
+				context := event.Params.Params[1].(interface{})
+				println("event state:", stateNumber, "-----context state:", mjContext.StateNumber)
 				if needCompareStateNumber(&event) && stateNumber != mjContext.StateNumber {
 					continue
 				}
@@ -189,7 +172,7 @@ func (model *MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
 // step 3. 调用 room 的结算逻辑来处理结算
 // step 4. 如果有自动事件， 将自动事件写入自动事件通道
 // step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
-func (model *MjEventModel) processEvent(eventID int, eventContext []byte) {
+func (model *MjEventModel) processEvent(eventID int, eventContext interface{}) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.ProcessEvent",
 		"event_id":  eventID,
@@ -242,7 +225,7 @@ func (model *MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 }
 
 // callEventHandler 调用事件处理器
-func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
+func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int, eventContext interface{}) (result majong_process.HandleMajongEventResult, succ bool) {
 	succ = false
 	conte := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 	stateNumber, mjContext, stateTime := conte.StateNumber, conte.MjContext, conte.StateTime
@@ -263,9 +246,9 @@ func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int,
 	}
 	// dContext 的每次修改都是一块新内存，用来确保并发安全。
 	model.GetDesk().GetConfig().Context = &context2.MjContext{
-		MjContext:   newContext,
+		MjContext: newContext,
 		//StateNumber: stateNumber,
-		StateTime:   stateTime,
+		StateTime: stateTime,
 	}
 	model.GetDesk().GetConfig().Context.(*context2.MjContext).SetStateNumber(stateNumber)
 	println("更新桌子状体 old ", model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber)
@@ -327,9 +310,9 @@ func (model *MjEventModel) genTimerEvent() {
 		RobotLv:        robotLvs,
 		TuoGuanPlayers: tuoGuanPlayers,
 	})
-	println("自动事件生成结果------>",len(result.Events),"托管玩家数量------>",len(tuoGuanPlayers))
+	println("自动事件生成结果------>", len(result.Events), "托管玩家数量------>", len(tuoGuanPlayers))
 	for _, event := range result.Events {
-		println("写入自动事件------>",event.EventID)
+		println("写入自动事件------>", event.EventID)
 		GetModelManager().GetMjEventModel(model.GetDesk().GetUid()).PushEvent(event)
 	}
 }

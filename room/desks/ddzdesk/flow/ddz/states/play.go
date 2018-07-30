@@ -6,12 +6,12 @@ import (
 
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/majong/global"
+	"steve/room/majong/global"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type playState struct{}
@@ -37,16 +37,12 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		return int(ddz.StateID_state_playing), global.ErrInvalidEvent
 	}
 
-	message := &ddz.PlayCardRequestEvent{}
-	err := proto.Unmarshal(event.EventData, message)
-	if err != nil {
-		return int(ddz.StateID_state_playing), global.ErrUnmarshalEvent
-	}
+	message := event.EventData.(*ddz.PlayCardRequestEvent)
 
 	context := getDDZContext(m)
-	playerId := message.GetHead().GetPlayerId()
+	playerID := message.GetHead().GetPlayerId()
 	outCards := ToDDZCards(message.GetCards())
-	logEntry := logrus.WithField("playerId", playerId).WithField("outCards", outCards)
+	logEntry := logrus.WithField("playerId", playerID).WithField("outCards", outCards)
 
 	//修复玩家有手牌黑桃3时，伪造四个黑桃3能成功出炸弹的问题
 	counts := make(map[uint32]uint32) //Map<card, count>
@@ -62,52 +58,52 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		if count > 1 {
 			msg := fmt.Sprintf("存在重复牌%s", ToDDZCard(card))
 			logEntry.Warnln(msg)
-			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+			sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 				Result: genResult(7, msg),
 			})
 			return int(ddz.StateID_state_playing), global.ErrInvalidEvent
 		}
 	}
 
-	if !isValidPlayer(context, playerId) {
+	if !isValidPlayer(context, playerID) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
 
-	if context.CurrentPlayerId != playerId {
+	if context.CurrentPlayerId != playerID {
 		logEntry.WithField("expected player:", context.CurrentPlayerId).Errorln("未到本玩家出牌")
-		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(1, "未轮到本玩家出牌"),
 		})
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
 
-	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId
-	player := GetPlayerByID(context.GetPlayers(), playerId)
+	nextPlayerID := GetNextPlayerByID(context.GetPlayers(), playerID).PlayerId
+	player := GetPlayerByID(context.GetPlayers(), playerID)
 	if len(outCards) == 0 { //pass
 		logEntry.Infoln("玩家过牌")
 		if context.CurCardType == ddz.CardType_CT_NONE { //该你出牌时不出牌，报错
-			sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+			sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 				Result: genResult(6, "首轮出牌玩家不能过牌"),
 			})
 			return int(ddz.StateID_state_playing), errors.New("首轮出牌玩家不能过牌")
 		}
 		player.OutCards = ToInts(outCards)
-		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{ //成功pass
+		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{ //成功pass
 			Result: genResult(0, ""),
 		})
 
 		stage := room.DDZStage_DDZ_STAGE_PLAYING
 		broadcast(m, msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF, &room.DDZPlayCardNtf{ //广播pass
-			PlayerId:     &playerId,
+			PlayerId:     &playerID,
 			Cards:        message.GetCards(),
 			CardType:     nil,
 			TotalBomb:    &context.TotalBomb,
-			NextPlayerId: &nextPlayerId,
+			NextPlayerId: &nextPlayerID,
 			NextStage:    GenNextStage(stage),
 		})
 
-		context.CurrentPlayerId = nextPlayerId
+		context.CurrentPlayerId = nextPlayerID
 		//产生超时事件
 		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 		context.StartTime, _ = time.Now().MarshalBinary()
@@ -126,7 +122,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	handCards := ToDDZCards(player.HandCards)
 	if !ContainsAll(handCards, outCards) { //检查所出的牌是否在手牌中
-		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(2, "所出的牌不在手牌中"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("所出的牌不在手牌中")
@@ -134,7 +130,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 	cardType, pivot := GetCardType(outCards)
 	if cardType == ddz.CardType_CT_NONE { //检查所出的牌能否组成牌型
-		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(3, "无法组成牌型"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("无法组成牌型")
@@ -143,7 +139,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if context.CurCardType != ddz.CardType_CT_NONE &&
 		(!CanBiggerThan(cardType, context.CurCardType) || //牌型与上家不符(炸弹不算不符)
 			(context.CurCardType == ddz.CardType_CT_SHUNZI && cardType == ddz.CardType_CT_SHUNZI && len(outCards) != len(context.CurOutCards))) { //顺子牌数不足
-		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(4, "牌型与上家不符"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("牌型与上家不符")
@@ -167,7 +163,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	if !bigger {
-		sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
+		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(5, "牌比上家小"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("牌比上家小")
@@ -183,7 +179,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	player.AllOutCards = ToInts(lastOutCards) // for 记牌器
 
 	//更新context
-	context.CurrentPlayerId = nextPlayerId
+	context.CurrentPlayerId = nextPlayerID
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
 	context.StartTime, _ = time.Now().MarshalBinary()
@@ -196,37 +192,37 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	if cardType == ddz.CardType_CT_BOMB || cardType == ddz.CardType_CT_KINGBOMB {
 		context.TotalBomb = context.TotalBomb * 2
 	}
-	if playerId != context.LordPlayerId {
+	if playerID != context.LordPlayerId {
 		context.Spring = false //农民出牌了，没有春天了
 	}
-	if context.Spring == false && playerId == context.LordPlayerId {
+	if context.Spring == false && playerID == context.LordPlayerId {
 		context.AntiSpring = false // 地主第二次出牌了，没有反春天了
 	}
 
-	sendToPlayer(m, playerId, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{ //成功出牌
+	sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{ //成功出牌
 		Result: genResult(0, ""),
 	})
 
 	var nextStage room.DDZStage
 	if len(player.HandCards) == 0 {
 		nextStage = room.DDZStage_DDZ_STAGE_OVER
-		nextPlayerId = 0
+		nextPlayerID = 0
 	} else {
 		nextStage = room.DDZStage_DDZ_STAGE_PLAYING
 	}
 	clientCardType := room.CardType(int32(cardType))
 	broadcast(m, msgid.MsgID_ROOM_DDZ_PLAY_CARD_NTF, &room.DDZPlayCardNtf{ //广播出牌
-		PlayerId:      &playerId,
+		PlayerId:      &playerID,
 		Cards:         message.GetCards(),
 		CardType:      &clientCardType,
 		CardTypePivot: &context.CardTypePivot,
 		TotalBomb:     &context.TotalBomb,
-		NextPlayerId:  &nextPlayerId,
+		NextPlayerId:  &nextPlayerID,
 		NextStage:     GenNextStage(nextStage),
 	})
 
 	if len(player.HandCards) == 0 {
-		context.WinnerId = playerId
+		context.WinnerId = playerID
 		context.Duration = 0 //清除倒计时
 		delay := StageTime[room.DDZStage_DDZ_STAGE_OVER]
 		duration := time.Second * time.Duration(delay)

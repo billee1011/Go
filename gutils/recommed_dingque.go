@@ -2,7 +2,7 @@ package gutils
 
 import (
 	"sort"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 //GetRecommedDingQueColor 获取推荐定却颜色 牌数最少，优先级最低

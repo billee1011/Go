@@ -3,10 +3,9 @@ package majong
 import (
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/room/interfaces"
-	majongpb "steve/server_pb/majong"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -40,24 +39,16 @@ func GenerateSettleEvent(desk interfaces.Desk, settleType majongpb.SettleType, b
 		majongpb.SettleType_settle_zimo:     true,
 	}
 	if needEvent[settleType] {
-		eventContext, err := proto.Marshal(&majongpb.SettleFinishEvent{
+		eventContext := &majongpb.SettleFinishEvent{
 			PlayerId: brokerPlayers,
-		})
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"func_name":     "GenerateSettleEvent",
-				"settleType":    settleType,
-				"brokerPlayers": brokerPlayers,
-			}).WithError(err).Errorln("消息序列化失败")
-			return
 		}
 		event := majongpb.AutoEvent{
 			EventId:      majongpb.EventID_event_settle_finish,
 			EventContext: eventContext,
 		}
 		desk.PushEvent(interfaces.Event{
-			ID:        int32(event.GetEventId()),
-			Context:   event.GetEventContext(),
+			ID:        int32(event.EventId),
+			Context:   event.EventContext,
 			EventType: interfaces.NormalEvent,
 			PlayerID:  0,
 		})

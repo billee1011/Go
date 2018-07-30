@@ -22,7 +22,7 @@ type Result struct {
 	Context           ddz.DDZContext // 最新现场
 	HasAutoEvent      bool
 	AutoEventID       int
-	AutoEventContext  []byte
+	AutoEventContext  interface{}
 	AutoEventDuration time.Duration
 	Succeed           bool // 是否成功
 }
@@ -33,7 +33,7 @@ type Params struct {
 	Context      ddz.DDZContext           // 牌局现场
 	Sender       ddzmachine.MessageSender // 消息发送器， 拆分后要修改
 	EventID      int                      // 事件 ID
-	EventContext []byte                   // 事件现场
+	EventContext interface{}              // 事件现场
 }
 
 // HandleEvent 处理牌局事件
@@ -93,11 +93,11 @@ func HandleEvent(params Params) (result Result) {
 // ddzContext	: 斗地主牌局信息
 // bool 		: 成功/失败
 func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext *ddz.DDZContext) error {
-	message := &ddz.ResumeRequestEvent{}
-	err := proto.Unmarshal(param.EventContext, message)
-	if err != nil {
-		return err
-	}
+	/*logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "dealResumeRequest",
+	})*/
+
+	message := param.EventContext.(*ddz.ResumeRequestEvent)
 
 	// 请求的玩家ID
 	reqPlayerID := message.GetHead().GetPlayerId()

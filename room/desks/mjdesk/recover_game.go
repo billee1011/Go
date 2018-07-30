@@ -4,7 +4,7 @@ import (
 	"steve/client_pb/room"
 	"steve/gutils"
 	"steve/room/interfaces/facade"
-	server_pb "steve/server_pb/majong"
+	server_pb "steve/entity/majong"
 	"time"
 
 	"github.com/Sirupsen/logrus"

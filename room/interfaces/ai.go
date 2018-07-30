@@ -1,8 +1,8 @@
 package interfaces
 
 import (
+	"steve/entity/majong"
 	"steve/server_pb/ddz"
-	"steve/server_pb/majong"
 )
 
 // AIType AI 类型
@@ -39,7 +39,7 @@ type AIEventGenerateParams struct {
 // AIEvent AI 事件
 type AIEvent struct {
 	ID      int32
-	Context []byte
+	Context interface{}
 }
 
 // AIEventGenerateResult AI 事件生成结果

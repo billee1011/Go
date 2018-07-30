@@ -2,12 +2,11 @@ package scxlai
 
 import (
 	"steve/client_pb/room"
+	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/interfaces"
-	"steve/server_pb/majong"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type fapaiStateAI struct {
@@ -42,22 +41,13 @@ func (f *fapaiStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) 
 
 //CartoonFinsh 动画完成请求事件
 func CartoonFinsh(player *majong.Player, cartoonType int32) *interfaces.AIEvent {
-	event := majong.CartoonFinishRequestEvent{
+	event := &majong.CartoonFinishRequestEvent{
 		CartoonType: cartoonType,
 		PlayerId:    player.GetPalyerId(),
-	}
-	data, err := proto.Marshal(&event)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name":   "ai.CartoonFinsh",
-			"player_id":   player.GetPalyerId(),
-			"cartoonType": cartoonType,
-		}).Errorln("事件序列化失败")
-		return nil
 	}
 	logrus.WithFields(logrus.Fields{"func_name": "ai.CartoonFinsh", "player_id": player.GetPalyerId(), "cartoonType": cartoonType}).Errorln("机器人发送动画完成请求事件")
 	return &interfaces.AIEvent{
 		ID:      int32(majong.EventID_event_cartoon_finish_request),
-		Context: data,
+		Context: event,
 	}
 }

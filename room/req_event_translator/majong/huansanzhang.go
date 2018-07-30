@@ -2,15 +2,13 @@ package majong
 
 import (
 	"steve/client_pb/room"
-	server_pb "steve/server_pb/majong"
+	server_pb "steve/entity/majong"
 	"steve/structs/proto/gate_rpc"
-
-	"github.com/golang/protobuf/proto"
 )
 
 // TranslateHuansanzhangReq 转换换三张请求
 func TranslateHuansanzhangReq(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.RoomHuansanzhangReq) (eventID int, eventContext proto.Message, err error) {
+	req room.RoomHuansanzhangReq) (eventID int, eventContext interface{}, err error) {
 
 	eventHeader := translateHeader(playerID, header, &req)
 
