@@ -12,6 +12,12 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 // 杠的类型
 type GangType int32
 
@@ -149,9 +155,12 @@ const (
 
 // 杠牌数据
 type GangCard struct {
-	Card      *Card    `protobuf:"bytes,1,opt,name=card" json:"card,omitempty"`
-	Type      GangType `protobuf:"varint,2,opt,name=type,enum=majong.GangType" json:"type,omitempty"`
-	SrcPlayer uint64   `protobuf:"varint,3,opt,name=src_player,json=srcPlayer" json:"src_player,omitempty"`
+	Card                 *Card    `protobuf:"bytes,1,opt,name=card,proto3" json:"card,omitempty"`
+	Type                 GangType `protobuf:"varint,2,opt,name=type,proto3,enum=majong.GangType" json:"type,omitempty"`
+	SrcPlayer            uint64   `protobuf:"varint,3,opt,name=src_player,json=srcPlayer,proto3" json:"src_player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *GangCard) GetCard() *Card {
@@ -177,8 +186,11 @@ func (m *GangCard) GetSrcPlayer() uint64 {
 
 // 碰牌数据
 type PengCard struct {
-	Card      *Card  `protobuf:"bytes,1,opt,name=card" json:"card,omitempty"`
-	SrcPlayer uint64 `protobuf:"varint,2,opt,name=src_player,json=srcPlayer" json:"src_player,omitempty"`
+	Card                 *Card    `protobuf:"bytes,1,opt,name=card,proto3" json:"card,omitempty"`
+	SrcPlayer            uint64   `protobuf:"varint,2,opt,name=src_player,json=srcPlayer,proto3" json:"src_player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *PengCard) GetCard() *Card {
@@ -197,10 +209,13 @@ func (m *PengCard) GetSrcPlayer() uint64 {
 
 // 玩家胡牌对应的fanType
 type HuFanType struct {
-	HuCard   *Card   `protobuf:"bytes,1,opt,name=hu_card,json=huCard" json:"hu_card,omitempty"`
-	GenCount uint64  `protobuf:"varint,2,opt,name=gen_count,json=genCount" json:"gen_count,omitempty"`
-	HuaCount uint64  `protobuf:"varint,3,opt,name=hua_count,json=huaCount" json:"hua_count,omitempty"`
-	FanTypes []int64 `protobuf:"varint,4,rep,packed,name=fan_types,json=fanTypes" json:"fan_types,omitempty"`
+	HuCard               *Card    `protobuf:"bytes,1,opt,name=hu_card,json=huCard,proto3" json:"hu_card,omitempty"`
+	GenCount             uint64   `protobuf:"varint,2,opt,name=gen_count,json=genCount,proto3" json:"gen_count,omitempty"`
+	HuaCount             uint64   `protobuf:"varint,3,opt,name=hua_count,json=huaCount,proto3" json:"hua_count,omitempty"`
+	FanTypes             []int64  `protobuf:"varint,4,rep,packed,name=fan_types,json=fanTypes,proto3" json:"fan_types,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *HuFanType) GetHuCard() *Card {
@@ -233,10 +248,13 @@ func (m *HuFanType) GetFanTypes() []int64 {
 
 // 胡牌数据
 type HuCard struct {
-	Card      *Card  `protobuf:"bytes,1,opt,name=card" json:"card,omitempty"`
-	SrcPlayer uint64 `protobuf:"varint,2,opt,name=src_player,json=srcPlayer" json:"src_player,omitempty"`
-	Type      HuType `protobuf:"varint,3,opt,name=type,enum=majong.HuType" json:"type,omitempty"`
-	IsReal    bool   `protobuf:"varint,4,opt,name=is_real,json=isReal" json:"is_real,omitempty"`
+	Card                 *Card    `protobuf:"bytes,1,opt,name=card,proto3" json:"card,omitempty"`
+	SrcPlayer            uint64   `protobuf:"varint,2,opt,name=src_player,json=srcPlayer,proto3" json:"src_player,omitempty"`
+	Type                 HuType   `protobuf:"varint,3,opt,name=type,proto3,enum=majong.HuType" json:"type,omitempty"`
+	IsReal               bool     `protobuf:"varint,4,opt,name=is_real,json=isReal,proto3" json:"is_real,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *HuCard) GetCard() *Card {
@@ -269,9 +287,12 @@ func (m *HuCard) GetIsReal() bool {
 
 // 吃牌数据
 type ChiCard struct {
-	Card      *Card  `protobuf:"bytes,1,opt,name=card" json:"card,omitempty"`
-	OprCard   *Card  `protobuf:"bytes,2,opt,name=opr_card,json=oprCard" json:"opr_card,omitempty"`
-	SrcPlayer uint64 `protobuf:"varint,3,opt,name=src_player,json=srcPlayer" json:"src_player,omitempty"`
+	Card                 *Card    `protobuf:"bytes,1,opt,name=card,proto3" json:"card,omitempty"`
+	OprCard              *Card    `protobuf:"bytes,2,opt,name=opr_card,json=oprCard,proto3" json:"opr_card,omitempty"`
+	SrcPlayer            uint64   `protobuf:"varint,3,opt,name=src_player,json=srcPlayer,proto3" json:"src_player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *ChiCard) GetCard() *Card {
@@ -297,8 +318,11 @@ func (m *ChiCard) GetSrcPlayer() uint64 {
 
 // TingCardInfo 听牌信息
 type TingCardInfo struct {
-	TingCard uint32 `protobuf:"varint,1,opt,name=ting_card,json=tingCard" json:"ting_card,omitempty"`
-	Times    uint32 `protobuf:"varint,2,opt,name=times" json:"times,omitempty"`
+	TingCard             uint32   `protobuf:"varint,1,opt,name=ting_card,json=tingCard,proto3" json:"ting_card,omitempty"`
+	Times                uint32   `protobuf:"varint,2,opt,name=times,proto3" json:"times,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *TingCardInfo) GetTingCard() uint32 {
@@ -317,8 +341,11 @@ func (m *TingCardInfo) GetTimes() uint32 {
 
 // CanTingCardInfo 出本张牌可以听
 type CanTingCardInfo struct {
-	OutCard      uint32          `protobuf:"varint,1,opt,name=out_card,json=outCard" json:"out_card,omitempty"`
-	TingCardInfo []*TingCardInfo `protobuf:"bytes,2,rep,name=ting_card_info,json=tingCardInfo" json:"ting_card_info,omitempty"`
+	OutCard              uint32          `protobuf:"varint,1,opt,name=out_card,json=outCard,proto3" json:"out_card,omitempty"`
+	TingCardInfo         []*TingCardInfo `protobuf:"bytes,2,rep,name=ting_card_info,json=tingCardInfo,proto3" json:"ting_card_info,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
 func (m *CanTingCardInfo) GetOutCard() uint32 {
@@ -656,9 +683,12 @@ func (m *Player) GetProperties() map[string][]byte {
 }
 
 type TingStateInfo struct {
-	IsTing           bool  `protobuf:"varint,1,opt,name=is_ting,json=isTing" json:"is_ting,omitempty"`
-	IsTianting       bool  `protobuf:"varint,2,opt,name=is_tianting,json=isTianting" json:"is_tianting,omitempty"`
-	BaotingyifaCount int32 `protobuf:"varint,3,opt,name=baotingyifa_count,json=baotingyifaCount" json:"baotingyifa_count,omitempty"`
+	IsTing               bool     `protobuf:"varint,1,opt,name=is_ting,json=isTing,proto3" json:"is_ting,omitempty"`
+	IsTianting           bool     `protobuf:"varint,2,opt,name=is_tianting,json=isTianting,proto3" json:"is_tianting,omitempty"`
+	BaotingyifaCount     int32    `protobuf:"varint,3,opt,name=baotingyifa_count,json=baotingyifaCount,proto3" json:"baotingyifa_count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *TingStateInfo) GetIsTing() bool {
@@ -804,16 +834,16 @@ func (m *SettleInfo) GetHuPlayers() []uint64 {
 
 // MajongContext 麻将现场
 type MajongContext struct {
-	GameId          int32         `protobuf:"varint,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	CurState        StateID       `protobuf:"varint,2,opt,name=cur_state,json=curState,enum=majong.StateID" json:"cur_state,omitempty"`
-	Players         []*Player     `protobuf:"bytes,3,rep,name=players" json:"players,omitempty"`
-	ActivePlayer    uint64        `protobuf:"varint,4,opt,name=active_player,json=activePlayer" json:"active_player,omitempty"`
-	WallCards       []*Card       `protobuf:"bytes,5,rep,name=wall_cards,json=wallCards" json:"wall_cards,omitempty"`
-	SettleInfos     []*SettleInfo `protobuf:"bytes,6,rep,name=settle_infos,json=settleInfos" json:"settle_infos,omitempty"`
-	CurrentSettleId uint64        `protobuf:"varint,7,opt,name=current_settleId,json=currentSettleId" json:"current_settleId,omitempty"`
-	RevertSettles   []uint64      `protobuf:"varint,8,rep,packed,name=revert_settles,json=revertSettles" json:"revert_settles,omitempty"`
-	LastOutCard     *Card         `protobuf:"bytes,9,opt,name=last_out_card,json=lastOutCard" json:"last_out_card,omitempty"`
-	ZhuangjiaIndex  uint32        `protobuf:"varint,10,opt,name=zhuangjia_index,json=zhuangjiaIndex" json:"zhuangjia_index,omitempty"`
+	GameId          int32         `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	CurState        StateID       `protobuf:"varint,2,opt,name=cur_state,json=curState,proto3,enum=majong.StateID" json:"cur_state,omitempty"`
+	Players         []*Player     `protobuf:"bytes,3,rep,name=players,proto3" json:"players,omitempty"`
+	ActivePlayer    uint64        `protobuf:"varint,4,opt,name=active_player,json=activePlayer,proto3" json:"active_player,omitempty"`
+	WallCards       []*Card       `protobuf:"bytes,5,rep,name=wall_cards,json=wallCards,proto3" json:"wall_cards,omitempty"`
+	SettleInfos     []*SettleInfo `protobuf:"bytes,6,rep,name=settle_infos,json=settleInfos,proto3" json:"settle_infos,omitempty"`
+	CurrentSettleId uint64        `protobuf:"varint,7,opt,name=current_settleId,json=currentSettleId,proto3" json:"current_settleId,omitempty"`
+	RevertSettles   []uint64      `protobuf:"varint,8,rep,packed,name=revert_settles,json=revertSettles,proto3" json:"revert_settles,omitempty"`
+	LastOutCard     *Card         `protobuf:"bytes,9,opt,name=last_out_card,json=lastOutCard,proto3" json:"last_out_card,omitempty"`
+	ZhuangjiaIndex  uint32        `protobuf:"varint,10,opt,name=zhuangjia_index,json=zhuangjiaIndex,proto3" json:"zhuangjia_index,omitempty"`
 	// bool fix_zhuangjia_index = 11;  // 是否固定庄家位置
 	LastHuPlayers       []uint64            `protobuf:"varint,12,rep,packed,name=last_hu_players,json=lastHuPlayers" json:"last_hu_players,omitempty"`
 	LastPengPlayer      uint64              `protobuf:"varint,13,opt,name=last_peng_player,json=lastPengPlayer" json:"last_peng_player,omitempty"`
@@ -1065,13 +1095,16 @@ func (m *MajongContext) GetTempData() *TempDatas {
 
 // MajongCommonOption 麻将通用玩法选项
 type MajongCommonOption struct {
-	MaxCartoonTime             uint32          `protobuf:"varint,1,opt,name=max_cartoon_time,json=maxCartoonTime" json:"max_cartoon_time,omitempty"`
-	MaxFapaiCartoonTime        uint32          `protobuf:"varint,2,opt,name=max_fapai_cartoon_time,json=maxFapaiCartoonTime" json:"max_fapai_cartoon_time,omitempty"`
-	MaxHuansanzhangCartoonTime uint32          `protobuf:"varint,3,opt,name=max_huansanzhang_cartoon_time,json=maxHuansanzhangCartoonTime" json:"max_huansanzhang_cartoon_time,omitempty"`
-	HasHuansanzhang            bool            `protobuf:"varint,4,opt,name=has_huansanzhang,json=hasHuansanzhang" json:"has_huansanzhang,omitempty"`
-	Cards                      string          `protobuf:"bytes,5,opt,name=cards" json:"cards,omitempty"`
-	WallcardsLength            uint32          `protobuf:"varint,6,opt,name=wallcards_length,json=wallcardsLength" json:"wallcards_length,omitempty"`
-	HszFx                      *Huansanzhangfx `protobuf:"bytes,7,opt,name=hsz_fx,json=hszFx" json:"hsz_fx,omitempty"`
+	MaxCartoonTime             uint32          `protobuf:"varint,1,opt,name=max_cartoon_time,json=maxCartoonTime,proto3" json:"max_cartoon_time,omitempty"`
+	MaxFapaiCartoonTime        uint32          `protobuf:"varint,2,opt,name=max_fapai_cartoon_time,json=maxFapaiCartoonTime,proto3" json:"max_fapai_cartoon_time,omitempty"`
+	MaxHuansanzhangCartoonTime uint32          `protobuf:"varint,3,opt,name=max_huansanzhang_cartoon_time,json=maxHuansanzhangCartoonTime,proto3" json:"max_huansanzhang_cartoon_time,omitempty"`
+	HasHuansanzhang            bool            `protobuf:"varint,4,opt,name=has_huansanzhang,json=hasHuansanzhang,proto3" json:"has_huansanzhang,omitempty"`
+	Cards                      string          `protobuf:"bytes,5,opt,name=cards,proto3" json:"cards,omitempty"`
+	WallcardsLength            uint32          `protobuf:"varint,6,opt,name=wallcards_length,json=wallcardsLength,proto3" json:"wallcards_length,omitempty"`
+	HszFx                      *Huansanzhangfx `protobuf:"bytes,7,opt,name=hsz_fx,json=hszFx,proto3" json:"hsz_fx,omitempty"`
+	XXX_NoUnkeyedLiteral       struct{}        `json:"-"`
+	XXX_unrecognized           []byte          `json:"-"`
+	XXX_sizecache              int32           `json:"-"`
 }
 
 func (m *MajongCommonOption) GetMaxCartoonTime() uint32 {
@@ -1124,8 +1157,11 @@ func (m *MajongCommonOption) GetHszFx() *Huansanzhangfx {
 }
 
 type Huansanzhangfx struct {
-	NeedDeployFx   bool  `protobuf:"varint,1,opt,name=need_deploy_fx,json=needDeployFx" json:"need_deploy_fx,omitempty"`
-	HuansanzhangFx int32 `protobuf:"varint,2,opt,name=huansanzhang_fx,json=huansanzhangFx" json:"huansanzhang_fx,omitempty"`
+	NeedDeployFx         bool     `protobuf:"varint,1,opt,name=need_deploy_fx,json=needDeployFx,proto3" json:"need_deploy_fx,omitempty"`
+	HuansanzhangFx       int32    `protobuf:"varint,2,opt,name=huansanzhang_fx,json=huansanzhangFx,proto3" json:"huansanzhang_fx,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *Huansanzhangfx) GetNeedDeployFx() bool {
@@ -1144,7 +1180,10 @@ func (m *Huansanzhangfx) GetHuansanzhangFx() int32 {
 
 // SichuanxueliuOption 四川血流麻将玩法
 type SichuanxueliuOption struct {
-	OpenHuansanzhang bool `protobuf:"varint,1,opt,name=open_huansanzhang,json=openHuansanzhang" json:"open_huansanzhang,omitempty"`
+	OpenHuansanzhang     bool     `protobuf:"varint,1,opt,name=open_huansanzhang,json=openHuansanzhang,proto3" json:"open_huansanzhang,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *SichuanxueliuOption) GetOpenHuansanzhang() bool {
@@ -1156,7 +1195,10 @@ func (m *SichuanxueliuOption) GetOpenHuansanzhang() bool {
 
 // SichuanxuezhanOption 四川血流麻将玩法
 type SichuanxuezhanOption struct {
-	OpenHuansanzhang bool `protobuf:"varint,1,opt,name=open_huansanzhang,json=openHuansanzhang" json:"open_huansanzhang,omitempty"`
+	OpenHuansanzhang     bool     `protobuf:"varint,1,opt,name=open_huansanzhang,json=openHuansanzhang,proto3" json:"open_huansanzhang,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *SichuanxuezhanOption) GetOpenHuansanzhang() bool {
@@ -1168,12 +1210,15 @@ func (m *SichuanxuezhanOption) GetOpenHuansanzhang() bool {
 
 // InitMajongContextParams 麻将现场初始化参数
 type InitMajongContextParams struct {
-	GameId         int32               `protobuf:"varint,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	Players        []uint64            `protobuf:"varint,2,rep,packed,name=players" json:"players,omitempty"`
-	Option         *MajongCommonOption `protobuf:"bytes,3,opt,name=option" json:"option,omitempty"`
-	MajongOption   []byte              `protobuf:"bytes,4,opt,name=majong_option,json=majongOption,proto3" json:"majong_option,omitempty"`
-	ZhuangIndex    uint32              `protobuf:"varint,5,opt,name=zhuang_index,json=zhuangIndex" json:"zhuang_index,omitempty"`
-	FixZhuangIndex bool                `protobuf:"varint,6,opt,name=fix_zhuang_index,json=fixZhuangIndex" json:"fix_zhuang_index,omitempty"`
+	GameId               int32               `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	Players              []uint64            `protobuf:"varint,2,rep,packed,name=players,proto3" json:"players,omitempty"`
+	Option               *MajongCommonOption `protobuf:"bytes,3,opt,name=option,proto3" json:"option,omitempty"`
+	MajongOption         []byte              `protobuf:"bytes,4,opt,name=majong_option,json=majongOption,proto3" json:"majong_option,omitempty"`
+	ZhuangIndex          uint32              `protobuf:"varint,5,opt,name=zhuang_index,json=zhuangIndex,proto3" json:"zhuang_index,omitempty"`
+	FixZhuangIndex       bool                `protobuf:"varint,6,opt,name=fix_zhuang_index,json=fixZhuangIndex,proto3" json:"fix_zhuang_index,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
 }
 
 func (m *InitMajongContextParams) GetGameId() int32 {
@@ -1220,9 +1265,12 @@ func (m *InitMajongContextParams) GetFixZhuangIndex() bool {
 
 // ReplyClientMessage 回复给客户端的消息
 type ReplyClientMessage struct {
-	Players []uint64 `protobuf:"varint,1,rep,packed,name=players" json:"players,omitempty"`
-	MsgId   int32    `protobuf:"varint,2,opt,name=msg_id,json=msgId" json:"msg_id,omitempty"`
-	Msg     []byte   `protobuf:"bytes,3,opt,name=msg,proto3" json:"msg,omitempty"`
+	Players              []uint64 `protobuf:"varint,1,rep,packed,name=players,proto3" json:"players,omitempty"`
+	MsgId                int32    `protobuf:"varint,2,opt,name=msg_id,json=msgId,proto3" json:"msg_id,omitempty"`
+	Msg                  []byte   `protobuf:"bytes,3,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *ReplyClientMessage) GetPlayers() []uint64 {
@@ -1248,8 +1296,11 @@ func (m *ReplyClientMessage) GetMsg() []byte {
 
 // TimeCheckInfo 时间检测信息
 type TimeCheckInfo struct {
-	Duration uint64 `protobuf:"varint,1,opt,name=duration" json:"duration,omitempty"`
-	Type     int32  `protobuf:"varint,2,opt,name=type" json:"type,omitempty"`
+	Duration             uint64   `protobuf:"varint,1,opt,name=duration,proto3" json:"duration,omitempty"`
+	Type                 int32    `protobuf:"varint,2,opt,name=type,proto3" json:"type,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *TimeCheckInfo) GetDuration() uint64 {
@@ -1268,10 +1319,13 @@ func (m *TimeCheckInfo) GetType() int32 {
 
 // 麻将组
 type CardsGroup struct {
-	Cards  []uint32       `protobuf:"varint,1,rep,packed,name=cards" json:"cards,omitempty"`
-	Type   CardsGroupType `protobuf:"varint,2,opt,name=type,enum=majong.CardsGroupType" json:"type,omitempty"`
-	Pid    uint64         `protobuf:"varint,3,opt,name=pid" json:"pid,omitempty"`
-	IsReal bool           `protobuf:"varint,4,opt,name=is_real,json=isReal" json:"is_real,omitempty"`
+	Cards                []uint32       `protobuf:"varint,1,rep,packed,name=cards,proto3" json:"cards,omitempty"`
+	Type                 CardsGroupType `protobuf:"varint,2,opt,name=type,proto3,enum=majong.CardsGroupType" json:"type,omitempty"`
+	Pid                  uint64         `protobuf:"varint,3,opt,name=pid,proto3" json:"pid,omitempty"`
+	IsReal               bool           `protobuf:"varint,4,opt,name=is_real,json=isReal,proto3" json:"is_real,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *CardsGroup) GetCards() []uint32 {
@@ -1304,7 +1358,10 @@ func (m *CardsGroup) GetIsReal() bool {
 
 // TempDatas 临时数据存储
 type TempDatas struct {
-	CartoonReqPlayerIDs []uint64 `protobuf:"varint,1,rep,packed,name=CartoonReqPlayerIDs" json:"CartoonReqPlayerIDs,omitempty"`
+	CartoonReqPlayerIDs  []uint64 `protobuf:"varint,1,rep,packed,name=CartoonReqPlayerIDs,proto3" json:"CartoonReqPlayerIDs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *TempDatas) GetCartoonReqPlayerIDs() []uint64 {
