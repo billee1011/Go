@@ -56,7 +56,7 @@ func SetNextZhuangIndex(huPlayerID []uint64, lostPlayerID uint64, mjContext *maj
 		} else if huPlayerCount == 0 {
 			mjContext.NextBankerSeat = 0
 		}
-		// mjContext.FixNextBankerSeat = true
+		mjContext.FixNextBankerSeat = true
 	}
 }
 

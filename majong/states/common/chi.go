@@ -100,6 +100,7 @@ func (s *ChiState) doChi(flow interfaces.MajongFlow) {
 		"chiCard":   chiPlayer.GetChiCards(),
 	})
 	logEntry.Infoln("吃牌成功")
+	mjContext.LastOutCard = &majongpb.Card{}
 	return
 }
 

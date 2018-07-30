@@ -38,6 +38,7 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	desk := player.GetDesk()
 	response.ErrCode = room.RoomError_SUCCESS.Enum()
 	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
+	player.SetTuoguan(true,true)
 	return
 }
 
@@ -84,3 +85,25 @@ func HandleCancelTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	return
 }
 
+
+// HandleTuoGuanReq 处理取消托管请求
+func HandleTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomTuoGuanReq) (ret []exchanger.ResponseMsg) {
+	ret = []exchanger.ResponseMsg{}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "HandleTuoGuanReq",
+		"player_id": playerID,
+	})
+	player := player2.GetPlayerMgr().GetPlayer(playerID)
+	if player == nil {
+		logEntry.Debugln("获取玩家失败")
+		return
+	}
+	desk := player.GetDesk()
+	if desk == nil {
+		logEntry.Debugln("玩家不在房间中")
+		return
+	}
+	player.SetTuoguan(req.GetTuoguan(), true)
+	return
+}
