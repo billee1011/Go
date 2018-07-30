@@ -26,7 +26,7 @@ func (c *hallCore) Init(e *structs.Exposer, param ...string) error {
 		entry.WithError(err).Error("注册消息处理器失败")
 		return err
 	}
-	e.RPCServer.RegisterService(user.RegisterPlayerDataServer, localuser.Default)
+	e.RPCServer.RegisterService(user.RegisterPlayerDataServer, localuser.DefaultObject)
 	return nil
 }
 
