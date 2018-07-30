@@ -15,20 +15,20 @@ import (
 
 // 支持的货币类型
 var gTypeList = map[int16]string{
-	1: "coins",
-	2: "ingots",
-	3: "keyCards",
+	define.GOLD_COIN: "coins",
+	define.GOLD_INGOT: "ingots",
+	define.GOLD_CARD: "keyCards",
 }
 // 累计获得的货币类型
 var gGetList = map[int16]string{
-	2: "obtainIngots",
-	3: "obtainKeyCards",
+	define.GOLD_INGOT: "obtainIngots",
+	define.GOLD_CARD: "obtainKeyCards",
 }
 
 // 累计消耗的货币类型
 var gCostList = map[int16]string{
-	2: "costIngots",
-	3: "costKeyCards",
+	define.GOLD_INGOT: "costIngots",
+	define.GOLD_CARD: "costKeyCards",
 }
 
 var goldMgr GoldMgr
