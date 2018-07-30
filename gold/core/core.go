@@ -57,11 +57,13 @@ func (c *goldCore) Init(e *structs.Exposer, param ...string) error {
 		return err
 	}
 
+	entry.Debugf("server init succeed ...")
 	return nil
 }
 
 // 服务启动逻辑
 func (c *goldCore) Start() error {
+	logrus.Debugf("server start succeed ...")
 	return nil
 }
 
