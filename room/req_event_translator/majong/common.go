@@ -2,7 +2,7 @@ package majong
 
 import (
 	"steve/client_pb/room"
-	server_pb "steve/server_pb/majong"
+	server_pb "steve/entity/majong"
 	"steve/structs/proto/gate_rpc"
 
 	"github.com/golang/protobuf/proto"

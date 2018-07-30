@@ -6,16 +6,16 @@ import (
 	"runtime/debug"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	server_pb "steve/entity/majong"
 	"steve/gutils"
-	majong_initial "steve/majong/export/initial"
-	majong_process "steve/majong/export/process"
+	majong_initial "steve/room/majong/export/initial"
+	majong_process "steve/room/majong/export/process"
 	"steve/room/config"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
 	"steve/room/peipai/handle"
-	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
 	"time"
 
@@ -90,7 +90,6 @@ func (d *desk) Start(finish func()) error {
 	d.event <- deskEvent{
 		event: interfaces.Event{
 			ID:        int32(server_pb.EventID_event_start_game),
-			Context:   []byte{},
 			EventType: interfaces.NormalEvent,
 		},
 		stateNumber: d.dContext.stateNumber,
@@ -124,19 +123,10 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 		logEntry.WithError(err).Errorln("消息转事件失败")
 		return
 	}
-	eventMessage, ok := eventContext.(proto.Message)
-	if !ok {
-		logEntry.Errorln("转换事件函数返回值类型错误")
-		return
-	}
-	eventConetxtByte, err := proto.Marshal(eventMessage)
-	if err != nil {
-		logEntry.WithError(err).Errorln("序列化事件现场失败")
-	}
 
 	d.PushEvent(interfaces.Event{
 		ID:        int32(eventID),
-		Context:   eventConetxtByte,
+		Context:   eventContext,
 		EventType: interfaces.NormalEvent,
 		PlayerID:  playerID,
 	})
@@ -394,7 +384,7 @@ func (d *desk) handleQuitByPlayerState(playerID uint64) {
 }
 
 // callEventHandler 调用事件处理器
-func (d *desk) callEventHandler(logEntry *logrus.Entry, eventID server_pb.EventID, eventContext []byte) (result majong_process.HandleMajongEventResult, succ bool) {
+func (d *desk) callEventHandler(logEntry *logrus.Entry, eventID server_pb.EventID, eventContext interface{}) (result majong_process.HandleMajongEventResult, succ bool) {
 	succ = false
 	stateNumber, mjContext, stateTime := d.dContext.stateNumber, d.dContext.mjContext, d.dContext.stateTime
 	oldState := mjContext.GetCurState()
@@ -451,7 +441,7 @@ func (d *desk) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNumber int) {
 // step 3. 调用 room 的结算逻辑来处理结算
 // step 4. 如果有自动事件， 将自动事件写入自动事件通道
 // step 5. 如果当前状态是游戏结束状态， 调用 cancel 终止游戏
-func (d *desk) processEvent(eventID server_pb.EventID, eventContext []byte) {
+func (d *desk) processEvent(eventID server_pb.EventID, eventContext interface{}) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "desk.ProcessEvent",
 		"event_id":  eventID,
@@ -471,7 +461,7 @@ func (d *desk) processEvent(eventID server_pb.EventID, eventContext []byte) {
 	// 自动事件不为空，继续处理事件
 	if result.AutoEvent != nil {
 		if result.AutoEvent.GetWaitTime() == 0 {
-			d.processEvent(result.AutoEvent.GetEventId(), result.AutoEvent.GetEventContext())
+			d.processEvent(result.AutoEvent.EventId, result.AutoEvent.EventContext)
 		} else {
 			go d.pushAutoEvent(result.AutoEvent, d.dContext.stateNumber)
 		}

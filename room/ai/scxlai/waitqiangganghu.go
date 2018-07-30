@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"steve/gutils"
 
+	"steve/entity/majong"
 	"steve/room/interfaces"
-	"steve/server_pb/majong"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type waitQiangganghuStateAI struct {
@@ -67,40 +66,28 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 }
 
 func (h *waitQiangganghuStateAI) qi(player *majong.Player) interfaces.AIEvent {
-	eventContext := majong.QiRequestEvent{
+	eventContext := &majong.QiRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "waitQiangganghuStateAI.qi",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
-	}
+
 	return interfaces.AIEvent{
 		ID:      int32(majong.EventID_event_qi_request),
-		Context: data,
+		Context: eventContext,
 	}
 }
 
 func (h *waitQiangganghuStateAI) hu(player *majong.Player) interfaces.AIEvent {
-	eventContext := majong.HuRequestEvent{
+	eventContext := &majong.HuRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "waitQiangganghuStateAI.hu",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
-	}
+
 	return interfaces.AIEvent{
 		ID:      int32(majong.EventID_event_hu_request),
-		Context: data,
+		Context: eventContext,
 	}
 }
 

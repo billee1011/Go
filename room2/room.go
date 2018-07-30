@@ -1,19 +1,22 @@
 package main
 
 import (
-	"steve/structs/service"
+	"steve/room2/common"
+	_ "steve/room2/contexts"
+	"steve/room2/fixed"
+	"steve/room2/models"
+	"steve/room2/register"
+	"steve/room2/util"
+	"steve/server_pb/room_mgr"
 	"steve/structs"
 	"steve/structs/net"
-	"steve/server_pb/room_mgr"
-	"github.com/spf13/viper"
-	"github.com/Sirupsen/logrus"
-	"steve/room2/util"
-	"steve/room2/register"
-	"steve/room2/common"
-	"steve/room2/models"
-	"steve/room2/fixed"
-	_"steve/room2/contexts"
+	"steve/structs/service"
+
 	_ "steve/room2/ai/scxl"
+	_ "steve/room2/contexts"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type roomCore struct {

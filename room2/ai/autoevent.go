@@ -1,14 +1,15 @@
 package ai
 
 import (
-	"steve/server_pb/majong"
-	"time"
-	"github.com/spf13/viper"
+	"steve/entity/majong"
 	"steve/room/config"
-	playerPkg "steve/room2/player"
 	"steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/fixed"
+	playerPkg "steve/room2/player"
+	"time"
+
+	"github.com/spf13/viper"
 )
 
 // AutoEventGenerateParams 生成自动事件的参数
@@ -30,7 +31,6 @@ type DeskAutoEventGenerator interface {
 	GenerateV2(params *AutoEventGenerateParams) AutoEventGenerateResult
 	RegisterAI(gameID int, stateID majong.StateID, AI MajongAI) // 注册 AI
 }
-
 
 type AutoEventGenerator struct {
 	majongAIs map[int](map[majong.StateID]MajongAI)
@@ -71,8 +71,8 @@ func (aeg *AutoEventGenerator) getStateDuration() time.Duration {
 // addAIEvents 将 AI 产生的事件添加到结果中
 func (aeg *AutoEventGenerator) addAIEvents(result *AutoEventGenerateResult, aiResult *AIEventGenerateResult, player *playerPkg.Player, eventType int) {
 	for _, aiEvent := range aiResult.Events {
-		event := desk.NewDeskEvent(int(aiEvent.ID),eventType,player.GetDesk(),desk.CreateEventParams(
-			player.GetDesk().GetConfig().Context.(*contexts.MjContext).StateNumber,aiEvent.Context,player.GetPlayerID(),
+		event := desk.NewDeskEvent(int(aiEvent.ID), eventType, player.GetDesk(), desk.CreateEventParams(
+			player.GetDesk().GetConfig().Context.(*contexts.MjContext).StateNumber, aiEvent.Context, player.GetPlayerID(),
 		))
 		result.Events = append(result.Events, event)
 	}
