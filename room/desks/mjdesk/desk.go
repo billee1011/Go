@@ -257,6 +257,9 @@ func (d *desk) needCompareStateNumber(event *deskEvent) bool {
 
 // recordTuoguanOverTimeCount 记录托管超时计数
 func (d *desk) recordTuoguanOverTimeCount(event interfaces.Event) {
+	if d.dContext.mjContext.GetCurState() == server_pb.StateID_state_gameover {
+		return
+	}
 	if event.EventType != interfaces.OverTimeEvent {
 		return
 	}
