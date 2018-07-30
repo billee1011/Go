@@ -14,7 +14,7 @@ func (h *zixunStateAI) getNormalZiXunAIEvent(player *majong.Player, mjContext *m
 	zxRecord := player.GetZixunRecord()
 	handCards := player.GetHandCards()
 	canHu := zxRecord.GetEnableZimo()
-	if gutils.IsTing(player) && canHu {
+	if (gutils.IsHu(player) || gutils.IsTing(player)) && canHu {
 		aiEvent = h.hu(player)
 		return
 	}

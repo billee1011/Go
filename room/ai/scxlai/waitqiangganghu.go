@@ -52,7 +52,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 		"canhu":      canhu,
 	})
 	if canhu {
-		if gutils.IsHu(player) {
+		if gutils.IsHu(player) || gutils.IsTing(player) {
 			aiEvent = h.hu(player)
 			entry.Info("生成抢杠胡的自动事件")
 		} else {
