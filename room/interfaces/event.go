@@ -16,6 +16,8 @@ const (
 	HuStateEvent
 	// TingStateEvent 听状态的事件
 	TingStateEvent
+	// SpecialOverTimeEvent 胡听状态下的超时事件
+	SpecialOverTimeEvent
 )
 
 // Event 事件

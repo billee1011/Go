@@ -19,6 +19,8 @@ const (
 	HuAI
 	// TingAI 听状态下的AI
 	TingAI
+	// SpecialOverTimeAI 特殊状态下的超时，这种超时不计入超时次数，例子：胡状态和听状态
+	SpecialOverTimeAI
 )
 
 // PlayerAIInfo 玩家 AI 信息
