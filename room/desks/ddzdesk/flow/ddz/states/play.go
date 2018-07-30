@@ -179,7 +179,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	player.OutCards = message.GetCards()
 
 	lastOutCards := ToDDZCards(player.AllOutCards)
-	lastOutCards = AppendAll(lastOutCards, outCards)
+	lastOutCards = append(lastOutCards, outCards...)
 	player.AllOutCards = ToInts(lastOutCards) // for 记牌器
 
 	//更新context
