@@ -3,14 +3,10 @@ package loader
 import (
 	"errors"
 	"fmt"
-
 	"net/http"
 	"steve/serviceloader/pprof"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
-	"steve/serviceloader/pprof"
-	"net/http"
 	"strings"
 
 )
@@ -163,7 +159,10 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 	if len(groupName) == 0 {
 		groupList = nil
 	}
-	groupList = append(groupList,tags)
+
+	for _, tag := range tags {
+		groupList = append(groupList, tag)
+	}
 
 	// consul对服务进行健康检查
 	var ck *api.AgentServiceCheck
@@ -182,7 +181,6 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 		ID:      serverID,
 		Name:    serverName,
 		Tags:    groupList,
-		Tags:    tags,
 		Port:    port,
 		Address: addr,
 		Check:   ck,
