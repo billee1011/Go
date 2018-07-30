@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package gold;
+
+// 返回结果
+enum ResultStat {
+    SUCCEED = 0;       			   // 成功
+    FAILED = 1;        			   // 失败
+    ERR_SEQ_NO = 2;                  // 交易序列号错误
+    ERR_NO_USER = 3;                 // 用户不存在
+    ERR_NO_GOLD = 4;                 // 金币不足
+    ERR_UID_ERROR = 5;              // UID <= 0错误
+    ERR_ARG = 6;                     // 参数错误
+}
+
+// 货币类型
+enum GoldType {
+    GOLD_INVALID = 0;       		// 无效货币
+    GOLD_COIN = 1;       			// 金币
+    GOLD_DIAMOND = 2;        		// 元宝
+	GOLD_CARD  = 3;				// 房卡
+}
+
+
+// 添加项
+message AddItem {
+    uint64 uid = 1; 				// 玩家 ID
+    int32 gold_type = 2; 			// 货币类型, 为了防止，增加货币类型时，需要重新编译PB和代码，不利于扩展，直接使用int32类型 参看GoldType
+    int64 change_value = 3;   		// 加减值
+    int32 func_id = 4;            // 功能ID：比如台费，玩牌，系统补助, 功能ID可以通过web来配置，主要用于统计分析。
+    string seq = 5;               // 交易序列号:[ServerName]_[Server_ID]_20180723101111_递增ID
+    int64 channel = 6;            // APP渠道ID，来源ID。 比如：华为平台，小米平台，微信平台
+    int64 time = 7;                // 订单提交时间(unix 时间戳)
+}
+
+// 添加金币请求
+message AddGoldReq {
+     AddItem item = 1;             // 玩家列表
+}
+
+// 添加金币回复
+message AddGoldRsp {
+     ResultStat err_code = 1;		// 返回值
+     string  err_desc	= 2;		// 错误描述
+     int64  cur_value = 3;          // 变化后的当前值
+
+
+}
+
+
+// 获取项
+message GetItem {
+     uint64 uid = 1; 				// 玩家 ID
+     int32 gold_type = 2; 			// 货币类型,参看GoldType
+     int64 value = 3;   			// 当前值,请求时不填，返回时填值
+}
+
+// 获取金币请求
+message GetGoldReq {
+     GetItem item = 1;    	        // 请求列表
+}
+
+//  获取金币回复
+message GetGoldRsp {
+    ResultStat err_code	= 1;			// 错误码
+    string  err_desc	= 2;			// 错误描述
+    GetItem item = 3;                  // 返回结果
+}
+
+
+service Gold {
+	// 加玩家金币
+    rpc AddGold(AddGoldReq) returns (AddGoldRsp) {}
+	// 获取玩家金币
+    rpc GetGold(GetGoldReq) returns (GetGoldRsp) {}	
+	
+}

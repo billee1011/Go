@@ -30,8 +30,8 @@ func recoverPanic() {
 	}
 }
 
-// CreateExposer 创建 exposer 对象
-func CreateExposer(opt Option) *structs.Exposer {
+// createExposer 创建 exposer 对象
+func CreateExposer(opt *Option) *structs.Exposer {
 	exposer := &structs.Exposer{}
 	exposer.Configuration = createConfiguration()
 	exposer.RPCServer = createRPCServer(opt.rpcKeyFile, opt.rpcCertiFile)
@@ -42,10 +42,12 @@ func CreateExposer(opt Option) *structs.Exposer {
 	exposer.MysqlEngineMgr = mysql.CreateMysqlEngineMgr()
 	exposer.Publisher = pubsub.CreatePublisher()
 	exposer.Subscriber = pubsub.CreateSubscriber()
+	exposer.Option = opt
 
 	structs.SetGlobalExposer(exposer)
 	// 开启通用的负载报告服务
 	RegisterLBReporter(exposer.RPCServer)
+
 
 	return exposer
 }
@@ -67,8 +69,11 @@ func Run(service service.Service, exposer *structs.Exposer, opt Option) {
 		defer recoverPanic()
 		runService(service)
 	}()
-	//exposer.RPCClient.GetConnectByServerName("match")
+	//time.Sleep(time.Second * 15)
+	//exposer.RPCClient.GetConnectByServerHashId("gold", 1000)
 	wg.Wait()
+	// 从consul删除服务节点
+	//DeleteMyConsulAgent()
 }
 
 func runService(s service.Service) {

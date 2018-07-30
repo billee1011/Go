@@ -9,6 +9,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
+	"steve/serviceloader/pprof"
+	"net/http"
+	"strings"
+
 )
 
 var errNewConsulAgent = errors.New("创建 consul agent 失败")
@@ -28,9 +32,11 @@ type RegisterParams struct {
 	serverName string
 	addr       string
 	port       int
-	healthPort int    // consul服务健康检查Port
-	consulAddr string // consul 地址
+	healthPort int 			// consul服务健康检查Port
+	groupName  string		// 服务组名
+	consulAddr string 		// consul 地址
 	tags       []string
+
 }
 
 // RegisterServer2 注册服务
@@ -58,6 +64,7 @@ func RegisterServer2(opt *Option) {
 		port:       opt.rpcPort,
 		consulAddr: opt.consulAddr,
 		healthPort: opt.healthPort,
+		groupName: opt.groupName,
 		tags:       tags,
 	})
 	pprof.Init(opt.rpcServerName, opt.pprofExposeType, opt.pprofHttpPort)
@@ -77,9 +84,33 @@ func RegisterServer(rp *RegisterParams) {
 		return
 	}
 	serverID := allocServerIDNew(rp)
+	// 命令行参数替换配置文件参数
+	// 如果命令行启动参数定义了服务ID，启用启动参数定义的服务ID
+	sidArg, ok := StringArg("sid")
+	if ok && len(sidArg) > 0 {
+		serverID = sidArg
+	}
+	port , ok := IntArg("port")
+	if ok && port > 100 {
+		rp.port = int(port)
+	}
+	hport , ok := IntArg("hport")
+	if ok && hport > 100 {
+		rp.healthPort = int(hport)
+	}
+	// 配置文件中的分组名称+启动参数中的分组ID，一起合成最后的分组ID
+	groupArg, ok := StringArg("gid")
+	if ok &&  len(groupArg) > 0 {
+		if len(rp.groupName) > 0 {
+			rp.groupName += ","
+		}
+		rp.groupName += groupArg
+	}
+
+
 	logEntry = logEntry.WithField("server_id", serverID)
-	if err := registerToConsul(logEntry, rp.serverName, rp.addr, rp.port,
-		serverID, rp.consulAddr, rp.healthPort, rp.tags); err != nil {
+
+	if err := registerToConsul(logEntry, rp.serverName, rp.addr, rp.port, serverID, rp.consulAddr, rp.healthPort, rp.groupName, rp.tags); err != nil {
 		logEntry.Panicln(err)
 	}
 	logEntry.Infoln("注册服务到 consul 完成")
@@ -105,7 +136,9 @@ func startHTTPHealth(httPort int) error {
 }
 
 // registerToConsul 向 consul 注册服务
-func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, port int, serverID string, consulAddr string, healthPort int, tags []string) error {
+
+func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, port int, serverID string, consulAddr string,healthPort int, groupName string, tags []string) error {
+
 	logEntry = logEntry.WithFields(logrus.Fields{
 		"server_name": serverName,
 		"addr":        addr,
@@ -125,6 +158,13 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 		return errNewConsulAgent
 	}
 
+	// 解析服务分组名称列表, 用,分割。
+	groupList := strings.Split(groupName, ",")
+	if len(groupName) == 0 {
+		groupList = nil
+	}
+	groupList = append(groupList,tags)
+
 	// consul对服务进行健康检查
 	var ck *api.AgentServiceCheck
 	if healthPort > 0 {
@@ -141,6 +181,7 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 	registration := &api.AgentServiceRegistration{
 		ID:      serverID,
 		Name:    serverName,
+		Tags:    groupList,
 		Tags:    tags,
 		Port:    port,
 		Address: addr,

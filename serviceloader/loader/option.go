@@ -15,15 +15,45 @@ type Option struct {
 	rpcPort         int    // RPC端口号
 	rpcServerName   string // 服务器名称
 	params          []string
-	rpcCAFile       string   // RPC客户端的CA文件
-	rpcCAServerName string   // 证书中的服务器名称
-	redisAddr       string   // redis 服务地址
-	redisPasswd     string   // redis 密码
-	consulAddr      string   // consul api 地址
+<<<<<<< serviceloader/loader/option.go
+	rpcCAFile       string // RPC客户端的CA文件
+	rpcCAServerName string // 证书中的服务器名称
+	redisAddr       string // redis 服务地址
+	redisPasswd     string // redis 密码
+	consulAddr      string // consul api 地址
+	healthPort       int  // server health http port
+	groupName       string // 服务组名列表：用,分割
+	pprofExposeType string // pprof 输出类型，空不输出
+	pprofHttpPort   int    // pprof http输出端口
 	tags            []string // tags，用来注册 consul
-	healthPort      int      // server health http port
-	pprofExposeType string   // pprof 输出类型，空不输出
-	pprofHttpPort   int      // pprof http输出端口
+
+}
+
+
+// yml文件选项参数
+func (o *Option)StringOption(key string) string {
+	if key == "rpc_server_name" {
+		return o.rpcServerName
+	} else if key == "group_name" {
+		return o.groupName
+	}
+	return ""
+}
+func  (o *Option)IntOption(key string) int64 {
+	if key == "rpc_port" {
+		return int64(o.rpcPort)
+	}
+	return 0
+}
+
+// 命令行启动参数
+func  (o *Option)StringArg(key string) string {
+	a , _ := StringArg(key)
+	return a
+}
+func  (o *Option)IntArg(key string) int64 {
+	a , _ := IntArg(key)
+	return a
 }
 
 var defaultOption = Option{
@@ -56,11 +86,21 @@ func WithConsulAddr(consulAddr string) ServiceOption {
 		opt.consulAddr = consulAddr
 	}
 }
+<<<<<<< serviceloader/loader/option.go
+// 服务健康监测Port
+=======
 
 // WithHealthPort  with health port
+>>>>>>> serviceloader/loader/option.go
 func WithHealthPort(port int) ServiceOption {
 	return func(opt *Option) {
 		opt.healthPort = port
+	}
+}
+// 服务组名
+func WithGroupName( groupName string) ServiceOption {
+	return func(opt *Option) {
+		opt.groupName = groupName
 	}
 }
 

@@ -13,12 +13,12 @@ import (
 // LoadService load service appointed by name
 func LoadService(name string, options ...loader.ServiceOption) {
 	opt := loader.LoadOptions(options...)
-	exposer := loader.CreateExposer(opt)
+	exposer := loader.CreateExposer(&opt)
 
 	loader.RegisterServer2(&opt)
 	loader.RegisterHealthServer(exposer.RPCServer)
-	service := initService(name, exposer)
-	loader.Run(service, exposer, opt)
+	svr := initService(name, exposer)
+	loader.Run(svr, exposer, opt)
 }
 
 func initService(name string, ep *structs.Exposer) service.Service {
@@ -26,15 +26,15 @@ func initService(name string, ep *structs.Exposer) service.Service {
 		"func_name": "initService",
 		"name":      name,
 	})
-	service, err := getPluginService(name)
+	svr, err := getPluginService(name)
 	if err != nil {
 		logEntry.Panicln(err)
 	}
-	if err := service.Init(ep); err != nil {
+	if err := svr.Init(ep); err != nil {
 		logEntry.Panicln(err)
 	}
 	logEntry.Infoln("初始化服务完成")
-	return service
+	return svr
 }
 
 func getPluginService(name string) (service.Service, error) {
@@ -50,6 +50,6 @@ func getPluginService(name string) (service.Service, error) {
 		return nil, err
 	}
 	getter := f.(func() service.Service)
-	service := getter()
-	return service, err
+	svr := getter()
+	return svr, err
 }

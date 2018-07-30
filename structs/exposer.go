@@ -8,6 +8,7 @@ import (
 	"steve/structs/redisfactory"
 	"steve/structs/rpc"
 	"steve/structs/sgrpc"
+	"steve/structs/arg"
 )
 
 // Exposer provide common interfaces for services
@@ -21,6 +22,7 @@ type Exposer struct {
 	RedisFactory    redisfactory.RedisFactory
 	Publisher       pubsub.Publisher
 	Subscriber      pubsub.Subscriber
+	Option          arg.Option
 }
 
 var gExposer *Exposer

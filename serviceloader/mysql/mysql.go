@@ -42,6 +42,7 @@ func (mg *mysqlEngineMgr) init() {
 			Net:    "tcp",
 			Addr:   cast.ToString(configs["addr"]),
 			DBName: cast.ToString(configs["db"]),
+			AllowNativePasswords:true,
 			Params: cast.ToStringMapString(configs["params"]),
 		}
 	}
