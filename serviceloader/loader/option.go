@@ -15,7 +15,6 @@ type Option struct {
 	rpcPort         int    // RPC端口号
 	rpcServerName   string // 服务器名称
 	params          []string
-<<<<<<< serviceloader/loader/option.go
 	rpcCAFile       string // RPC客户端的CA文件
 	rpcCAServerName string // 证书中的服务器名称
 	redisAddr       string // redis 服务地址
@@ -86,12 +85,8 @@ func WithConsulAddr(consulAddr string) ServiceOption {
 		opt.consulAddr = consulAddr
 	}
 }
-<<<<<<< serviceloader/loader/option.go
-// 服务健康监测Port
-=======
 
-// WithHealthPort  with health port
->>>>>>> serviceloader/loader/option.go
+// 服务健康监测Port
 func WithHealthPort(port int) ServiceOption {
 	return func(opt *Option) {
 		opt.healthPort = port
