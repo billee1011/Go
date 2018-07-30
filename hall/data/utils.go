@@ -2,7 +2,10 @@ package data
 
 import (
 	"fmt"
+	"steve/entity/cache"
+	"steve/server_pb/user"
 	"steve/structs"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -59,6 +62,18 @@ func getRedisStringVal(redisName string, key string) (string, error) {
 	return "", fmt.Errorf("redis 命令执行失败: %v", redisCmd.Err())
 }
 
+func getRedisByteVal(redisName string, key string) ([]byte, error) {
+	redisCli, err := redisCliGetter(redisName, 0)
+	if err != nil {
+		return []byte{}, err
+	}
+	data, err := redisCli.Get(key).Bytes()
+	if err == nil {
+		return data, nil
+	}
+	return []byte{}, fmt.Errorf("redis 命令执行失败: %v", err)
+}
+
 func hgetRedisUint64Val(redisName string, key string, field string) (uint64, error) {
 	redisCli, err := redisCliGetter(redisName, 0)
 	if err != nil {
@@ -79,6 +94,9 @@ func hmGetRedisFields(redisName string, key string, fields ...string) (map[strin
 	redisCli, err := redisCliGetter(redisName, 0)
 	if err != nil {
 		return nil, err
+	}
+	if !isKeyExists(redisName, key) {
+		return nil, fmt.Errorf("key 不存在")
 	}
 	vals, err := redisCli.HMGet(key, fields...).Result()
 	if err != nil {
@@ -103,27 +121,50 @@ func setRedisVal(redisName string, key string, val interface{}, duration time.Du
 	return nil
 }
 
-func hmSetRedisVal(redisName string, key string, fields map[string]interface{}) error {
+func hmSetRedisVal(redisName string, key string, fields map[string]interface{}, duration time.Duration) error {
 	redisCli, err := redisCliGetter(redisName, 0)
 	if err != nil {
 		return err
 	}
-	err = redisCli.Watch(func(tx *redis.Tx) error {
-		_, err := tx.Get(key).Uint64()
-		if err != nil && err != redis.Nil {
-			return fmt.Errorf("redis 查找key失败：%v", err)
-		}
-
-		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
-			pipe.HMSet(key, fields)
-			return nil
-		})
-		return fmt.Errorf("redis 事务执行失败：%v", err)
-	}, key)
+	cmd := redisCli.HMSet(key, fields)
+	if cmd.Err() != nil {
+		return fmt.Errorf("set redis err:%v", cmd.Err())
+	}
+	redisCli.Expire(key, redisTimeOut)
 	return err
 }
 
 func isKeyExists(redisName string, key string) bool {
+	redisCli, err := redisCliGetter(redisName, 0)
+	if err != nil {
+		return false
+	}
+	n, _ := redisCli.Exists(key).Result()
+	return n == 1
+}
 
-	return false
+func trans2hallPlayer(cp *cache.HallPlayer, info map[string]string) {
+	cp.NickName = info[cache.NickNameField]
+	cp.Avatar = info[cache.AvatarField]
+	gender, _ := strconv.ParseInt(info[cache.GenderField], 10, 16)
+	cp.Gender = uint64(gender)
+	cp.Name = info[cache.NameField]
+	cp.Phone = info[cache.PhoneField]
+}
+
+func trans2GameInfo(gameDetails []gameDetail) (gameInfos []*user.GameInfo) {
+	gameInfos = make([]*user.GameInfo, 0)
+	for _, gameDetail := range gameDetails {
+		gameInfo := &user.GameInfo{
+			GameId:     gameDetail.gameID,
+			GameName:   gameDetail.gname,
+			GameType:   gameDetail.gtype,
+			LevelId:    gameDetail.glevelID,
+			BaseScores: gameDetail.gbaseScores,
+			LowScores:  gameDetail.glowScores,
+			HighScores: gameDetail.ghighScores,
+		}
+		gameInfos = append(gameInfos, gameInfo)
+	}
+	return gameInfos
 }
