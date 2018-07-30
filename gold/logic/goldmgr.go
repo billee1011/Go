@@ -7,7 +7,7 @@ import (
 )
 
 /*
-  功能： 金币管理： 加减金币，获取金币.支持redis，db同步存储。交易流水日志对账等.
+  功能： 金币管理： 加减金币，获取金币,交易序列号去重. 支持redis，db同步存储。交易流水日志对账等.
   作者： SkyWang
   日期： 2018-7-24
 */
@@ -72,14 +72,19 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		return 0, define.ErrGoldType
 	}
 
-	// 判断交易流水号是否有冲突?
-
 	u, err := gm.getUser(uid)
 	if u == nil {
 		entry.Errorln("get user error")
 		_ = err
 		return 0, define.ErrNoUser
 	}
+
+	// 判断交易流水号是否有冲突?
+	if !u.CheckSeq(seq) {
+		entry.Errorf("seq is same: uid=%d, seq=%s", uid, seq)
+		return 0, define.ErrSeqNo
+	}
+
 
 	// 加金币前，玩家当前金币值
 	before, err = u.Get(goldType)
