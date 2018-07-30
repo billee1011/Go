@@ -6,19 +6,20 @@ import (
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
-	"github.com/golang/protobuf/proto"
-	"steve/room2/util"
-	player2 "steve/room2/player"
-	"github.com/Sirupsen/logrus"
 	modelmanager "steve/room2/models"
+	player2 "steve/room2/player"
+	"steve/room2/util"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
-func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskChatReq) (ret []exchanger.ResponseMsg){
+func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskChatReq) (ret []exchanger.ResponseMsg) {
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
 		return
 	}
-	modelmanager.GetModelManager().GetChatModel(player.GetDesk().GetUid()).RoomChatMsgReq(player,header,req)
+	modelmanager.GetModelManager().GetChatModel(player.GetDesk().GetUid()).RoomChatMsgReq(player, header, req)
 	return
 }
 
@@ -38,14 +39,14 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	desk := player.GetDesk()
 	response.ErrCode = room.RoomError_SUCCESS.Enum()
 	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
-	player.SetTuoguan(true,true)
+	player.SetTuoguan(true, true)
 	return
 }
 
 // HandleResumeGameReq 恢复对局请求
 func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
-	if !(player==nil) {
+	if player.GetDesk() == nil {
 		body := &room.RoomResumeGameRsp{
 			ResumeRes: room.RoomError_DESK_NO_GAME_PLAYING.Enum(),
 		}
@@ -60,8 +61,6 @@ func HandleResumeGameReq(playerID uint64, header *steve_proto_gaterpc.Header, re
 	modelmanager.GetModelManager().GetPlayerModel(player.GetDesk().GetUid()).PlayerEnter(player)
 	return
 }
-
-
 
 // HandleCancelTuoGuanReq 处理取消托管请求
 func HandleCancelTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomCancelTuoGuanReq) (ret []exchanger.ResponseMsg) {
@@ -84,7 +83,6 @@ func HandleCancelTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	player.SetTuoguan(false, true)
 	return
 }
-
 
 // HandleTuoGuanReq 处理取消托管请求
 func HandleTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomTuoGuanReq) (ret []exchanger.ResponseMsg) {

@@ -135,7 +135,7 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 				}
 				mjContext := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 				stateNumber := event.Params.Params[0].(int)
-				context := event.Params.Params[1].([]byte)
+				context := event.Params.Params[1].(interface{})
 				println("event state:", stateNumber, "-----context state:", mjContext.StateNumber)
 				if needCompareStateNumber(&event) && stateNumber != mjContext.StateNumber {
 					continue
