@@ -69,7 +69,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 	}
 
-	if !isValidPlayer(context, playerId) {
+	if !IsValidPlayer(context, playerId) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}

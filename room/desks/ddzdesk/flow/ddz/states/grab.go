@@ -50,7 +50,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	grab := message.GetGrab()
 
 	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerId, "grab": grab})
-	if !isValidPlayer(context, playerId) {
+	if !IsValidPlayer(context, playerId) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_grab), global.ErrInvalidRequestPlayer
 	}
@@ -70,8 +70,8 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	} else if context.FirstGrabPlayerId != 0 && grab { //抢地主
 		context.TotalGrab = context.TotalGrab * 2
 		context.LastGrabPlayerId = playerId
-		context.GrabbedPlayers = append(context.GrabbedPlayers, playerId)
 	}
+	context.GrabbedPlayers = append(context.GrabbedPlayers, playerId)
 
 	nextPlayerId := GetNextPlayerByID(context.GetPlayers(), playerId).PlayerId
 	lordPlayerId := uint64(0)      //不为0时确定地主

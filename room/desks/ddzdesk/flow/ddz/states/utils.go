@@ -71,7 +71,7 @@ func getPlayerIds(m machine.Machine) []uint64 {
 	return players
 }
 
-func isValidPlayer(context *ddz.DDZContext, id uint64) bool {
+func IsValidPlayer(context *ddz.DDZContext, id uint64) bool {
 	return GetPlayerByID(context.GetPlayers(), id) != nil
 }
 
