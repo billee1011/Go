@@ -199,6 +199,10 @@ func IsTriplesAndSingles(cards []Poker) (bool, *Poker) {
 
 	// 555666777888 KKKK 牌型
 	planes := GetSpecificCountCards(cards, 3)
+	if planeCount%3 == 0 && len(planes) == planeCount+planeCount/3 { //555666777KKK 全三牌型
+		DDZPointSort(planes)
+		return isMinShunZi(planes[0:len(planes)-planeCount/3], 2)
+	}
 	if len(planes) != planeCount {
 		return false, nil
 	}

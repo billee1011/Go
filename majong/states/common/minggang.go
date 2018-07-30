@@ -82,6 +82,7 @@ func (s *MingGangState) doMinggang(flow interfaces.MajongFlow) {
 
 	s.addGangCard(card, player, mjContext.GetLastChupaiPlayer())
 	s.notifyPlayers(flow, card, player, mjContext.GetLastChupaiPlayer())
+	mjContext.LastOutCard = &majongpb.Card{}
 	return
 }
 

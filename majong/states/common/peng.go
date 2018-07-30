@@ -87,6 +87,7 @@ func (s *PengState) doPeng(flow interfaces.MajongFlow) {
 	pengPlayer.HandCards = newCards
 	s.notifyPeng(flow, card, srcPlayerID, pengPlayerID)
 	s.addPengCard(card, pengPlayer, srcPlayerID)
+	mjContext.LastOutCard = &majongpb.Card{}
 	return
 }
 

@@ -35,24 +35,8 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 	var aiEvent interfaces.AIEvent
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	if mjContext.GetCurState() != majong.StateID_state_waitqiangganghu {
+	if h.checkAIEvent(player, mjContext, params) != nil {
 		return
-	}
-	if player.GetPalyerId() == mjContext.GetLastGangPlayer() {
-		return result, fmt.Errorf("玩家%v是补杠的玩家,不允许抢杠", player.GetPalyerId())
-
-	}
-	if len(player.GetHandCards())%3+1 != 2 {
-		return result, fmt.Errorf("玩家%v手牌不符合查胡要求", player.GetPalyerId())
-	}
-
-	if gutils.CheckHasDingQueCard(mjContext, player) {
-		return result, fmt.Errorf("")
-	}
-	if params.AIType == interfaces.TingAI {
-		if len(player.GetPossibleActions()) > 0 {
-			return
-		}
 	}
 	canhu := false
 	for _, act := range player.GetPossibleActions() {
@@ -68,7 +52,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params interfaces.AIEventGenera
 		"canhu":      canhu,
 	})
 	if canhu {
-		if len(player.GetHuCards()) > 0 {
+		if gutils.IsHu(player) || gutils.IsTing(player) {
 			aiEvent = h.hu(player)
 			entry.Info("生成抢杠胡的自动事件")
 		} else {
@@ -118,4 +102,17 @@ func (h *waitQiangganghuStateAI) hu(player *majong.Player) interfaces.AIEvent {
 		ID:      int32(majong.EventID_event_hu_request),
 		Context: data,
 	}
+}
+
+func (h *waitQiangganghuStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params interfaces.AIEventGenerateParams) error {
+	err := fmt.Errorf("不生成自动事件")
+	if mjContext.GetCurState() != majong.StateID_state_waitqiangganghu ||
+		player.GetPalyerId() == mjContext.GetLastGangPlayer() ||
+		len(player.GetHandCards())%3+1 != 2 ||
+		gutils.CheckHasDingQueCard(mjContext, player) ||
+		len(player.GetPossibleActions()) == 0 ||
+		params.AIType == interfaces.TingAI {
+		return err
+	}
+	return nil
 }

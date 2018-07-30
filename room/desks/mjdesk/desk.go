@@ -282,7 +282,7 @@ func (d *desk) processEvents(ctx context.Context) {
 	})
 	defer func() {
 		if x := recover(); x != nil {
-			logEntry.Errorln(x)
+			logEntry.Fatalln(x)
 			debug.PrintStack()
 		}
 	}()
@@ -502,6 +502,8 @@ func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
 		if nextBankerSeat >= len(mjContext.GetPlayers()) {
 			nextBankerSeat = int(mjContext.GetZhuangjiaIndex())
 		}
+		// 游戏结束取消玩家托管，展示结算
+		d.cancelTuoguanGameOver()
 		d.settler.RoundSettle(d, mjContext)
 		d.ContinueDesk(true, nextBankerSeat, d.getWinners())
 		logEntry.Infoln("游戏结束状态")
@@ -532,24 +534,28 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	gameStage := getGameStage(mjContext.GetCurState())
 	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
-		GameId:      &gameID,
-		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(playerID, d),
-		Dices:       mjContext.GetDices(),
-		BankerSeat:  &bankerSeat,
-		EastSeat:    &bankerSeat,
-		TotalCards:  &totalCardsNum,
-		RemainCards: proto.Uint32(uint32(len(mjContext.GetWallCards()))),
-		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
-		OperatePid:  getOperatePlayerID(mjContext),
-		DoorCard:    getDoorCard(mjContext),
-		NeedHsz:     proto.Bool(gutils.GameHasHszState(mjContext)),
+		GameId:            &gameID,
+		GameStage:         &gameStage,
+		Players:           getRecoverPlayerInfo(playerID, d),
+		Dices:             mjContext.GetDices(),
+		BankerSeat:        &bankerSeat,
+		EastSeat:          &bankerSeat,
+		TotalCards:        &totalCardsNum,
+		RemainCards:       proto.Uint32(uint32(len(mjContext.GetWallCards()))),
+		CostTime:          proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
+		OperatePid:        getOperatePlayerID(mjContext),
+		NeedHsz:           proto.Bool(gutils.GameHasHszState(mjContext)),
+		LastOutCard:       proto.Uint32(getLastOutCard(mjContext.GetLastOutCard())),
+		LastOutCardPlayer: proto.Uint64(mjContext.GetLastChupaiPlayer()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
 	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = getQghInfo(playerID, mjContext)
 	_, gameDeskInfo.HuansanzhangInfo = getHuansanzhangInfo(playerID, mjContext)
 	_, gameDeskInfo.DingqueInfo = getDingqueInfo(playerID, mjContext)
+	if gameDeskInfo.GetHasZixun() {
+		gameDeskInfo.DoorCard = getDoorCard(mjContext)
+	}
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
@@ -612,4 +618,13 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	deskMgr.DetachPlayer(deskPlayer)
 	// getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil
+}
+
+func (d *desk) cancelTuoguanGameOver() {
+	players := d.GetDeskPlayers()
+	for _, player := range players {
+		if player.IsTuoguan() {
+			player.SetTuoguan(false, true)
+		}
+	}
 }
