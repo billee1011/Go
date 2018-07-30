@@ -20,11 +20,12 @@ import (
 	"steve/serviceloader/loader"
 	"steve/serviceloader/logger"
 
+	"steve/serviceloader/plugin"
+
 	"github.com/Sirupsen/logrus"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"steve/serviceloader/plugin"
 )
 
 var cfgFile string
@@ -53,11 +54,12 @@ to quickly create a Cobra application.`,
 			loader.SetArg(k, *v)
 		}
 		plugin.LoadService(args[0],
+			loader.WithNode(viper.GetInt("node")),
 			loader.WithRPCParams(viper.GetString("rpc_certi_file"), viper.GetString("rpc_key_file"), viper.GetString("rpc_addr"), viper.GetInt("rpc_port"),
 				viper.GetString("rpc_server_name")),
 			loader.WithClientRPCCA(viper.GetString("rpc_ca_file"), viper.GetString("certi_server_name")),
 			loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
-			loader.WithConsulAddr(viper.GetString("consul_addr")),
+			loader.WithConsulAddr(viper.GetString("consul_addr")), loader.WithTags(viper.GetStringSlice("tags")),
 			loader.WithHealthPort(viper.GetInt("health_port")),
 			loader.WithGroupName(viper.GetString("group_name")),
 			loader.WithParams(args[1:]))

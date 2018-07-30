@@ -282,7 +282,7 @@ func (d *desk) processEvents(ctx context.Context) {
 	})
 	defer func() {
 		if x := recover(); x != nil {
-			logEntry.Errorln(x)
+			logEntry.Fatalln(x)
 			debug.PrintStack()
 		}
 	}()
@@ -356,13 +356,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 		d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
 		logEntry.Debugln("玩家退出")
 	} else {
-		// 判断行牌状态, 选项化后需修改
-		mjPlayer := gutils.GetMajongPlayer(eqi.PlayerID, &d.dContext.mjContext)
-		// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
-		// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌,重新进入后把托管取消
-		if !deskPlayer.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
-			deskPlayer.SetTuoguan(false, false)
-		}
+		deskPlayer.SetTuoguan(false, false)
 		deskPlayer.EnterDesk()
 		d.recoverGameForPlayer(eqi.PlayerID)
 		d.setMjPlayerQuitDesk(eqi.PlayerID, false)
@@ -508,6 +502,8 @@ func (d *desk) checkGameOver(logEntry *logrus.Entry) bool {
 		if nextBankerSeat >= len(mjContext.GetPlayers()) {
 			nextBankerSeat = int(mjContext.GetZhuangjiaIndex())
 		}
+		// 游戏结束取消玩家托管，展示结算
+		d.cancelTuoguanGameOver()
 		d.settler.RoundSettle(d, mjContext)
 		d.ContinueDesk(true, nextBankerSeat, d.getWinners())
 		logEntry.Infoln("游戏结束状态")
@@ -538,24 +534,28 @@ func (d *desk) recoverGameForPlayer(playerID uint64) {
 	gameStage := getGameStage(mjContext.GetCurState())
 	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
-		GameId:      &gameID,
-		GameStage:   &gameStage,
-		Players:     getRecoverPlayerInfo(playerID, d),
-		Dices:       mjContext.GetDices(),
-		BankerSeat:  &bankerSeat,
-		EastSeat:    &bankerSeat,
-		TotalCards:  &totalCardsNum,
-		RemainCards: proto.Uint32(uint32(len(mjContext.GetWallCards()))),
-		CostTime:    proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
-		OperatePid:  getOperatePlayerID(mjContext),
-		DoorCard:    getDoorCard(mjContext),
-		NeedHsz:     proto.Bool(gutils.GameHasHszState(mjContext)),
+		GameId:            &gameID,
+		GameStage:         &gameStage,
+		Players:           getRecoverPlayerInfo(playerID, d),
+		Dices:             mjContext.GetDices(),
+		BankerSeat:        &bankerSeat,
+		EastSeat:          &bankerSeat,
+		TotalCards:        &totalCardsNum,
+		RemainCards:       proto.Uint32(uint32(len(mjContext.GetWallCards()))),
+		CostTime:          proto.Uint32(getStateCostTime(d.dContext.stateTime.Unix())),
+		OperatePid:        getOperatePlayerID(mjContext),
+		NeedHsz:           proto.Bool(gutils.GameHasHszState(mjContext)),
+		LastOutCard:       proto.Uint32(getLastOutCard(mjContext.GetLastOutCard())),
+		LastOutCardPlayer: proto.Uint64(mjContext.GetLastChupaiPlayer()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = getZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = getWenxunInfo(playerID, mjContext)
 	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = getQghInfo(playerID, mjContext)
 	_, gameDeskInfo.HuansanzhangInfo = getHuansanzhangInfo(playerID, mjContext)
 	_, gameDeskInfo.DingqueInfo = getDingqueInfo(playerID, mjContext)
+	if gameDeskInfo.GetHasZixun() {
+		gameDeskInfo.DoorCard = getDoorCard(mjContext)
+	}
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
@@ -618,4 +618,13 @@ func (d *desk) ChangePlayer(playerID uint64) error {
 	deskMgr.DetachPlayer(deskPlayer)
 	// getJoinApplyMgr().joinPlayer(playerID, room.GameId(mjContext.GetGameId()))
 	return nil
+}
+
+func (d *desk) cancelTuoguanGameOver() {
+	players := d.GetDeskPlayers()
+	for _, player := range players {
+		if player.IsTuoguan() {
+			player.SetTuoguan(false, true)
+		}
+	}
 }

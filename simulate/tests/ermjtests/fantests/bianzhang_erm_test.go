@@ -79,5 +79,5 @@ func TestFan_BianZhang_Zimo_ERM(t *testing.T) {
 	// 检测分数
 	winScro := 18 * (len(deskData.Players) - 1)
 
-	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), room.FanType_FT_BIANZHANG)
+	utils.CheckFanSettle(t, deskData, 4, 0, int64(winScro), deskData.DiFen, room.FanType_FT_BIANZHANG)
 }

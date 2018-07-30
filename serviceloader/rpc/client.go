@@ -1,7 +1,9 @@
 package rpc
 
 import (
+	"fmt"
 	"steve/structs/rpc"
+	"strings"
 
 	"google.golang.org/grpc"
 )
@@ -22,11 +24,7 @@ func NewClient(caFile string, tlsServerName string, consulAddr string) rpc.Clien
 
 // GetConnectByServerName 根据服务名返回连接
 func (ccm *ClientConnMgr) GetConnectByServerName(serverName string) (*grpc.ClientConn, error) {
-	addr, err := ccm.loadBalancer.getServerAddr(serverName)
-	if err != nil {
-		return nil, err
-	}
-	return ccm.connectPool.getConnect(addr)
+	return ccm.getConnectByServerNameAndTags(serverName, nil)
 }
 
 // 通过服务名和分组实现服务分组，比如实现room和match服务按照游戏ID分组。serviceloader为此作动态负载均衡
@@ -69,5 +67,21 @@ func (ccm *ClientConnMgr) GetConnectByServerHashId(serverName string,  hashId ui
 
 // GetConnectByAddr 根据地址获取连接
 func (ccm *ClientConnMgr) GetConnectByAddr(addr string) (*grpc.ClientConn, error) {
+	return ccm.connectPool.getConnect(addr)
+}
+
+// GetServerAddr 根据服务名称和 tags 获取服务地址，如果有多个服务满足要求，serviceloader 为此作负载均衡
+func (ccm *ClientConnMgr) GetServerAddr(serverName string, tags []string) (string, error) {
+	tagstr := strings.Join(tags, ",")
+	addr, err := ccm.loadBalancer.getServerAddr(serverName + "," + tagstr)
+	return addr, err
+}
+
+// getConnectByServerNameAndTags 根据服务名称和 tags 获取连接，如果有多个服务满足要求，serviceloader 为此作负载均衡
+func (ccm *ClientConnMgr) getConnectByServerNameAndTags(serverName string, tags []string) (*grpc.ClientConn, error) {
+	addr, err := ccm.GetServerAddr(serverName, tags)
+	if err != nil {
+		return nil, fmt.Errorf("获取服务失败:%v", err)
+	}
 	return ccm.connectPool.getConnect(addr)
 }

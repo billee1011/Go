@@ -21,6 +21,7 @@ type StartGameParams struct {
 	PeiPaiGame     string         // 配牌游戏名
 	PlayerNum      int            //参与游戏的玩家人数
 	IsDq           bool           //是否定缺
+	DiFen          uint64         // 底分
 }
 
 // StartPukeGameParams 启动扑克游戏的参数

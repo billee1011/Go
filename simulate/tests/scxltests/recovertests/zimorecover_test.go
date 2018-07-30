@@ -24,7 +24,7 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	zimoSeat := 1
 	quitSeat := zimoSeat
 	bankerSeat := params.BankerSeat
-
+	params.PlayerSeatGold = map[int]uint64{0: 100 * 10000, 1: 100 * 10000, 2: 100 * 10000, 3: 100 * 10000}
 	// 庄家的最后一张牌改为 1B
 	params.Cards[bankerSeat][13] = 31
 	// 1 号玩家最后1张牌改为 9W

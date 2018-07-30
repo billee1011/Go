@@ -799,45 +799,19 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 把指定牌处理后的结果，最终格式为：33344468 或 33344486，即带的牌无所谓
-	dealSpeciPoke := []Poker{}
-
 	// 剩余的指定牌
 	lastPokes := make([]Poker, len(speciPoke))
 	copy(lastPokes, speciPoke)
 
+	// 是否是飞机带单张
+	bSuc, maxSamePoker := IsTriplesAndSingles(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是飞机带单张")
+		return false, nil
+	}
+
 	// 最大相同的牌的无花色权重
-	var maxSamePokePoint uint32 = 0
-
-	// 拿到主体牌
-	for i := 1; i <= lenSpiciPoke/4; i++ {
-		// 检测主体牌
-		sameCards := GetMaxSamePointCards(lastPokes)
-		if len(sameCards) != 3 {
-			logEntry.Errorf("参数错误-第%d次检测没有相同的3张牌", i)
-			return false, nil
-		}
-
-		if i == 1 {
-			maxSamePokePoint = sameCards[0].PointWeight
-		}
-
-		// 压入主体牌
-		for _, poke := range sameCards {
-			dealSpeciPoke = append(dealSpeciPoke, poke)
-		}
-
-		// 剩余牌
-		lastPokes = RemoveAll(lastPokes, sameCards)
-	}
-
-	// 先排序主体牌，从小到大
-	DDZPokerSort(dealSpeciPoke)
-
-	// 剩下的牌，不再分析，默认是正常牌了，全部压入dealSpeciPoke
-	for i := 1; i < len(lastPokes); i++ {
-		dealSpeciPoke = append(dealSpeciPoke, lastPokes[i])
-	}
+	maxSamePokePoint := maxSamePoker.PointWeight
 
 	// 先对手牌排序，从小到大
 	DDZPokerSort(allPokes)
@@ -927,16 +901,16 @@ func GetMinBigger3sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	singleCount := 0
 	for i := 0; i < len(lastPokes); i++ {
 
-		// 不包含点数即可，压入
-		if ContainsPoint(resultPoke, lastPokes[i].Point) == false {
-			resultPoke = append(resultPoke, lastPokes[i])
-			singleCount++
+		// 直接压入，点数相同也没关系，比如前面666,后面可以带6
+		//if ContainsPoint(resultPoke, lastPokes[i].Point) == false {
+		resultPoke = append(resultPoke, lastPokes[i])
+		singleCount++
 
-			// 压入够了就跳出lastPokes
-			if singleCount == len(speciPoke)/4 {
-				break
-			}
+		// 压入够了就跳出lastPokes
+		if singleCount == len(speciPoke)/4 {
+			break
 		}
+		//}
 	}
 
 	// 最终的牌数不同，则说明没找到足够的单张，失败
@@ -965,45 +939,19 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 把指定牌处理后的结果，最终格式为：888777666 554433 或 888777666 335544，即带的对子不关心顺序
-	dealSpeciPoke := []Poker{}
-
 	// 剩余的指定牌
 	lastPokes := make([]Poker, len(speciPoke))
 	copy(lastPokes, speciPoke)
 
+	// 是否是飞机带对子
+	bSuc, maxSamePoker := IsTriplesAndPairs(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是飞机带对子")
+		return false, nil
+	}
+
 	// 最大相同的牌的无花色权重
-	var maxSamePokePoint uint32 = 0
-
-	// 先拿到主体牌
-	for i := 1; i <= lenSpiciPoke/5; i++ {
-		// 检测主体牌
-		sameCards := GetMaxSamePointCards(lastPokes)
-		if len(sameCards) != 3 {
-			logEntry.Errorf("参数错误-第%d次检测没有相同的3张牌", i)
-			return false, nil
-		}
-
-		if i == 1 {
-			maxSamePokePoint = sameCards[0].PointWeight
-		}
-
-		// 压入主体牌
-		for _, poke := range sameCards {
-			dealSpeciPoke = append(dealSpeciPoke, poke)
-		}
-
-		// 剩余牌
-		lastPokes = RemoveAll(lastPokes, sameCards)
-	}
-
-	// 先排序主体牌，从小到大
-	DDZPokerSort(dealSpeciPoke)
-
-	// 剩下的牌，不再分析，默认是正常牌了，全部压入dealSpeciPoke
-	for i := 1; i < len(lastPokes); i++ {
-		dealSpeciPoke = append(dealSpeciPoke, lastPokes[i])
-	}
+	maxSamePokePoint := maxSamePoker.PointWeight
 
 	// 先把手牌排序，从小到大
 	DDZPokerSort(allPokes)
@@ -1098,7 +1046,12 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	for i := 0; i < len(keys); i++ {
 		pointWeight := (uint32)(keys[i])
 		count := counts[pointWeight]
-		if count >= 2 {
+
+		// 4个牌时认为是两个对子
+		if count >= 4 {
+			pairPointWeight = append(pairPointWeight, pointWeight)
+			pairPointWeight = append(pairPointWeight, pointWeight)
+		} else if count >= 2 {
 			pairPointWeight = append(pairPointWeight, pointWeight)
 		}
 	}
@@ -1108,25 +1061,40 @@ func GetMinBigger3sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	for i := 0; i < len(lastPokes); i++ {
+	// 压入所有的对子
+	for i := 0; i < len(pairPointWeight); i++ {
 
-		// 是否是查找到的对子
-		for j := 0; j < len(pairPointWeight); j++ {
+		// 压入牌的数量
+		pushCount := 0
 
-			// 是前面找到的对子（该牌不可能是主体牌了，不用判断）
-			if lastPokes[i].PointWeight == pairPointWeight[j] {
+		// 压入的牌
+		pushPoke := []Poker{}
 
-				// 结果集中的此牌少于2张，即压入
-				if ContainsPointWeightCount(resultPoke, lastPokes[i].PointWeight) < 2 {
-					resultPoke = append(resultPoke, lastPokes[i])
+		// 遍历所有的剩余牌
+		for j := 0; j < len(lastPokes); j++ {
+			// 是前面找到的对子牌，则压入
+			if pairPointWeight[i] == lastPokes[j].PointWeight {
+
+				// 压入
+				resultPoke = append(resultPoke, lastPokes[j])
+				pushCount++
+
+				pushPoke = append(pushPoke, lastPokes[j])
+
+				// 压入两张就跳出，因为pairPointWeight[i]这张牌压入结束
+				if pushCount == 2 {
+					break
 				}
 			}
 		}
 
-		// 牌数已满足，就跳出，防止压入过多的对子
+		// 压入足够的牌后就跳出，防止压入过多的对子
 		if len(resultPoke) == len(speciPoke) {
 			break
 		}
+
+		// 压入结束后，删除这两张牌
+		lastPokes = RemoveAll(lastPokes, pushPoke)
 	}
 
 	// 最终的牌数不同，则说明没找到足够的对子，失败
@@ -1155,17 +1123,10 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 检测主体牌
-	sameCards := GetMaxSamePointCards(speciPoke)
-	if len(sameCards) != 4 {
-		logEntry.Errorln("参数错误-没有相同的4张牌")
-		return false, nil
-	}
-
-	// 剩下的牌
-	lastSpeciPoke := RemoveAll(speciPoke, sameCards)
-	if IsAllSamePoint(lastSpeciPoke) {
-		logEntry.Errorln("参数错误-带的牌不是2张单牌")
+	// 是否是4带2单张
+	bSuc, maxSamePoker := IsBombAndSingles(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是4带2单张")
 		return false, nil
 	}
 
@@ -1182,7 +1143,7 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	for i := 0; i < len(keys); i++ {
 		pointWeight := (uint32)(keys[i])
 		count := counts[pointWeight]
-		if (count >= 4) && (pointWeight > sameCards[0].PointWeight) {
+		if (count >= 4) && (pointWeight > maxSamePoker.PointWeight) {
 			findPointWeight = pointWeight
 			break
 		}
@@ -1225,14 +1186,14 @@ func GetMinBigger4sAnd1s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 
 			// 现在应该是6张牌了，不是则置空，并报错
 			if len(resultPoke) != 6 {
-				lastPoke = []Poker{}
+				resultPoke = []Poker{}
 				logEntry.Errorln("添加两个单牌后发现总牌数不是6张")
 			}
 		}
 
 		// 若处理完，结果不是6张，说明没有找到合适的2张单牌，清空
 		if len(resultPoke) != 6 {
-			lastPoke = []Poker{}
+			resultPoke = []Poker{}
 		}
 	}
 
@@ -1261,22 +1222,10 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 		return false, nil
 	}
 
-	// 检测主体牌
-	sameCards := GetMaxSamePointCards(speciPoke)
-	if len(sameCards) != 4 {
-		logEntry.Errorln("参数错误-没有相同的4张牌")
-		return false, nil
-	}
-
-	// 剩下的牌
-	lastSpeciPoke := RemoveAll(speciPoke, sameCards)
-
-	// 仍需排序，因为是两个对子，可能是乱的
-	DDZPokerSort(lastSpeciPoke)
-
-	// 应该是两两相等
-	if !IsAllSamePoint(lastSpeciPoke[0:2]) || !IsAllSamePoint(lastSpeciPoke[2:]) {
-		logEntry.Errorln("参数错误-带的牌不是2个对子")
+	// 是否是4带2对
+	bSuc, maxSamePoker := IsBombAndPairs(speciPoke)
+	if !bSuc {
+		logEntry.Errorln("参数错误2，传入的不是4带2对")
 		return false, nil
 	}
 
@@ -1293,7 +1242,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 	for i := 0; i < len(keys); i++ {
 		pointWeight := (uint32)(keys[i])
 		count := counts[pointWeight]
-		if (count >= 4) && (pointWeight > sameCards[0].PointWeight) {
+		if (count >= 4) && (pointWeight > maxSamePoker.PointWeight) {
 			findPointWeight = pointWeight
 			break
 		}
@@ -1303,6 +1252,7 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 
 	// 找到了符合条件的主体牌
 	if findPointWeight != 0 {
+
 		// 先压入主题牌
 		for _, poke := range allPokes {
 			if poke.PointWeight == findPointWeight {
@@ -1325,60 +1275,73 @@ func GetMinBigger4sAnd2s(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 			//Map<无花色权重点数, 牌的个数>
 			lastCounts, keys := GetPokeCount(lastPoke)
 
-			// 找到个数>=2的牌即可（不用再判断和主题牌是不是相等了）
-
-			// 两个对子牌的无花色权重
-			var pair1PointWeight uint32 = 0
-			var pair2PointWeight uint32 = 0
+			// 存在的对子的无花色权重
+			pairPointWeight := []uint32{}
 
 			for i := 0; i < len(keys); i++ {
 				pointWeight := (uint32)(keys[i])
 				count := lastCounts[pointWeight]
-				if count >= 2 {
-					// 先赋值第一个
-					if pair1PointWeight == 0 {
-						pair1PointWeight = pointWeight
-					}
-					// 第一个有值，和第一个不同，但第二个没值，就给第二个
-					if (pair1PointWeight != 0) && (pair1PointWeight != pointWeight) && (pair2PointWeight == 0) {
-						pair2PointWeight = pointWeight
 
-						// 两个都有值了，就跳出
-						break
-					}
+				// 4个牌时认为是两个对子
+				if count >= 4 {
+					pairPointWeight = append(pairPointWeight, pointWeight)
+					pairPointWeight = append(pairPointWeight, pointWeight)
+				} else if count >= 2 {
+					pairPointWeight = append(pairPointWeight, pointWeight)
 				}
 			}
 
-			// 存在两个不同的对子，则压入
-			if (pair1PointWeight != 0) && (pair2PointWeight != 0) {
+			// 对子是否足够
+			if len(pairPointWeight) < 2 {
+				return false, nil
+			}
 
-				pushPair1Count := 0 // 压入1对子牌的数量
-				pushPair2Count := 0 // 压入2对子牌的数量
+			// 压入所有的对子
+			for i := 0; i < len(pairPointWeight); i++ {
 
-				for i := 0; i < len(lastPoke); i++ {
-					// 对子1
-					if (lastPoke[i].PointWeight == pair1PointWeight) && (pushPair1Count < 2) {
-						resultPoke = append(resultPoke, lastPoke[i])
-						pushPair1Count++
-					}
-					// 对子2
-					if (lastPoke[i].PointWeight == pair2PointWeight) && (pushPair2Count < 2) {
-						resultPoke = append(resultPoke, lastPoke[i])
-						pushPair2Count++
+				// 压入牌的数量
+				pushCount := 0
+
+				// 压入的牌
+				pushPoke := []Poker{}
+
+				// 遍历所有的剩余牌
+				for j := 0; j < len(lastPoke); j++ {
+					// 是前面找到的对子牌，则压入
+					if pairPointWeight[i] == lastPoke[j].PointWeight {
+
+						// 压入
+						resultPoke = append(resultPoke, lastPoke[j])
+						pushCount++
+
+						pushPoke = append(pushPoke, lastPoke[j])
+
+						// 压入两张就跳出，因为pairPointWeight[i]这种牌压入结束
+						if pushCount == 2 {
+							break
+						}
 					}
 				}
 
-				// 现在应该是8张牌了，不是则置空，并报错
-				if len(resultPoke) != 8 {
-					lastPoke = []Poker{}
-					logEntry.Errorln("添加两个对子后发现总牌数不是8张")
+				// 够8张就退出，防止压入过多对子
+				if len(resultPoke) == 8 {
+					break
 				}
+
+				// 压入结束后，删除这两张牌
+				lastPoke = RemoveAll(lastPoke, pushPoke)
+			}
+
+			// 现在应该是8张牌了，不是则置空，并报错
+			if len(resultPoke) != 8 {
+				resultPoke = []Poker{}
+				logEntry.Errorln("添加两个对子后发现总牌数不是8张")
 			}
 		}
 
 		// 若处理完，结果不是8张，说明没有找到合适的2个对子，清空
 		if len(resultPoke) != 8 {
-			lastPoke = []Poker{}
+			resultPoke = []Poker{}
 		}
 	}
 

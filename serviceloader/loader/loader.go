@@ -59,6 +59,8 @@ func Run(service service.Service, exposer *structs.Exposer, opt Option) {
 	go func() {
 		defer wg.Done()
 		defer recoverPanic()
+		// 从consul删除服务节点
+		defer DeleteMyConsulAgent()
 		runRPCServer(exposer.RPCServer, opt.rpcAddr, opt.rpcPort)
 	}()
 

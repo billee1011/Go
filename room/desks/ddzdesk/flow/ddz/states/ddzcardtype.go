@@ -133,25 +133,15 @@ func IsTriplesAndPairs(cards []Poker) (bool, *Poker) {
 		return false, nil
 	}
 
-	bomb := GetMaxSamePointCards(cards)
-
-	var remain []Poker
-	if len(bomb) == 4 { // 3334445555视为飞机带对子
-		remain = RemoveAll(cards, bomb)
-	} else {
-		remain = cards
-	}
-	shunZi := make([]Poker, 0, planeCount)
-	for i := 0; i < planeCount; i++ {
-		triple := GetMaxSamePointCards(remain)
-		if len(triple) != 3 {
+	bombs := GetSpecificCountCards(cards, 4)
+	if len(bombs) > 0 {
+		// 333444 5555牌型 和 333444555666 8888 99JJ牌型
+		planes := GetSpecificCountCards(cards, 3)
+		if len(planes) != planeCount {
 			return false, nil
 		}
-		shunZi = append(shunZi, triple[0])
-		remain = RemoveAll(remain, triple)
-	}
 
-	if len(bomb) != 4 {
+		remain := RemoveByPoint(cards, planes)
 		for i := 0; i < planeCount; i++ {
 			pair := GetMaxSamePointCards(remain)
 			if len(pair) < 2 {
@@ -159,8 +149,29 @@ func IsTriplesAndPairs(cards []Poker) (bool, *Poker) {
 			}
 			remain = RemoveAll(remain, pair[0:2])
 		}
+
+		return isMinShunZi(planes, 2)
+	} else {
+		remain := cards
+		shunZi := make([]Poker, 0, planeCount)
+		for i := 0; i < planeCount; i++ {
+			triple := GetMaxSamePointCards(remain)
+			if len(triple) != 3 {
+				return false, nil
+			}
+			shunZi = append(shunZi, triple[0])
+			remain = RemoveAll(remain, triple)
+		}
+
+		for i := 0; i < planeCount; i++ {
+			pair := GetMaxSamePointCards(remain)
+			if len(pair) < 2 {
+				return false, nil
+			}
+			remain = RemoveAll(remain, pair[0:2])
+		}
+		return isMinShunZi(shunZi, 2)
 	}
-	return isMinShunZi(shunZi, 2)
 }
 
 // 飞机带单张
@@ -181,7 +192,22 @@ func IsTriplesAndSingles(cards []Poker) (bool, *Poker) {
 		remain = RemoveAll(remain, triple[0:3])
 	}
 
-	return isMinShunZi(shunZi, 2)
+	yes, pivot := isMinShunZi(shunZi, 2)
+	if yes {
+		return yes, pivot
+	}
+
+	// 555666777888 KKKK 牌型
+	planes := GetSpecificCountCards(cards, 3)
+	if planeCount%3 == 0 && len(planes) == planeCount+planeCount/3 { //555666777KKK 全三牌型
+		DDZPointSort(planes)
+		return isMinShunZi(planes[0:len(planes)-planeCount/3], 2)
+	}
+	if len(planes) != planeCount {
+		return false, nil
+	}
+
+	return isMinShunZi(planes, 2)
 }
 
 // 连对
@@ -315,9 +341,34 @@ func GetMaxSamePointCards(cards []Poker) []Poker {
 	return maxSamePointCards
 }
 
+// 获取指定数量点数相同的牌，如 555666777888 KKKK，num = 3，返回5678
+func GetSpecificCountCards(cards []Poker, num int) []Poker {
+	return getCountCards(cards, num, false)
+}
+
+func getCountCards(cards []Poker, num int, canMore bool) []Poker {
+	if num < 1 {
+		return []Poker{}
+	}
+	sameCards := make(map[uint32][]Poker) //Map<PointWeight, []Poker>
+	for _, card := range cards {
+		pointWeight := card.PointWeight
+		sameCard := sameCards[pointWeight]
+		sameCards[pointWeight] = append(sameCard, card)
+	}
+
+	var result []Poker
+	for _, sameCard := range sameCards {
+		if (!canMore && len(sameCard) == num) || (canMore && len(sameCard) >= num) {
+			result = append(result, sameCard[0])
+		}
+	}
+	return result
+}
+
 // 获取最大相同点数, 如 444555533 返回 pointWeight(5), 4。 KKKKAAAA返回pointWeight(A), 4
 func GetMaxSamePoint(cards []Poker) (maxCountPointWeight uint32, maxCount uint32) {
-	counts := make(map[uint32]uint32) //Map<Point, count>
+	counts := make(map[uint32]uint32) //Map<PointWeight, count>
 	for _, card := range cards {
 		pointWeight := card.PointWeight
 		count, exists := counts[pointWeight]

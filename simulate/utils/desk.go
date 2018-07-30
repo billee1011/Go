@@ -30,6 +30,7 @@ type DeskData struct {
 	Players    map[uint64]DeskPlayer // playerid -> deskPlayer
 	BankerSeat int                   // 庄家/地主 的座位号
 	DDZData    DDZData               // 斗地主信息
+	DiFen      uint64                // 底分
 }
 
 // DDZData 斗地主信息
@@ -71,6 +72,7 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 
 	dd := DeskData{
 		BankerSeat: params.BankerSeat,
+		DiFen:      params.DiFen,
 	}
 	dd.Players = map[uint64]DeskPlayer{}
 	for _, player := range players {
@@ -545,13 +547,14 @@ func executeHSZ(deskData *DeskData, HszCards [][]uint32) error {
 		logrus.Infoln("换三张牌没配置，不执行换三张")
 		return nil
 	}
-	for playerID, player := range deskData.Players {
-		hszNtf := room.RoomHuansanzhangNtf{}
-		e := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_NTF]
-		if err := e.Recv(global.DefaultWaitMessageTime, &hszNtf); err != nil {
-			return fmt.Errorf("玩家 %v 未收到换三张推荐通知:%v", playerID, err)
-		}
-	}
+	// 暂时改为前端发送换三张通知
+	// for playerID, player := range deskData.Players {
+	// 	hszNtf := room.RoomHuansanzhangNtf{}
+	// 	e := player.Expectors[msgid.MsgID_ROOM_HUANSANZHANG_NTF]
+	// 	if err := e.Recv(global.DefaultWaitMessageTime, &hszNtf); err != nil {
+	// 		return fmt.Errorf("玩家 %v 未收到换三张推荐通知:%v", playerID, err)
+	// 	}
+	// }
 	finishNtfExpectors := map[uint64]interfaces.MessageExpector{}
 	for playerID, player := range deskData.Players {
 		offset := GetSeatOffset(deskData.BankerSeat, player.Seat, len(deskData.Players))

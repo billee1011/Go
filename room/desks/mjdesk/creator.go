@@ -22,9 +22,10 @@ func CreateMajongDesk(deskPlayers []interfaces.DeskPlayer, gameID int, opt inter
 	}
 	return interfaces.CreateDeskResult{
 		Desk: &desk{
-			DeskBase: deskbase.NewDeskBase(id, gameID, deskPlayers),
-			settler:  global.GetDeskSettleFactory().CreateDeskSettler(gameID),
-			event:    make(chan deskEvent, 16),
+			DeskBase:     deskbase.NewDeskBase(id, gameID, deskPlayers),
+			settler:      global.GetDeskSettleFactory().CreateDeskSettler(gameID),
+			event:        make(chan deskEvent, 16),
+			createOption: opt,
 		},
 	}, nil
 }

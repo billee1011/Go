@@ -34,7 +34,7 @@ func (s *settleState) settle(m machine.Machine) {
 
 	totalGrab := context.TotalGrab
 	totalDouble := context.TotalDouble
-	base := uint32(1000) // TODO:待确定底分从哪获取
+	base := uint32(100) // TODO:待确定底分从哪获取
 	multiple := uint32(totalGrab * totalDouble * context.TotalBomb)
 	if context.Spring || context.AntiSpring {
 		multiple = multiple * 2

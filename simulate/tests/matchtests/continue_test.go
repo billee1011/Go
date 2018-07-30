@@ -48,7 +48,7 @@ func startAndFinishGame(t *testing.T) []interfaces.ClientPlayer {
 func startDDZAndFinishGame(t *testing.T) []interfaces.ClientPlayer {
 
 	// 配牌1
-	params := doudizhu.NewStartDDZGameParamsTest1()
+	params := doudizhu.NewStartDDZGameParamsTest2()
 
 	// 开始游戏
 	deskData, err := utils.StartDDZGame(params)
@@ -99,8 +99,15 @@ func Test_ContinueDDZ(t *testing.T) {
 		// 续局期待
 		expector := player.GetExpector(msgid.MsgID_MATCH_CONTINUE_RSP)
 
+		matchRsp := match.MatchRsp{}
+
 		// 接收续局回应
-		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, nil))
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &matchRsp))
+
+		// 不为0时，说明续局的请求失败了，不再继续
+		if matchRsp.GetErrCode() != 0 {
+			return
+		}
 	}
 
 	// 所有玩家收到斗地主游戏开始通知

@@ -33,6 +33,10 @@ func Test_SCXZ_Zimo_Haidilao(t *testing.T) {
 	// 牌墙大小设置为1
 	params.WallCards = []uint32{39, 39, 39, 39, 19}
 
+	params.PlayerSeatGold = map[int]uint64{
+		0: 1000 * 10000, 1: 1000 * 10000, 2: 1000 * 10000, 3: 1000 * 10000,
+	}
+
 	// 传入参数开始游戏
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
@@ -89,5 +93,5 @@ func Test_SCXZ_Zimo_Haidilao(t *testing.T) {
 
 	// 检测所有玩家收到自摸结算通知,清一色-2根*自摸 = 2 * 4 *4 = 32
 	winScro := 2 * 4 * 4 * (len(deskData.Players) - 1)
-	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro))
+	utils.CheckInstantSettleScoreNotify(t, deskData, zimoSeat, int64(winScro), deskData.DiFen)
 }

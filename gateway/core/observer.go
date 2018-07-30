@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	msgid "steve/client_pb/msgid"
-	"steve/common/data/player"
 	"steve/gateway/auth"
 	"steve/gateway/connection"
 	"steve/gateway/msgrange"
+	"steve/gateway/router"
 	"steve/gateway/watchdog"
 	"steve/structs"
 	"steve/structs/common"
@@ -29,32 +29,6 @@ var _ net.MessageObserver = new(observer)
 var errNoCorrespondeServer = errors.New("消息没有对应的处理服务")
 var errCallServiceFailed = errors.New("调用服务失败")
 var errGetConnectByServerName = errors.New("根据服务名称获取连接失败")
-
-// getConnection 根据服务名称和客户端 ID 获取处理服务器的 RPC 连接
-func (o *observer) getConnection(serverName string, playerID uint64) (*grpc.ClientConn, error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":   "receiver.getConnection",
-		"player_id":   playerID,
-		"server_name": serverName,
-	})
-
-	logEntry = logEntry.WithField("server_name", serverName)
-	e := structs.GetGlobalExposer()
-
-	var cc *grpc.ClientConn
-	var err error
-	if serverName == "room" {
-		roomAddr := player.GetPlayerRoomAddr(playerID)
-		cc, err = e.RPCClient.GetConnectByAddr(roomAddr)
-	} else {
-		cc, err = e.RPCClient.GetConnectByServerName(serverName)
-	}
-	if cc == nil || err != nil {
-		logEntry.WithError(err).Errorln(errGetConnectByServerName)
-		return nil, errGetConnectByServerName
-	}
-	return cc, nil
-}
 
 func (o *observer) getPlayerID(clientID uint64) uint64 {
 	cm := connection.GetConnectionMgr()
@@ -181,10 +155,11 @@ func (o *observer) OnRecv(clientID uint64, header *base.Header, body []byte) {
 func (o *observer) callRemoteHandler(clientID uint64, playerID uint64, reqHeader *base.Header, body []byte, serverName string) {
 	msgID := reqHeader.GetMsgId()
 	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "receiver.callRemoteHandler",
-		"client_id": clientID,
-		"player_id": playerID,
-		"msg_id":    msgid.MsgID(msgID),
+		"client_id":   clientID,
+		"player_id":   playerID,
+		"msg_id":      msgid.MsgID(msgID),
+		"router":      reqHeader.GetRoutine(),
+		"server_name": serverName,
 	})
 	// 未绑定玩家，处理登录消息
 	if playerID == 0 {
@@ -198,8 +173,9 @@ func (o *observer) callRemoteHandler(clientID uint64, playerID uint64, reqHeader
 		}
 		return
 	}
-	cc, err := o.getConnection(serverName, playerID)
+	cc, err := router.GetConnection(serverName, playerID, reqHeader.GetRoutine())
 	if err != nil {
+		entry.WithError(err).Warningln("获取服务连接失败")
 		return
 	}
 	responses, err := o.handle(cc, clientID, playerID, msgID, body)
