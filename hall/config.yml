@@ -25,13 +25,7 @@ mysql_list:
     db: player 
     params:
       charset: utf8
-  hall:
-    user: root
-    passwd: 123456
-    addr: 127.0.0.1:3306
-    db: hall 
-    params:
-      charset: utf8
+
 # nsq 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 

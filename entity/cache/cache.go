@@ -15,9 +15,28 @@ type HallPlayer struct {
 const (
 	// AccountPlayerKey 账号关联的玩家
 	AccountPlayerKey = "account:player:%v"
+	// NickNameField ...昵称
+	NickNameField = "nick_name"
+	// HeadImageField ...头像
+	HeadImageField = "head_image"
+	// PlayerStateField ...玩家状态
+	PlayerStateField = "player_state"
+	// CoinField ...金币
+	CoinField = "coin"
+	// GateAddrField ...网关服地址
+	GateAddrField = "gate_addr"
+	// MatchAddrField ...匹配服地址
+	MatchAddrField = "match_addr"
+	// RoomAddrField ...房间服地址
+	RoomAddrField = "room_addr"
 )
 
 // FmtAccountPlayerKey 账号所关联玩家 key
 func FmtAccountPlayerKey(accountID uint64) string {
 	return fmt.Sprintf(AccountPlayerKey, accountID)
+}
+
+// FmtPlayerKey 返回玩家的 key
+func FmtPlayerKey(playerID uint64) string {
+	return fmt.Sprintf("player:%v", playerID)
 }
