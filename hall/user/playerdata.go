@@ -3,21 +3,23 @@ package user
 import (
 	"context"
 	"fmt"
+	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/hall/data"
 	"steve/server_pb/user"
+	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 )
 
-// playerDataService 实现 user.PlayerServer
-type playerDataService struct{}
+// PlayerDataService 实现 user.PlayerServer
+type PlayerDataService struct{}
 
-var _ user.PlayerDataServer = new(playerDataService)
+var _ user.PlayerDataServer = new(PlayerDataService)
 
 // GetPlayerByAccount 根据账号获取玩家 ID
-func (pds *playerDataService) GetPlayerByAccount(ctx context.Context, req *user.GetPlayerByAccountReq) (rsp *user.GetPlayerByAccountRsp, err error) {
+func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.GetPlayerByAccountReq) (rsp *user.GetPlayerByAccountRsp, err error) {
 	logrus.Debugln("GetPlayerByAccount req", *req)
 	rsp, err = &user.GetPlayerByAccountRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
@@ -41,23 +43,27 @@ func (pds *playerDataService) GetPlayerByAccount(ctx context.Context, req *user.
 }
 
 // GetPlayerInfo 获取玩家基本信息
-func (pds *playerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPlayerInfoReq) (rsp *user.GetPlayerInfoRsp, err error) {
+func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPlayerInfoReq) (rsp *user.GetPlayerInfoRsp, err error) {
 	logrus.Debugln("GetPlayerInfo req", *req)
-
+	// 默认返回
 	rsp, err = &user.GetPlayerInfoRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
 	}, nil
+	// 逻辑处理
 	playerID := req.GetPlayerId()
-	player, err := data.GetPlayerInfoByPlayerID(playerID)
+	info, err := data.GetPlayerInfo(playerID)
 	if err == nil {
 		rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
-		rsp.NickName, rsp.Avatar = player.NickName, player.Avatar
+		rsp.NickName, rsp.Avatar = info[cache.NickNameField], info[cache.AvatarField]
+		value, _ := strconv.ParseInt(info[cache.GenderField], 10, 64)
+		rsp.Gender = uint64(value)
+		rsp.Name, rsp.Phone = info[cache.NameField], info[cache.PhoneField]
 	}
 	return
 }
 
 // SetPlayerInfo 设置玩家信息
-func (pds *playerDataService) UpdatePlayerInfo(ctx context.Context, req *user.UpdatePlayerInfoReq) (rsp *user.UpdatePlayerInfoRsp, err error) {
+func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.UpdatePlayerInfoReq) (rsp *user.UpdatePlayerInfoRsp, err error) {
 	logrus.Debugln("SetPlayerInfo req", *req)
 
 	rsp, err = &user.UpdatePlayerInfoRsp{
@@ -74,7 +80,7 @@ func (pds *playerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 }
 
 // GetPlayerState 获取玩家状态
-func (pds *playerDataService) GetPlayerState(ctx context.Context, req *user.GetPlayerStateReq) (rsp *user.GetPlayerStateRsp, err error) {
+func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetPlayerStateReq) (rsp *user.GetPlayerStateRsp, err error) {
 	logrus.Debugln("GetPlayerState req", *req)
 
 	rsp, err = &user.GetPlayerStateRsp{
@@ -89,7 +95,7 @@ func (pds *playerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 }
 
 // SetPlayerState 设置玩家状态
-func (pds *playerDataService) UpdatePlayerState(ctx context.Context, req *user.UpdatePlayerStateReq) (rsp *user.UpdatePlayerStateRsp, err error) {
+func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.UpdatePlayerStateReq) (rsp *user.UpdatePlayerStateRsp, err error) {
 	logrus.Debugln("SetPlayerState req", *req)
 
 	rsp, err = &user.UpdatePlayerStateRsp{
@@ -108,7 +114,7 @@ func (pds *playerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 }
 
 // GetGameListInfo 获取玩家游戏列表信息
-func (pds *playerDataService) GetGameListInfo(ctx context.Context, req *user.GetGameListInfoReq) (rsp *user.GetGameListInfoRsp, err error) {
+func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.GetGameListInfoReq) (rsp *user.GetGameListInfoRsp, err error) {
 	logrus.Debugln("GetGameListInfo req", *req)
 
 	rsp, err = &user.GetGameListInfoRsp{

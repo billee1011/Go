@@ -20,11 +20,11 @@ var idAllocObject *gutils.Node
 // redis 过期时间
 var redisTimeOut = time.Hour * 24 * 30
 
-// 需要获得的玩家就基本信息
-var playerInfoList = map[int16]string{
+// 玩家基本信息列表
+var playerInfoList = map[int32]string{
 	1: "nickname",
-	2: "gender",
-	3: "avatar",
+	2: "avatar",
+	3: "gender",
 	4: "name",
 	5: "phone",
 }
@@ -90,13 +90,12 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	return
 }
 
-// GetPlayerInfoByPlayerID 根据玩家id获取玩家的基本信息
-func GetPlayerInfoByPlayerID(playerID uint64) (cp cache.HallPlayer, err error) {
-	cp, err = cache.HallPlayer{}, nil
+// GetPlayerInfo 根据玩家id获取玩家的基本信息
+func GetPlayerInfo(playerID uint64) (info map[string]string, err error) {
+	info, err = map[string]string{}, nil
 
-	pinfo, err := loadPlayerInfoFromRedis(playerID, playerRedisName)
+	info, err = loadPlayerInfoFromRedis(playerID, playerRedisName)
 	if err == nil {
-		trans2hallPlayer(&cp, pinfo)
 		return
 	}
 	engine, err := mysqlEngineGetter(playerMysqlName)
@@ -121,7 +120,7 @@ func GetPlayerInfoByPlayerID(playerID uint64) (cp cache.HallPlayer, err error) {
 		err = fmt.Errorf("玩家存在多条信息记录： %v", err)
 		return
 	}
-	trans2hallPlayer(&cp, res[0])
+	info = res[0]
 
 	if err = SavePlayerInfoToRedis(playerID, res[0], playerRedisName); err != nil {
 		err = fmt.Errorf("get playerInfo save redis失败： %v", err)
