@@ -107,11 +107,20 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	playerID := req.GetPlayerId()
 	oldState := uint64(req.GetNewState())
 	newState := uint64(req.GetNewState())
-	serverType := int32(req.GetServerType())
-	result, err := data.UpdatePlayerState(playerID, oldState, newState, serverType, req.GetServerAddr())
+	result, err := data.UpdatePlayerState(playerID, oldState, newState)
 	if result && err == nil {
 		rsp.Result, rsp.ErrCode = true, int32(user.ErrCode_EC_SUCCESS)
 	}
+	return
+}
+
+// GetPlayerServerInfo 获取玩家服务端信息 (TODO)
+func (pds *PlayerDataService) GetPlayerServerInfo(ctx context.Context, req *user.GetPlayerServerInfoReq) (rsp *user.GetPlayerServerInfoRsp, err error) {
+	logrus.Debugln("GetPlayerServerInfo req", *req)
+	// 默认返回
+	rsp, err = &user.GetPlayerServerInfoRsp{
+		ErrCode: int32(user.ErrCode_EC_FAIL),
+	}, nil
 	return
 }
 

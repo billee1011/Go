@@ -59,3 +59,8 @@ func FmtPlayerIDKey(playerID uint64) string {
 func FmtGameInfoKey() string {
 	return fmt.Sprintf("game:info")
 }
+
+// FmtPlayerStateKey 玩家State的 key
+func FmtPlayerStateKey(playerID uint64) string {
+	return fmt.Sprintf("playerState:%v", playerID)
+}
