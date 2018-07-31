@@ -3,9 +3,9 @@ package scxlai
 import (
 	"fmt"
 	"steve/common/mjoption"
+	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/interfaces"
-	"steve/server_pb/majong"
 	"time"
 )
 

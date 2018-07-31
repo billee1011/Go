@@ -2,7 +2,7 @@ package majong
 
 import (
 	"steve/common/mjoption"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 )
 
 // GetSettleOption 获取游戏的结算配置

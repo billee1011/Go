@@ -2,12 +2,9 @@ package scxlai
 
 import (
 	"fmt"
+	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/interfaces"
-	"steve/server_pb/majong"
-
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type chupaiWenxunStateAI struct {
@@ -78,41 +75,31 @@ func (h *chupaiWenxunStateAI) getAction(player *majong.Player) majong.Action {
 // chupaiWenxun 生成出牌问询请求事件
 func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *interfaces.AIEvent {
 	var (
-		data    []byte
-		err     error
-		eventID majong.EventID
+		eventContext interface{}
+		eventID      majong.EventID
 	)
 	action := h.getAction(player)
 
 	switch action {
 	case majong.Action_action_hu:
-		mjContext := majong.HuRequestEvent{
+		eventContext = &majong.HuRequestEvent{
 			Head: &majong.RequestEventHead{
 				PlayerId: player.GetPalyerId(),
 			},
 		}
 		eventID = majong.EventID_event_hu_request
-		data, err = proto.Marshal(&mjContext)
 	default:
-		mjContext := majong.QiRequestEvent{
+		eventContext = &majong.QiRequestEvent{
 			Head: &majong.RequestEventHead{
 				PlayerId: player.GetPalyerId(),
 			},
 		}
 		eventID = majong.EventID_event_qi_request
-		data, err = proto.Marshal(&mjContext)
 	}
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "chupaiWenxunStateAI.chupaiWenxun",
-			"player_id": player.GetPalyerId(),
-			"action":    action,
-		}).Errorln("事件序列化失败")
-		return nil
-	}
+
 	return &interfaces.AIEvent{
 		ID:      int32(eventID),
-		Context: data,
+		Context: eventContext,
 	}
 }
 

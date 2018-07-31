@@ -2,7 +2,7 @@ package gutils
 
 import (
 	"math/rand"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 	"time"
 )
 

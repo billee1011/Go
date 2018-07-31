@@ -1,13 +1,10 @@
 package scxlai
 
 import (
+	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/interfaces"
-	"steve/server_pb/majong"
 	"time"
-
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type dingqueStateAI struct {
@@ -45,24 +42,15 @@ func (h *dingqueStateAI) getColor(player *majong.Player) majong.CardColor {
 // dingque 生成定缺请求事件
 func (h *dingqueStateAI) dingque(player *majong.Player) *interfaces.AIEvent {
 	color := h.getColor(player)
-	mjContext := majong.DingqueRequestEvent{
+	eventContext := &majong.DingqueRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
 		Color: color,
 	}
 
-	data, err := proto.Marshal(&mjContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "dingqueStateAI.dingque",
-			"player_id": player.GetPalyerId(),
-			"color":     color,
-		}).Errorln("事件序列化失败")
-		return nil
-	}
 	return &interfaces.AIEvent{
 		ID:      int32(majong.EventID_event_dingque_request),
-		Context: data,
+		Context: eventContext,
 	}
 }

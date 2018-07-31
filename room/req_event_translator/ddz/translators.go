@@ -17,7 +17,7 @@ func translateHeader(playerID uint64, header *steve_proto_gaterpc.Header, body p
 
 // TranslateGrabRequest 转换抢地主请求
 func TranslateGrabRequest(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.DDZGrabLordReq) (eventID int, eventContext proto.Message, err error) {
+	req room.DDZGrabLordReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.GrabRequestEvent{
@@ -30,7 +30,7 @@ func TranslateGrabRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 
 // TranslateDoubleRequest 转换加倍请求
 func TranslateDoubleRequest(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.DDZDoubleReq) (eventID int, eventContext proto.Message, err error) {
+	req room.DDZDoubleReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.DoubleRequestEvent{
@@ -43,7 +43,7 @@ func TranslateDoubleRequest(playerID uint64, header *steve_proto_gaterpc.Header,
 
 // TranslatePlayCardRequest 转换出牌请求
 func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.DDZPlayCardReq) (eventID int, eventContext proto.Message, err error) {
+	req room.DDZPlayCardReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.PlayCardRequestEvent{
@@ -57,7 +57,7 @@ func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Heade
 
 // TranslateResumeRequest 转换恢复对局请求
 func TranslateResumeRequest(playerID uint64, header *steve_proto_gaterpc.Header,
-	req room.DDZResumeGameReq) (eventID int, eventContext proto.Message, err error) {
+	req room.DDZResumeGameReq) (eventID int, eventContext interface{}, err error) {
 
 	head := translateHeader(playerID, header, &req)
 	eventContext = &ddz.ResumeRequestEvent{

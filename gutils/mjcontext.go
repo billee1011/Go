@@ -2,7 +2,7 @@ package gutils
 
 import (
 	"steve/common/mjoption"
-	majongpb "steve/server_pb/majong"
+	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )

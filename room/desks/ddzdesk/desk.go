@@ -22,7 +22,7 @@ import (
 // deskEvent 牌桌事件
 type deskEvent struct {
 	eventID      int
-	eventContext []byte
+	eventContext interface{}
 	eventType    interfaces.EventType
 	playerID     uint64
 }
@@ -190,19 +190,10 @@ func (d *desk) PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bo
 		entry.Warningln("没有对应事件")
 		return
 	}
-	eventMessage, ok := eventData.(proto.Message)
-	if !ok {
-		entry.Errorln("事件数据不是 proto.Message 类型")
-		return
-	}
-	eventContext, err := proto.Marshal(eventMessage)
-	if err != nil {
-		entry.WithError(err).Errorln("事件消息序列化失败")
-		return
-	}
+
 	d.pushEvent(&deskEvent{
 		eventID:      eventID,
-		eventContext: eventContext,
+		eventContext: eventData,
 	})
 }
 
@@ -277,12 +268,7 @@ func (d *desk) handleEnterQuit(eqi interfaces.PlayerEnterQuitInfo) {
 			Head: &ddz.RequestEventHead{PlayerId: eqi.PlayerID},
 		}
 		eventID := int(ddz.EventID_event_resume_request)
-		eventContext, err := proto.Marshal(eventMessage)
-		if err != nil {
-			logEntry.WithError(err).Errorln("事件消息序列化失败")
-			return
-		}
-		d.processEvent(&deskEvent{eventID: eventID, eventContext: eventContext})
+		d.processEvent(&deskEvent{eventID: eventID, eventContext: eventMessage})
 		logEntry.Debugln("玩家进入")
 	}
 }

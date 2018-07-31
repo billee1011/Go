@@ -7,7 +7,6 @@ import (
 	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 )
 
 type grabStateAI struct {
@@ -29,22 +28,22 @@ func (h *grabStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (
 	}, nil
 
 	context := params.DDZContext
-	playerId := params.PlayerID
+	playerID := params.PlayerID
 	// 没到自己抢庄
-	if context.GetCurrentPlayerId() != playerId {
+	if context.GetCurrentPlayerId() != playerID {
 		return result, nil
 	}
 
-	request := ddz.GrabRequestEvent{Head: &ddz.RequestEventHead{
-		PlayerId: playerId,
-	}, Grab: false,
+	request := &ddz.GrabRequestEvent{
+		Head: &ddz.RequestEventHead{
+			PlayerId: playerID,
+		}, Grab: false,
 	}
-	data, _ := proto.Marshal(&request)
 	event := interfaces.AIEvent{
 		ID:      int32(ddz.EventID_event_grab_request),
-		Context: data,
+		Context: request,
 	}
 	result.Events = append(result.Events, event)
-	logrus.WithField("player", playerId).WithField("result", result).Debug("grab timeout event")
+	logrus.WithField("player", playerID).WithField("result", result).Debug("grab timeout event")
 	return
 }

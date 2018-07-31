@@ -4,12 +4,12 @@ import (
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/server_pb/ddz"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/majong/global"
+	"steve/room/majong/global"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type doubleState struct{}
@@ -32,44 +32,40 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 		return int(ddz.StateID_state_double), global.ErrInvalidEvent
 	}
 
-	message := &ddz.DoubleRequestEvent{}
-	err := proto.Unmarshal(event.EventData, message)
-	if err != nil {
-		return int(ddz.StateID_state_double), global.ErrUnmarshalEvent
-	}
+	message := (event.EventData).(*ddz.DoubleRequestEvent)
 
 	context := getDDZContext(m)
-	playerId := message.GetHead().GetPlayerId()
+	playerID := message.GetHead().GetPlayerId()
 	isDouble := message.IsDouble
 
-	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerId, "double": isDouble})
-	if !IsValidPlayer(context, playerId) {
+	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerID, "double": isDouble})
+	if !IsValidPlayer(context, playerID) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_double), global.ErrInvalidRequestPlayer
 	}
 	for _, doubledPlayer := range context.DoubledPlayers {
-		if doubledPlayer == playerId {
+		if doubledPlayer == playerID {
 			logEntry.WithField("DoubledPlayers", context.DoubledPlayers).Warnln("玩家重复加倍")
 			return int(ddz.StateID_state_double), nil
 		}
 	}
 	logEntry.Infoln("斗地主玩家加倍")
 
-	GetPlayerByID(context.GetPlayers(), playerId).IsDouble = isDouble //记录该玩家加倍
-	context.DoubledPlayers = append(context.DoubledPlayers, playerId)
+	GetPlayerByID(context.GetPlayers(), playerID).IsDouble = isDouble //记录该玩家加倍
+	context.DoubledPlayers = append(context.DoubledPlayers, playerID)
 	if isDouble {
 		context.TotalDouble = context.TotalDouble * 2
 	}
 
 	//删除该玩家倒计时
-	context.CountDownPlayers = remove(context.CountDownPlayers, playerId)
+	context.CountDownPlayers = remove(context.CountDownPlayers, playerID)
 
 	var nextStage *room.NextStage
 	if len(context.DoubledPlayers) >= 3 {
 		nextStage = GenNextStage(room.DDZStage_DDZ_STAGE_PLAYING)
 	}
 	broadcast(m, msgid.MsgID_ROOM_DDZ_DOUBLE_NTF, &room.DDZDoubleNtf{
-		PlayerId:    &playerId,
+		PlayerId:    &playerID,
 		IsDouble:    &isDouble,
 		TotalDouble: &context.TotalDouble,
 		NextStage:   nextStage,
