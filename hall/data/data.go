@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
 )
 
@@ -397,21 +396,9 @@ func SavePlayerInfoToRedis(playerID uint64, pinfo map[string]string, redisName s
 	for k, v := range pinfo {
 		list[k] = v
 	}
-	err = r.Watch(func(tx *redis.Tx) error {
-		_, err := tx.Get(redisKey).Result()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-
-		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
-			pipe.HMSet(redisKey, list)
-			return nil
-		})
-		return err
-	}, redisKey)
-
-	if err != nil {
-		return fmt.Errorf("set redis err:%v", err)
+	cmd := r.HMSet(redisKey, list)
+	if cmd.Err() != nil {
+		return fmt.Errorf("set redis err:%v", cmd.Err())
 	}
 	r.Expire(redisKey, redisTimeOut)
 	return nil

@@ -19,8 +19,7 @@ create table t_currency_record
   remark        varchar(256) null,
   constraint t_currency_record_tradeID_uindex
   unique (tradeID)
-)
-  comment '虚拟货币流水表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '虚拟货币流水表';
 
 
 
@@ -37,10 +36,7 @@ create table t_game_detail
   createBy   varchar(64) null,
   updateTime datetime    null,
   updateBy   varchar(64) null
-)
-  comment '游戏记录明细表';
-
-
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8  comment '游戏记录明细表';
 
 
 create table t_game_sumary
@@ -59,8 +55,7 @@ create table t_game_sumary
   createBy   varchar(64)  null,
   updateTime datetime     null,
   updateBy   varchar(64)  null
-)
-  comment '游戏记录汇总表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '游戏记录汇总表';
 
 
 
@@ -89,5 +84,4 @@ create table t_login_record
   updateBy       varchar(64)     null,
   constraint t_login_record_recordID_uindex
   unique (recordID)
-)
-  comment '玩家登录记录表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家登录记录表';

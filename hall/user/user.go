@@ -43,7 +43,6 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	state, gameID := getPlayerState(playerID)
 	response.PlayerState = state.Enum()
 	response.GameId = common.GameId(gameID).Enum()
-	logrus.Debugln("1111111111111111111111111111111", response)
 	return
 }
 

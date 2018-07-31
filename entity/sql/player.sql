@@ -2,7 +2,7 @@
 
 create table t_hall_info
 (
-  id                    bigint auto_increment
+  id                    bigint auto_increment    
     primary key,
   playerID              bigint       not null,
   recharge              int          null
@@ -28,8 +28,8 @@ create table t_hall_info
   createBy              varchar(64)  null,
   updateTime            datetime     null,
   updateBy              varchar(64)  null
-)
-  comment '玩家大厅信息表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家大厅信息表'; 
+  
 
 create table t_player
 (
@@ -67,8 +67,7 @@ create table t_player
   createBy     varchar(64)            null,
   updateTime   datetime               null,
   updateBy     varchar(64)            null
-)
-  comment '玩家信息表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8  comment '玩家信息表';    
 
 create table t_player_currency
 (
@@ -94,6 +93,5 @@ create table t_player_currency
   createBy       varchar(64)  null,
   updateTime     datetime     null,
   updateBy       varchar(64)  null
-)
-  comment '玩家虚拟货币表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家虚拟货币表';  
 
