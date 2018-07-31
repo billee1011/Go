@@ -14,6 +14,17 @@ It has these top-level messages:
 	PlayerLogin
 	GetPlayerByAccountReq
 	GetPlayerByAccountRsp
+	GetPlayerInfoReq
+	GetPlayerInfoRsp
+	UpdatePlayerInfoReq
+	UpdatePlayerInfoRsp
+	GetPlayerStateReq
+	GetPlayerStateRsp
+	UpdatePlayerStateReq
+	UpdatePlayerStateRsp
+	GetGameListInfoReq
+	GameInfo
+	GetGameListInfoRsp
 */
 package user
 

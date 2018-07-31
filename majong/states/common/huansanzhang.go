@@ -23,7 +23,7 @@ type HuansanzhangState struct {
 
 // OnEntry 进入换三张状态
 func (s *HuansanzhangState) OnEntry(flow interfaces.MajongFlow) {
-	// s.notifyPlayerHuangSanZhang(flow) //换三张推荐通知 //改为前端发送推荐
+	s.notifyPlayerHuangSanZhang(flow) //换三张推荐通知
 }
 
 // ProcessEvent 处理换三张事件
@@ -289,32 +289,32 @@ func onHuanSanZhangRsq(playerID uint64, flow interfaces.MajongFlow) {
 }
 
 // notifyPlayerHuangSanZhang 通知玩家换三张
-// func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow) {
-// 	players := flow.GetMajongContext().GetPlayers()
-// 	idHszMap := make(map[uint64]string)
-// 	log := logrus.WithFields(logrus.Fields{})
-// 	// 广播通知客户端进入定缺
-// 	for _, player := range players {
-// 		// 获取推荐换三张
-// 		hszCards := gutils.GetRecommedHuanSanZhang(player.GetHandCards())
-// 		// 检验换牌是否符合
-// 		if !s.checkReq(log, player, hszCards) {
-// 			log.WithFields(logrus.Fields{"hszCards": hszCards}).Infoln("换牌不符合")
-// 			continue
-// 		}
-// 		// 先设置，用于超时AI
-// 		player.HuansanzhangCards = hszCards
-// 		hszNtf := &room.RoomHuansanzhangNtf{
-// 			HszCard: utils.CardsToRoomCards(player.GetHuansanzhangCards()),
-// 		}
-// 		idHszMap[player.GetPalyerId()] = gutils.FmtMajongpbCards(player.GetHandCards())
-// 		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
-// 			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_NTF),
-// 			Msg:   hszNtf,
-// 		})
-// 	}
-// 	// 日志
-// 	log.WithFields(logrus.Fields{
-// 		"idHszMap": idHszMap,
-// 	}).Info("-----换三张开始-获取推荐换三张")
-// }
+func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow) {
+	players := flow.GetMajongContext().GetPlayers()
+	idHszMap := make(map[uint64]string)
+	log := logrus.WithFields(logrus.Fields{})
+	// 广播通知客户端进入定缺
+	for _, player := range players {
+		// 获取推荐换三张
+		hszCards := gutils.GetRecommedHuanSanZhang(player.GetHandCards())
+		// 检验换牌是否符合
+		if !s.checkReq(log, player, hszCards) {
+			log.WithFields(logrus.Fields{"hszCards": hszCards}).Infoln("换牌不符合")
+			continue
+		}
+		// 先设置，用于超时AI
+		player.HuansanzhangCards = hszCards
+		hszNtf := &room.RoomHuansanzhangNtf{
+			HszCard: utils.CardsToRoomCards(player.GetHuansanzhangCards()),
+		}
+		idHszMap[player.GetPalyerId()] = gutils.FmtMajongpbCards(player.GetHandCards())
+		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_NTF),
+			Msg:   hszNtf,
+		})
+	}
+	// 日志
+	log.WithFields(logrus.Fields{
+		"idHszMap": idHszMap,
+	}).Info("-----换三张开始-获取推荐换三张")
+}
