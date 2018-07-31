@@ -28,6 +28,8 @@ create table t_game_level_config
   baseScores int          null,
   lowScores  int          null,
   highScores int          null,
+  minPeople  int          null,
+  maxPeople int           null,
   status     int          null,
   remark     varchar(256) null,
   createTime datetime     null,

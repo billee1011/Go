@@ -20,12 +20,13 @@ var redisPlayerCli *redis.Client
 
 func init() {
 	conf := mysql.Config{
-		User:   "root",
-		Passwd: "123456",
-		Net:    "tcp",
-		Addr:   "localhost:3306",
-		DBName: "player",
-		Params: map[string]string{"charset": "utf8"},
+		User:                 "root",
+		Passwd:               "12345678",
+		Net:                  "tcp",
+		Addr:                 "192.168.7.108:3306",
+		DBName:               "steve",
+		Params:               map[string]string{"charset": "utf8"},
+		AllowNativePasswords: true,
 	}
 	mysqlPlayerEngine, _ := xorm.NewEngine("mysql", conf.FormatDSN())
 
@@ -45,7 +46,6 @@ func init() {
 
 func NewPlayerData(accID uint64, playerID uint64) {
 	GetPlayerIDByAccountID(accID)
-
 	InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
@@ -85,9 +85,11 @@ func NewPlayerData(accID uint64, playerID uint64) {
 		Updatetime:     time.Now(),
 		Updateby:       "",
 	})
-
+	InitPlayerState(int64(playerID))
 	return
 }
+
+// TestInitPlayerData 初始化玩家
 func TestInitPlayerData(t *testing.T) {
 	viper.SetDefault("node", 200)
 	playerID := AllocPlayerID()
@@ -143,6 +145,9 @@ func TestInitPlayerData(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
+	err = InitPlayerState(int64(playerID))
+	assert.Nil(t, err)
+
 	// 能正确拿到账号关联的玩家
 	exist, _playerID, err := GetPlayerIDByAccountID(accID)
 	assert.Equal(t, _playerID, playerID)
@@ -159,6 +164,7 @@ func TestInitPlayerData(t *testing.T) {
 	assert.Equal(t, _playerID, playerID)
 }
 
+// TestGetPlayerInfo 获取玩家信息
 func TestGetPlayerInfo(t *testing.T) {
 	viper.SetDefault("node", 200)
 	playerID := AllocPlayerID()
@@ -173,10 +179,53 @@ func TestGetPlayerInfo(t *testing.T) {
 	player, err := GetPlayerInfoByPlayerID(playerID)
 
 	assert.Nil(t, err)
-	assert.NotNil(t, player.PlayerID)
-	assert.NotNil(t, player.NickName)
-	assert.NotNil(t, player.Coin)
 	assert.NotNil(t, player.State)
 
 	// redis 中有数据
+	redisKey := cache.FmtPlayerIDKey(playerID)
+	result, err := redisPlayerCli.HMGet(redisKey, cache.PlayerStateField).Result()
+	assert.Nil(t, err)
+	assert.NotEmpty(t, result[0])
+	fmt.Println(result)
+}
+
+// TestGetGameInfoList 获取游戏信息
+func TestGetGameInfoList(t *testing.T) {
+	gameInfo, err := GetGameInfoList()
+	assert.Nil(t, err)
+	assert.Nil(t, gameInfo)
+}
+
+// TestSetPlayerState 修改玩家状态
+func TestSetPlayerState(t *testing.T) {
+	viper.SetDefault("node", 200)
+	playerID := AllocPlayerID()
+	assert.NotZero(t, playerID)
+
+	alloc, err := gutils.NewNode(300)
+	assert.Nil(t, err)
+	accID := uint64(alloc.Generate().Int64())
+
+	NewPlayerData(accID, playerID)
+
+	result, err := UpdatePlayerState(playerID, 0, 1, 1, "127.0.0.1")
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+}
+
+func TestUpdatePlayerInfo(t *testing.T) {
+	viper.SetDefault("node", 200)
+	playerID := AllocPlayerID()
+	assert.NotZero(t, playerID)
+
+	alloc, err := gutils.NewNode(300)
+	assert.Nil(t, err)
+	accID := uint64(alloc.Generate().Int64())
+
+	NewPlayerData(accID, playerID)
+
+	exists, result, err := UpdatePlayerInfo(playerID, "正是", "你好")
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+	assert.Equal(t, true, exists)
 }

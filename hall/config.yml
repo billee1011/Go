@@ -14,15 +14,15 @@ redis_passwd:
 redis_list:
   player: 
     addr: 127.0.0.1:6379
-    passwd: 
+    passwd:   
 
 # mysql 数据库列表
 mysql_list:
-  player:
-    user: root
-    passwd: 123456
-    addr: 127.0.0.1:3306
-    db: player 
+  steve:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: steve 
     params:
       charset: utf8
 
