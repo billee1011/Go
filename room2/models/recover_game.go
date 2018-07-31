@@ -2,14 +2,16 @@ package models
 
 import (
 	"steve/client_pb/room"
-	server_pb "steve/server_pb/majong"
-	"time"
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
+	"steve/gutils"
 	"steve/majong/utils"
 	"steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/util"
+	server_pb "steve/server_pb/majong"
+	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 func GetStateCostTime(entryTime int64) (costTime uint32) {
@@ -46,10 +48,14 @@ func GetOperatePlayerID(mjContext *server_pb.MajongContext) *uint64 {
 
 func GetGameStage(curState server_pb.StateID) (stage room.GameStage) {
 	switch curState {
+	case server_pb.StateID_state_init:
+		stage = room.GameStage_GAMESTAGE_INIT
 	case server_pb.StateID_state_huansanzhang:
 		stage = room.GameStage_GAMESTAGE_HUANSANZHANG
 	case server_pb.StateID_state_dingque:
 		stage = room.GameStage_GAMESTAGE_DINGQUE
+	case server_pb.StateID_state_gameover:
+		stage = room.GameStage_GAMESTAGE_END
 	default:
 		stage = room.GameStage_GAMESTAGE_PLAYCARD
 	}
@@ -58,7 +64,7 @@ func GetGameStage(curState server_pb.StateID) (stage room.GameStage) {
 
 func GetDoorCard(mjContext *server_pb.MajongContext) *uint32 {
 	if mjContext.GetCurState() == server_pb.StateID_state_zixun {
-		DoorCard := uint32(mjContext.GetLastMopaiCard().GetPoint())
+		DoorCard := gutils.ServerCard2Number(mjContext.GetLastMopaiCard())
 		return &DoorCard
 	}
 	return nil
@@ -68,7 +74,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "getRecoverPlayerInfo",
 	})
-	ctx :=d.GetConfig().Context.(*contexts.MjContext).MjContext
+	ctx := d.GetConfig().Context.(*contexts.MjContext).MjContext
 	mjContext := &ctx
 	deskPlayers := GetModelManager().GetPlayerModel(d.GetUid()).GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {
@@ -79,8 +85,6 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 			logEntry.WithField("palyerID: ", playerID).Errorln("mjContext找不到对应玩家")
 			continue
 		}
-		logEntry.Errorln("原生数据")
-		logEntry.Errorln(player)
 		svrHandCard := player.GetHandCards()
 		handCardCount := uint32(len(svrHandCard))
 		gamePlayerInfo := &room.GamePlayerInfo{
@@ -259,6 +263,28 @@ func GetQghInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *ro
 	return proto.Bool(true), qghInfo
 }
 
+func getHuansanzhangInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomHuansanzhangNtf) {
+	player := gutils.GetMajongPlayer(playerID, mjContext)
+	if mjContext.GetCurState() != server_pb.StateID_state_huansanzhang || player.GetHuansanzhangSure() {
+		return proto.Bool(false), nil
+	}
+	hszInfo := &room.RoomHuansanzhangNtf{
+		HszCard: gutils.CardsToRoomCards(player.GetHuansanzhangCards()),
+	}
+	return proto.Bool(true), hszInfo
+}
+
+func getDingqueInfo(playerID uint64, mjContext *server_pb.MajongContext) (*bool, *room.RoomDingqueNtf) {
+	player := gutils.GetMajongPlayer(playerID, mjContext)
+	if mjContext.GetCurState() != server_pb.StateID_state_dingque || player.GetHasDingque() {
+		return proto.Bool(false), nil
+	}
+	dqInfo := &room.RoomDingqueNtf{
+		Color: gutils.ServerColor2ClientColor(player.GetDingqueColor()).Enum(),
+	}
+	return proto.Bool(true), dqInfo
+}
+
 func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 	zixunNtf := &room.RoomZixunNtf{}
 	zixunNtf.EnableAngangCards = record.GetEnableAngangCards()
@@ -278,4 +304,12 @@ func zixunTransform(record *server_pb.ZiXunRecord) *room.RoomZixunNtf {
 	zixunNtf.CanTingCardInfo = util.CanTingCardInfoSvr2Client(record.GetCanTingCardInfo())
 
 	return zixunNtf
+}
+
+func getLastOutCard(outCard *server_pb.Card) uint32 {
+	card := gutils.ServerCard2Number(outCard)
+	if card == 10 {
+		card = 0
+	}
+	return card
 }

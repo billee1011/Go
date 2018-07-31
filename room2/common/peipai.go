@@ -1,11 +1,13 @@
 package common
 
 import (
-	"github.com/Sirupsen/logrus"
-	"net/http"
-	"strconv"
-	"steve/gutils"
 	"fmt"
+	"net/http"
+	"steve/gutils"
+	"steve/room2/player"
+	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 const (
@@ -43,30 +45,28 @@ func RunPeiPai(addr string) error {
 
 // SetGoldHandle 设置玩家金币
 func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
-
 	// 玩家ID
 	playerID, err := strconv.ParseUint(req.FormValue(PlayerIDKey), 10, 64)
-	response := "OK"
-	defer resp.Write([]byte(response))
 
 	if err != nil {
-		response = "player_id 数据错误"
+		resp.Write([]byte("player_id 数据错误"))
 		return
 	}
 
 	// 金币数
 	gold, err := strconv.ParseUint(req.FormValue(GoldKey), 10, 64)
 	if err != nil {
-		response = "gold 数据错误"
+		resp.Write([]byte("gold 数据错误"))
 		return
 	}
 
-	/*errs :=	desk.GetRoomPlayerMgr().SetPlayerGold(playerID,gold)
-	if errs != nil {
-		response = "player_id 不存在"
-		return
-	}*/
-	respMSG(resp, fmt.Sprintf("配置玩家金币数成功,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, gold), 200)
+	roomPlayer := player.GetPlayerMgr().GetPlayer(playerID)
+	if roomPlayer != nil {
+		roomPlayer.SetCoin(gold)
+		respMSG(resp, fmt.Sprintf("配置玩家金币数成功,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, gold), 200)
+	} else {
+		resp.Write([]byte("未找到玩家"))
+	}
 }
 
 var peiPaiInfos []peipaiInfo
@@ -155,6 +155,17 @@ func GetZhuangIndex(gameID int) int {
 	return -1
 }
 
+//ClearPeiPai 通过配牌关键字删除配牌
+func ClearPeiPai(key string) bool {
+	for index, pp := range peiPaiInfos {
+		if pp.Key == key {
+			peiPaiInfos = append(peiPaiInfos[:index], peiPaiInfos[index+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 //Peipai 接受http请求并处理
 func Peipai(w http.ResponseWriter, r *http.Request) {
 
@@ -167,6 +178,17 @@ func Peipai(w http.ResponseWriter, r *http.Request) {
 
 	// 配牌
 	value := r.FormValue(cards)
+	if value == "" {
+		found := ClearPeiPai(gameName)
+		var msg string
+		if found {
+			msg = fmt.Sprintf("%s's peipai cleared", gameName)
+		} else {
+			msg = fmt.Sprintf("%s's peipai not found", gameName)
+		}
+		respMSG(w, msg, 200)
+		return
+	}
 
 	// 配牌的长度-字符串
 	lenValue := r.FormValue(num)
@@ -363,7 +385,6 @@ func idIntToStr(gameID int) string {
 	}
 	return ""
 }
-
 
 // 所有游戏的选项配置
 var optionInfos []optionInfo

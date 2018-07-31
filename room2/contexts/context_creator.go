@@ -2,15 +2,18 @@ package contexts
 
 import (
 	"errors"
+	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/room2/common"
+	"steve/room2/fixed"
+	"steve/server_pb/ddz"
 	"steve/server_pb/majong"
 	server_pb "steve/server_pb/majong"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
-	"time"
-	"steve/room2/common"
-	"steve/room2/fixed"
 )
 
 var errInitMajongContext = errors.New("初始化麻将现场失败")
@@ -18,7 +21,10 @@ var errAllocDeskIDFailed = errors.New("分配牌桌 ID 失败")
 var errPlayerNotExist = errors.New("玩家不存在")
 var errPlayerNeedXingPai = errors.New("玩家需要参与行牌")
 
-func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
+func CreateMajongContext(players []uint64, gameId int, zhuang uint32, fixZhuang bool) (*MjContext, error) {
+	if !fixZhuang {
+		zhuang = 0
+	}
 	param := server_pb.InitMajongContextParams{
 		GameId:  int32(gameId),
 		Players: players,
@@ -37,23 +43,25 @@ func CreateMajongContext(players []uint64,gameId int) (*MjContext,error) {
 				ZhuangIndex:      int32(util.GetZhuangIndex(desk.GetGameId())),
 			},*/
 		}, //设置庄家
-		MajongOption: []byte{},
+		MajongOption:   []byte{},
+		ZhuangIndex:    zhuang,
+		FixZhuangIndex: true,
 	}
 	var mjContext server_pb.MajongContext
 	var err error
 	if mjContext, err = initMajongContext(param); err != nil {
-		return nil,err
+		return nil, err
 	}
 	if err := fillContextOptions(gameId, &mjContext); err != nil {
-		return nil,err
+		return nil, err
 	}
 	result := &MjContext{
-		MjContext:   mjContext,
+		MjContext: mjContext,
 		//StateNumber: 0,
-		StateTime:   time.Now(),
+		StateTime: time.Now(),
 	}
 	result.SetStateNumber(0)
-	return result,nil
+	return result, nil
 }
 
 var errCreateEmptyContextFailed = errors.New("创建空的麻将现场失败")
@@ -107,6 +115,7 @@ func initPlayers(players []uint64) []*server_pb.Player {
 			HuansanzhangSure:  false,
 			HuansanzhangCards: []*server_pb.Card{},
 			Properties:        make(map[string][]byte, 0),
+			TingStateInfo:     &server_pb.TingStateInfo{},
 		})
 	}
 	return result
@@ -129,4 +138,35 @@ func fillContextOptions(gameID int, mjContext *majong.MajongContext) error {
 	mjContext.CardtypeOptionId = uint32(gameOption.CardTypeOptionID)
 	mjContext.XingpaiOptionId = uint32(gameOption.XingPaiOptionID)
 	return nil
+}
+
+// CreateInitDDZContext 创建初始斗地主现场
+func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
+	return &ddz.DDZContext{
+		GameId:            int32(room.GameId_GAMEID_DOUDIZHU),
+		CurState:          ddz.StateID_state_init,
+		Players:           createDDZPlayers(players),
+		FirstGrabPlayerId: 0,
+		GrabbedCount:      0,
+		AllAbandonCount:   0,
+		TotalGrab:         0,
+		TotalDouble:       1,
+		CurCardType:       ddz.CardType_CT_NONE,
+		PassCount:         0,
+		TotalBomb:         1,
+		Spring:            true,
+		AntiSpring:        true,
+	}
+}
+
+// 根据玩家的playerID创建出斗地主Player
+func createDDZPlayers(players []uint64) []*ddz.Player {
+	logrus.WithField("players", players).Debug("创建斗地主玩家")
+	result := make([]*ddz.Player, 0, len(players))
+	for _, playerID := range players {
+		result = append(result, &ddz.Player{
+			PlayerId: playerID,
+		})
+	}
+	return result
 }

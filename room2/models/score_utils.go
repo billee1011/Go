@@ -1,9 +1,13 @@
 package models
 
 import (
+	"steve/client_pb/room"
+	"steve/common/mjoption"
 	"steve/gutils"
-	majongpb "steve/server_pb/majong"
 	"steve/room2/player"
+	majongpb "steve/server_pb/majong"
+
+	"github.com/golang/protobuf/proto"
 )
 
 // mergeSettle 合并一组SettleInfo
@@ -75,6 +79,37 @@ func CalcCoin(deskPlayer []*player.Player, contextPlayer []*majongpb.Player, huQ
 	return coinCost, brokePlayers
 }
 
+// calcTaxbetCoin 计算退税的金币数
+func calcTaxbetCoin(losePlayer uint64, winPlayers []uint64, score map[uint64]int64, contextPlayer []*majongpb.Player) (coinCost map[uint64]int64) {
+	coinCost = make(map[uint64]int64, 0)
+	loseCoin := int64(player.GetPlayerMgr().GetPlayer(losePlayer).GetCoin()) // 输家金币数
+	loseScore := score[losePlayer]
+	if loseCoin <= 0 {
+		allPlayers := append(winPlayers, losePlayer)
+		for _, player := range allPlayers {
+			coinCost[player] = 0
+		}
+		return
+	}
+	if abs(loseScore) < loseCoin {
+		// 金币数够扣
+		for _, win := range winPlayers {
+			coinCost[win] = score[win]
+		}
+		coinCost[losePlayer] = score[losePlayer]
+	} else {
+		winSum := len(winPlayers)
+		// 金币数不够扣，赢家为1时直接输家的金币全部给赢家，否则平分
+		if winSum == 1 {
+			coinCost[winPlayers[0]] = loseCoin
+			coinCost[losePlayer] = -loseCoin
+		} else if winSum > 1 {
+			divideScore(losePlayer, winPlayers, nil, contextPlayer)
+		}
+	}
+	return
+}
+
 // getMaxScore 计算玩家输赢上限
 // 赢豆上限 = max(进房豆子数,当前豆子数)
 // 胡牌且退出房间后不参与牌局的所有结算
@@ -102,19 +137,19 @@ func getMaxScore(deskPlayer []*player.Player, huQuitPlayers map[uint64]bool, sco
 	if len(losePids) == 1 {
 		for _, winnPid := range winnPids {
 			winMax := getWinMax(GetDeskPlayer(deskPlayer, winnPid), score[winnPid])
+			maxScore[winnPid] = score[winnPid]
 			if score[winnPid] >= winMax {
 				maxScore[winnPid] = winMax
 			}
-			maxScore[winnPid] = score[winnPid]
 			maxScore[losePids[0]] = maxScore[losePids[0]] - maxScore[winnPid]
 		}
 	} else if len(losePids) > 1 {
 		for _, losePid := range losePids {
 			winMax := getWinMax(GetDeskPlayer(deskPlayer, winnPids[0]), score[losePid])
+			maxScore[losePid] = score[losePid]
 			if abs(score[losePid]) >= winMax {
 				maxScore[losePid] = 0 - winMax
 			}
-			maxScore[losePid] = score[losePid]
 			maxScore[winnPids[0]] = maxScore[winnPids[0]] - maxScore[losePid]
 		}
 	}
@@ -131,11 +166,10 @@ func GetDeskPlayer(deskPlayers []*player.Player, pid uint64) *player.Player {
 	return nil
 }
 
-
 func getWinMax(winPlayer *player.Player, winScore int64) (winMax int64) {
 	winMax = int64(0)
 	currentCoin := int64(winPlayer.GetCoin()) // 当前豆子数
-	enterCoin := int64(winPlayer.GetEcoin())                                // 进房豆子数
+	enterCoin := int64(winPlayer.GetEcoin())  // 进房豆子数
 	if currentCoin >= enterCoin {
 		winMax = currentCoin
 	} else {
@@ -184,7 +218,7 @@ func calcSocreWinner1(winPlayer uint64, losePlayers []uint64, maxScore map[uint6
 	// 破产玩家
 	brokePlayers := make([]uint64, 0)
 	for _, losePid := range losePlayers {
-		loseScore := abs(maxScore[losePid])                                   // 输家输的分
+		loseScore := abs(maxScore[losePid]) // 输家输的分
 		roomPlayer := player.GetPlayerMgr().GetPlayer(losePid)
 		loseCoin := int64(roomPlayer.GetCoin()) // 输家金币数
 		if loseScore < loseCoin {
@@ -209,6 +243,14 @@ func calcSocrelose1(winPlayers []uint64, losePlayer uint64, loseScore int64, max
 	loseCoin := int64(roomPlayer.GetCoin())
 	// 赢家人数
 	winSum := len(winPlayers)
+	// 输家金币数为0
+	if loseCoin <= 0 {
+		allPlayers := append(winPlayers, losePlayer)
+		for _, player := range allPlayers {
+			coinCost[player] = 0
+		}
+		return coinCost, brokePlayers
+	}
 	if loseScore < loseCoin {
 		// 金币数够扣
 		for _, win := range winPlayers {
@@ -239,14 +281,14 @@ func divideScore(losePlayer uint64, winPlayers []uint64, maxScore map[uint64]int
 	// 多个赢家，按照赢家人数平分
 	for _, winPid := range winPlayers {
 		winScore := int64(loseCoin / int64(winSum))
-		if winScore >= maxScore[winPid] {
+		if maxScore != nil && winScore >= maxScore[winPid] {
 			winScore = maxScore[winPid]
 		}
 		coinCost[winPid] = winScore
-		coinCost[losePlayer] = coinCost[losePlayer] - coinCost[winPid]
+		coinCost[losePlayer] = coinCost[losePlayer] - abs(coinCost[winPid])
 	}
 	// 剩余分数，余 1 情况赔付于赢钱最多的玩家, 余 2 情况赔付于第一、第二胡牌玩家
-	surplusScore := loseCoin - coinCost[losePlayer]
+	surplusScore := loseCoin - abs(coinCost[losePlayer])
 	resortWinnerPlayers := resortWinnerPlayers(losePlayer, winPlayers, contextPlayer)
 	firstWinner := resortWinnerPlayers[0]
 	if surplusScore%2 == 0 {
@@ -278,4 +320,24 @@ func resortWinnerPlayers(losePlayer uint64, winPlayers []uint64, contextPlayer [
 		}
 	}
 	return resortWinnerPlayers
+}
+
+func getFans(fanTypes []int64, huaCount uint32, cardOption *mjoption.CardTypeOption) (fan []*room.Fan) {
+	fan = make([]*room.Fan, 0)
+	for _, fanType := range fanTypes {
+		rfan := &room.Fan{
+			Name:  room.FanType(int32(fanType)).Enum(),
+			Value: proto.Int32(int32(cardOption.Fantypes[int(fanType)].Score)),
+			Type:  proto.Uint32(uint32(cardOption.Fantypes[int(fanType)].Type)),
+		}
+		fan = append(fan, rfan)
+	}
+	if huaCount != 0 {
+		fan = append(fan, &room.Fan{
+			Name:  room.FanType_FT_HUAPAI.Enum(),
+			Value: proto.Int32(int32(huaCount)),
+			Type:  proto.Uint32(0),
+		})
+	}
+	return
 }

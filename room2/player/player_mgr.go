@@ -1,12 +1,13 @@
 package player
 
 import (
+	"fmt"
+	"steve/client_pb/common"
+	"steve/common/data/player"
 	"sync"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
-	"fmt"
-	"steve/common/data/player"
-	"steve/client_pb/common"
 )
 
 type PlayerMgr struct {
@@ -15,7 +16,7 @@ type PlayerMgr struct {
 
 var roomPlayerMgr *PlayerMgr
 
-func init(){
+func init() {
 	roomPlayerMgr = &PlayerMgr{}
 }
 
@@ -24,7 +25,7 @@ func GetPlayerMgr() *PlayerMgr {
 }
 
 func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {
-	result,ok  := pm.playerMap.Load(playerID)
+	result, ok := pm.playerMap.Load(playerID)
 	if !ok {
 		return nil
 	}
@@ -32,17 +33,20 @@ func (pm *PlayerMgr) GetPlayer(playerID uint64) *Player {
 	return player
 }
 
-func (pm *PlayerMgr) InitDeskData(players []uint64,maxOverTime int,robotLv []int){
-	for seat,playerId := range players{
-		player := pm.GetPlayer(playerId)
-		if player == nil{
-			pm.InitPlayer(playerId)
-			player = pm.GetPlayer(playerId)
+// InitDeskData init desk data
+func (pm *PlayerMgr) InitDeskData(players []uint64, maxOverTime int, robotLv []int) {
+	for seat, playerID := range players {
+		player := pm.GetPlayer(playerID)
+		if player == nil {
+			pm.InitPlayer(playerID)
+			player = pm.GetPlayer(playerID)
 		}
 		player.SetSeat(uint32(seat))
 		player.SetEcoin(int(player.GetCoin()))
 		player.SetMaxOverTime(maxOverTime)
 		player.SetRobotLv(robotLv[seat])
+		player.SetQuit(false)
+		player.SetDetached(false)
 	}
 }
 
@@ -82,9 +86,9 @@ func (pm *PlayerMgr) BindPlayerRoomAddr(players []uint64, gameID int) {
 //TODO 第一次进入房间服初始化
 func (pm *PlayerMgr) InitPlayer(playerID uint64) {
 	player := &Player{
-		PlayerID:playerID,
+		PlayerID: playerID,
 	}
-	pm.playerMap.Store(playerID,player)
+	pm.playerMap.Store(playerID, player)
 }
 
 //TODO 离开房间服删除
@@ -92,7 +96,6 @@ func (pm *PlayerMgr) RemovePlayer(playerID uint64) {
 	pm.playerMap.Delete(playerID)
 }
 
-
-func (pm *PlayerMgr) PlayerOverTime(player *Player){
+func (pm *PlayerMgr) PlayerOverTime(player *Player) {
 	player.OnPlayerOverTime()
 }

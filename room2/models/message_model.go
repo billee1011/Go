@@ -1,14 +1,15 @@
 package models
 
 import (
-	"steve/client_pb/msgid"
-	"github.com/golang/protobuf/proto"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"steve/room2/util"
-	"steve/room2/player"
-	"steve/room2/fixed"
+	"steve/client_pb/msgid"
 	"steve/room2/desk"
+	"steve/room2/fixed"
+	"steve/room2/player"
+	"steve/room2/util"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 var gMessageSender util.MessageSender
@@ -61,7 +62,7 @@ func (model *MessageModel) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgI
 	// 是否针对所有玩家
 	if playerIDs == nil || len(playerIDs) == 0 {
 		deskId := model.GetDesk().GetUid()
-		m:=GetModelManager().GetPlayerModel(deskId)
+		m := GetModelManager().GetPlayerModel(deskId)
 		playerIDs = m.GetDeskPlayerIDs()
 		logEntry = logEntry.WithField("all_player_ids", playerIDs)
 	}
@@ -78,15 +79,17 @@ func (model *MessageModel) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgI
 func (model *MessageModel) removeQuit(playerIDs []uint64) []uint64 {
 	result := []uint64{}
 	for _, playerID := range playerIDs {
-		if quited := player.GetPlayerMgr().GetPlayer(playerID).IsQuit(); !quited {
-			result = append(result, playerID)
+		pla := player.GetPlayerMgr().GetPlayer(playerID)
+		if pla.IsQuit() || pla.IsDetached() {
+			continue
 		}
+		result = append(result, playerID)
 	}
 	return result
 }
 
 // BroadCastDeskMessageExcept 广播消息给牌桌玩家
-func  (model *MessageModel) BroadCastDeskMessageExcept(expcetPlayers []uint64, exceptQuit bool, msgID msgid.MsgID, body proto.Message) error {
+func (model *MessageModel) BroadCastDeskMessageExcept(expcetPlayers []uint64, exceptQuit bool, msgID msgid.MsgID, body proto.Message) error {
 	playerIDs := []uint64{}
 	deskPlayers := GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {

@@ -7,9 +7,10 @@ import (
 	"steve/server_pb/majong"
 	"time"
 
+	"steve/room2/ai"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type waitQiangganghuStateAI struct {
@@ -35,16 +36,8 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params ai.AIEventGenerateParams
 	var aiEvent ai.AIEvent
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	if player.GetPalyerId() == mjContext.GetLastGangPlayer() {
-		return result, fmt.Errorf("玩家%v是补杠的玩家,不允许抢杠", player.GetPalyerId())
-
-	}
-	if len(player.GetHandCards())%3+1 != 2 {
-		return result, fmt.Errorf("玩家%v手牌不符合查胡要求", player.GetPalyerId())
-	}
-
-	if gutils.CheckHasDingQueCard(mjContext, player) {
-		return result, fmt.Errorf("")
+	if h.checkAIEvent(player, mjContext, params) != nil {
+		return
 	}
 	canhu := false
 	for _, act := range player.GetPossibleActions() {
@@ -60,7 +53,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params ai.AIEventGenerateParams
 		"canhu":      canhu,
 	})
 	if canhu {
-		if len(player.GetHuCards()) > 0 {
+		if gutils.IsHu(player) || gutils.IsTing(player) {
 			aiEvent = h.hu(player)
 			entry.Info("生成抢杠胡的自动事件")
 		} else {
@@ -88,7 +81,7 @@ func (h *waitQiangganghuStateAI) qi(player *majong.Player) ai.AIEvent {
 		}).Errorln("事件序列化失败")
 	}
 	return ai.AIEvent{
-		ID:      majong.EventID_event_qi_request,
+		ID:      int32(majong.EventID_event_qi_request),
 		Context: data,
 	}
 }
@@ -107,7 +100,20 @@ func (h *waitQiangganghuStateAI) hu(player *majong.Player) ai.AIEvent {
 		}).Errorln("事件序列化失败")
 	}
 	return ai.AIEvent{
-		ID:      majong.EventID_event_hu_request,
+		ID:      int32(majong.EventID_event_hu_request),
 		Context: data,
 	}
+}
+
+func (h *waitQiangganghuStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) error {
+	err := fmt.Errorf("不生成自动事件")
+	if mjContext.GetCurState() != majong.StateID_state_waitqiangganghu ||
+		player.GetPalyerId() == mjContext.GetLastGangPlayer() ||
+		len(player.GetHandCards())%3+1 != 2 ||
+		gutils.CheckHasDingQueCard(mjContext, player) ||
+		len(player.GetPossibleActions()) == 0 ||
+		params.AIType == ai.TingAI {
+		return err
+	}
+	return nil
 }

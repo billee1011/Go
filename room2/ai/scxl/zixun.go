@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"steve/common/mjoption"
 	"steve/gutils"
+	"steve/room2/ai"
 	"steve/server_pb/majong"
 	"time"
-
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type zixunStateAI struct {
@@ -38,106 +35,115 @@ type zixunStateAI struct {
 // 								1,出摸到的那张牌
 //								2,如果是庄家首次出牌,出最右侧的牌
 func (h *zixunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result ai.AIEventGenerateResult, err error) {
-	result, err = ai.AIEventGenerateResult{
-		Events: []ai.AIEvent{},
-	}, nil
-	var aiEvent ai.AIEvent
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	handCards := player.GetHandCards()
-	if gutils.GetZixunPlayer(mjContext) != params.PlayerID {
-		return result, fmt.Errorf("当前玩家不允许进行自动操作")
+	if h.checkAIEvent(player, mjContext, params) != nil {
+		return
 	}
-	if len(handCards) < 2 {
-		return result, fmt.Errorf("手牌数量少于2")
-	}
+	var aiEvent ai.AIEvent
 	switch mjContext.GetZixunType() {
-	case majong.ZixunType_ZXT_PENG:
-		{
-			//有定缺牌，出最大的定缺牌
-			hasChuPai := false
-			for i := len(handCards) - 1; i >= 0; i-- {
-				hc := handCards[i]
-				if hc.GetColor() == player.GetDingqueColor() {
-					aiEvent = h.chupai(player, hc)
-					hasChuPai = true
-					break
-				}
-			}
-			if !hasChuPai {
-				aiEvent = h.chupai(player, handCards[len(handCards)-1])
-			}
-		}
+	case majong.ZixunType_ZXT_PENG, majong.ZixunType_ZXT_CHI:
+		aiEvent = h.handleOtherZixun(player, mjContext)
 	case majong.ZixunType_ZXT_NORMAL:
-		{
-			zxRecord := player.GetZixunRecord()
-			canHu := zxRecord.GetEnableZimo()
-			if (gutils.IsTing(player) || gutils.IsHu(player)) && canHu && !gutils.CheckHasDingQueCard(mjContext, player) {
-				aiEvent = h.hu(player)
-			} else {
-				//先判断是否有定缺牌，有的话，先出定缺牌
-				//有定缺牌，出最大的定缺牌
-				hasChuPai := false
-				for i := len(handCards) - 1; i >= 0; i-- {
-					hc := handCards[i]
-					if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
-						hc.GetColor() == player.GetDingqueColor() {
-						aiEvent = h.chupai(player, hc)
-						hasChuPai = true
-						break
-					}
-				}
-				if !hasChuPai {
-					if player.GetMopaiCount() == 0 {
-						aiEvent = h.chupai(player, handCards[len(handCards)-1])
-					} else {
-						aiEvent = h.chupai(player, mjContext.GetLastMopaiCard())
-					}
-				}
-			}
-		}
+		aiEvent = h.handleNormalZixun(player, mjContext, params)
 	default:
 		return
 	}
+
+	result, err = ai.AIEventGenerateResult{
+		Events: []ai.AIEvent{},
+	}, nil
+
 	result.Events = append(result.Events, aiEvent)
 	return
 }
 
-func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) ai.AIEvent {
-	eventContext := majong.ChupaiRequestEvent{
-		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
-		},
-		Cards: card,
+func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) (aiEvent ai.AIEvent) {
+	switch params.AIType {
+	case ai.OverTimeAI:
+		aiEvent = h.generateOverTime(player, mjContext)
+	case ai.TuoGuangAI:
+		aiEvent = h.generateTuoGuang(player, mjContext)
+	case ai.RobotAI:
+		aiEvent = h.generateRobot(player, mjContext)
+	case ai.TingAI:
+		aiEvent = h.generateTing(player, mjContext)
+	case ai.HuAI:
+		aiEvent = h.generateHu(player, mjContext)
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "zixunStateAI.chupai",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
-	}
-	return ai.AIEvent{
-		ID:      majong.EventID_event_chupai_request,
-		Context: data,
-	}
+	return aiEvent
 }
 
-func (h *zixunStateAI) hu(player *majong.Player) ai.AIEvent {
-	eventContext := majong.HuRequestEvent{
-		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
-		},
+func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
+	//有定缺牌，出最大的定缺牌
+	handCards := player.GetHandCards()
+	//优先出定缺牌
+	for i := len(handCards) - 1; i >= 0; i-- {
+		hc := handCards[i]
+		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
+			hc.GetColor() == player.GetDingqueColor() {
+			aiEvent = h.chupai(player, hc)
+			return
+		}
 	}
-	data, err := proto.Marshal(&eventContext)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "zixunStateAI.hu",
-			"player_id": player.GetPalyerId(),
-		}).Errorln("事件序列化失败")
+
+	aiEvent = h.chupai(player, handCards[len(handCards)-1])
+	return
+}
+
+func (h *zixunStateAI) generateOverTime(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
+	// 生成超时AI事件
+	// 超时时，可以胡就是胡，否则是出牌
+	return h.getNormalZiXunAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateTuoGuang(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
+	// 生成托管AI事件
+	// 无状态下才会托管，因此托管就是出牌
+	return h.getNormalZiXunAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateRobot(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
+	// 生成机器人AI事件
+	// 一直无状态，所以只会出摸到的牌
+	return h.getNormalZiXunAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateTing(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
+	// 生成听AI事件
+	// 听状态下，能胡不做操作等玩家自行选择或者等超时事件，不能胡就打出摸到的牌
+	return h.getNormalZiXunTingStateAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) generateHu(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
+	// 生成胡AI事件
+	// 胡状态下，能胡直接让胡，不能胡就打出摸到的牌
+	return h.getNormalZiXunHuStateAIEvent(player, mjContext)
+}
+
+func (h *zixunStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) error {
+
+	if mjContext.GetCurState() != majong.StateID_state_zixun {
+		return fmt.Errorf("当前不是自询状态")
 	}
-	return ai.AIEvent{
-		ID:      majong.EventID_event_hu_request,
-		Context: data,
+	if gutils.GetZixunPlayer(mjContext) != params.PlayerID {
+		return fmt.Errorf("当前玩家不允许进行自动操作")
 	}
+	if len(player.GetHandCards()) < 2 {
+		return fmt.Errorf("手牌数量少于2")
+	}
+	record := player.GetZixunRecord()
+	if params.AIType == ai.TingAI {
+		if record.GetEnableZimo() || len(record.GetEnableAngangCards()) > 0 ||
+			len(record.GetEnableBugangCards()) > 0 {
+			return fmt.Errorf("听的类型下，玩家有特殊操作的时候不处理")
+		}
+	}
+	// if params.AIType == ai.HuAI {
+	// 	if len(record.GetEnableAngangCards()) > 0 ||
+	// 		len(record.GetEnableBugangCards()) > 0 {
+	// 		return fmt.Errorf("胡的类型下，玩家有除了胡之外的特殊操作不处理")
+	// 	}
+	// }
+	return nil
 }

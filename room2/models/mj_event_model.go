@@ -1,20 +1,21 @@
 package models
 
 import (
-	"runtime/debug"
-	"github.com/Sirupsen/logrus"
 	"context"
-	server_pb "steve/server_pb/majong"
-	majong_process "steve/majong/export/process"
-	context2 "steve/room2/contexts"
-	"time"
+	"runtime/debug"
 	"steve/client_pb/msgid"
-	"github.com/golang/protobuf/proto"
-	"steve/structs/proto/gate_rpc"
+	majong_process "steve/majong/export/process"
 	"steve/room2/ai"
-	"steve/room2/player"
+	context2 "steve/room2/contexts"
 	"steve/room2/desk"
 	"steve/room2/fixed"
+	"steve/room2/player"
+	server_pb "steve/server_pb/majong"
+	"steve/structs/proto/gate_rpc"
+	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type MjEventModel struct {
@@ -56,8 +57,8 @@ func (model *MjEventModel) Stop() {
 	desk := model.GetDesk()
 	players := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
 	player.GetPlayerMgr().UnbindPlayerRoomAddr(desk.GetPlayerIds())
-	for _,playerBean := range players{
-		playerBean.QuitDesk(desk)
+	for _, playerBean := range players {
+		playerBean.QuitDesk(desk, true)
 
 	}
 }
@@ -111,7 +112,7 @@ func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterp
 		EventType: interfaces.NormalEvent,
 		PlayerID:  playerID,
 	}
-*/
+	*/
 	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
 		fixed.NormalEvent,
 		model.GetDesk(),
@@ -141,9 +142,9 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 				return
 			}
 			/*case enterQuitInfo := <-model.GetDesk().PlayerEnterQuitChannel():
-				{
-					d.handleEnterQuit(enterQuitInfo)
-				}*/
+			{
+				d.handleEnterQuit(enterQuitInfo)
+			}*/
 		case event := <-model.event:
 			{
 				println("收到事件 : ", event.EventID)
@@ -153,7 +154,7 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 				mjContext := model.GetDesk().GetConfig().Context.(*context2.MjContext)
 				stateNumber := event.Params.Params[0].(int)
 				context := event.Params.Params[1].([]byte)
-				println("event state:",stateNumber,"-----context state:",mjContext.StateNumber)
+				println("event state:", stateNumber, "-----context state:", mjContext.StateNumber)
 				if needCompareStateNumber(&event) && stateNumber != mjContext.StateNumber {
 					continue
 				}
@@ -232,6 +233,15 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	return false
 }
 
+func (model *MjEventModel) cancelTuoguanGameOver() {
+	playerModel := GetModelManager().GetPlayerModel(model.GetDesk().GetUid())
+	for _, player := range playerModel.GetDeskPlayers() {
+		if player.IsTuoguan() {
+			player.SetTuoguan(false, true)
+		}
+	}
+}
+
 func (model *MjEventModel) Reply(replyMsgs []server_pb.ReplyClientMessage) {
 	if replyMsgs == nil {
 		return
@@ -263,9 +273,9 @@ func (model *MjEventModel) callEventHandler(logEntry *logrus.Entry, eventID int,
 	}
 	// dContext 的每次修改都是一块新内存，用来确保并发安全。
 	model.GetDesk().GetConfig().Context = &context2.MjContext{
-		MjContext:   newContext,
+		MjContext: newContext,
 		//StateNumber: stateNumber,
-		StateTime:   stateTime,
+		StateTime: stateTime,
 	}
 	model.GetDesk().GetConfig().Context.(*context2.MjContext).SetStateNumber(stateNumber)
 	println("更新桌子状体 old ", model.GetDesk().GetConfig().Context.(*context2.MjContext).StateNumber)
@@ -321,15 +331,14 @@ func (model *MjEventModel) genTimerEvent() {
 		}
 	}
 	result := ai.GetAtEvent().GenerateV2(&ai.AutoEventGenerateParams{
-		MajongContext:  &dContext.MjContext,
+		Desk:           model.GetDesk(),
 		CurTime:        time.Now(),
-		StateTime:      dContext.StateTime,
+		StartTime:      dContext.StateTime,
 		RobotLv:        robotLvs,
 		TuoGuanPlayers: tuoGuanPlayers,
 	})
-	println("自动事件生成结果------>",len(result.Events),"托管玩家数量------>",len(tuoGuanPlayers))
 	for _, event := range result.Events {
-		println("写入自动事件------>",event.EventID)
+		logrus.WithField("event_id", event.EventID).Debugln("写入自动事件")
 		GetModelManager().GetMjEventModel(model.GetDesk().GetUid()).PushEvent(event)
 	}
 }

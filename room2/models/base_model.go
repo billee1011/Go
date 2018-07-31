@@ -1,14 +1,15 @@
 package models
 
 import (
+	"steve/client_pb/room"
 	"steve/room2/desk"
 	"steve/room2/player"
-	"steve/client_pb/room"
+
 	"github.com/golang/protobuf/proto"
 )
 
 type BaseModel struct {
-	desk  *desk.Desk
+	desk *desk.Desk
 }
 
 func (model *BaseModel) GetDesk() *desk.Desk {
@@ -17,6 +18,10 @@ func (model *BaseModel) GetDesk() *desk.Desk {
 
 func (model *BaseModel) SetDesk(desk *desk.Desk) {
 	model.desk = desk
+}
+
+func (model *BaseModel) GetGameContext() interface{} {
+	return model.desk.GetConfig().Context
 }
 
 // TranslateToRoomPlayer 将 deskPlayer 转换成 RoomPlayerInfo

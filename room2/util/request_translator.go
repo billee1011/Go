@@ -1,13 +1,12 @@
 package util
 
 import (
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/room"
 	server_pb "steve/server_pb/majong"
 	"steve/structs/proto/gate_rpc"
+
+	"github.com/golang/protobuf/proto"
 )
-
-
 
 // TranslateXingpaiActionReq 转换行牌动作请求
 func TranslateXingpaiActionReq(playerID uint64, header *steve_proto_gaterpc.Header,
@@ -94,6 +93,7 @@ func TranslateCartoonFinishReq(playerID uint64, header *steve_proto_gaterpc.Head
 	req room.RoomCartoonFinishReq) (eventID int, eventContext proto.Message, err error) {
 	eventContext = &server_pb.CartoonFinishRequestEvent{
 		CartoonType: int32(req.GetCartoonType()),
+		PlayerId:    playerID,
 	}
 	eventID = int(server_pb.EventID_event_cartoon_finish_request)
 	return
@@ -140,6 +140,10 @@ func translateClientCardColor(color room.CardColor) server_pb.CardColor {
 		{
 			return server_pb.CardColor_ColorZi
 		}
+	case room.CardColor_CC_HUA:
+		{
+			return server_pb.CardColor_ColorHua
+		}
 	}
 	return server_pb.CardColor(-1)
 }
@@ -162,6 +166,10 @@ func translateCardColor(cardVal uint32) server_pb.CardColor {
 	case 4:
 		{
 			return server_pb.CardColor_ColorZi
+		}
+	case 5:
+		{
+			return server_pb.CardColor_ColorHua
 		}
 	}
 	return server_pb.CardColor(-1)

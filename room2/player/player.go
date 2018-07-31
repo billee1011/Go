@@ -1,13 +1,15 @@
 package player
 
 import (
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	playerdata "steve/common/data/player"
-	"sync"
 	"steve/room2/desk"
 	"steve/room2/util"
+	"sync"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type Player struct {
@@ -18,35 +20,48 @@ type Player struct {
 	overTime    int    // 超时计数
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
-	robotLv 	int	   //机器人等级
+	robotLv     int    // 机器人等级
+	detached    bool   // 是否和牌桌解除关联
 	desk        *desk.Desk
 
 	mu sync.RWMutex
 }
 
+// GetDesk 获取玩家所在牌桌
 func (dp *Player) GetDesk() *desk.Desk {
 	return dp.desk
 }
 
+// IsDetached 是否和牌桌解除了关联
+func (dp *Player) IsDetached() bool {
+	return dp.detached
+}
+
+// SetDetached 设置是否解除和牌桌的关联
+func (dp *Player) SetDetached(detach bool) {
+	dp.mu.Lock()
+	dp.detached = detach
+	dp.mu.Unlock()
+}
 
 // QuitDesk 退出房间
-func (dp *Player) QuitDesk(desk *desk.Desk) {
+func (dp *Player) QuitDesk(desk *desk.Desk, needTuoguan bool) {
 	dp.mu.Lock()
-	defer dp.mu.Unlock()
 	dp.quit = true
-	dp.tuoguan = true // 退出后自动托管
-	dp.desk = nil
+	dp.tuoguan = dp.tuoguan || needTuoguan // 退出后自动托管
 	dp.ecoin = 0
+	dp.mu.Unlock()
 }
 
 // EnterDesk 进入房间
 func (dp *Player) EnterDesk(desk *desk.Desk) {
 	dp.mu.Lock()
-	defer dp.mu.Unlock()
 	dp.quit = false
+	dp.tuoguan = false
 	dp.desk = desk
 	dp.ecoin = dp.GetCoin()
-	println("设置桌子--------->")
+	logrus.Debugln("设置桌子--------->")
+	dp.mu.Unlock()
 }
 
 // GetPlayerID 获取玩家 ID
@@ -81,13 +96,13 @@ func (p *Player) SetEcoin(coin int) {
 	p.ecoin = uint64(coin)
 }
 
-func (p *Player) SetMaxOverTime(time int){
+func (p *Player) SetMaxOverTime(time int) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	p.overTime = time
 }
 
-func (p *Player) SetRobotLv(lv int){
+func (p *Player) SetRobotLv(lv int) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	p.robotLv = lv
@@ -102,6 +117,13 @@ func (dp *Player) IsQuit() bool {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
 	return dp.quit
+}
+
+// SetQuit 设置玩家退出状态
+func (dp *Player) SetQuit(quit bool) {
+	dp.mu.Lock()
+	dp.quit = quit
+	dp.mu.Unlock()
 }
 
 // OnPlayerOverTime 玩家超时

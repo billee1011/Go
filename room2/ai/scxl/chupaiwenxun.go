@@ -1,12 +1,14 @@
 package scxlai
 
 import (
+	"fmt"
 	"steve/gutils"
 	"steve/server_pb/majong"
 
+	"steve/room2/ai"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type chupaiWenxunStateAI struct {
@@ -21,16 +23,48 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (
 
 	mjContext := params.MajongContext
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
-	if player.GetHasSelected() {
+	if h.checkAIEvent(player, mjContext, params) != nil {
 		return
 	}
-	if len(player.GetPossibleActions()) == 0 {
+	// if len(player.GetPossibleActions()) == 0 {
+	// 	return
+	// }
+	switch params.AIType {
+	case ai.HuAI:
+		{
+			if gutils.IsTing(player) {
+				return
+			}
+			if h.containAction(player, majong.Action_action_gang) {
+				return
+			}
+			if gutils.IsHu(player) && h.containAction(player, majong.Action_action_hu) {
+				//执行胡操作
+				if event := h.chupaiWenxun(player); event != nil {
+					result.Events = append(result.Events, *event)
+				}
+			}
+		}
+	case ai.TingAI:
 		return
+	case ai.RobotAI, ai.OverTimeAI, ai.TuoGuangAI:
+		{
+			if event := h.chupaiWenxun(player); event != nil {
+				result.Events = append(result.Events, *event)
+			}
+		}
 	}
-	if event := h.chupaiWenxun(player); event != nil {
-		result.Events = append(result.Events, *event)
-	}
+
 	return
+}
+
+func (h *chupaiWenxunStateAI) containAction(player *majong.Player, action majong.Action) bool {
+	for _, possibleAction := range player.GetPossibleActions() {
+		if possibleAction == action {
+			return true
+		}
+	}
+	return false
 }
 
 // getAction 获取问询动作
@@ -82,7 +116,22 @@ func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *ai.AIEvent {
 		return nil
 	}
 	return &ai.AIEvent{
-		ID:      eventID,
+		ID:      int32(eventID),
 		Context: data,
 	}
+}
+
+func (h *chupaiWenxunStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) error {
+	err := fmt.Errorf("不生成自动事件")
+	if player.GetHasSelected() {
+		return err
+	}
+	if len(player.GetPossibleActions()) == 0 {
+		return err
+	}
+	if mjContext.GetCurState() != majong.StateID_state_chupaiwenxun {
+		return err
+	}
+
+	return nil
 }

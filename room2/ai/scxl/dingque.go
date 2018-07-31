@@ -5,9 +5,10 @@ import (
 	"steve/server_pb/majong"
 	"time"
 
+	"steve/room2/ai"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/room2/ai"
 )
 
 type dingqueStateAI struct {
@@ -62,7 +63,7 @@ func (h *dingqueStateAI) dingque(player *majong.Player) *ai.AIEvent {
 		return nil
 	}
 	return &ai.AIEvent{
-		ID:      majong.EventID_event_dingque_request,
+		ID:      int32(majong.EventID_event_dingque_request),
 		Context: data,
 	}
 }

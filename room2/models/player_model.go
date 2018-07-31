@@ -1,37 +1,46 @@
 package models
 
 import (
-	"steve/client_pb/room"
-	"steve/room2/contexts"
 	"steve/client_pb/msgid"
-	"steve/room2/util"
-	server_pb "steve/server_pb/majong"
-	"github.com/golang/protobuf/proto"
+	"steve/client_pb/room"
 	"steve/gutils"
-	"github.com/Sirupsen/logrus"
-	"steve/room2/player"
-	"steve/room2/fixed"
+	"steve/room2/contexts"
 	"steve/room2/desk"
+	"steve/room2/fixed"
+	playerpkg "steve/room2/player"
+	server_pb "steve/server_pb/majong"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type PlayerModel struct {
 	BaseModel
-	players []*player.Player
+	players []*playerpkg.Player
 }
-func (model PlayerModel) GetName() string{
+
+func (model PlayerModel) GetName() string {
 	return fixed.Player
 }
-func (model *PlayerModel) Start(){
-	model.players = make([]*player.Player,model.GetDesk().GetConfig().Num)
-	ids:=model.GetDesk().GetConfig().PlayerIds//GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
-	for i:=0;i<len(model.players);i++{
-		playerObj := player.GetPlayerMgr().GetPlayer(ids[i])
+func (model *PlayerModel) Start() {
+	model.players = make([]*playerpkg.Player, model.GetDesk().GetConfig().Num)
+	ids := model.GetDesk().GetConfig().PlayerIds //GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
+	for i := 0; i < len(model.players); i++ {
+		playerObj := playerpkg.GetPlayerMgr().GetPlayer(ids[i])
 		playerObj.EnterDesk(model.GetDesk())
 		model.players[i] = playerObj
 	}
 }
-func (model PlayerModel) Stop(){
+func (model PlayerModel) Stop() {
+	playerMgr := playerpkg.GetPlayerMgr()
 
+	playerIDs := make([]uint64, 0, len(model.players))
+	for _, pla := range model.players {
+		if !pla.IsDetached() {
+			playerIDs = append(playerIDs, pla.GetPlayerID())
+		}
+	}
+	playerMgr.UnbindPlayerRoomAddr(playerIDs)
 }
 
 func NewPlayertModel(desk *desk.Desk) DeskModel {
@@ -40,20 +49,13 @@ func NewPlayertModel(desk *desk.Desk) DeskModel {
 	return result
 }
 
-func (model *PlayerModel) PlayerEnter(player *player.Player){
+func (model *PlayerModel) PlayerEnter(player *playerpkg.Player) {
 	// 判断行牌状态, 选项化后需修改
-	context := player.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext
-	mjPlayer := util.GetMajongPlayer(player.PlayerID, &context)
-	// 非主动退出，再进入后取消托管；主动退出再进入不取消托管
-	// 胡牌后没有托管，但是在客户端退出时，需要托管来自动胡牌,重新进入后把托管取消
-	if !player.IsQuit() || mjPlayer.GetXpState() != server_pb.XingPaiState_normal {
-		player.SetTuoguan(false, false)
-	}
 	player.EnterDesk(model.GetDesk())
 	model.recoverGameForPlayer(player.GetPlayerID())
-	model.setContextPlayerQuit(player,false)
+	model.setContextPlayerQuit(player, false)
 	//d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_ENTER)
-	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_ENTER)
+	model.playerQuitEnterDeskNtf(player, room.QuitEnterType_QET_ENTER)
 }
 
 func (model *PlayerModel) recoverGameForPlayer(playerID uint64) {
@@ -61,35 +63,41 @@ func (model *PlayerModel) recoverGameForPlayer(playerID uint64) {
 		"func_name": "recoverGameForPlayer",
 		"playerID":  playerID,
 	})
-	ctx := model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext
-	mjContext := &ctx
+	ctx := model.GetDesk().GetConfig().Context.(*contexts.MjContext)
+	mjContext := &ctx.MjContext
 	bankerSeat := mjContext.GetZhuangjiaIndex()
 	totalCardsNum := mjContext.GetCardTotalNum()
 	gameStage := GetGameStage(mjContext.GetCurState())
 	gameID := gutils.GameIDServer2Client(int(mjContext.GetGameId()))
 	gameDeskInfo := room.GameDeskInfo{
-		GameId:      &gameID,
-		GameStage:   &gameStage,
-		Players:     GetRecoverPlayerInfo(playerID, model.GetDesk()),
-		Dices:       mjContext.GetDices(),
-		BankerSeat:  &bankerSeat,
-		EastSeat:    &bankerSeat,
-		TotalCards:  &totalCardsNum,
-		RemainCards: proto.Uint32(uint32(len(mjContext.GetWallCards()))),
-		CostTime:    proto.Uint32(GetStateCostTime(model.GetDesk().GetConfig().Context.(*contexts.MjContext).StateTime.Unix())),
-		OperatePid:  GetOperatePlayerID(mjContext),
-		DoorCard:    GetDoorCard(mjContext),
-		NeedHsz:     proto.Bool(gutils.GameHasHszState(mjContext)),
+		GameId:            &gameID,
+		GameStage:         &gameStage,
+		Players:           GetRecoverPlayerInfo(playerID, model.GetDesk()),
+		Dices:             mjContext.GetDices(),
+		BankerSeat:        &bankerSeat,
+		EastSeat:          &bankerSeat,
+		TotalCards:        &totalCardsNum,
+		RemainCards:       proto.Uint32(uint32(len(mjContext.GetWallCards()))),
+		CostTime:          proto.Uint32(GetStateCostTime(ctx.StateTime.Unix())),
+		OperatePid:        GetOperatePlayerID(mjContext),
+		NeedHsz:           proto.Bool(gutils.GameHasHszState(mjContext)),
+		LastOutCard:       proto.Uint32(getLastOutCard(mjContext.GetLastOutCard())),
+		LastOutCardPlayer: proto.Uint64(mjContext.GetLastChupaiPlayer()),
 	}
 	gameDeskInfo.HasZixun, gameDeskInfo.ZixunInfo = GetZixunInfo(playerID, mjContext)
 	gameDeskInfo.HasWenxun, gameDeskInfo.WenxunInfo = GetWenxunInfo(playerID, mjContext)
 	gameDeskInfo.HasQgh, gameDeskInfo.QghInfo = GetQghInfo(playerID, mjContext)
+
+	_, gameDeskInfo.HuansanzhangInfo = getHuansanzhangInfo(playerID, mjContext)
+	_, gameDeskInfo.DingqueInfo = getDingqueInfo(playerID, mjContext)
+	if gameDeskInfo.GetHasZixun() {
+		gameDeskInfo.DoorCard = GetDoorCard(mjContext)
+	}
 	rsp, err := proto.Marshal(&room.RoomResumeGameRsp{
 		ResumeRes: room.RoomError_SUCCESS.Enum(),
 		GameInfo:  &gameDeskInfo,
 	})
-	logEntry.Infoln("恢复数据")
-	logEntry.Infoln(gameDeskInfo)
+	logEntry.WithField("desk_info", gameDeskInfo).Infoln("恢复数据")
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
 		return
@@ -103,19 +111,36 @@ func (model *PlayerModel) recoverGameForPlayer(playerID uint64) {
 	})
 }
 
-
-
-
-
-func (model *PlayerModel) PlayerQuit(player *player.Player){
-	player.QuitDesk(model.GetDesk())
-	//d.setMjPlayerQuitDesk(eqi.PlayerID, true)
-	model.setContextPlayerQuit(player,true)
-	//d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
-	model.playerQuitEnterDeskNtf(player,room.QuitEnterType_QET_QUIT)
+func (model *PlayerModel) needTuoguan() bool {
+	mjContext := model.GetGameContext().(*contexts.MjContext)
+	state := mjContext.MjContext.GetCurState()
+	switch state {
+	case server_pb.StateID_state_init,
+		server_pb.StateID_state_fapai,
+		server_pb.StateID_state_huansanzhang,
+		server_pb.StateID_state_dingque:
+		return false
+	}
+	return true
 }
 
-func (model *PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType room.QuitEnterType) {
+func (model *PlayerModel) PlayerQuit(player *playerpkg.Player) {
+	player.QuitDesk(model.GetDesk(), model.needTuoguan())
+	//d.setMjPlayerQuitDesk(eqi.PlayerID, true)
+	model.setContextPlayerQuit(player, true)
+	//d.playerQuitEnterDeskNtf(eqi.PlayerID, room.QuitEnterType_QET_QUIT)
+	model.playerQuitEnterDeskNtf(player, room.QuitEnterType_QET_QUIT)
+
+	mjContext := model.GetGameContext().(*contexts.MjContext)
+	majongPlayer := gutils.GetMajongPlayer(player.GetPlayerID(), &mjContext.MjContext)
+	if !gutils.IsPlayerContinue(majongPlayer.GetXpState(), &mjContext.MjContext) {
+		playerMgr := playerpkg.GetPlayerMgr()
+		playerMgr.UnbindPlayerRoomAddr([]uint64{player.GetPlayerID()})
+		player.SetDetached(true)
+	}
+}
+
+func (model *PlayerModel) playerQuitEnterDeskNtf(player *playerpkg.Player, qeType room.QuitEnterType) {
 	if player == nil {
 		return
 	}
@@ -129,15 +154,15 @@ func (model *PlayerModel) playerQuitEnterDeskNtf(player *player.Player, qeType r
 	GetModelManager().GetMessageModel(model.GetDesk().GetUid()).BroadCastDeskMessageExcept([]uint64{playerId}, true, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF, &ntf)
 }
 
-func (model *PlayerModel) setContextPlayerQuit(player *player.Player,value bool){
-	for _,p:= range model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext.Players{
-		if p.GetPalyerId() == player.GetPlayerID(){
+func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value bool) {
+	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext.Players {
+		if p.GetPalyerId() == player.GetPlayerID() {
 			p.IsQuit = value
 		}
 	}
 }
 
-func (model *PlayerModel) GetDeskPlayers() []*player.Player {
+func (model *PlayerModel) GetDeskPlayers() []*playerpkg.Player {
 	return model.players
 }
 

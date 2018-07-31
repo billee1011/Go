@@ -2,10 +2,12 @@ package registers
 
 import (
 	"steve/client_pb/msgid"
+	modelmanager "steve/room2/models"
+	"steve/room2/player"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
-	"steve/room2/player"
-	modelmanager "steve/room2/models"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // RegisterRoomReqHandlers 注册牌桌请求处理函数
@@ -20,6 +22,7 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 		msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ,
 		msgid.MsgID_ROOM_DDZ_DOUBLE_REQ,
 		msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ,
+		msgid.MsgID_ROOM_DDZ_RESUME_REQ,
 	}
 
 	for _, msg := range roomReqs {
@@ -29,12 +32,13 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 
 func handleRoomReq(playerID uint64, header *steve_proto_gaterpc.Header, body []byte) (rspMsg []exchanger.ResponseMsg) {
 	player := player.GetPlayerMgr().GetPlayer(playerID)
-	if player.GetDesk() == nil{
-		println("not found player desk")
+	if player.GetDesk() == nil {
+		logrus.WithField("player_id", playerID).Debugln("not found player desk")
+		return
 	}
-	deskId := player.GetDesk().GetUid()
+	deskID := player.GetDesk().GetUid()
 	modelManager := modelmanager.GetModelManager()
-	requestModel := modelManager.GetRequestModel(deskId)
+	requestModel := modelManager.GetRequestModel(deskID)
 	requestModel.HandlePlayerRequest(playerID, header, body)
 	return []exchanger.ResponseMsg{}
 }

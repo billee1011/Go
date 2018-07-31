@@ -13,6 +13,12 @@ const (
 	// XingPaiTimeOut 行牌超时时间，单位为second，默认值为 10
 	XingPaiTimeOut = "xp_timeout"
 
+	// HuStateTimeOut 胡牌状态下的超时时间，单位为second，默认值为 1
+	HuStateTimeOut = "hs_timeout"
+
+	// TingStateTimeOut 听牌状态下的超时时间，单位为second，默认值为 1
+	TingStateTimeOut = "ts_timeout"
+
 	// MaxFapaiCartoonTime 发牌的动画时间
 	MaxFapaiCartoonTime = "fp_cartoontime"
 
@@ -29,7 +35,10 @@ const (
 	TuoGuanEvent
 	// RobotEvent 机器人事件
 	RobotEvent
-
+	// HuStateEvent 胡状态事件
+	HuStateEvent
+	// TingStateEvent 听状态事件
+	TingStateEvent
 
 	/* Event Name */
 	Event       = "EventModel"
@@ -37,5 +46,5 @@ const (
 	Request     = "RequestModel"
 	Message     = "MessageModel"
 	Trusteeship = "TrusteeshipModel"
-	Chat = "ChatModel"
+	Chat        = "ChatModel"
 )
