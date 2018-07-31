@@ -20,6 +20,9 @@ func (pub *publisher) Publish(topic string, data []byte) error {
 // CreatePublisher 创建 Publisher
 func CreatePublisher() pubsub.Publisher {
 	nsqAddr := viper.GetString("nsqd_addr")
+	if len(nsqAddr) == 0 {
+		return nil
+	}
 	return &publisher{
 		producer: createNsqProducer(nsqAddr),
 	}

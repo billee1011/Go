@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/Sirupsen/logrus"
 )
 
 /*
@@ -65,6 +66,7 @@ func SaveGoldToRedis(uid uint64, goldList map[int16]int64) error {
 	cmd := r.HMSet(key, list)
 	if cmd.Err() != nil {
 		//logic.ErrNoUser.WithError(cmd.Err()).Errorln(errRedisOperation)
+		logrus.Errorf("save gold to redis err:key=%s,err=%s", key, cmd.Err())
 		return fmt.Errorf("set redis err:%v", cmd.Err())
 	}
 	r.Expire(key, redisTimeOut)

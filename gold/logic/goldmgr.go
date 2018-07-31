@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"steve/gold/data"
 	"steve/gold/define"
+	"sync"
 )
 
 /*
@@ -38,12 +39,24 @@ func GetGoldMgr() *GoldMgr {
 }
 
 type GoldMgr struct {
-	userList map[uint64]*userGold // 用户列表
+	//userList map[uint64]*userGold // 用户列表
+	userList sync.Map			// 用户列表
+	muLock map[uint64] *sync.RWMutex // 用户锁，一个用户一个锁
 }
 
 func init() {
-	goldMgr.userList = make(map[uint64]*userGold)
+	//goldMgr.userList = make(map[uint64]*userGold)
+	goldMgr.muLock = make(map[uint64] *sync.RWMutex)
 	data.SetGoldTypeList(gTypeList, gGetList, gCostList)
+}
+
+func (gm *GoldMgr) GetMutex(uid uint64) *sync.RWMutex{
+	if mu , ok := gm.muLock[uid]; ok {
+		return mu
+	}
+	n := new(sync.RWMutex)
+	gm.muLock[uid] = n
+	return n
 }
 
 // 加金币
@@ -71,6 +84,11 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		entry.Errorln("gold type error")
 		return 0, define.ErrGoldType
 	}
+
+	// 按用户ID进行加锁,一个用户一个锁
+	mu := gm.GetMutex(uid)
+	mu.Lock()
+	defer mu.Unlock()
 
 	u, err := gm.getUser(uid)
 	if u == nil {
@@ -100,6 +118,18 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		return 0, err
 	}
 
+	entry = logrus.WithFields(logrus.Fields{
+		"opr":        "add_gold",
+		"uid":        uid,
+		"funcId":     funcId,
+		"goldType":   goldType,
+		"before":     before,
+		"changed":    value,
+		"after":      after,
+		"channel":    channel,
+		"seq":        seq,
+		"createTime": createTm,
+	})
 	// 交易记录写到日志
 	entry.Infoln("add succeed")
 
@@ -123,6 +153,11 @@ func (gm *GoldMgr) GetGold(uid uint64, goldType int16) (int64, error) {
 		logrus.Errorf("for={gold type error},uid=%d,goldType=%d", uid, goldType)
 		return 0, define.ErrGoldType
 	}
+
+	// 按用户ID进行加锁,一个用户一个锁
+	mu := gm.GetMutex(uid)
+	mu.RLock()
+	defer mu.RUnlock()
 
 	u, _ := gm.getUser(uid)
 	if u == nil {
@@ -164,17 +199,17 @@ func (gm *GoldMgr) getUser(uid uint64) (*userGold, error) {
 	if uid == 0 {
 		return nil, nil
 	}
-	u := gm.userList[uid]
-	if u == nil {
+	u, ok := gm.userList.Load(uid)
+	if !ok {
 		return gm.getUserFromCacheOrDB(uid)
 	}
-	return u, nil
+	return u.(*userGold), nil
 }
 
 // 新建用户
 func (gm *GoldMgr) newUser(uid uint64, m map[int16]int64) *userGold {
 	n := newUserGold(uid, m)
-	gm.userList[uid] = n
+	gm.userList.Store(uid, n)
 	return n
 }
 

@@ -10,6 +10,8 @@ rpc_addr: 192.168.8.17
 rpc_port: 36301
 #RPC服务名
 rpc_server_name: gold
+#路由方式
+rpc_lb: hash
 #RPC服务组名
 #group_name: 1000,1001
 #RPC服务健康监控Port
@@ -33,6 +35,6 @@ mysql_list:
 consul_addr: 192.168.7.108:8500
 
 #nsq 消息队列配置
-nsqd_addr: 192.168.7.108:4150
-nsqlookupd_addrs:
-  - 192.168.7.108:4161
+#nsqd_addr: 192.168.7.108:4150
+#nsqlookupd_addrs:
+ # - 192.168.7.108:4161

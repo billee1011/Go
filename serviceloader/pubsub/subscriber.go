@@ -4,10 +4,9 @@ import (
 	"errors"
 	"steve/structs/pubsub"
 
-	"github.com/spf13/viper"
-
 	"github.com/Sirupsen/logrus"
-	nsq "github.com/nsqio/go-nsq"
+	"github.com/nsqio/go-nsq"
+	"github.com/spf13/viper"
 )
 
 // Subscriber 消息订阅者
@@ -41,10 +40,14 @@ func (sub *subscriber) Subscribe(topic string, channel string, handler nsq.Handl
 
 // CreateSubscriber 创建消息订阅者
 func CreateSubscriber() pubsub.Subscriber {
+	addrs := viper.GetStringSlice("nsqlookupd_addrs")
+	if len(addrs) == 0 {
+		return nil
+	}
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "CreateSubscriber",
 	})
-	addrs := viper.GetStringSlice("nsqlookupd_addrs")
+
 	logEntry = logEntry.WithField("nsqlookupd_addrs", addrs)
 	logEntry.Infoln("创建消息订阅者")
 	return &subscriber{
