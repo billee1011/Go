@@ -21,7 +21,7 @@ func (s *grabState) OnEnter(m machine.Machine) {
 	context.CurrentPlayerId = context.CallPlayerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
-	context.StartTime, _ = time.Now().MarshalBinary()
+	context.StartTime = time.Now()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
 
 	logrus.WithField("context", context).Debugln("进入叫/抢地主状态")
@@ -102,7 +102,7 @@ func (s *grabState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		//更新当前操作用户并产生超时事件
 		context.CurrentPlayerId = nextPlayerID
 		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
-		context.StartTime, _ = time.Now().MarshalBinary()
+		context.StartTime = time.Now()
 		context.Duration = StageTime[room.DDZStage_DDZ_STAGE_GRAB]
 	}
 

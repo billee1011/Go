@@ -18,7 +18,7 @@ func (s *doubleState) OnEnter(m machine.Machine) {
 	context := getDDZContext(m)
 	context.CurStage = ddz.DDZStage_DDZ_STAGE_DOUBLE
 	context.CountDownPlayers = getPlayerIds(m)
-	context.StartTime, _ = time.Now().MarshalBinary()
+	context.StartTime = time.Now()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_DOUBLE]
 	logrus.WithField("context", context).Debugln("进入加倍状态")
 }
