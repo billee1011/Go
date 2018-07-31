@@ -15,6 +15,7 @@ func RegisteHandlers(e exchanger.Exchanger) {
 		}
 	}
 	registe(msgid.MsgID_GATE_HEART_BEAT_REQ, connection.HandleHeartBeat)
+	registe(msgid.MsgID_GATE_TRANSMIT_HTTP_REQ, connection.HandleTransmitHTTPReq)
 
 	// registe(msgid.MsgID_GATE_AUTH_REQ, auth.HandleAuthReq)
 }

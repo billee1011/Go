@@ -48,7 +48,10 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 
 // HandleGetPlayerStateReq 获取玩家是否正在游戏中
 func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
-	response := &hall.HallGetPlayerStateRsp{}
+	userData := req.GetUserData()
+	response := &hall.HallGetPlayerStateRsp{
+		UserData: &userData,
+	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
 			MsgID: uint32(msgid.MsgID_HALL_GET_PLAYER_STATE_RSP),
