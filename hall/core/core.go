@@ -22,7 +22,7 @@ func (c *hallCore) Init(e *structs.Exposer, param ...string) error {
 	entry := logrus.WithField("name", "hallCore.Init")
 
 	// 注册当前模块RPC服务处理器
-	if err := e.RPCServer.RegisterService(user.RegisterPlayerDataServer, localuser.PlayerDataService{}); err != nil {
+	if err := e.RPCServer.RegisterService(user.RegisterPlayerDataServer, &localuser.PlayerDataService{}); err != nil {
 		entry.WithError(err).Error("注册RPC服务处理器失败")
 		return err
 	}
