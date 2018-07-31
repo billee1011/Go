@@ -176,10 +176,10 @@ func TestGetPlayerInfo(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	player, err := GetPlayerInfoByPlayerID(playerID)
+	player, err := GetPlayerInfo(playerID)
 
 	assert.Nil(t, err)
-	assert.NotNil(t, player.State)
+	assert.NotNil(t, player[cache.NickNameField])
 
 	// redis 中有数据
 	redisKey := cache.FmtPlayerIDKey(playerID)
@@ -224,7 +224,7 @@ func TestUpdatePlayerInfo(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	exists, result, err := UpdatePlayerInfo(playerID, "正是", "你好")
+	exists, result, err := UpdatePlayerInfo(playerID, "mr_wang", "我是一个帅哥", "zh", "13456431345", 1)
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
 	assert.Equal(t, true, exists)

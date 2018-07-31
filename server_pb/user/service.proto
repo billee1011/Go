@@ -46,10 +46,12 @@ message GetPlayerInfoRsp {
 
 // UpdatePlayerInfoReq 修改玩家信息
 message UpdatePlayerInfoReq {
-    int32 err_code = 1;           // 错误信息
-    uint64 player_id = 2;         // 玩家id
-    string nick_name = 3;         // 玩家昵称
-    string avatar = 4;        // 玩家头像
+    uint64 player_id = 1;         // 玩家id
+    string nick_name = 2;         // 玩家昵称
+    string avatar = 3;            // 玩家头像
+    uint64 gender = 4;            // 玩家性别 
+    string name = 5;              // 玩家名称
+    string phone = 6;             // 联系方式
 }
 
 // UpdatePlayerInfoRsp 修改玩家信息应答
@@ -89,8 +91,8 @@ message GetGameListInfoReq{
 
 }
 
-// GameInfo 游戏信息
-message GameInfo {
+// GameConfigInfo 游戏信息
+message GameConfigInfo {
     uint64 game_id = 1;         // 游戏 id
     string game_name = 2;       // 游戏名称
     uint64 game_type = 3;       // 游戏类型
@@ -98,13 +100,14 @@ message GameInfo {
     uint64 base_scores = 5;     // 游戏底分
     uint64 low_scores = 6;      // 允许进入最低分
     uint64 high_scores = 7;     // 允许进入最高分
-    uint64 low_people = 8;      // 允许最低人数
+    uint64 min_people = 8;      // 允许最低人数
+    uint64 max_people = 9;      // 允许最高人数   
 }
 
 // GetGameListInfoRsp 获取游戏列表信息应答
 message GetGameListInfoRsp{
     int32 err_code = 1;                      // 错误信息
-    repeated GameInfo game_info = 2;         // 游戏信息
+    repeated GameConfigInfo game_info = 2;         // 游戏信息
 }
 
 // PlayerData 玩家数据服务

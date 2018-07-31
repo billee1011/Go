@@ -26,6 +26,7 @@ func (c *hallCore) Init(e *structs.Exposer, param ...string) error {
 		entry.WithError(err).Error("注册RPC服务处理器失败")
 		return err
 	}
+	registerHandles(e.Exchanger)
 
 	entry.Debugf("server init succeed ...")
 

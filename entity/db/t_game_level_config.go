@@ -12,6 +12,8 @@ type TGameLevelConfig struct {
 	Basescores int       `xorm:"INT(11)"`
 	Lowscores  int       `xorm:"INT(11)"`
 	Highscores int       `xorm:"INT(11)"`
+	Minpeople  int       `xorm:"INT(11)"`
+	Maxpeople  int       `xorm:"INT(11)"`
 	Status     int       `xorm:"INT(11)"`
 	Remark     string    `xorm:"VARCHAR(256)"`
 	Createtime time.Time `xorm:"DATETIME"`

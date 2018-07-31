@@ -30,6 +30,9 @@ type factory struct {
 
 // NewFactory 创建 RedisFactory
 func NewFactory(addr, passwd string) ifac.RedisFactory {
+	if len(addr) == 0 {
+		return nil
+	}
 	f := &factory{
 		defaultConf: redisConf{
 			address: addr,
