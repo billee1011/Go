@@ -86,23 +86,6 @@ func RegisterServer(rp *RegisterParams) {
 	if ok && len(sidArg) > 0 {
 		serverID = sidArg
 	}
-	port , ok := IntArg("port")
-	if ok && port > 100 {
-		rp.port = int(port)
-	}
-	hport , ok := IntArg("hport")
-	if ok && hport > 100 {
-		rp.healthPort = int(hport)
-	}
-	// 配置文件中的分组名称+启动参数中的分组ID，一起合成最后的分组ID
-	groupArg, ok := StringArg("gid")
-	if ok &&  len(groupArg) > 0 {
-		if len(rp.groupName) > 0 {
-			rp.groupName += ","
-		}
-		rp.groupName += groupArg
-	}
-
 
 	logEntry = logEntry.WithField("server_id", serverID)
 
