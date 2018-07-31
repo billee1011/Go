@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/structs"
 	"strconv"
+	"github.com/Sirupsen/logrus"
 )
 
 /*
@@ -134,9 +135,11 @@ func SaveGoldToDB(uid uint64, goldType int16, goldValue int64, changeValue int64
 	sql := fmt.Sprintf("update t_player_currency set %s  where playerID=?;", strCol)
 	res, err := engine.Exec(sql, uid)
 	if err != nil {
+		logrus.Errorf("exec sql err:sql=%s,err=%s", sql, err)
 		return err
 	}
 	if aff, err := res.RowsAffected(); aff == 0 {
+		logrus.Errorf("exec sql Affect err:sql=%s,err=%s", sql, err)
 		return err
 	}
 	return nil
