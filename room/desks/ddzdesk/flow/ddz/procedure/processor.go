@@ -3,11 +3,11 @@ package procedure
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/states"
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/room/interfaces/global"
-	"steve/server_pb/ddz"
 	"time"
 
 	"steve/room/interfaces"
@@ -44,7 +44,7 @@ func HandleEvent(params Params) (result Result) {
 		"params":    params,
 	})
 
-	cloneContext := *proto.Clone(&params.Context).(*ddz.DDZContext)
+	cloneContext := params.Context
 
 	result = Result{
 		Context:      cloneContext,

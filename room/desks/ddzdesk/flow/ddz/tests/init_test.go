@@ -1,8 +1,8 @@
 package tests
 
 import (
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/machine"
-	"steve/server_pb/ddz"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

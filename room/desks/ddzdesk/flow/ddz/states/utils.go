@@ -3,9 +3,9 @@ package states
 import (
 	"fmt"
 	"steve/client_pb/msgid"
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/machine"
-	"steve/server_pb/ddz"
 	"time"
 
 	"math/rand"

@@ -3,7 +3,8 @@ package procedure
 import (
 	"github.com/Sirupsen/logrus"
 	"steve/client_pb/room"
-	"steve/server_pb/ddz"
+	"steve/entity/poker"
+	"steve/entity/poker/ddz"
 )
 
 // CreateInitDDZContext 创建初始斗地主现场
@@ -17,7 +18,7 @@ func CreateInitDDZContext(players []uint64) *ddz.DDZContext {
 		AllAbandonCount:   0,
 		TotalGrab:         0,
 		TotalDouble:       1,
-		CurCardType:       ddz.CardType_CT_NONE,
+		CurCardType:       poker.CardType_CT_NONE,
 		PassCount:         0,
 		TotalBomb:         1,
 		Spring:            true,

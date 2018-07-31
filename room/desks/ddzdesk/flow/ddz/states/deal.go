@@ -1,16 +1,16 @@
 package states
 
 import (
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/machine"
-	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
 	"math/rand"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/entity/majong"
 	"steve/room/majong/global"
 	"steve/room/peipai/handle"
-	"steve/entity/majong"
 	"time"
 )
 

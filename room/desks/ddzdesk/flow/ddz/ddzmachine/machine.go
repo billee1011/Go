@@ -3,8 +3,8 @@ package ddzmachine
 import (
 	"fmt"
 	msgid "steve/client_pb/msgid"
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/machine"
-	"steve/server_pb/ddz"
 	"time"
 
 	"github.com/golang/protobuf/proto"

@@ -2,13 +2,13 @@ package ddzdesk
 
 import (
 	"steve/client_pb/msgid"
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/ddz/ddzmachine"
 	"steve/room/desks/ddzdesk/flow/ddz/procedure"
 	"steve/room/desks/deskbase"
 	"steve/room/interfaces"
 	"steve/room/interfaces/facade"
 	"steve/room/interfaces/global"
-	"steve/server_pb/ddz"
 	"steve/structs/proto/gate_rpc"
 	"time"
 

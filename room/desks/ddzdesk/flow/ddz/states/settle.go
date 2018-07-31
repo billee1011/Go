@@ -5,9 +5,9 @@ import (
 	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/machine"
 	"steve/room/interfaces/global"
-	"steve/server_pb/ddz"
 )
 
 type settleState struct{}

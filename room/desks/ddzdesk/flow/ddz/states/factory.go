@@ -1,8 +1,8 @@
 package states
 
 import (
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/machine"
-	"steve/server_pb/ddz"
 )
 
 type stateFactory struct {

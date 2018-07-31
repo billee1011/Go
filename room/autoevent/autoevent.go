@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"steve/client_pb/room"
+	"steve/entity/poker/ddz"
 	"steve/room/config"
-	"steve/server_pb/ddz"
 
 	"github.com/spf13/viper"
 )

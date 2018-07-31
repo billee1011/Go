@@ -1,8 +1,8 @@
 package states
 
 import (
+	"steve/entity/poker/ddz"
 	"steve/room/desks/ddzdesk/flow/machine"
-	"steve/server_pb/ddz"
 
 	"errors"
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"steve/entity/poker"
 )
 
 type playState struct{}
@@ -82,7 +83,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	player := GetPlayerByID(context.GetPlayers(), playerID)
 	if len(outCards) == 0 { //pass
 		logEntry.Infoln("玩家过牌")
-		if context.CurCardType == ddz.CardType_CT_NONE { //该你出牌时不出牌，报错
+		if context.CurCardType == poker.CardType_CT_NONE { //该你出牌时不出牌，报错
 			sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 				Result: genResult(6, "首轮出牌玩家不能过牌"),
 			})
@@ -111,7 +112,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 
 		context.PassCount++
 		if context.PassCount >= 2 { //两个玩家都过，清空当前牌型
-			context.CurCardType = ddz.CardType_CT_NONE
+			context.CurCardType = poker.CardType_CT_NONE
 			context.CurOutCards = []uint32{}
 			context.CardTypePivot = 0
 			context.PassCount = 0
@@ -129,16 +130,16 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	}
 
 	cardType, pivot := GetCardType(outCards)
-	if cardType == ddz.CardType_CT_NONE { //检查所出的牌能否组成牌型
+	if cardType == poker.CardType_CT_NONE { //检查所出的牌能否组成牌型
 		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(3, "无法组成牌型"),
 		})
 		return int(ddz.StateID_state_playing), errors.New("无法组成牌型")
 	}
 
-	if context.CurCardType != ddz.CardType_CT_NONE &&
+	if context.CurCardType != poker.CardType_CT_NONE &&
 		(!CanBiggerThan(cardType, context.CurCardType) || //牌型与上家不符(炸弹不算不符)
-			(context.CurCardType == ddz.CardType_CT_SHUNZI && cardType == ddz.CardType_CT_SHUNZI && len(outCards) != len(context.CurOutCards))) { //顺子牌数不足
+			(context.CurCardType == poker.CardType_CT_SHUNZI && cardType == poker.CardType_CT_SHUNZI && len(outCards) != len(context.CurOutCards))) { //顺子牌数不足
 		sendToPlayer(m, playerID, msgid.MsgID_ROOM_DDZ_PLAY_CARD_RSP, &room.DDZPlayCardRsp{
 			Result: genResult(4, "牌型与上家不符"),
 		})
@@ -148,17 +149,17 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	lastPivot := ToDDZCard(context.CardTypePivot)
 	currPivot := *pivot
 	bigger := false
-	if cardType == ddz.CardType_CT_KINGBOMB {
+	if cardType == poker.CardType_CT_KINGBOMB {
 		bigger = true
-	} else if context.CurCardType == ddz.CardType_CT_KINGBOMB {
+	} else if context.CurCardType == poker.CardType_CT_KINGBOMB {
 		bigger = false
-	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
+	} else if cardType == poker.CardType_CT_BOMB && context.CurCardType == poker.CardType_CT_BOMB {
 		bigger = currPivot.PointBiggerThan(lastPivot)
-	} else if cardType == ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
+	} else if cardType == poker.CardType_CT_BOMB && context.CurCardType != poker.CardType_CT_BOMB {
 		bigger = true
-	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType == ddz.CardType_CT_BOMB {
+	} else if cardType != poker.CardType_CT_BOMB && context.CurCardType == poker.CardType_CT_BOMB {
 		bigger = false
-	} else if cardType != ddz.CardType_CT_BOMB && context.CurCardType != ddz.CardType_CT_BOMB {
+	} else if cardType != poker.CardType_CT_BOMB && context.CurCardType != poker.CardType_CT_BOMB {
 		bigger = currPivot.PointBiggerThan(lastPivot)
 	}
 
@@ -189,7 +190,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.CurCardType = cardType
 	context.CardTypePivot = (*pivot).ToInt()
 	context.PassCount = 0 //清空过牌数
-	if cardType == ddz.CardType_CT_BOMB || cardType == ddz.CardType_CT_KINGBOMB {
+	if cardType == poker.CardType_CT_BOMB || cardType == poker.CardType_CT_KINGBOMB {
 		context.TotalBomb = context.TotalBomb * 2
 	}
 	if playerID != context.LordPlayerId {

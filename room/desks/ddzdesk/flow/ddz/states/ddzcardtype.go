@@ -1,54 +1,54 @@
 package states
 
 import (
-	"steve/server_pb/ddz"
+	"steve/entity/poker"
 )
 
-func CanBiggerThan(mine ddz.CardType, other ddz.CardType) bool {
-	if mine == ddz.CardType_CT_NONE {
+func CanBiggerThan(mine poker.CardType, other poker.CardType) bool {
+	if mine == poker.CardType_CT_NONE {
 		return false
 	}
-	if mine == ddz.CardType_CT_KINGBOMB {
+	if mine == poker.CardType_CT_KINGBOMB {
 		return true
-	} else if mine == ddz.CardType_CT_BOMB && other != ddz.CardType_CT_KINGBOMB {
+	} else if mine == poker.CardType_CT_BOMB && other != poker.CardType_CT_KINGBOMB {
 		return true
 	} else {
 		return mine == other
 	}
 }
 
-func GetCardType(cards []Poker) (ddz.CardType, *Poker) {
+func GetCardType(cards []Poker) (poker.CardType, *Poker) {
 	if yes, pivot := IsKingBomb(cards); yes {
-		return ddz.CardType_CT_KINGBOMB, pivot
+		return poker.CardType_CT_KINGBOMB, pivot
 	} else if yes, pivot := IsBomb(cards); yes {
-		return ddz.CardType_CT_BOMB, pivot
+		return poker.CardType_CT_BOMB, pivot
 	} else if yes, pivot := IsBombAndPairs(cards); yes {
-		return ddz.CardType_CT_4SAND2S, pivot
+		return poker.CardType_CT_4SAND2S, pivot
 	} else if yes, pivot := IsBombAndSingles(cards); yes {
-		return ddz.CardType_CT_4SAND1S, pivot
+		return poker.CardType_CT_4SAND1S, pivot
 	} else if yes, pivot := IsTriples(cards); yes {
-		return ddz.CardType_CT_TRIPLES, pivot
+		return poker.CardType_CT_TRIPLES, pivot
 	} else if yes, pivot := IsTriplesAndPairs(cards); yes {
-		return ddz.CardType_CT_3SAND2S, pivot
+		return poker.CardType_CT_3SAND2S, pivot
 	} else if yes, pivot := IsTriplesAndSingles(cards); yes {
-		return ddz.CardType_CT_3SAND1S, pivot
+		return poker.CardType_CT_3SAND1S, pivot
 	} else if yes, pivot := IsPairs(cards); yes {
-		return ddz.CardType_CT_PAIRS, pivot
+		return poker.CardType_CT_PAIRS, pivot
 	} else if yes, pivot := IsShunZi(cards); yes {
-		return ddz.CardType_CT_SHUNZI, pivot
+		return poker.CardType_CT_SHUNZI, pivot
 	} else if yes, pivot := IsTriple(cards); yes {
-		return ddz.CardType_CT_TRIPLE, pivot
+		return poker.CardType_CT_TRIPLE, pivot
 	} else if yes, pivot := IsTripleAndPair(cards); yes {
-		return ddz.CardType_CT_3AND2, pivot
+		return poker.CardType_CT_3AND2, pivot
 	} else if yes, pivot := IsTripleAndSingle(cards); yes {
-		return ddz.CardType_CT_3AND1, pivot
+		return poker.CardType_CT_3AND1, pivot
 	} else if yes, pivot := IsPair(cards); yes {
-		return ddz.CardType_CT_PAIR, pivot
+		return poker.CardType_CT_PAIR, pivot
 	} else if yes, pivot := IsSingle(cards); yes {
-		return ddz.CardType_CT_SINGLE, pivot
+		return poker.CardType_CT_SINGLE, pivot
 	}
 
-	return ddz.CardType_CT_NONE, nil
+	return poker.CardType_CT_NONE, nil
 }
 
 // 火箭

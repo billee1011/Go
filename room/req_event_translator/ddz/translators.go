@@ -2,10 +2,11 @@ package ddz
 
 import (
 	"steve/client_pb/room"
-	"steve/server_pb/ddz"
+	"steve/entity/poker/ddz"
 	"steve/structs/proto/gate_rpc"
 
 	"github.com/golang/protobuf/proto"
+	"steve/entity/poker"
 )
 
 // translateHeader 生成事件头
@@ -49,7 +50,7 @@ func TranslatePlayCardRequest(playerID uint64, header *steve_proto_gaterpc.Heade
 	eventContext = &ddz.PlayCardRequestEvent{
 		Head:     &head,
 		Cards:    req.Cards,
-		CardType: ddz.CardType(int32(req.GetCardType())),
+		CardType: poker.CardType(int32(req.GetCardType())),
 	}
 	eventID = int(ddz.EventID_event_chupai_request)
 	return

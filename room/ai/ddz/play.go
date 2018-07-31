@@ -2,11 +2,12 @@ package ddz
 
 import (
 	"fmt"
+	"steve/entity/poker/ddz"
 	. "steve/room/desks/ddzdesk/flow/ddz/states"
 	"steve/room/interfaces"
-	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
+	"steve/entity/poker"
 )
 
 type playStateAI struct {
@@ -45,7 +46,7 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 	}
 
 	// 没有牌型时说明是主动打牌
-	if ddzContext.GetCurCardType() == ddz.CardType_CT_NONE {
+	if ddzContext.GetCurCardType() == poker.CardType_CT_NONE {
 
 		// 主动产生
 		if event := playAI.getActivePlayCardEvent(ddzContext, curPlayer); event != nil {
@@ -67,7 +68,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 	resultCards := []uint32{}
 
 	// 最终打出去的牌型
-	resultCardType := ddz.CardType_CT_NONE
+	resultCardType := poker.CardType_CT_NONE
 
 	// 玩家手中的牌
 	handCards := player.GetHandCards()
@@ -91,46 +92,46 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 	sendPukes := []Poker{}
 
 	switch curCardType {
-	case ddz.CardType_CT_SINGLE: // 单牌
+	case poker.CardType_CT_SINGLE: // 单牌
 		bSuc, sendPukes = GetMinBiggerSingle(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_PAIR: // 对子
+	case poker.CardType_CT_PAIR: // 对子
 		bSuc, sendPukes = GetMinBiggerPair(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_SHUNZI: // 顺子
+	case poker.CardType_CT_SHUNZI: // 顺子
 		bSuc, sendPukes = GetMinBiggerShunzi(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_PAIRS: // 连对
+	case poker.CardType_CT_PAIRS: // 连对
 		bSuc, sendPukes = GetMinBiggerPairs(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_TRIPLE: // 三张
+	case poker.CardType_CT_TRIPLE: // 三张
 		bSuc, sendPukes = GetMinBiggerTriple(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_3AND1: // 三带一
+	case poker.CardType_CT_3AND1: // 三带一
 		bSuc, sendPukes = GetMinBigger3And1(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_3AND2: // 三带二
+	case poker.CardType_CT_3AND2: // 三带二
 		bSuc, sendPukes = GetMinBigger3And2(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_TRIPLES: // 飞机
+	case poker.CardType_CT_TRIPLES: // 飞机
 		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_3SAND1S: // 飞机带翅膀1，例：JJJQQQKKK + 856
+	case poker.CardType_CT_3SAND1S: // 飞机带翅膀1，例：JJJQQQKKK + 856
 		bSuc, sendPukes = GetMinBigger3sAnd1s(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_3SAND2S: // 飞机带翅膀2，例：JJJQQQKKK + 885566
+	case poker.CardType_CT_3SAND2S: // 飞机带翅膀2，例：JJJQQQKKK + 885566
 		bSuc, sendPukes = GetMinBigger3sAnd2s(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_4SAND1S: // 四带两个单张
+	case poker.CardType_CT_4SAND1S: // 四带两个单张
 		bSuc, sendPukes = GetMinBigger4sAnd1s(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_4SAND2S: // 四带两个对子
+	case poker.CardType_CT_4SAND2S: // 四带两个对子
 		bSuc, sendPukes = GetMinBigger4sAnd2s(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_BOMB: // 炸弹
+	case poker.CardType_CT_BOMB: // 炸弹
 		bSuc, sendPukes = GetMinBiggerBoom(handPokes, curOutPokes)
 		break
-	case ddz.CardType_CT_KINGBOMB: // 火箭
+	case poker.CardType_CT_KINGBOMB: // 火箭
 		bSuc, sendPukes = GetMinBiggerKingBoom(handPokes, curOutPokes)
 		break
 	}
@@ -141,26 +142,26 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 	} else {
 
 		// 无压制的牌，且当前牌型是炸弹，则判断自己有无火箭
-		if !bSuc && curCardType == ddz.CardType_CT_BOMB {
+		if !bSuc && curCardType == poker.CardType_CT_BOMB {
 			bSuc, sendPukes = GetKingBoom(handPokes)
 
 			if bSuc {
-				resultCardType = ddz.CardType_CT_KINGBOMB
+				resultCardType = poker.CardType_CT_KINGBOMB
 			}
 		}
 
 		// 无压制的牌，且当前牌型不是炸弹，也不是火箭，则判断自己有无炸弹，无炸弹时再检测火箭
-		if !bSuc && curCardType != ddz.CardType_CT_BOMB && curCardType != ddz.CardType_CT_KINGBOMB {
+		if !bSuc && curCardType != poker.CardType_CT_BOMB && curCardType != poker.CardType_CT_KINGBOMB {
 
 			// 优先检测炸弹
 			bSuc, sendPukes = GetBoom(handPokes)
 			if bSuc {
-				resultCardType = ddz.CardType_CT_BOMB // 用炸弹来压
+				resultCardType = poker.CardType_CT_BOMB // 用炸弹来压
 			} else {
 				// 无炸弹时检测有无火箭
 				bSuc, sendPukes = GetKingBoom(handPokes)
 				if bSuc {
-					resultCardType = ddz.CardType_CT_KINGBOMB // 用火箭来压
+					resultCardType = poker.CardType_CT_KINGBOMB // 用火箭来压
 				}
 			}
 		}
@@ -208,7 +209,7 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 	logrus.Info("托管主动出牌：%v", resultCards)
 
 	// 最终打出去的牌型（单张）
-	resultCardType := ddz.CardType_CT_SINGLE
+	resultCardType := poker.CardType_CT_SINGLE
 
 	// 下面是回复消息
 	request := &ddz.PlayCardRequestEvent{

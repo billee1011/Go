@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"steve/entity/majong"
-	"steve/server_pb/ddz"
+	"steve/entity/poker/ddz"
 )
 
 // AIType AI 类型

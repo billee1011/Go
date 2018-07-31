@@ -2,8 +2,8 @@ package interfaces
 
 import (
 	"steve/entity/majong"
+	"steve/entity/poker/ddz"
 	"time"
-	"steve/server_pb/ddz"
 )
 
 // AutoEventGenerateParams 生成自动事件的参数

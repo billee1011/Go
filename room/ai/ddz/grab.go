@@ -2,9 +2,9 @@ package ddz
 
 import (
 	"steve/client_pb/room"
+	"steve/entity/poker/ddz"
 	"steve/room/interfaces"
 	"steve/room/interfaces/global"
-	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
 )
