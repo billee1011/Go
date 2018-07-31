@@ -26,3 +26,6 @@ pprofExposeType:
 pprofHttpPort: 9909
 
 node: 1
+
+# 平台服地址
+platform_http_address: http://localhost:8080
