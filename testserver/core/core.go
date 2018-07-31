@@ -15,16 +15,16 @@ import (
 
 
 
-type goldCore struct {
+type myCore struct {
 }
 
 // NewService 创建服务
 func NewService() service.Service {
-	return new(goldCore)
+	return new(myCore)
 }
 
 // 3.注册客户端Client Msg 消息分派
-func (c *goldCore) dispatchClientMsg(e exchanger.Exchanger) error {
+func (c *myCore) dispatchClientMsg(e exchanger.Exchanger) error {
 
 	if len(mapMsg) == 0 {
 		return nil
@@ -43,7 +43,7 @@ func (c *goldCore) dispatchClientMsg(e exchanger.Exchanger) error {
 }
 
 // 服务初始化
-func (c *goldCore) Init(e *structs.Exposer, param ...string) error {
+func (c *myCore) Init(e *structs.Exposer, param ...string) error {
 	runtime.GOMAXPROCS(1)
 	entry := logrus.WithField("name", "goldCore.Init")
 	// 1.[RPC API]注册当前模块RPC服务处理器
@@ -68,7 +68,7 @@ func (c *goldCore) Init(e *structs.Exposer, param ...string) error {
 }
 
 // 服务启动逻辑
-func (c *goldCore) Start() error {
+func (c *myCore) Start() error {
 	logrus.Debugf("server start succeed ...")
 	return nil
 }

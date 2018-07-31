@@ -14,9 +14,9 @@ import (
 
 /////////////////////////////1.定义RPC服务实现//////////////////////////////////////////
 // PB文件中定义的RPC服务接口,如果不提供RPC服务，设置为nil
-var pbService = gold.RegisterGoldServer
+var pbService interface{} = gold.RegisterGoldServer
 // PB定义的RPC服务的实现类,如果不提供RPC服务，设置为nil
-var pbServerImp = &server.GoldServer{}
+var pbServerImp interface{} = &server.GoldServer{}
 
 /////////////////////////////2.处理Client消息////////////////////////////////////////////
 // 如果需要处理Client消息，需要在GateWay配置消息ID开始~ 结束区间 关联到当前服务名,GateWay才会把消息转发到此服务.
