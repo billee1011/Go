@@ -183,7 +183,7 @@ func TestGetPlayerInfo(t *testing.T) {
 
 	// redis 中有数据
 	redisKey := cache.FmtPlayerIDKey(playerID)
-	result, err := redisPlayerCli.HMGet(redisKey, cache.PlayerStateField).Result()
+	result, err := redisPlayerCli.HMGet(redisKey, cache.NickNameField).Result()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, result[0])
 	fmt.Println(result)
@@ -193,7 +193,7 @@ func TestGetPlayerInfo(t *testing.T) {
 func TestGetGameInfoList(t *testing.T) {
 	gameInfo, err := GetGameInfoList()
 	assert.Nil(t, err)
-	assert.Nil(t, gameInfo)
+	assert.NotNil(t, gameInfo)
 }
 
 // TestSetPlayerState 修改玩家状态
@@ -208,7 +208,7 @@ func TestSetPlayerState(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	result, err := UpdatePlayerState(playerID, 0, 1, 1, "127.0.0.1")
+	result, err := UpdatePlayerState(playerID, 0, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
 }

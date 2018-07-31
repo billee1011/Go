@@ -131,7 +131,7 @@ func GetPlayerInfo(playerID uint64) (info map[string]string, err error) {
 }
 
 // UpdatePlayerInfo 修改玩家个人信息
-func UpdatePlayerInfo(playerID uint64, nickName, avatar, name, phone string, gender uint64) (exist, result bool, err error) {
+func UpdatePlayerInfo(playerID uint64, nickName, avatar, name, phone string, gender uint32) (exist, result bool, err error) {
 	entry := logrus.WithFields(logrus.Fields{
 		"opr":      "update_pinfo",
 		"playerID": playerID,

@@ -57,7 +57,7 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 		rsp.NickName, rsp.Avatar = info[cache.NickNameField], info[cache.AvatarField]
 		rsp.Name, rsp.Phone = info[cache.NameField], info[cache.PhoneField]
 		value, _ := strconv.ParseInt(info[cache.GenderField], 10, 64)
-		rsp.Gender = uint64(value)
+		rsp.Gender = uint32(value)
 	}
 	return
 }
@@ -120,6 +120,17 @@ func (pds *PlayerDataService) GetPlayerServerInfo(ctx context.Context, req *user
 	// 默认返回
 	rsp, err = &user.GetPlayerServerInfoRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
+	}, nil
+	return
+}
+
+// UpdatePlayerServerInfo 更新玩家服务端信息 (TODO)
+func (pds *PlayerDataService) UpdatePlayerServerInfo(ctx context.Context, req *user.UpdatePlayerServerInfoReq) (rsp *user.UpdatePlayerServerInfoRsp, err error) {
+	logrus.Debugln("UpdatePlayerServerInfo req", *req)
+	// 默认返回
+	rsp, err = &user.UpdatePlayerServerInfoRsp{
+		ErrCode: int32(user.ErrCode_EC_FAIL),
+		Result:  false,
 	}, nil
 	return
 }

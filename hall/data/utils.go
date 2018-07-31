@@ -121,15 +121,15 @@ func transToGameInfo(configs []gameConfigDetail) (gameConfigs []*user.GameConfig
 	gameConfigs = make([]*user.GameConfigInfo, 0)
 	for _, config := range configs {
 		gameConfigs = append(gameConfigs, &user.GameConfigInfo{
-			GameId:     uint64(config.TGameConfig.Gameid),
+			GameId:     uint32(config.TGameConfig.Gameid),
 			GameName:   config.TGameConfig.Name,
-			GameType:   uint64(config.TGameConfig.Type),
-			LevelId:    uint64(config.TGameLevelConfig.Levelid),
-			BaseScores: uint64(config.TGameLevelConfig.Basescores),
-			LowScores:  uint64(config.TGameLevelConfig.Lowscores),
-			HighScores: uint64(config.TGameLevelConfig.Highscores),
-			MinPeople:  uint64(config.TGameLevelConfig.Minpeople),
-			MaxPeople:  uint64(config.TGameLevelConfig.Maxpeople),
+			GameType:   uint32(config.TGameConfig.Type),
+			LevelId:    uint32(config.TGameLevelConfig.Levelid),
+			BaseScores: uint32(config.TGameLevelConfig.Basescores),
+			LowScores:  uint32(config.TGameLevelConfig.Lowscores),
+			HighScores: uint32(config.TGameLevelConfig.Highscores),
+			MinPeople:  uint32(config.TGameLevelConfig.Minpeople),
+			MaxPeople:  uint32(config.TGameLevelConfig.Maxpeople),
 		})
 	}
 	return gameConfigs
