@@ -1,10 +1,12 @@
 package models
 
 import (
-	"sync"
-	"github.com/Sirupsen/logrus"
+	"fmt"
 	"steve/room2/desk"
 	"steve/room2/fixed"
+	"sync"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type ModelManager struct {
@@ -22,7 +24,7 @@ func GetModelManager() *ModelManager {
 }
 
 func (manager *ModelManager) InitDeskModel(deskId uint64, modelName []string, desk *desk.Desk) {
-	modelMap := make(map[string]interface{}, len(modelName))
+	modelMap := make(map[string]DeskModel, len(modelName))
 	manager.modelMap.Store(deskId, modelMap)
 	for _, name := range modelName {
 		model := CreateModel(name, desk)
@@ -32,12 +34,21 @@ func (manager *ModelManager) InitDeskModel(deskId uint64, modelName []string, de
 		}
 		modelMap[name] = model
 		model.Start()
-		println(model.GetName()," ---------------------> started")
 	}
 }
 
-func (manager *ModelManager) RemoveDeskModel(deskId uint64){
-	manager.modelMap.Delete(deskId)
+// StopDeskModel 停止 models
+func (manager *ModelManager) StopDeskModel(deskID uint64) error {
+	_models, ok := manager.modelMap.Load(deskID)
+	manager.modelMap.Delete(deskID)
+	if !ok {
+		return fmt.Errorf("无对象")
+	}
+	models := _models.(map[string]DeskModel)
+	for _, model := range models {
+		model.Stop()
+	}
+	return nil
 }
 
 func (manager *ModelManager) GetChatModel(deskId uint64) *ChatModel {
@@ -48,10 +59,21 @@ func (manager *ModelManager) GetRequestModel(deskId uint64) *RequestModel {
 	model := manager.getModel(deskId)[fixed.Request]
 	return model.(*RequestModel)
 }
-func (manager *ModelManager) GetMessageModel(deskId uint64) *MessageModel {
-	model := manager.getModel(deskId)[fixed.Message]
-	return model.(*MessageModel)
+
+// GetMessageModel 获取 message model
+func (manager *ModelManager) GetMessageModel(deskID uint64) *MessageModel {
+	_model := GetModelManager().GetModelByName(deskID, fixed.Message)
+	if _model == nil {
+		logrus.WithField("desk_id", deskID).Warningln("message model 不存在")
+		return nil
+	}
+	if model, ok := _model.(*MessageModel); ok {
+		return model
+	}
+	logrus.WithField("desk_id", deskID).Warningln("message model 不存在")
+	return nil
 }
+
 func (manager *ModelManager) GetMjEventModel(deskId uint64) *MjEventModel {
 	model := manager.getModel(deskId)[fixed.Event]
 	return model.(*MjEventModel)
@@ -61,7 +83,31 @@ func (manager *ModelManager) GetPlayerModel(deskId uint64) *PlayerModel {
 	return model.(*PlayerModel)
 }
 
-func (manager *ModelManager) getModel(deskId uint64) map[string]interface{} {
-	model, _ := manager.modelMap.Load(deskId)
-	return model.(map[string]interface{})
+// GetModelByName 根据名字获取 model
+func (manager *ModelManager) GetModelByName(deskID uint64, modelName string) DeskModel {
+	models := manager.getModel(deskID)
+	if models == nil {
+		return nil
+	}
+	return models[modelName]
+}
+
+func (manager *ModelManager) getModel(deskId uint64) map[string]DeskModel {
+	model, ok := manager.modelMap.Load(deskId)
+	if !ok {
+		return nil
+	}
+	return model.(map[string]DeskModel)
+}
+
+// GetContinueModel 获取续局 model
+func GetContinueModel(deskID uint64) *ContinueModel {
+	_model := GetModelManager().GetModelByName(deskID, fixed.Continue)
+	if _model == nil {
+		return nil
+	}
+	if model, ok := _model.(*ContinueModel); ok {
+		return model
+	}
+	return nil
 }

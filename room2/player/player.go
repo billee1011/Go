@@ -8,7 +8,6 @@ import (
 	"steve/room2/util"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -32,35 +31,17 @@ func (dp *Player) GetDesk() *desk.Desk {
 	return dp.desk
 }
 
-// IsDetached 是否和牌桌解除了关联
-func (dp *Player) IsDetached() bool {
-	return dp.detached
-}
-
-// SetDetached 设置是否解除和牌桌的关联
-func (dp *Player) SetDetached(detach bool) {
+// SetDesk 设置玩家所在牌桌
+func (dp *Player) SetDesk(deskObj *desk.Desk) {
 	dp.mu.Lock()
-	dp.detached = detach
+	dp.desk = deskObj
 	dp.mu.Unlock()
 }
 
-// QuitDesk 退出房间
-func (dp *Player) QuitDesk(desk *desk.Desk, needTuoguan bool) {
+// SetQuit 设置玩家退出状态
+func (dp *Player) SetQuit(quit bool) {
 	dp.mu.Lock()
-	dp.quit = true
-	dp.tuoguan = dp.tuoguan || needTuoguan // 退出后自动托管
-	dp.ecoin = 0
-	dp.mu.Unlock()
-}
-
-// EnterDesk 进入房间
-func (dp *Player) EnterDesk(desk *desk.Desk) {
-	dp.mu.Lock()
-	dp.quit = false
-	dp.tuoguan = false
-	dp.desk = desk
-	dp.ecoin = dp.GetCoin()
-	logrus.Debugln("设置桌子--------->")
+	dp.quit = quit
 	dp.mu.Unlock()
 }
 
@@ -77,6 +58,7 @@ func (dp *Player) GetSeat() int {
 	defer dp.mu.RUnlock()
 	return int(dp.seat)
 }
+
 func (dp *Player) SetSeat(seat uint32) {
 	dp.mu.RLock()
 	defer dp.mu.RUnlock()
@@ -84,16 +66,12 @@ func (dp *Player) SetSeat(seat uint32) {
 }
 
 // GetEcoin 获取进入时金币数
-func (dp *Player) GetEcoin() int {
-	dp.mu.RLock()
-	defer dp.mu.RUnlock()
-	return int(dp.ecoin)
+func (dp *Player) GetEcoin() uint64 {
+	return dp.ecoin
 }
 
-func (p *Player) SetEcoin(coin int) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	p.ecoin = uint64(coin)
+func (dp *Player) SetEcoin(coin uint64) {
+	dp.ecoin = coin
 }
 
 func (p *Player) SetMaxOverTime(time int) {
@@ -114,16 +92,7 @@ func (p *Player) GetRobotLv() int {
 
 // IsQuit 是否已经退出
 func (dp *Player) IsQuit() bool {
-	dp.mu.RLock()
-	defer dp.mu.RUnlock()
 	return dp.quit
-}
-
-// SetQuit 设置玩家退出状态
-func (dp *Player) SetQuit(quit bool) {
-	dp.mu.Lock()
-	dp.quit = quit
-	dp.mu.Unlock()
 }
 
 // OnPlayerOverTime 玩家超时
@@ -162,8 +131,6 @@ func (p *Player) GetCoin() uint64 {
 func (p *Player) SetCoin(coin uint64) {
 	playerdata.SetPlayerCoin(p.PlayerID, coin)
 }
-
-// GetUserName() string
 
 // 判断玩家是否在线
 func (p *Player) IsOnline() bool {

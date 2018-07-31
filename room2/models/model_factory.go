@@ -1,24 +1,26 @@
 package models
 
 import (
-	"steve/room2/fixed"
 	"steve/room2/desk"
+	"steve/room2/fixed"
 )
 
-
-func CreateModel(name string, desks *desk.Desk) DeskModel {
-	var result DeskModel = nil
+// CreateModel 创建 model
+func CreateModel(name string, desk *desk.Desk) DeskModel {
+	var result DeskModel
 	switch name {
 	case fixed.Event:
-		result = NewMjEventModel(desks)
+		result = NewMjEventModel(desk)
 	case fixed.Player:
-		result = NewPlayertModel(desks)
+		result = NewPlayertModel(desk)
 	case fixed.Request:
-		result = NewRequestModel(desks)
+		result = NewRequestModel(desk)
 	case fixed.Message:
-		result = NewMessageModel(desks)
+		result = NewMessageModel(desk)
 	case fixed.Chat:
-		result = NewChatModel(desks)
+		result = NewChatModel(desk)
+	case fixed.Continue:
+		result = NewContinueModel(desk)
 	}
 	return result
 }

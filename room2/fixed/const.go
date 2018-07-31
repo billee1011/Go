@@ -47,4 +47,5 @@ const (
 	Message     = "MessageModel"
 	Trusteeship = "TrusteeshipModel"
 	Chat        = "ChatModel"
+	Continue    = "ContinueModel"
 )

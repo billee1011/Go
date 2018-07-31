@@ -18,13 +18,13 @@ type MessageModel struct {
 	BaseModel
 }
 
-func (model MessageModel) GetName() string {
+func (model *MessageModel) GetName() string {
 	return fixed.Message
 }
-func (model MessageModel) Start() {
+func (model *MessageModel) Start() {
 
 }
-func (model MessageModel) Stop() {
+func (model *MessageModel) Stop() {
 
 }
 
@@ -80,7 +80,7 @@ func (model *MessageModel) removeQuit(playerIDs []uint64) []uint64 {
 	result := []uint64{}
 	for _, playerID := range playerIDs {
 		pla := player.GetPlayerMgr().GetPlayer(playerID)
-		if pla.IsQuit() || pla.IsDetached() {
+		if pla == nil || pla.IsQuit() || pla.GetDesk() != model.GetDesk() {
 			continue
 		}
 		result = append(result, playerID)
