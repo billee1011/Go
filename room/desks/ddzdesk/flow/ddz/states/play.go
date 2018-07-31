@@ -23,7 +23,7 @@ func (s *playState) OnEnter(m machine.Machine) {
 	context.CurrentPlayerId = context.LordPlayerId
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
-	context.StartTime, _ = time.Now().MarshalBinary()
+	context.StartTime = time.Now()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_PLAYING]
 
 	logrus.WithField("context", context).Debugln("进入出牌状态")
@@ -107,7 +107,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		context.CurrentPlayerId = nextPlayerID
 		//产生超时事件
 		context.CountDownPlayers = []uint64{context.CurrentPlayerId}
-		context.StartTime, _ = time.Now().MarshalBinary()
+		context.StartTime = time.Now()
 		context.Duration = StageTime[room.DDZStage_DDZ_STAGE_PLAYING]
 
 		context.PassCount++
@@ -183,7 +183,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	context.CurrentPlayerId = nextPlayerID
 	//产生超时事件
 	context.CountDownPlayers = []uint64{context.CurrentPlayerId}
-	context.StartTime, _ = time.Now().MarshalBinary()
+	context.StartTime = time.Now()
 	context.Duration = StageTime[room.DDZStage_DDZ_STAGE_PLAYING]
 
 	context.CurOutCards = message.GetCards()

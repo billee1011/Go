@@ -3,6 +3,7 @@ package ddz
 import (
 	"steve/entity/poker"
 	"strconv"
+	"time"
 )
 
 type DDZStage int32
@@ -135,10 +136,10 @@ type DDZContext struct {
 	// 恢复对局
 	GrabbedPlayers []uint64 `protobuf:"varint,24,rep,packed,name=grabbed_players,json=grabbedPlayers" json:"grabbed_players,omitempty"`
 	// 倒计时
-	CountDownPlayers []uint64 `protobuf:"varint,25,rep,packed,name=count_down_players,json=countDownPlayers" json:"count_down_players,omitempty"`
-	StartTime        []byte   `protobuf:"bytes,26,opt,name=startTime,proto3" json:"startTime,omitempty"`
-	Duration         uint32   `protobuf:"varint,27,opt,name=duration" json:"duration,omitempty"`
-	WallCards        []uint32 `protobuf:"varint,28,rep,packed,name=wall_cards,json=wallCards" json:"wall_cards,omitempty"`
+	CountDownPlayers []uint64  `protobuf:"varint,25,rep,packed,name=count_down_players,json=countDownPlayers" json:"count_down_players,omitempty"`
+	StartTime        time.Time `protobuf:"bytes,26,opt,name=startTime,proto3" json:"startTime,omitempty"`
+	Duration         uint32    `protobuf:"varint,27,opt,name=duration" json:"duration,omitempty"`
+	WallCards        []uint32  `protobuf:"varint,28,rep,packed,name=wall_cards,json=wallCards" json:"wall_cards,omitempty"`
 }
 
 func (m *DDZContext) GetGameId() int32 {
@@ -316,11 +317,11 @@ func (m *DDZContext) GetCountDownPlayers() []uint64 {
 	return nil
 }
 
-func (m *DDZContext) GetStartTime() []byte {
+func (m *DDZContext) GetStartTime() time.Time {
 	if m != nil {
 		return m.StartTime
 	}
-	return nil
+	return time.Time{}
 }
 
 func (m *DDZContext) GetDuration() uint32 {

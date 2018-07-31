@@ -136,8 +136,7 @@ func (d *desk) genTimerEvent() {
 	})
 
 	// 开始时间
-	startTime := time.Time{}
-	startTime.UnmarshalBinary(dContext.StartTime)
+	startTime := dContext.StartTime
 
 	// 产生AI事件
 	result := g.GenerateV2(&interfaces.AutoEventGenerateParams{
