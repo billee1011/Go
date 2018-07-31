@@ -71,7 +71,7 @@ func getPlayerIds(m machine.Machine) []uint64 {
 	return players
 }
 
-func isValidPlayer(context *ddz.DDZContext, id uint64) bool {
+func IsValidPlayer(context *ddz.DDZContext, id uint64) bool {
 	return GetPlayerByID(context.GetPlayers(), id) != nil
 }
 
@@ -192,14 +192,6 @@ func RemoveAll(cards []Poker, removeCards []Poker) []Poker {
 		}
 	}
 	return result
-}
-
-// AppendAll 从cards中添加addCards
-func AppendAll(cards []Poker, addCards []Poker) []Poker {
-	for _, card := range addCards {
-		cards = append(cards, card)
-	}
-	return cards
 }
 
 func If(judge bool, trueReturn interface{}, falseReturn interface{}) interface{} {
