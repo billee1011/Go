@@ -6,7 +6,7 @@ import (
 
 type TPlayerCurrency struct {
 	Id             int64     `xorm:"pk autoincr BIGINT(20)"`
-	Playerid       int64     `xorm:"not null BIGINT(20)"`
+	Playerid       int64     `xorm:"not null unique BIGINT(20)"`
 	Coins          int       `xorm:"comment('当前金币数') INT(11)"`
 	Ingots         int       `xorm:"comment('当前面元宝数') INT(11)"`
 	Keycards       int       `xorm:"comment('当前房卡') INT(11)"`
