@@ -152,19 +152,20 @@ func trans2hallPlayer(cp *cache.HallPlayer, info map[string]string) {
 	cp.Phone = info[cache.PhoneField]
 }
 
-func trans2GameInfo(gameDetails []gameDetail) (gameInfos []*user.GameInfo) {
-	gameInfos = make([]*user.GameInfo, 0)
-	for _, gameDetail := range gameDetails {
-		gameInfo := &user.GameInfo{
-			GameId:     gameDetail.gameID,
-			GameName:   gameDetail.gname,
-			GameType:   gameDetail.gtype,
-			LevelId:    gameDetail.glevelID,
-			BaseScores: gameDetail.gbaseScores,
-			LowScores:  gameDetail.glowScores,
-			HighScores: gameDetail.ghighScores,
-		}
-		gameInfos = append(gameInfos, gameInfo)
+func transToGameInfo(configs []gameConfigDetail) (gameConfigs []*user.GameConfigInfo) {
+	gameConfigs = make([]*user.GameConfigInfo, 0)
+	for _, config := range configs {
+		gameConfigs = append(gameConfigs, &user.GameConfigInfo{
+			GameId:     uint64(config.TGameConfig.Gameid),
+			GameName:   config.TGameConfig.Name,
+			GameType:   uint64(config.TGameConfig.Type),
+			LevelId:    uint64(config.TGameLevelConfig.Levelid),
+			BaseScores: uint64(config.TGameLevelConfig.Basescores),
+			LowScores:  uint64(config.TGameLevelConfig.Lowscores),
+			HighScores: uint64(config.TGameLevelConfig.Highscores),
+			MinPeople:  uint64(config.TGameLevelConfig.Minpeople),
+			MaxPeople:  uint64(config.TGameLevelConfig.Maxpeople),
+		})
 	}
-	return gameInfos
+	return gameConfigs
 }

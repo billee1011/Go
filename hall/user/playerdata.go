@@ -55,23 +55,23 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 	if err == nil {
 		rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
 		rsp.NickName, rsp.Avatar = info[cache.NickNameField], info[cache.AvatarField]
+		rsp.Name, rsp.Phone = info[cache.NameField], info[cache.PhoneField]
 		value, _ := strconv.ParseInt(info[cache.GenderField], 10, 64)
 		rsp.Gender = uint64(value)
-		rsp.Name, rsp.Phone = info[cache.NameField], info[cache.PhoneField]
 	}
 	return
 }
 
-// SetPlayerInfo 设置玩家信息
+// UpdatePlayerInfo 设置玩家信息
 func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.UpdatePlayerInfoReq) (rsp *user.UpdatePlayerInfoRsp, err error) {
 	logrus.Debugln("SetPlayerInfo req", *req)
-
+	// 默认返回
 	rsp, err = &user.UpdatePlayerInfoRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
 		Result:  false,
 	}, nil
-
-	exist, result, err := data.UpdatePlayerInfo(req.GetPlayerId(), req.GetNickName(), req.GetAvatar())
+	// 逻辑处理
+	exist, result, err := data.UpdatePlayerInfo(req.GetPlayerId(), req.GetNickName(), req.GetAvatar(), req.GetName(), req.GetPhone(), req.GetGender())
 	rsp.Result = result
 	if exist {
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
@@ -82,11 +82,12 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 // GetPlayerState 获取玩家状态
 func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetPlayerStateReq) (rsp *user.GetPlayerStateRsp, err error) {
 	logrus.Debugln("GetPlayerState req", *req)
-
+	// 默认返回
 	rsp, err = &user.GetPlayerStateRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
 		State:   user.PlayerState_PS_IDIE,
 	}, nil
+	// 逻辑处理
 	state, err := data.GetPlayerState(req.GetPlayerId())
 	if err == nil {
 		rsp.State, rsp.ErrCode = user.PlayerState(state), int32(user.ErrCode_EC_SUCCESS)
@@ -94,14 +95,15 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	return
 }
 
-// SetPlayerState 设置玩家状态
+// UpdatePlayerState 设置玩家状态
 func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.UpdatePlayerStateReq) (rsp *user.UpdatePlayerStateRsp, err error) {
 	logrus.Debugln("SetPlayerState req", *req)
-
+	// 默认返回
 	rsp, err = &user.UpdatePlayerStateRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
 		Result:  false,
 	}, nil
+	// 逻辑处理
 	playerID := req.GetPlayerId()
 	oldState := uint64(req.GetNewState())
 	newState := uint64(req.GetNewState())
@@ -116,11 +118,12 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 // GetGameListInfo 获取玩家游戏列表信息
 func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.GetGameListInfoReq) (rsp *user.GetGameListInfoRsp, err error) {
 	logrus.Debugln("GetGameListInfo req", *req)
-
+	// 默认返回
 	rsp, err = &user.GetGameListInfoRsp{
 		ErrCode:  int32(user.ErrCode_EC_FAIL),
-		GameInfo: []*user.GameInfo{},
+		GameInfo: []*user.GameConfigInfo{},
 	}, nil
+	// 逻辑处理
 	rsp.GameInfo, err = data.GetGameInfoList()
 	if err == nil {
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
