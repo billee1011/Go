@@ -40,7 +40,7 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params interfaces.AIEventGenerateP
 		}
 	case interfaces.TingAI:
 		return
-	case interfaces.RobotAI, interfaces.OverTimeAI, interfaces.TuoGuangAI:
+	case interfaces.RobotAI, interfaces.OverTimeAI, interfaces.TuoGuangAI, interfaces.SpecialOverTimeAI:
 		{
 			if event := h.chupaiWenxun(player); event != nil {
 				result.Events = append(result.Events, *event)

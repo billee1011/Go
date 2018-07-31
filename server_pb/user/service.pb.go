@@ -128,12 +128,13 @@ func (m *GetPlayerInfoReq) GetPlayerId() uint64 {
 
 // GetPlayerInfoRsp 获取玩家信息应答
 type GetPlayerInfoRsp struct {
-	ErrCode     int32       `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	PlayerId    uint64      `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
-	NickName    string      `protobuf:"bytes,3,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	HeadImage   string      `protobuf:"bytes,4,opt,name=head_image,json=headImage" json:"head_image,omitempty"`
-	Coin        uint64      `protobuf:"varint,5,opt,name=coin" json:"coin,omitempty"`
-	PlayerState PlayerState `protobuf:"varint,6,opt,name=player_state,json=playerState,enum=user.PlayerState" json:"player_state,omitempty"`
+	ErrCode  int32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	PlayerId uint64 `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
+	NickName string `protobuf:"bytes,3,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
+	Avatar   string `protobuf:"bytes,4,opt,name=avatar" json:"avatar,omitempty"`
+	Gender   uint64 `protobuf:"varint,5,opt,name=gender" json:"gender,omitempty"`
+	Name     string `protobuf:"bytes,6,opt,name=name" json:"name,omitempty"`
+	Phone    string `protobuf:"bytes,7,opt,name=phone" json:"phone,omitempty"`
 }
 
 func (m *GetPlayerInfoRsp) Reset()                    { *m = GetPlayerInfoRsp{} }
@@ -162,87 +163,94 @@ func (m *GetPlayerInfoRsp) GetNickName() string {
 	return ""
 }
 
-func (m *GetPlayerInfoRsp) GetHeadImage() string {
+func (m *GetPlayerInfoRsp) GetAvatar() string {
 	if m != nil {
-		return m.HeadImage
+		return m.Avatar
 	}
 	return ""
 }
 
-func (m *GetPlayerInfoRsp) GetCoin() uint64 {
+func (m *GetPlayerInfoRsp) GetGender() uint64 {
 	if m != nil {
-		return m.Coin
+		return m.Gender
 	}
 	return 0
 }
 
-func (m *GetPlayerInfoRsp) GetPlayerState() PlayerState {
+func (m *GetPlayerInfoRsp) GetName() string {
 	if m != nil {
-		return m.PlayerState
+		return m.Name
 	}
-	return PlayerState_PS_IDIE
+	return ""
 }
 
-// SetPlayerInfoReq 修改玩家信息
-type SetPlayerInfoReq struct {
-	ErrCode   int32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	PlayerId  uint64 `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
-	NickName  string `protobuf:"bytes,3,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	HeadImage string `protobuf:"bytes,4,opt,name=head_image,json=headImage" json:"head_image,omitempty"`
+func (m *GetPlayerInfoRsp) GetPhone() string {
+	if m != nil {
+		return m.Phone
+	}
+	return ""
 }
 
-func (m *SetPlayerInfoReq) Reset()                    { *m = SetPlayerInfoReq{} }
-func (m *SetPlayerInfoReq) String() string            { return proto.CompactTextString(m) }
-func (*SetPlayerInfoReq) ProtoMessage()               {}
-func (*SetPlayerInfoReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
+// UpdatePlayerInfoReq 修改玩家信息
+type UpdatePlayerInfoReq struct {
+	ErrCode  int32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	PlayerId uint64 `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
+	NickName string `protobuf:"bytes,3,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
+	Avatar   string `protobuf:"bytes,4,opt,name=avatar" json:"avatar,omitempty"`
+}
 
-func (m *SetPlayerInfoReq) GetErrCode() int32 {
+func (m *UpdatePlayerInfoReq) Reset()                    { *m = UpdatePlayerInfoReq{} }
+func (m *UpdatePlayerInfoReq) String() string            { return proto.CompactTextString(m) }
+func (*UpdatePlayerInfoReq) ProtoMessage()               {}
+func (*UpdatePlayerInfoReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
+
+func (m *UpdatePlayerInfoReq) GetErrCode() int32 {
 	if m != nil {
 		return m.ErrCode
 	}
 	return 0
 }
 
-func (m *SetPlayerInfoReq) GetPlayerId() uint64 {
+func (m *UpdatePlayerInfoReq) GetPlayerId() uint64 {
 	if m != nil {
 		return m.PlayerId
 	}
 	return 0
 }
 
-func (m *SetPlayerInfoReq) GetNickName() string {
+func (m *UpdatePlayerInfoReq) GetNickName() string {
 	if m != nil {
 		return m.NickName
 	}
 	return ""
 }
 
-func (m *SetPlayerInfoReq) GetHeadImage() string {
+func (m *UpdatePlayerInfoReq) GetAvatar() string {
 	if m != nil {
-		return m.HeadImage
+		return m.Avatar
 	}
 	return ""
 }
 
-// SetPlayerInfoRsp 修改玩家信息应答
-type SetPlayerInfoRsp struct {
+// UpdatePlayerInfoRsp 修改玩家信息应答
+type UpdatePlayerInfoRsp struct {
 	ErrCode int32 `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
 	Result  bool  `protobuf:"varint,2,opt,name=result" json:"result,omitempty"`
 }
 
-func (m *SetPlayerInfoRsp) Reset()                    { *m = SetPlayerInfoRsp{} }
-func (m *SetPlayerInfoRsp) String() string            { return proto.CompactTextString(m) }
-func (*SetPlayerInfoRsp) ProtoMessage()               {}
-func (*SetPlayerInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
+func (m *UpdatePlayerInfoRsp) Reset()                    { *m = UpdatePlayerInfoRsp{} }
+func (m *UpdatePlayerInfoRsp) String() string            { return proto.CompactTextString(m) }
+func (*UpdatePlayerInfoRsp) ProtoMessage()               {}
+func (*UpdatePlayerInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
 
-func (m *SetPlayerInfoRsp) GetErrCode() int32 {
+func (m *UpdatePlayerInfoRsp) GetErrCode() int32 {
 	if m != nil {
 		return m.ErrCode
 	}
 	return 0
 }
 
-func (m *SetPlayerInfoRsp) GetResult() bool {
+func (m *UpdatePlayerInfoRsp) GetResult() bool {
 	if m != nil {
 		return m.Result
 	}
@@ -291,8 +299,8 @@ func (m *GetPlayerStateRsp) GetState() PlayerState {
 	return PlayerState_PS_IDIE
 }
 
-// SetPlayerStateReq 设置玩家状态
-type SetPlayerStateReq struct {
+// UpdatePlayerStateReq 更新玩家状态
+type UpdatePlayerStateReq struct {
 	PlayerId   uint64      `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 	OldState   PlayerState `protobuf:"varint,2,opt,name=old_state,json=oldState,enum=user.PlayerState" json:"old_state,omitempty"`
 	NewState   PlayerState `protobuf:"varint,3,opt,name=new_state,json=newState,enum=user.PlayerState" json:"new_state,omitempty"`
@@ -300,65 +308,65 @@ type SetPlayerStateReq struct {
 	ServerAddr string      `protobuf:"bytes,5,opt,name=server_addr,json=serverAddr" json:"server_addr,omitempty"`
 }
 
-func (m *SetPlayerStateReq) Reset()                    { *m = SetPlayerStateReq{} }
-func (m *SetPlayerStateReq) String() string            { return proto.CompactTextString(m) }
-func (*SetPlayerStateReq) ProtoMessage()               {}
-func (*SetPlayerStateReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
+func (m *UpdatePlayerStateReq) Reset()                    { *m = UpdatePlayerStateReq{} }
+func (m *UpdatePlayerStateReq) String() string            { return proto.CompactTextString(m) }
+func (*UpdatePlayerStateReq) ProtoMessage()               {}
+func (*UpdatePlayerStateReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
 
-func (m *SetPlayerStateReq) GetPlayerId() uint64 {
+func (m *UpdatePlayerStateReq) GetPlayerId() uint64 {
 	if m != nil {
 		return m.PlayerId
 	}
 	return 0
 }
 
-func (m *SetPlayerStateReq) GetOldState() PlayerState {
+func (m *UpdatePlayerStateReq) GetOldState() PlayerState {
 	if m != nil {
 		return m.OldState
 	}
 	return PlayerState_PS_IDIE
 }
 
-func (m *SetPlayerStateReq) GetNewState() PlayerState {
+func (m *UpdatePlayerStateReq) GetNewState() PlayerState {
 	if m != nil {
 		return m.NewState
 	}
 	return PlayerState_PS_IDIE
 }
 
-func (m *SetPlayerStateReq) GetServerType() ServerType {
+func (m *UpdatePlayerStateReq) GetServerType() ServerType {
 	if m != nil {
 		return m.ServerType
 	}
 	return ServerType_ST_GATE
 }
 
-func (m *SetPlayerStateReq) GetServerAddr() string {
+func (m *UpdatePlayerStateReq) GetServerAddr() string {
 	if m != nil {
 		return m.ServerAddr
 	}
 	return ""
 }
 
-// SetPlayerStateRsp 设置玩家状态应答
-type SetPlayerStateRsp struct {
+// UpdatePlayerStateRsp  更新玩家状态应答
+type UpdatePlayerStateRsp struct {
 	ErrCode int32 `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
 	Result  bool  `protobuf:"varint,2,opt,name=result" json:"result,omitempty"`
 }
 
-func (m *SetPlayerStateRsp) Reset()                    { *m = SetPlayerStateRsp{} }
-func (m *SetPlayerStateRsp) String() string            { return proto.CompactTextString(m) }
-func (*SetPlayerStateRsp) ProtoMessage()               {}
-func (*SetPlayerStateRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{9} }
+func (m *UpdatePlayerStateRsp) Reset()                    { *m = UpdatePlayerStateRsp{} }
+func (m *UpdatePlayerStateRsp) String() string            { return proto.CompactTextString(m) }
+func (*UpdatePlayerStateRsp) ProtoMessage()               {}
+func (*UpdatePlayerStateRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{9} }
 
-func (m *SetPlayerStateRsp) GetErrCode() int32 {
+func (m *UpdatePlayerStateRsp) GetErrCode() int32 {
 	if m != nil {
 		return m.ErrCode
 	}
 	return 0
 }
 
-func (m *SetPlayerStateRsp) GetResult() bool {
+func (m *UpdatePlayerStateRsp) GetResult() bool {
 	if m != nil {
 		return m.Result
 	}
@@ -374,16 +382,89 @@ func (m *GetGameListInfoReq) String() string            { return proto.CompactTe
 func (*GetGameListInfoReq) ProtoMessage()               {}
 func (*GetGameListInfoReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{10} }
 
+// GameInfo 游戏信息
+type GameInfo struct {
+	GameId     uint64 `protobuf:"varint,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	GameName   string `protobuf:"bytes,2,opt,name=game_name,json=gameName" json:"game_name,omitempty"`
+	GameType   uint64 `protobuf:"varint,3,opt,name=game_type,json=gameType" json:"game_type,omitempty"`
+	LevelId    uint64 `protobuf:"varint,4,opt,name=level_id,json=levelId" json:"level_id,omitempty"`
+	BaseScores uint64 `protobuf:"varint,5,opt,name=base_scores,json=baseScores" json:"base_scores,omitempty"`
+	LowScores  uint64 `protobuf:"varint,6,opt,name=low_scores,json=lowScores" json:"low_scores,omitempty"`
+	HighScores uint64 `protobuf:"varint,7,opt,name=high_scores,json=highScores" json:"high_scores,omitempty"`
+	LowPeople  uint64 `protobuf:"varint,8,opt,name=low_people,json=lowPeople" json:"low_people,omitempty"`
+}
+
+func (m *GameInfo) Reset()                    { *m = GameInfo{} }
+func (m *GameInfo) String() string            { return proto.CompactTextString(m) }
+func (*GameInfo) ProtoMessage()               {}
+func (*GameInfo) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{11} }
+
+func (m *GameInfo) GetGameId() uint64 {
+	if m != nil {
+		return m.GameId
+	}
+	return 0
+}
+
+func (m *GameInfo) GetGameName() string {
+	if m != nil {
+		return m.GameName
+	}
+	return ""
+}
+
+func (m *GameInfo) GetGameType() uint64 {
+	if m != nil {
+		return m.GameType
+	}
+	return 0
+}
+
+func (m *GameInfo) GetLevelId() uint64 {
+	if m != nil {
+		return m.LevelId
+	}
+	return 0
+}
+
+func (m *GameInfo) GetBaseScores() uint64 {
+	if m != nil {
+		return m.BaseScores
+	}
+	return 0
+}
+
+func (m *GameInfo) GetLowScores() uint64 {
+	if m != nil {
+		return m.LowScores
+	}
+	return 0
+}
+
+func (m *GameInfo) GetHighScores() uint64 {
+	if m != nil {
+		return m.HighScores
+	}
+	return 0
+}
+
+func (m *GameInfo) GetLowPeople() uint64 {
+	if m != nil {
+		return m.LowPeople
+	}
+	return 0
+}
+
 // GetGameListInfoRsp 获取游戏列表信息应答
 type GetGameListInfoRsp struct {
-	ErrCode int32    `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	GameId  []uint64 `protobuf:"varint,2,rep,packed,name=game_id,json=gameId" json:"game_id,omitempty"`
+	ErrCode  int32       `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	GameInfo []*GameInfo `protobuf:"bytes,2,rep,name=game_info,json=gameInfo" json:"game_info,omitempty"`
 }
 
 func (m *GetGameListInfoRsp) Reset()                    { *m = GetGameListInfoRsp{} }
 func (m *GetGameListInfoRsp) String() string            { return proto.CompactTextString(m) }
 func (*GetGameListInfoRsp) ProtoMessage()               {}
-func (*GetGameListInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{11} }
+func (*GetGameListInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{12} }
 
 func (m *GetGameListInfoRsp) GetErrCode() int32 {
 	if m != nil {
@@ -392,9 +473,9 @@ func (m *GetGameListInfoRsp) GetErrCode() int32 {
 	return 0
 }
 
-func (m *GetGameListInfoRsp) GetGameId() []uint64 {
+func (m *GetGameListInfoRsp) GetGameInfo() []*GameInfo {
 	if m != nil {
-		return m.GameId
+		return m.GameInfo
 	}
 	return nil
 }
@@ -404,13 +485,14 @@ func init() {
 	proto.RegisterType((*GetPlayerByAccountRsp)(nil), "user.GetPlayerByAccountRsp")
 	proto.RegisterType((*GetPlayerInfoReq)(nil), "user.GetPlayerInfoReq")
 	proto.RegisterType((*GetPlayerInfoRsp)(nil), "user.GetPlayerInfoRsp")
-	proto.RegisterType((*SetPlayerInfoReq)(nil), "user.SetPlayerInfoReq")
-	proto.RegisterType((*SetPlayerInfoRsp)(nil), "user.SetPlayerInfoRsp")
+	proto.RegisterType((*UpdatePlayerInfoReq)(nil), "user.UpdatePlayerInfoReq")
+	proto.RegisterType((*UpdatePlayerInfoRsp)(nil), "user.UpdatePlayerInfoRsp")
 	proto.RegisterType((*GetPlayerStateReq)(nil), "user.GetPlayerStateReq")
 	proto.RegisterType((*GetPlayerStateRsp)(nil), "user.GetPlayerStateRsp")
-	proto.RegisterType((*SetPlayerStateReq)(nil), "user.SetPlayerStateReq")
-	proto.RegisterType((*SetPlayerStateRsp)(nil), "user.SetPlayerStateRsp")
+	proto.RegisterType((*UpdatePlayerStateReq)(nil), "user.UpdatePlayerStateReq")
+	proto.RegisterType((*UpdatePlayerStateRsp)(nil), "user.UpdatePlayerStateRsp")
 	proto.RegisterType((*GetGameListInfoReq)(nil), "user.GetGameListInfoReq")
+	proto.RegisterType((*GameInfo)(nil), "user.GameInfo")
 	proto.RegisterType((*GetGameListInfoRsp)(nil), "user.GetGameListInfoRsp")
 	proto.RegisterEnum("user.PlayerState", PlayerState_name, PlayerState_value)
 	proto.RegisterEnum("user.ServerType", ServerType_name, ServerType_value)
@@ -431,12 +513,12 @@ type PlayerDataClient interface {
 	GetPlayerByAccount(ctx context.Context, in *GetPlayerByAccountReq, opts ...grpc.CallOption) (*GetPlayerByAccountRsp, error)
 	// GetPlayerInfo 获取玩家信息
 	GetPlayerInfo(ctx context.Context, in *GetPlayerInfoReq, opts ...grpc.CallOption) (*GetPlayerInfoRsp, error)
-	// SetPlayerInfo 设置玩家信息
-	SetPlayerInfo(ctx context.Context, in *SetPlayerInfoReq, opts ...grpc.CallOption) (*SetPlayerInfoRsp, error)
+	// UpdatePlayerInfo 更新玩家信息
+	UpdatePlayerInfo(ctx context.Context, in *UpdatePlayerInfoReq, opts ...grpc.CallOption) (*UpdatePlayerInfoRsp, error)
 	// GetPlayerState 获取玩家状态
 	GetPlayerState(ctx context.Context, in *GetPlayerStateReq, opts ...grpc.CallOption) (*GetPlayerStateRsp, error)
-	// SetPlayerState 设置玩家状态
-	SetPlayerState(ctx context.Context, in *SetPlayerStateReq, opts ...grpc.CallOption) (*SetPlayerStateRsp, error)
+	// UpdatePlayerState 更新玩家状态
+	UpdatePlayerState(ctx context.Context, in *UpdatePlayerStateReq, opts ...grpc.CallOption) (*UpdatePlayerStateRsp, error)
 	// GetGameListInfo 获取游戏列表
 	GetGameListInfo(ctx context.Context, in *GetGameListInfoReq, opts ...grpc.CallOption) (*GetGameListInfoRsp, error)
 }
@@ -467,9 +549,9 @@ func (c *playerDataClient) GetPlayerInfo(ctx context.Context, in *GetPlayerInfoR
 	return out, nil
 }
 
-func (c *playerDataClient) SetPlayerInfo(ctx context.Context, in *SetPlayerInfoReq, opts ...grpc.CallOption) (*SetPlayerInfoRsp, error) {
-	out := new(SetPlayerInfoRsp)
-	err := grpc.Invoke(ctx, "/user.PlayerData/SetPlayerInfo", in, out, c.cc, opts...)
+func (c *playerDataClient) UpdatePlayerInfo(ctx context.Context, in *UpdatePlayerInfoReq, opts ...grpc.CallOption) (*UpdatePlayerInfoRsp, error) {
+	out := new(UpdatePlayerInfoRsp)
+	err := grpc.Invoke(ctx, "/user.PlayerData/UpdatePlayerInfo", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -485,9 +567,9 @@ func (c *playerDataClient) GetPlayerState(ctx context.Context, in *GetPlayerStat
 	return out, nil
 }
 
-func (c *playerDataClient) SetPlayerState(ctx context.Context, in *SetPlayerStateReq, opts ...grpc.CallOption) (*SetPlayerStateRsp, error) {
-	out := new(SetPlayerStateRsp)
-	err := grpc.Invoke(ctx, "/user.PlayerData/SetPlayerState", in, out, c.cc, opts...)
+func (c *playerDataClient) UpdatePlayerState(ctx context.Context, in *UpdatePlayerStateReq, opts ...grpc.CallOption) (*UpdatePlayerStateRsp, error) {
+	out := new(UpdatePlayerStateRsp)
+	err := grpc.Invoke(ctx, "/user.PlayerData/UpdatePlayerState", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -510,12 +592,12 @@ type PlayerDataServer interface {
 	GetPlayerByAccount(context.Context, *GetPlayerByAccountReq) (*GetPlayerByAccountRsp, error)
 	// GetPlayerInfo 获取玩家信息
 	GetPlayerInfo(context.Context, *GetPlayerInfoReq) (*GetPlayerInfoRsp, error)
-	// SetPlayerInfo 设置玩家信息
-	SetPlayerInfo(context.Context, *SetPlayerInfoReq) (*SetPlayerInfoRsp, error)
+	// UpdatePlayerInfo 更新玩家信息
+	UpdatePlayerInfo(context.Context, *UpdatePlayerInfoReq) (*UpdatePlayerInfoRsp, error)
 	// GetPlayerState 获取玩家状态
 	GetPlayerState(context.Context, *GetPlayerStateReq) (*GetPlayerStateRsp, error)
-	// SetPlayerState 设置玩家状态
-	SetPlayerState(context.Context, *SetPlayerStateReq) (*SetPlayerStateRsp, error)
+	// UpdatePlayerState 更新玩家状态
+	UpdatePlayerState(context.Context, *UpdatePlayerStateReq) (*UpdatePlayerStateRsp, error)
 	// GetGameListInfo 获取游戏列表
 	GetGameListInfo(context.Context, *GetGameListInfoReq) (*GetGameListInfoRsp, error)
 }
@@ -560,20 +642,20 @@ func _PlayerData_GetPlayerInfo_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlayerData_SetPlayerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetPlayerInfoReq)
+func _PlayerData_UpdatePlayerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlayerInfoReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlayerDataServer).SetPlayerInfo(ctx, in)
+		return srv.(PlayerDataServer).UpdatePlayerInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/user.PlayerData/SetPlayerInfo",
+		FullMethod: "/user.PlayerData/UpdatePlayerInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlayerDataServer).SetPlayerInfo(ctx, req.(*SetPlayerInfoReq))
+		return srv.(PlayerDataServer).UpdatePlayerInfo(ctx, req.(*UpdatePlayerInfoReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -596,20 +678,20 @@ func _PlayerData_GetPlayerState_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlayerData_SetPlayerState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetPlayerStateReq)
+func _PlayerData_UpdatePlayerState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlayerStateReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlayerDataServer).SetPlayerState(ctx, in)
+		return srv.(PlayerDataServer).UpdatePlayerState(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/user.PlayerData/SetPlayerState",
+		FullMethod: "/user.PlayerData/UpdatePlayerState",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlayerDataServer).SetPlayerState(ctx, req.(*SetPlayerStateReq))
+		return srv.(PlayerDataServer).UpdatePlayerState(ctx, req.(*UpdatePlayerStateReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -645,16 +727,16 @@ var _PlayerData_serviceDesc = grpc.ServiceDesc{
 			Handler:    _PlayerData_GetPlayerInfo_Handler,
 		},
 		{
-			MethodName: "SetPlayerInfo",
-			Handler:    _PlayerData_SetPlayerInfo_Handler,
+			MethodName: "UpdatePlayerInfo",
+			Handler:    _PlayerData_UpdatePlayerInfo_Handler,
 		},
 		{
 			MethodName: "GetPlayerState",
 			Handler:    _PlayerData_GetPlayerState_Handler,
 		},
 		{
-			MethodName: "SetPlayerState",
-			Handler:    _PlayerData_SetPlayerState_Handler,
+			MethodName: "UpdatePlayerState",
+			Handler:    _PlayerData_UpdatePlayerState_Handler,
 		},
 		{
 			MethodName: "GetGameListInfo",
@@ -668,43 +750,51 @@ var _PlayerData_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("service.proto", fileDescriptor2) }
 
 var fileDescriptor2 = []byte{
-	// 606 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x55, 0xd1, 0x6e, 0xd3, 0x3c,
-	0x14, 0xfe, 0xd3, 0x76, 0x5d, 0x72, 0xba, 0x75, 0x99, 0xf5, 0xb3, 0x85, 0x4e, 0x88, 0x29, 0x37,
-	0x54, 0xbb, 0x28, 0x30, 0x26, 0x6e, 0xb8, 0x40, 0xdd, 0x56, 0xb2, 0x48, 0x6c, 0xad, 0xe2, 0x4a,
-	0x5c, 0x46, 0x26, 0x36, 0x23, 0xa2, 0x4d, 0x82, 0x93, 0x32, 0xf5, 0x05, 0x78, 0x1b, 0xde, 0x85,
-	0x87, 0xe0, 0x41, 0x90, 0xed, 0xac, 0xa3, 0x69, 0xd2, 0x89, 0xdd, 0x70, 0x17, 0x9f, 0xef, 0x7c,
-	0xdf, 0x39, 0xfe, 0x7c, 0xec, 0xc0, 0x76, 0xca, 0xf8, 0xb7, 0x30, 0x60, 0xbd, 0x84, 0xc7, 0x59,
-	0x8c, 0x1a, 0xb3, 0x94, 0x71, 0xfb, 0x35, 0x3c, 0x72, 0x58, 0x36, 0x9a, 0x90, 0x39, 0xe3, 0xa7,
-	0xf3, 0x7e, 0x10, 0xc4, 0xb3, 0x28, 0xf3, 0xd8, 0x57, 0xf4, 0x04, 0x80, 0xa8, 0x95, 0x1f, 0x52,
-	0x4b, 0x3b, 0xd4, 0xba, 0x0d, 0xcf, 0xc8, 0x23, 0x2e, 0xb5, 0x87, 0xa5, 0xbc, 0x34, 0x41, 0x8f,
-	0x41, 0x67, 0x9c, 0xfb, 0x41, 0x4c, 0x99, 0x64, 0x6d, 0x78, 0x9b, 0x8c, 0xf3, 0xb3, 0x98, 0x32,
-	0x74, 0x00, 0x46, 0x22, 0x09, 0x42, 0xb1, 0x26, 0x15, 0x75, 0x15, 0x70, 0xa9, 0xfd, 0x1c, 0xcc,
-	0x85, 0xa0, 0x1b, 0x7d, 0x8a, 0x45, 0x0f, 0x4b, 0x04, 0xad, 0x40, 0xf8, 0xa9, 0x15, 0x19, 0x0f,
-	0xaf, 0x2e, 0xc0, 0x28, 0x0c, 0xbe, 0xf8, 0x11, 0x99, 0x32, 0xab, 0x7e, 0xa8, 0x75, 0x0d, 0x4f,
-	0x17, 0x81, 0x2b, 0x32, 0x65, 0xc2, 0x8a, 0xcf, 0x8c, 0x50, 0x3f, 0x9c, 0x92, 0x6b, 0x66, 0x35,
-	0x24, 0x6a, 0x88, 0x88, 0x2b, 0x02, 0x08, 0x41, 0x23, 0x88, 0xc3, 0xc8, 0xda, 0x90, 0x9a, 0xf2,
-	0x1b, 0x9d, 0xc0, 0x56, 0x5e, 0x2c, 0xcd, 0x48, 0xc6, 0xac, 0xe6, 0xa1, 0xd6, 0x6d, 0x1f, 0xef,
-	0xf6, 0x84, 0xe7, 0x3d, 0xd5, 0x32, 0x16, 0x80, 0xd7, 0x4a, 0xee, 0x16, 0xf6, 0x77, 0x0d, 0x4c,
-	0x5c, 0x34, 0xe1, 0x1f, 0x6c, 0xc9, 0x1e, 0x14, 0xfb, 0x58, 0x6f, 0xed, 0x1e, 0x34, 0x39, 0x4b,
-	0x67, 0x93, 0x4c, 0x36, 0xa1, 0x7b, 0xf9, 0xca, 0x7e, 0x01, 0xbb, 0x8b, 0x13, 0x52, 0xdb, 0xbd,
-	0xef, 0x50, 0x3f, 0xac, 0x30, 0xd6, 0x57, 0x7e, 0x06, 0x1b, 0xca, 0xe0, 0x5a, 0x95, 0xc1, 0x0a,
-	0xb7, 0x7f, 0x69, 0xb0, 0x8b, 0xff, 0xaa, 0x17, 0xd4, 0x03, 0x23, 0x9e, 0x50, 0xff, 0x1e, 0x7d,
-	0x3d, 0x9e, 0x50, 0xf9, 0x25, 0xf2, 0x23, 0x76, 0x93, 0xe7, 0xd7, 0x2b, 0xf3, 0x23, 0x76, 0xa3,
-	0xf2, 0x5f, 0x42, 0x4b, 0xdc, 0x48, 0xc6, 0xfd, 0x6c, 0x9e, 0xa8, 0x43, 0x68, 0x1f, 0x9b, 0x8a,
-	0x81, 0x25, 0x30, 0x9e, 0x27, 0xcc, 0x83, 0x74, 0xf1, 0x8d, 0x9e, 0x2e, 0x28, 0x84, 0x52, 0x2e,
-	0x27, 0xce, 0xb8, 0x4d, 0xe8, 0x53, 0xca, 0xed, 0x77, 0x2b, 0xbb, 0x7c, 0xd8, 0xc9, 0xfd, 0x0f,
-	0xc8, 0x61, 0x99, 0x43, 0xa6, 0xec, 0x7d, 0x98, 0x66, 0xf9, 0x28, 0xda, 0x17, 0xab, 0xd1, 0xf5,
-	0xf2, 0xfb, 0xb0, 0x79, 0x4d, 0xa6, 0x4c, 0x8d, 0x67, 0xbd, 0xdb, 0xf0, 0x9a, 0x62, 0xe9, 0xd2,
-	0xa3, 0x37, 0xd0, 0xfa, 0xa3, 0x49, 0xd4, 0x82, 0xcd, 0x11, 0xf6, 0xdd, 0x73, 0x77, 0x60, 0xfe,
-	0x87, 0x76, 0xa0, 0x35, 0xc2, 0xfe, 0x65, 0x7f, 0x7c, 0x76, 0xe1, 0x5e, 0x39, 0xa6, 0x86, 0xda,
-	0x00, 0x23, 0xec, 0x3b, 0xfd, 0xcb, 0x81, 0x58, 0xd7, 0x8e, 0x4e, 0x00, 0xee, 0xfc, 0x11, 0x5c,
-	0x3c, 0xf6, 0x9d, 0xfe, 0x58, 0x70, 0xb7, 0x40, 0xc7, 0x63, 0xc5, 0x35, 0xb5, 0x1c, 0xf2, 0x86,
-	0xc3, 0x4b, 0xb3, 0x76, 0xfc, 0xa3, 0x0e, 0xa0, 0x6a, 0x9e, 0x93, 0x8c, 0xa0, 0x2b, 0xb9, 0x97,
-	0xc2, 0x03, 0x86, 0x0e, 0x94, 0xfd, 0xa5, 0x4f, 0x62, 0xa7, 0x1a, 0x4c, 0x13, 0xf4, 0x16, 0xb6,
-	0x97, 0x5e, 0x23, 0xb4, 0x57, 0xc8, 0xce, 0x4d, 0xec, 0x94, 0xc6, 0x95, 0x00, 0x2e, 0x13, 0xc0,
-	0x15, 0x02, 0x2b, 0x17, 0xf4, 0x14, 0xda, 0xcb, 0x77, 0x07, 0xed, 0x17, 0x4a, 0xdd, 0xce, 0x7d,
-	0xa7, 0x1c, 0x50, 0x1a, 0xb8, 0x54, 0x03, 0x57, 0x69, 0xac, 0x8e, 0xdb, 0x00, 0x76, 0x0a, 0x53,
-	0x82, 0xac, 0x45, 0xbd, 0xc2, 0x48, 0x75, 0x2a, 0x90, 0x34, 0xf9, 0xd8, 0x94, 0xbf, 0xa9, 0x57,
-	0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0xe4, 0xd6, 0xf0, 0x98, 0xb7, 0x06, 0x00, 0x00,
+	// 736 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xc6, 0xf9, 0x75, 0x26, 0x34, 0x4d, 0x97, 0xd2, 0xba, 0xa9, 0x50, 0x2b, 0x5f, 0xa8, 0x8a,
+	0x14, 0x20, 0x20, 0x2e, 0x1c, 0x50, 0xfa, 0xa3, 0xd4, 0x82, 0xb6, 0x51, 0x1c, 0xc4, 0x05, 0xc9,
+	0xda, 0xc6, 0xd3, 0x36, 0xc2, 0xb1, 0x97, 0x5d, 0xb7, 0x51, 0xae, 0xbc, 0x18, 0xe2, 0x69, 0x78,
+	0x05, 0x8e, 0x68, 0x77, 0x9d, 0xb4, 0x71, 0x92, 0x16, 0xf5, 0xc0, 0xcd, 0xf3, 0x7d, 0xf3, 0xcd,
+	0xec, 0xec, 0xcc, 0x8e, 0x61, 0x49, 0x20, 0xbf, 0xee, 0xf7, 0xb0, 0xce, 0x78, 0x14, 0x47, 0x24,
+	0x77, 0x25, 0x90, 0xdb, 0xef, 0xe0, 0x69, 0x0b, 0xe3, 0x76, 0x40, 0x47, 0xc8, 0xf7, 0x46, 0xcd,
+	0x5e, 0x2f, 0xba, 0x0a, 0xe3, 0x0e, 0x7e, 0x27, 0xcf, 0x00, 0xa8, 0xb6, 0xbc, 0xbe, 0x6f, 0x19,
+	0xdb, 0xc6, 0x4e, 0xae, 0x53, 0x4a, 0x10, 0xc7, 0xb7, 0x4f, 0xe7, 0xea, 0x04, 0x23, 0x1b, 0x60,
+	0x22, 0xe7, 0x5e, 0x2f, 0xf2, 0x51, 0xa9, 0xf2, 0x9d, 0x22, 0x72, 0xbe, 0x1f, 0xf9, 0x48, 0x36,
+	0xa1, 0xc4, 0x94, 0x40, 0x46, 0xcc, 0xa8, 0x88, 0xa6, 0x06, 0x1c, 0xdf, 0x7e, 0x09, 0xd5, 0x49,
+	0x40, 0x27, 0x3c, 0x8f, 0xe4, 0x19, 0xa6, 0x04, 0x46, 0x4a, 0xf0, 0xcb, 0x48, 0x2b, 0x1e, 0x9e,
+	0x5d, 0x92, 0x61, 0xbf, 0xf7, 0xcd, 0x0b, 0xe9, 0x00, 0xad, 0xec, 0xb6, 0xb1, 0x53, 0xea, 0x98,
+	0x12, 0x38, 0xa1, 0x03, 0x24, 0x6b, 0x50, 0xa0, 0xd7, 0x34, 0xa6, 0xdc, 0xca, 0x29, 0x26, 0xb1,
+	0x24, 0x7e, 0x81, 0xa1, 0x8f, 0xdc, 0xca, 0xab, 0x70, 0x89, 0x45, 0x08, 0xe4, 0x54, 0x9c, 0x82,
+	0xf2, 0x56, 0xdf, 0x64, 0x15, 0xf2, 0xec, 0x32, 0x0a, 0xd1, 0x2a, 0x2a, 0x50, 0x1b, 0xf6, 0x0f,
+	0x03, 0x9e, 0x7c, 0x66, 0x3e, 0x8d, 0x71, 0xba, 0xf0, 0xff, 0x59, 0x86, 0x7d, 0x34, 0xe7, 0x0c,
+	0x77, 0x5f, 0xe5, 0x1a, 0x14, 0x38, 0x8a, 0xab, 0x20, 0x56, 0x07, 0x30, 0x3b, 0x89, 0x65, 0xbf,
+	0x82, 0x95, 0x49, 0x47, 0xdc, 0x98, 0xc6, 0x78, 0x6f, 0x13, 0xbf, 0xcc, 0x28, 0xee, 0xce, 0xfc,
+	0x1c, 0xf2, 0x42, 0xba, 0xa9, 0xc4, 0x95, 0xc6, 0x4a, 0x5d, 0x0e, 0x71, 0xfd, 0xb6, 0x5e, 0xf3,
+	0xf6, 0x6f, 0x03, 0x56, 0x6f, 0x57, 0xf5, 0x4f, 0xc7, 0x21, 0x75, 0x28, 0x45, 0x81, 0xef, 0xdd,
+	0x93, 0xc2, 0x8c, 0x02, 0x5f, 0x7d, 0x49, 0xff, 0x10, 0x87, 0x89, 0x7f, 0x76, 0xa1, 0x7f, 0x88,
+	0x43, 0xed, 0xff, 0x1a, 0xca, 0xf2, 0x11, 0x22, 0xf7, 0xe2, 0x11, 0x43, 0xd5, 0x87, 0x4a, 0xa3,
+	0xaa, 0x15, 0xae, 0x22, 0xba, 0x23, 0x86, 0x1d, 0x10, 0x93, 0x6f, 0xb2, 0x35, 0x91, 0x50, 0xdf,
+	0xd7, 0x93, 0x56, 0x1a, 0x3b, 0x34, 0x7d, 0x9f, 0xdb, 0xce, 0xbc, 0x42, 0x1f, 0xd6, 0xbf, 0x55,
+	0x20, 0x2d, 0x8c, 0x5b, 0x74, 0x80, 0x9f, 0xfa, 0x22, 0x4e, 0x86, 0xd1, 0xfe, 0x63, 0x80, 0x29,
+	0x31, 0x69, 0x93, 0x75, 0x28, 0x5e, 0xd0, 0x01, 0xde, 0x5c, 0x5e, 0x41, 0x9a, 0x7a, 0xf4, 0x14,
+	0xa1, 0x46, 0x2f, 0xa3, 0x47, 0x4f, 0x02, 0x6a, 0xf4, 0xc6, 0xa4, 0xaa, 0x3a, 0xab, 0x2f, 0x5d,
+	0x02, 0xaa, 0xc2, 0x0d, 0x30, 0x03, 0xbc, 0xc6, 0x40, 0xc6, 0xcc, 0x29, 0xae, 0xa8, 0x6c, 0xc7,
+	0x97, 0xc5, 0x9f, 0x51, 0x81, 0x9e, 0xe8, 0x45, 0x1c, 0x45, 0xf2, 0xcc, 0x40, 0x42, 0xae, 0x42,
+	0xe4, 0x96, 0x0a, 0xa2, 0xe1, 0x98, 0x2f, 0xe8, 0x2d, 0x15, 0x44, 0xc3, 0x84, 0xde, 0x82, 0xf2,
+	0x65, 0xff, 0xe2, 0x72, 0xcc, 0x17, 0xb5, 0x5e, 0x42, 0xd3, 0x7a, 0x86, 0x11, 0x0b, 0xd0, 0x32,
+	0x27, 0xfa, 0xb6, 0x02, 0xec, 0xaf, 0xb3, 0x17, 0x72, 0xf7, 0xcd, 0xbe, 0x48, 0x0a, 0xed, 0x87,
+	0xe7, 0x91, 0x95, 0xd9, 0xce, 0xee, 0x94, 0x1b, 0x15, 0xdd, 0xde, 0xf1, 0x0d, 0xea, 0xc2, 0xe5,
+	0xd7, 0xee, 0x7b, 0x28, 0xdf, 0xea, 0x19, 0x29, 0x43, 0xb1, 0xed, 0x7a, 0xce, 0x81, 0x73, 0x58,
+	0x7d, 0x44, 0x96, 0xa1, 0xdc, 0x76, 0xbd, 0xe3, 0x66, 0x77, 0xff, 0xc8, 0x39, 0x69, 0x55, 0x0d,
+	0x52, 0x01, 0x68, 0xbb, 0x5e, 0xab, 0x79, 0x7c, 0x28, 0xed, 0xcc, 0xee, 0x5b, 0x80, 0x9b, 0x89,
+	0x91, 0x5a, 0xb7, 0xeb, 0xb5, 0x9a, 0x5d, 0xa9, 0x7d, 0x0c, 0xa6, 0xdb, 0xd5, 0xda, 0xaa, 0x91,
+	0x50, 0x9d, 0xd3, 0xd3, 0xe3, 0x6a, 0xa6, 0xf1, 0x33, 0x0b, 0xa0, 0x73, 0x1e, 0xd0, 0x98, 0x92,
+	0x13, 0x55, 0x5f, 0x6a, 0x8b, 0x93, 0xcd, 0xe4, 0xc4, 0xf3, 0xfe, 0x0b, 0xb5, 0xc5, 0xa4, 0x60,
+	0xe4, 0x03, 0x2c, 0x4d, 0xad, 0x64, 0xb2, 0x96, 0xf2, 0x4e, 0x66, 0xaa, 0x36, 0x17, 0x17, 0x8c,
+	0x1c, 0x41, 0x35, 0xbd, 0x8b, 0xc8, 0x86, 0xf6, 0x9d, 0xb3, 0x27, 0x6b, 0x8b, 0x28, 0xc1, 0xc8,
+	0x1e, 0x54, 0xa6, 0x37, 0x0b, 0x59, 0x4f, 0xe5, 0x1c, 0xaf, 0x84, 0xda, 0x7c, 0x42, 0x30, 0xf2,
+	0x11, 0x56, 0x66, 0x9e, 0x16, 0xa9, 0xcd, 0xe6, 0x9c, 0x44, 0x5a, 0xc8, 0x09, 0x46, 0x0e, 0x61,
+	0x39, 0x35, 0x4b, 0xc4, 0x9a, 0x24, 0x4e, 0xbd, 0xb9, 0xda, 0x02, 0x46, 0xb0, 0xb3, 0x82, 0xfa,
+	0x7b, 0xbf, 0xf9, 0x1b, 0x00, 0x00, 0xff, 0xff, 0xc0, 0x2f, 0x20, 0x18, 0xce, 0x07, 0x00, 0x00,
 }

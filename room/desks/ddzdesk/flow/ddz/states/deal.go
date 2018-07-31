@@ -39,7 +39,7 @@ func (s *dealState) OnEnter(m machine.Machine) {
 			CallPlayerId: &context.CallPlayerId,
 		})
 	}
-	context.Dipai = wallCards[51:]
+	context.WallCards = wallCards[51:]
 	delay := StageTime[room.DDZStage_DDZ_STAGE_DEAL]
 	duration := time.Second * time.Duration(delay)
 	setMachineAutoEvent(m, machine.Event{EventID: int(ddz.EventID_event_deal_finish), EventData: nil}, duration)

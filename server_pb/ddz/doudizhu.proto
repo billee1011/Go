@@ -63,4 +63,5 @@ message DDZContext {
     repeated uint64 count_down_players = 25;//倒计时玩家，加倍阶段为多个，抢地主、行牌为单个。
     bytes startTime = 26;           //开始倒计时时间
     uint32 duration = 27;           //倒计时时间
+    repeated uint32 wall_cards = 28;//避免断线重连提前泄漏底牌
 }

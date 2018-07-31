@@ -21,12 +21,14 @@ func NewService() service.Service {
 func (c *hallCore) Init(e *structs.Exposer, param ...string) error {
 	entry := logrus.WithField("name", "hallCore.Init")
 
-	c.e = e
-	if err := registerHandles(e.Exchanger); err != nil {
-		entry.WithError(err).Error("注册消息处理器失败")
+	// 注册当前模块RPC服务处理器
+	if err := e.RPCServer.RegisterService(user.RegisterPlayerDataServer, localuser.PlayerDataService{}); err != nil {
+		entry.WithError(err).Error("注册RPC服务处理器失败")
 		return err
 	}
-	e.RPCServer.RegisterService(user.RegisterPlayerDataServer, localuser.DefaultObject)
+
+	entry.Debugf("server init succeed ...")
+
 	return nil
 }
 

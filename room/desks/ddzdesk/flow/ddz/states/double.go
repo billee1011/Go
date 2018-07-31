@@ -38,8 +38,8 @@ func (s *doubleState) OnEvent(m machine.Machine, event machine.Event) (int, erro
 	playerID := message.GetHead().GetPlayerId()
 	isDouble := message.IsDouble
 
-	logEntry := logrus.WithFields(logrus.Fields{"playerID": playerID, "double": isDouble})
-	if !isValidPlayer(context, playerID) {
+	logEntry := logrus.WithFields(logrus.Fields{"playerId": playerID, "double": isDouble})
+	if !IsValidPlayer(context, playerID) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_double), global.ErrInvalidRequestPlayer
 	}

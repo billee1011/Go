@@ -49,11 +49,11 @@ create table t_player
   comment '性别：1.女，2.男',
   avatar       varchar(256)           null
   comment '头像',
-  provinceID   int                    null
+  provinceID   int                    null 
   comment '省ID',
   cityID       int                    null
   comment '市ID',
-  name         varchar(64)            null,
+  name         varchar(64)            null,  
   phone        varchar(11)            null,
   idCard       varchar(20)            null,
   isWhiteList  tinyint(1) default '0' null

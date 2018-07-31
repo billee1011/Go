@@ -1,24 +1,59 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
 	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/gutils"
 	"steve/server_pb/user"
+	"strings"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/spf13/viper" 
+	"github.com/spf13/viper"
 )
 
+// idAllocObject id分配
 var idAllocObject *gutils.Node
 
+// redis 过期时间
+var redisTimeOut = time.Hour * 24 * 30
+
+// 玩家基本信息列表
+var playerInfoList = map[int32]string{
+	1: "nickname",
+	2: "avatar",
+	3: "gender",
+	4: "name",
+	5: "phone",
+}
+
+// gameconfigList 游戏配置
+var gameconfigList = map[int16]string{
+	1: "gameID",
+	2: "name",
+	3: "type",
+}
+
+// gameconfigList 类型配置
+var gameLevelconfigList = map[int16]string{
+	1: "levelID",
+	2: "baseScores",
+	3: "lowScores",
+	4: "highScores",
+	5: "minPeople",
+	6: "maxPeople",
+	7: "status",
+}
+
 const (
-	playerRedisName         = "player"
-	playerMysqlName         = "player"
-	playerTableName         = "t_player"
-	playerCurrencyTableName = "t_player_currency"
+	playerRedisName          = "player"
+	playerMysqlName          = "player"
+	playerTableName          = "t_player"
+	playerCurrencyTableName  = "t_player_currency"
+	gameconfigTableName      = "t_game_config"
+	gamelevelconfigTableName = "t_game_level_config"
 )
 
 // GetPlayerIDByAccountID 根据账号 ID 获取其关联的玩家 ID
@@ -40,7 +75,6 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	}
 	exist, err = engine.Table(playerTableName).Select("playerID").Where(where).Get(&dbPlayerID)
 	if err != nil {
-		fmt.Println(err.Error())
 		err = fmt.Errorf("mysql 操作失败： %v", err)
 		return
 	}
@@ -56,87 +90,88 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	return
 }
 
-// GetPlayerInfoByPlayerID 根据玩家id获取玩家的基本信息
-func GetPlayerInfoByPlayerID(playerID uint64) (cp cache.HallPlayer, err error) {
-	cp, err = cache.HallPlayer{}, nil
+// GetPlayerInfo 根据玩家id获取玩家的基本信息
+func GetPlayerInfo(playerID uint64) (info map[string]string, err error) {
+	info, err = map[string]string{}, nil
 
-	redisKey := cache.FmtPlayerKey(playerID) 
-	pInfokeys := GetPlayerInfoFields()
-	playerInfo := make(map[string]interface{}, 0)
-
-	playerInfo, err = hmGetRedisFields(playerRedisName, redisKey, pInfokeys...)
+	info, err = loadPlayerInfoFromRedis(playerID, playerRedisName)
 	if err == nil {
-		cp.NickName = playerInfo[cache.NickNameField].(string)
-		cp.HeadImage = playerInfo[cache.HeadImageField].(string)
-		cp.Coin = playerInfo[cache.CoinField].(uint64) 
 		return
 	}
 	engine, err := mysqlEngineGetter(playerMysqlName)
 	if err != nil {
 		return
 	}
-	where := fmt.Sprintf("playerID=%d", playerID)
-	var dbPlayer struct {
-		NickName  string `xorm:"nickname"`
-		HeadImage string `xorm:"avatar"`
+	strCol := ""
+	for _, col := range playerInfoList {
+		if len(strCol) > 0 {
+			strCol += ","
+		}
+		strCol += col
 	}
-	err = engine.Table(playerTableName).Select("nickname,avatar").Where(where).Find(&dbPlayer)
+
+	sql := fmt.Sprintf("select %s from t_player  where playerID='%d';", strCol, playerID)
+	res, err := engine.QueryString(sql)
 	if err != nil {
 		err = fmt.Errorf("mysql 操作失败： %v", err)
 		return
 	}
-	cp.NickName = dbPlayer.NickName
-	cp.HeadImage = dbPlayer.HeadImage
-
-	redisFields := map[string]interface{}{
-		cache.NickNameField:  cp.NickName,
-		cache.HeadImageField: cp.HeadImage,
+	if len(res) != 1 {
+		err = fmt.Errorf("玩家存在多条信息记录： %v", err)
+		return
 	}
-	if err := hmSetRedisVal(playerRedisName, redisKey, redisFields); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"key":    redisKey,
-			"fields": redisFields,
-			"val":    playerID,
-		}).Warningln("设置 redis 失败")
+	info = res[0]
+
+	if err = SavePlayerInfoToRedis(playerID, res[0], playerRedisName); err != nil {
+		err = fmt.Errorf("get playerInfo save redis失败： %v", err)
 	}
 	return
 }
 
-// SetPlayerInfo 设置玩家个人信息
-func SetPlayerInfo(cp cache.HallPlayer) (exist, result bool, err error) {
-	exist, result, err = false, false, nil
+// UpdatePlayerInfo 修改玩家个人信息
+func UpdatePlayerInfo(playerID uint64, nickName, avatar string) (exist, result bool, err error) {
+	entry := logrus.WithFields(logrus.Fields{
+		"opr":      "update_pinfo",
+		"playerID": playerID,
+		"nickName": nickName,
+		"avatar":   avatar,
+	})
+	exist, result, err = true, true, nil
 
-	playerID := cp.PlayerID
-	redisKey := cache.FmtPlayerKey(playerID)
-	pfields := setPlayerInfoFields(cp)
+	rfields := map[string]interface{}{
+		cache.NickNameField: nickName,
+		cache.AvatarField:   avatar,
+	}
 
-	err = hmSetRedisVal(playerRedisName, redisKey, pfields)
 	if err != nil {
 		return
+	}
+	strCol := "playerID="
+	strCol += fmt.Sprintf("'%v'", playerID)
+	for key, field := range rfields {
+		strCol += ","
+		strCol += key
+		strCol += "="
+		strCol += fmt.Sprintf("'%v'", field)
 	}
 	engine, err := mysqlEngineGetter(playerMysqlName)
-	if err != nil {
-		return
+	sql := fmt.Sprintf("update t_player set %s  where playerID=?;", strCol)
+	res, sqlerror := engine.Exec(sql, playerID)
+	if sqlerror != nil {
+		entry.WithError(err).Errorln("update t_player mysql 操作失败")
+		exist, result, err = true, false, sqlerror
 	}
-	where := fmt.Sprintf("playerID=%d", playerID)
-	var id int
-	exist, err = engine.Table(playerTableName).Where(where).Get(&id)
-	if err != nil {
-		err = fmt.Errorf("mysql 操作失败： %v", err)
-		return
+	if aff, aerr := res.RowsAffected(); aff == 0 {
+		entry.WithError(err).Errorln("update t_player playerId:%d 不存在", playerID)
+		exist, result, err = false, false, aerr
 	}
-	if !exist {
-		err = fmt.Errorf("玩家不存在： %v", playerID)
-		return
+
+	list := make(map[string]string, len(rfields))
+	for key, field := range rfields {
+		list[key] = field.(string)
 	}
-	dbPlayer := db.TPlayer{
-		Playerid: int64(cp.PlayerID),
-		Nickname: cp.NickName,
-		Avatar:   cp.HeadImage,
-	}
-	err = UpdatePlayerData(dbPlayer)
-	if err == nil {
-		exist, result, err = true, true, nil
+	if err = SavePlayerInfoToRedis(playerID, list, playerRedisName); err != nil {
+		err = fmt.Errorf("get playerInfo save redis 失败： %v", err)
 	}
 	return
 }
@@ -148,25 +183,25 @@ func GetPlayerState(playerID uint64) (state uint64, err error) {
 		"playerID":  playerID,
 	})
 	state, err = 0, nil
-	redisKey := cache.FmtPlayerKey(playerID)
+	redisKey := cache.FmtPlayerIDKey(playerID)
 	state, err = hgetRedisUint64Val(playerRedisName, redisKey, cache.PlayerStateField)
 	if err == nil {
-		enrty.WithError(err).Warningln("获取游戏状态 失败")
+		enrty.WithError(err).Warningln("get player_state 失败")
 		err = fmt.Errorf("redis 操作失败： %v", err)
 	}
 	return
 }
 
-// SetPlayerState 设置玩家游戏状态
-func SetPlayerState(playerID, oldState, newState uint64, serverType int32, serverAddr string) (result bool, err error) {
-	result, err = false, nil
-	redisKey := cache.FmtPlayerKey(playerID)
+// UpdatePlayerState 修改玩家游戏状态
+func UpdatePlayerState(playerID, oldState, newState uint64, serverType int32, serverAddr string) (result bool, err error) {
+	result, err = true, nil
+	redisKey := cache.FmtPlayerIDKey(playerID)
 
 	currentState, _ := hgetRedisUint64Val(playerRedisName, redisKey, cache.PlayerStateField)
 	if oldState != currentState {
 		return
 	}
-	playerServerField := map[user.ServerType]string{ 
+	playerServerField := map[user.ServerType]string{
 		user.ServerType_ST_GATE:  cache.GateAddrField,
 		user.ServerType_ST_MATCH: cache.MatchAddrField,
 		user.ServerType_ST_ROOM:  cache.RoomAddrField,
@@ -175,20 +210,76 @@ func SetPlayerState(playerID, oldState, newState uint64, serverType int32, serve
 	if playerServerField == "" {
 		return
 	}
-	redisFields := map[string]interface{}{
-		cache.PlayerStateField: newState,
-		playerServerField:      serverType,
-	} 
-	err = hmSetRedisVal(playerRedisName, redisKey, redisFields)
-	if err != nil {
-		err = fmt.Errorf("redis 操作失败： %v", err)
+	list := make(map[string]string, 0)
+	list[cache.PlayerStateField] = string(newState)
+	list[playerServerField] = serverAddr
+
+	if err = SavePlayerInfoToRedis(playerID, list, playerRedisName); err != nil {
+		err = fmt.Errorf("get playerInfo save redis失败： %v", err)
 	}
 	return
 }
 
-// GetGameListInfo 获取游戏列表
-func GetGameListInfo() (gameID []uint64, err error) {
+// GetGameInfoList 获取游戏配置信息
+func GetGameInfoList() (gameInfos []*user.GameInfo, err error) {
+	gameInfos, err = []*user.GameInfo{}, nil
 
+	gameDetails := make([]gameDetail, 0)
+
+	redisKey := cache.FmtGameInfoKey()
+
+	data, err := getRedisByteVal(playerRedisName, redisKey)
+	if data != nil && len(data) != 0 {
+		err = json.Unmarshal(data, &gameDetails)
+		if err == nil {
+			gameInfos = trans2GameInfo(gameDetails)
+			return
+		}
+	}
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return
+	}
+	selectSQL := ""
+	for _, gameconfig := range gameconfigList {
+		selectSQL += gameconfigTableName
+		selectSQL += "."
+		selectSQL += gameconfig
+		selectSQL += ","
+	}
+	selectSQL += gamelevelconfigTableName
+	selectSQL += "."
+	selectSQL += "gameID"
+	for _, gamelevel := range gameLevelconfigList {
+		selectSQL += ","
+		selectSQL += gamelevelconfigTableName
+		selectSQL += "."
+		selectSQL += gamelevel
+	}
+
+	err = engine.Table(gameconfigTableName).Select(selectSQL).
+		Join("INNER", gamelevelconfigTableName, "t_game_config.gameID = t_game_level_config.gameID ").
+		Find(gameDetails)
+
+	if err != nil {
+		err = fmt.Errorf("mysql 操作失败： %v", err)
+		return
+	}
+	if len(gameDetails) == 0 {
+		err = fmt.Errorf("游戏配置数据不存在")
+		return
+	}
+	// 写入redis
+	data, err = json.Marshal(gameDetails)
+	if err != nil {
+		err = fmt.Errorf("写入redis 操作失败： %v", err)
+	}
+	if err := setRedisVal(playerRedisName, redisKey, data, redisTimeOut); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"key": redisKey,
+			"val": gameDetails,
+		}).Warningln("设置 redis 失败")
+	}
 	return
 }
 
@@ -207,6 +298,15 @@ func InitPlayerData(player db.TPlayer) error {
 	if err != nil || affected == 0 {
 		return fmt.Errorf("插入数据失败：%v， affect=%d", err, affected)
 	}
+	list := make(map[string]string, 0)
+	list[cache.NickNameField] = player.Nickname
+	list[cache.AvatarField] = player.Avatar
+	list[cache.GenderField] = string(player.Gender)
+	list[cache.NameField] = player.Name
+
+	if err = SavePlayerInfoToRedis(uint64(player.Playerid), list, playerRedisName); err != nil {
+		err = fmt.Errorf("get playerInfo save redis失败： %v", err)
+	}
 	return nil
 }
 
@@ -223,18 +323,19 @@ func InitPlayerCoin(currency db.TPlayerCurrency) error {
 	return nil
 }
 
-// UpdatePlayerData 更新玩家数据
-func UpdatePlayerData(player db.TPlayer) error {
-	engine, err := mysqlEngineGetter(playerMysqlName)
-	if err != nil {
-		return err
+// InitPlayerState 初始化玩家状态
+func InitPlayerState(playerID int64) (err error) {
+	redisKey := cache.FmtPlayerIDKey(uint64(playerID))
+	redisFields := map[string]interface{}{
+		cache.PlayerStateField: fmt.Sprintf("%d", user.PlayerState_PS_IDIE),
 	}
-	where := fmt.Sprintf("playerID=%d", player.Playerid)
-	affected, err := engine.Table(playerTableName).Where(where).Update(&player)
-	if err != nil || affected == 0 {
-		return fmt.Errorf("更新数据失败：%v， affect=%d", err, affected)
+	if err = hmSetRedisVal(playerRedisName, redisKey, redisFields, redisTimeOut); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"key": redisKey,
+			"val": playerID,
+		}).Warningln("设置 redis 失败")
 	}
-	return nil
+	return
 }
 
 // GetPlayerInfoFields 获取palyerID属性的field值
@@ -243,20 +344,61 @@ func GetPlayerInfoFields() (playerFields []string) {
 	// 昵称
 	playerFields = append(playerFields, cache.NickNameField)
 	// 头像
-	playerFields = append(playerFields, cache.HeadImageField)
+	playerFields = append(playerFields, cache.AvatarField)
 	// 金币
 	playerFields = append(playerFields, cache.CoinField)
 
 	return
 }
 
-// setPlayerInfoFields 设置玩家属性值
-func setPlayerInfoFields(cp cache.HallPlayer) (fields map[string]interface{}) {
-	fields = map[string]interface{}{
-		cache.NickNameField:  cp.NickName,
-		cache.HeadImageField: cp.HeadImage,
+// loadPlayerInfoFromRedis 从redis查找用户信息
+func loadPlayerInfoFromRedis(playerID uint64, redisName string) (map[string]string, error) {
+
+	r, err := redisCliGetter(redisName, 0)
+	if err != nil {
+		return nil, err
 	}
-	return
+
+	redisKey := cache.FmtPlayerIDKey(playerID)
+
+	cmd := r.HGetAll(redisKey)
+	if cmd.Err() != nil {
+		return nil, fmt.Errorf("get redis err:%v", cmd.Err())
+	}
+	m := cmd.Val()
+	if len(m) == 0 {
+		return nil, fmt.Errorf("redis no user: playerID=%d", playerID)
+	}
+	list := make(map[string]string, len(m))
+	for k, v := range m {
+		sp := strings.Split(k, "_")
+		if len(sp) == 2 {
+			k = sp[1]
+		}
+		list[k] = v
+	}
+
+	return list, nil
+}
+
+// SavePlayerInfoToRedis 玩家信息保存到redis
+func SavePlayerInfoToRedis(playerID uint64, pinfo map[string]string, redisName string) error {
+	r, err := redisCliGetter(redisName, 0)
+	if err != nil {
+		return err
+	}
+
+	redisKey := cache.FmtPlayerIDKey(playerID)
+	list := make(map[string]interface{}, len(pinfo))
+	for k, v := range pinfo {
+		list[k] = v
+	}
+	cmd := r.HMSet(redisKey, list)
+	if cmd.Err() != nil {
+		return fmt.Errorf("set redis err:%v", cmd.Err())
+	}
+	r.Expire(redisKey, redisTimeOut)
+	return nil
 }
 
 func init() {
