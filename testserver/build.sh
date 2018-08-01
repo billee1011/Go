@@ -3,26 +3,18 @@
 # packet name
 NAME=testserver
 
-mkdir ../bin/$NAME
-mkdir ./bin/
+mkdir ../release/$NAME
 echo "begin building..."
 go build  -o ./$NAME.so -buildmode=plugin steve/$NAME
 
 echo "begin copy yml"
-cp  -f ./config.yml ../bin/$NAME/
-cp -f  ./config.yml  ./bin/
+cp  -f ./config.yml ../release/$NAME/
 
 echo "begin copy start.sh, stop.sh"
-cp -f ./start.sh ../bin/$NAME/
-cp -f  ./start.sh  ./bin/
-cp -f ./stop.sh ../bin/$NAME/
-cp -f  ./stop.sh  ./bin/
+cp -f ./start.sh ../release/$NAME/
+cp -f ./stop.sh ../release/$NAME/
 
 echo "begin cp so"
-cp -f  ./$NAME.so ./bin/$NAME.so
-cp -f  ./bin/$NAME.so ../bin/$NAME/
+cp -f  ./$NAME.so ../release/$NAME/
 
 echo "end  build..."
-
-
-
