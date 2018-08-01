@@ -14,27 +14,27 @@ popd
 
 
 pushd gateway
-./build.sh
+sh ./build.sh
 popd
 
 pushd match
-./build.sh
+sh ./build.sh
 popd
 
 pushd login
-./build.sh
+sh ./build.sh
 popd
 
 pushd hall
-./build.sh
+sh ./build.sh
 popd
 
 pushd robot
-./build.sh
+sh ./build.sh
 popd
 
 
-./simulate/packtests.sh 
+sh ./simulate/packtests.sh
 
 
 if [ "$1"="pack" ];then  
