@@ -67,7 +67,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 	// 最终判定空闲状态，开始处理
 
 	// 分发该游戏，该场次的匹配请求通道
-	errString := matchMgr.dispatchMatchReq(playerID, int32(gameID), levelID)
+	errString := matchMgr.dispatchMatchReq(playerID, uint32(gameID), levelID)
 
 	// 处理过程有错，回复客户端，且服务器报错
 	if errString != "" {
@@ -117,7 +117,7 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 	}}
 
 	// 添加该匹配玩家（续局请求）
-	matchMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
+	//matchMgr.addContinueApply(playerID, req.GetCancel(), int(req.GetGameId()))
 
 	return
 }
@@ -146,7 +146,7 @@ func AddContinueDesk(request *server_pb_match.AddContinueDeskReq) *server_pb_mat
 	}
 
 	// 添加该续局牌桌
-	matchMgr.addContinueDesk(players, int(request.GetGameId()), request.GetFixBanker(), int(request.GetBankerSeat()))
+	//matchMgr.addContinueDesk(players, int(request.GetGameId()), request.GetFixBanker(), int(request.GetBankerSeat()))
 
 	return response
 }

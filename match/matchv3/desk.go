@@ -10,20 +10,21 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// UInt32ToIP 整形IP地址转为字符串型IP
-func UInt32ToIP(intIP uint32) net.IP {
+// IPUInt32ToString 整形IP地址转为字符串型IP
+func IPUInt32ToString(intIP uint32) string {
 	var bytes [4]byte
 	bytes[0] = byte(intIP & 0xFF)
 	bytes[1] = byte((intIP >> 8) & 0xFF)
 	bytes[2] = byte((intIP >> 16) & 0xFF)
 	bytes[3] = byte((intIP >> 24) & 0xFF)
 
-	return net.IPv4(bytes[3], bytes[2], bytes[1], bytes[0])
+	return net.IPv4(bytes[3], bytes[2], bytes[1], bytes[0]).String()
 }
 
-// IPToUInt32 字符串型IP转为uint32型
-func IPToUInt32(ipnr net.IP) uint32 {
-	bits := strings.Split(ipnr.String(), ".")
+// IPStringToUInt32 字符串型IP转为uint32型
+func IPStringToUInt32(ipStr string) uint32 {
+	logrus.Debugln("进入函数，ipStr = ", ipStr)
+	bits := strings.Split(ipStr, ".")
 
 	b0, _ := strconv.Atoi(bits[0])
 	b1, _ := strconv.Atoi(bits[1])
@@ -37,6 +38,7 @@ func IPToUInt32(ipnr net.IP) uint32 {
 	sum += uint32(b2) << 8
 	sum += uint32(b3)
 
+	logrus.Debugln("离开函数，sum = ", sum)
 	return sum
 }
 
@@ -63,10 +65,10 @@ type matchPlayer struct {
 
 // matchPlayer转为字符串
 func (pPlayer *matchPlayer) String() string {
-	return fmt.Sprintf("player_id: %v, robot_level:%v, seat:%v, IP:%v", pPlayer.playerID, pPlayer.robotLv, pPlayer.seat, UInt32ToIP(pPlayer.IP))
+	return fmt.Sprintf("player_id: %v, robot_level:%v, seat:%v, IP:%v", pPlayer.playerID, pPlayer.robotLv, pPlayer.seat, IPUInt32ToString(pPlayer.IP))
 }
 
-// desk 匹配中的牌桌
+/* // desk 匹配中的牌桌
 type desk struct {
 	gameID              int                   // 游戏ID
 	deskID              uint64                // 桌子唯一ID
@@ -83,16 +85,17 @@ type desk struct {
 func (d *desk) String() string {
 	return fmt.Sprintf("game_id: %d player:%v desk_id:%d continue:%v fixBanker:%v bankerSeat:%v",
 		d.gameID, d.players, d.deskID, d.isContinue, d.fixBanker, d.bankerSeat)
-}
+} */
 
 // matchDesk 匹配中的牌桌
 type matchDesk struct {
-	gameID          int32         // 游戏ID
-	levelID         int32         // 场次ID
-	gold            uint64        // 桌子的金币（也是第一个玩家的金币数）
+	deskID          uint64        // 桌子唯一ID
+	gameID          uint32        // 游戏ID
+	levelID         uint32        // 场次ID
+	gold            int64         // 桌子的金币（也是第一个玩家的金币数）
 	needPlayerCount uint8         // 满桌需要的玩家数量
 	players         []matchPlayer // 桌子中的所有玩家
-	createTime      time.Time     // 桌子创建时间
+	createTime      int64         // 桌子创建时间(单位：秒)
 }
 
 // matchDesk转为字符串
@@ -101,7 +104,7 @@ func (pDesk *matchDesk) String() string {
 		pDesk.gameID, pDesk.levelID, pDesk.gold, pDesk.needPlayerCount, pDesk.players, pDesk.createTime)
 }
 
-// createDesk 创建一个新牌桌
+/* // createDesk 创建一个新牌桌
 // gameID 	:	游戏ID
 // deskID	:	桌子唯一ID
 func createDesk(gameID int, deskID uint64) *desk {
@@ -116,16 +119,18 @@ func createDesk(gameID int, deskID uint64) *desk {
 		deskID:     deskID,
 		createTime: time.Now(),
 	}
-}
+} */
 
 // createMatchDesk 创建一个新的匹配桌子
+// deskID			: 桌子ID
 // gameID 			: 游戏ID
 // levelID 			: 级别ID
 // needPlayerCount 	: 满桌需要的玩家数量
 // gold				: 金币(第一个玩家的金币数)
-func createMatchDesk(gameID int32, levelID int32, needPlayerCount uint8, gold uint64) *matchDesk {
+func createMatchDesk(deskID uint64, gameID uint32, levelID uint32, needPlayerCount uint8, gold int64) *matchDesk {
 	logrus.WithFields(logrus.Fields{
 		"func_name":       "createMatchDesk",
+		"deskID":          deskID,
 		"gameID":          gameID,
 		"levelID":         levelID,
 		"needPlayerCount": needPlayerCount,
@@ -136,11 +141,11 @@ func createMatchDesk(gameID int32, levelID int32, needPlayerCount uint8, gold ui
 		gold:            gold,
 		needPlayerCount: needPlayerCount,
 		players:         make([]matchPlayer, 0, needPlayerCount),
-		createTime:      time.Now(),
+		createTime:      time.Now().Unix(),
 	}
 }
 
-// createContinueDesk 创建续局牌桌
+/* // createContinueDesk 创建续局牌桌
 // gameID		:	游戏ID
 // deskID		:	桌子唯一ID
 // players		:	等待的所有玩家
@@ -164,4 +169,4 @@ func createContinueDesk(gameID int, deskID uint64, players []deskPlayer, fixBank
 		fixBanker:           fixBanker,
 		bankerSeat:          bankerSeat,
 	}
-}
+} */

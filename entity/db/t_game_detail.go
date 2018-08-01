@@ -5,7 +5,7 @@ import (
 )
 
 type TGameDetail struct {
-	Detailid   string    `xorm:"not null pk VARCHAR(64)"`
+	Sumaryid   int64     `xorm:"not null pk BIGINT(20)"`
 	Playerid   int64     `xorm:"not null BIGINT(20)"`
 	Deskid     int       `xorm:"INT(11)"`
 	Gameid     int       `xorm:"INT(11)"`
