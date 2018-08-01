@@ -20,6 +20,9 @@ cp login/config.yml configs/login/config.yml
 go build -o bin/hall/hall.so -o hall/hall.so -buildmode=plugin steve/hall 
 cp hall/config.yml configs/hall/config.yml 
 
+go build -o bin/robot/robot.so -o robot/robot.so -buildmode=plugin steve/robot 
+cp robot/config.yml configs/robot/config.yml 
+
 ./simulate/packtests.sh 
 
 
