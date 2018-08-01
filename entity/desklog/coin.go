@@ -4,18 +4,18 @@ import "time"
 
 // TGameSummary 游戏记录汇总
 type TGameSummary struct {
-	Sumaryid      int64     `json:"	Sumaryid "`
-	Deskid        int64     `json:"	Deskid "`
-	Gameid        int       `json:"	Gameid        "`
-	Levelid       int       `json:"	Levelid       "`
-	Playerids     string    `json:"	Playerids    "`
-	Scoreinfo     string    `json:" Scoreinfo    "`
-	Winnerids     string    `json:"	Winnerids    "`
-	Roundcurrency string    `json:"	Roundcurrency"`
-	Createtime    time.Time `json:"	Createtime    "`
-	Createby      string    `json:"	Createby      "`
-	Updatetime    time.Time `json:"	Updatetime    "`
-	Updateby      string    `json:"	Updateby      "`
+	Sumaryid      int64           `json:"	Sumaryid "`
+	Deskid        int64           `json:"	Deskid "`
+	Gameid        int             `json:"	Gameid        "`
+	Levelid       int             `json:"	Levelid       "`
+	Playerids     []uint64        `json:"	Playerids    "`
+	Scoreinfo     []int64         `json:" Scoreinfo    "`
+	Winnerids     []uint64        `json:"	Winnerids    "`
+	Roundcurrency []RoundCurrency `json:"	Roundcurrency"`
+	Createtime    time.Time       `json:"	Createtime    "`
+	Createby      string          `json:"	Createby      "`
+	Updatetime    time.Time       `json:"	Updatetime    "`
+	Updateby      string          `json:"	Updateby      "`
 }
 
 // TGameDetail 游戏明细
