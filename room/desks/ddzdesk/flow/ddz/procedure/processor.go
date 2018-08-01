@@ -227,8 +227,7 @@ func dealResumeRequest(param *Params, machine *ddzmachine.DDZMachine, ddzContext
 		playersInfo = append(playersInfo, &ddzPlayerInfo)
 
 		// 开始时间
-		startTime := time.Time{}
-		startTime.UnmarshalBinary(ddzContext.StartTime)
+		startTime := ddzContext.StartTime
 		logrus.Debugf("startTime = %v", startTime)
 
 		// 限制时间

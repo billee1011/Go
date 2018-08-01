@@ -13,8 +13,7 @@ create table t_game_config
   createBy   varchar(64)  null,
   updateTime datetime     null,
   updateBy   varchar(64)  null
-)
-  comment '游戏配置表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '游戏配置表';           
 
 
 
@@ -36,7 +35,6 @@ create table t_game_level_config
   createBy   varchar(64)  null,
   updateTime datetime     null,
   updateBy   varchar(64)  null
-)
-  comment '游戏场次配置表';
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '游戏场次配置表';
 
 
