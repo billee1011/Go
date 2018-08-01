@@ -14,14 +14,24 @@ var configs = struct {
 	continueRobotTime     time.Duration // 续局牌桌机器人决策时间
 	robotContinueRateWin  float32       // 机器人胜利时续局概率
 	robotContinueRateLoss float32       // 机器人失败时续局概率
-	sameDeskLimitTime     time.Duration // 同桌限制时间
+	sameDeskLimitTime     uint32        // 同桌限制时间，单位：秒，超过这个时间，匹配时不再限制同桌
+	defaulWintRate        int8          // 玩家默认胜率，玩家游戏局数低于最低游戏局数时，采用此值
+	minGameTimes          uint32        // 最低游戏局数，玩家局数低于此值，采用此值
+	winRateCompuBase      float32       // 计算公式的基础胜率(百分比，例如：0.02表2%)
+	goldCompuBase         float32       // 计算公式的基础金币(百分比，例如：0.02表2%)
+	maxCompuValidTime     uint32        // 计算公式的最大有效时间(单位：秒，超过此值时匹配正无穷)
 }{
 	robotJoinTime:         20 * time.Second,
 	continueDismissTime:   20 * time.Second,
 	continueRobotTime:     3 * time.Second,
 	robotContinueRateWin:  0.9,
 	robotContinueRateLoss: 0.7,
-	sameDeskLimitTime:     60 * time.Second,
+	sameDeskLimitTime:     60,
+	defaulWintRate:        50,
+	minGameTimes:          50,
+	winRateCompuBase:      0.02,
+	goldCompuBase:         0.2,
+	maxCompuValidTime:     15,
 }
 
 // GetRobotJoinTime 获取机器人加入匹配的时间
@@ -51,9 +61,33 @@ func GetRobotContinueRate(winner bool) float32 {
 }
 
 // GetSameDeskLimitTime 获取同桌限制时间
-// 超过这个时间，匹配时不再限制同桌
-func GetSameDeskLimitTime() time.Duration {
+func GetSameDeskLimitTime() uint32 {
 	return configs.sameDeskLimitTime
+}
+
+// GetDefaultWinRate 获取玩家默认胜率
+func GetDefaultWinRate() int8 {
+	return configs.defaulWintRate
+}
+
+// GetMinGameTimes 获取最低游戏局数
+func GetMinGameTimes() uint32 {
+	return configs.minGameTimes
+}
+
+// GetWinRateCompuBase 获取计算公式的基础胜率
+func GetWinRateCompuBase() float32 {
+	return configs.winRateCompuBase
+}
+
+// GetGoldCompuBase 获取计算公式的基础金币
+func GetGoldCompuBase() float32 {
+	return configs.goldCompuBase
+}
+
+// GetMaxCompuValidTime 获取计算公式的最大有效时间
+func GetMaxCompuValidTime() uint32 {
+	return configs.maxCompuValidTime
 }
 
 func handleChangeDurationVal(d *time.Duration, min, max time.Duration, w http.ResponseWriter, r *http.Request, formField string) {
