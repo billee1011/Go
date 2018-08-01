@@ -185,6 +185,8 @@ func (model *DDZEventModel) dealResumeRequest(playerID uint64, ddzContext *ddz.D
 	var playersInfo []*room.DDZPlayerInfo
 
 	playerMgr := player.GetPlayerMgr()
+
+	// 把所有的玩家压入playersInfo
 	players := ddzContext.GetPlayers()
 	for index := 0; index < len(players); index++ {
 		player := players[index]
@@ -300,55 +302,57 @@ func (model *DDZEventModel) dealResumeRequest(playerID uint64, ddzContext *ddz.D
 		}
 
 		playersInfo = append(playersInfo, &ddzPlayerInfo)
-
-		// 开始时间
-		startTime := time.Time{}
-		startTime.UnmarshalBinary(ddzContext.StartTime)
-		logrus.Debugf("startTime = %v", startTime)
-
-		// 限制时间
-		duration := time.Second * time.Duration(ddzContext.Duration)
-		logrus.Debugf("duration = %v", duration)
-
-		// 剩余时间
-		leftTime := duration - time.Now().Sub(startTime)
-		logrus.Debugf("leftTime = %v", leftTime)
-
-		if leftTime < 0 {
-			leftTime = 0
-		}
-		leftTimeInt32 := uint32(leftTime.Seconds())
-
-		curStage := room.DDZStage(int32(ddzContext.CurStage))
-		curCardType := room.CardType(ddzContext.GetCurCardType())
-
-		totalGrab := ddzContext.GetTotalGrab()
-		if totalGrab == 0 {
-			totalGrab = 1
-		}
-
-		resumeMsg := &room.DDZResumeGameRsp{
-			Result: &room.Result{ErrCode: proto.Uint32(0), ErrDesc: proto.String("")},
-			GameInfo: &room.DDZDeskInfo{
-				Players: playersInfo, // 每个人的信息
-				Stage: &room.NextStage{
-					Stage: &curStage,
-					Time:  proto.Uint32(leftTimeInt32),
-				},
-				CurPlayerId:  proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
-				Dipai:        ddzContext.GetDipai(),
-				TotalGrab:    &totalGrab,
-				TotalDouble:  proto.Uint32(ddzContext.GetTotalDouble()),
-				TotalBomb:    proto.Uint32(ddzContext.GetTotalBomb()),
-				CurCardType:  &curCardType,
-				CurCardPivot: proto.Uint32(ddzContext.GetCardTypePivot()),
-				CurOutCards:  ddzContext.CurOutCards,
-			},
-		}
-		messageModel := GetModelManager().GetMessageModel(model.GetDesk().GetUid())
-		messageModel.BroadCastDeskMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, resumeMsg, false)
-		logrus.WithField("resumeMsg", resumeMsg).WithField("playerId", reqPlayerID).Infoln("斗地主发送恢复对局消息")
 	}
+
+	// 下面压入公共数据
+
+	// 开始时间
+	startTime := time.Time{}
+	startTime.UnmarshalBinary(ddzContext.StartTime)
+	logrus.Debugf("startTime = %v", startTime)
+
+	// 限制时间
+	duration := time.Second * time.Duration(ddzContext.Duration)
+	logrus.Debugf("duration = %v", duration)
+
+	// 剩余时间
+	leftTime := duration - time.Now().Sub(startTime)
+	logrus.Debugf("leftTime = %v", leftTime)
+
+	if leftTime < 0 {
+		leftTime = 0
+	}
+	leftTimeInt32 := uint32(leftTime.Seconds())
+
+	curStage := room.DDZStage(int32(ddzContext.CurStage))
+	curCardType := room.CardType(ddzContext.GetCurCardType())
+
+	totalGrab := ddzContext.GetTotalGrab()
+	if totalGrab == 0 {
+		totalGrab = 1
+	}
+
+	resumeMsg := &room.DDZResumeGameRsp{
+		Result: &room.Result{ErrCode: proto.Uint32(0), ErrDesc: proto.String("")},
+		GameInfo: &room.DDZDeskInfo{
+			Players: playersInfo, // 每个人的信息
+			Stage: &room.NextStage{
+				Stage: &curStage,
+				Time:  proto.Uint32(leftTimeInt32),
+			},
+			CurPlayerId:  proto.Uint64(ddzContext.GetCurrentPlayerId()), // 当前操作的玩家
+			Dipai:        ddzContext.GetDipai(),
+			TotalGrab:    &totalGrab,
+			TotalDouble:  proto.Uint32(ddzContext.GetTotalDouble()),
+			TotalBomb:    proto.Uint32(ddzContext.GetTotalBomb()),
+			CurCardType:  &curCardType,
+			CurCardPivot: proto.Uint32(ddzContext.GetCardTypePivot()),
+			CurOutCards:  ddzContext.CurOutCards,
+		},
+	}
+	messageModel := GetModelManager().GetMessageModel(model.GetDesk().GetUid())
+	messageModel.BroadCastDeskMessage([]uint64{reqPlayerID}, msgid.MsgID_ROOM_DDZ_RESUME_RSP, resumeMsg, false)
+	logrus.WithField("resumeMsg", resumeMsg).WithField("playerId", reqPlayerID).Infoln("斗地主发送恢复对局消息")
 
 	return nil
 }
