@@ -5,4 +5,6 @@ package user;
 enum ErrCode {
     EC_SUCCESS = 0; 
     EC_FAIL = 1;
+    EC_Args = 2;   // 参数不正确
+    EC_EMPTY = 3;  // 数据为空
 }

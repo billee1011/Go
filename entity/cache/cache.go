@@ -21,7 +21,7 @@ const (
 	AccountPlayerKey = "account:player:%v"
 )
 
-// Player 属性字段
+// Player redis字段
 const (
 	// NickNameField ...昵称
 	NickNameField = "nickname"
@@ -34,9 +34,7 @@ const (
 	// PhoneField  ...联系电话
 	PhoneField = "phone"
 	// PlayerStateField ...玩家状态
-	PlayerStateField = "player_state"
-	// CoinField ...金币
-	CoinField = "coin"
+	PlayerStateField = "game_state"
 	// GateAddrField ...网关服地址
 	GateAddrField = "gate_addr"
 	// MatchAddrField ...匹配服地址
@@ -50,17 +48,7 @@ func FmtAccountPlayerKey(accountID uint64) string {
 	return fmt.Sprintf(AccountPlayerKey, accountID)
 }
 
-// FmtPlayerIDKey 玩家ID的 key
+// FmtPlayerIDKey 玩家ID key
 func FmtPlayerIDKey(playerID uint64) string {
 	return fmt.Sprintf("player:%v", playerID)
-}
-
-// FmtGameInfoKey 游戏配置信息的 key
-func FmtGameInfoKey() string {
-	return fmt.Sprintf("game:info")
-}
-
-// FmtPlayerStateKey 玩家State的 key
-func FmtPlayerStateKey(playerID uint64) string {
-	return fmt.Sprintf("playerState:%v", playerID)
 }
