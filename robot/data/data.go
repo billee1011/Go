@@ -12,8 +12,6 @@ const (
 	RobotPlayerIDField string = "playerID"
 	//RobotPlayerCoinField 玩家金币数字段名
 	RobotPlayerCoinField string = "coin"
-	//RobotPlayerStateField 玩家状态字段名
-	RobotPlayerStateField string = "state"
 	//RobotPlayerGameIDWinRate 玩家游戏ID对应的胜率字段名
 	RobotPlayerGameIDWinRate string = "gameidwinrate"
 	//RobotPlayerGameIDField 玩家游戏 ID 字段名
@@ -30,13 +28,13 @@ var Exposer *structs.Exposer
 func InitRobotRedis() {
 	robotMap := make(map[int64]*cache.RobotPlayer)
 	log := logrus.WithFields(logrus.Fields{"func_name": "initRobotRedis"})
-	if err := getMysqlRobotProp(robotMap); err != nil {
+	if err := getMysqlRobotFieldValuedAll(robotMap); err != nil {
 		log.WithError(err).Errorln("初始化从mysql获取机器人失败")
 		return
 	}
 	failedIDErrMpa := make(map[uint64]error) //存入redis 失败 playerID
 	for playerID, robotPlayer := range robotMap {
-		err := AddRobottFiled(uint64(playerID), FmtRobotPlayer(robotPlayer))
+		err := AddRobotWatch(uint64(playerID), FmtRobotPlayer(robotPlayer), RedisTimeOut)
 		if err != nil {
 			failedIDErrMpa[uint64(playerID)] = err
 			continue
