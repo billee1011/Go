@@ -153,8 +153,8 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 		ck = &api.AgentServiceCheck{
 			HTTP:     "http://" + healthAddr + "/status",
 			Interval: "5s", // 检查间隔
-			Timeout:  "2s", // 响应超时时间
-			DeregisterCriticalServiceAfter: "20s", // 注销节点超时时间
+			Timeout:  "3s", // 响应超时时间
+			DeregisterCriticalServiceAfter: "300s", // 注销节点超时时间
 		}
 	}
 
