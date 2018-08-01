@@ -191,9 +191,10 @@ func TestGetPlayerInfo(t *testing.T) {
 
 // TestGetGameInfoList 获取游戏信息
 func TestGetGameInfoList(t *testing.T) {
-	gameInfo, err := GetGameInfoList()
+	gameConfig, gamelevelConfig, err := GetGameInfoList()
 	assert.Nil(t, err)
-	assert.NotNil(t, gameInfo)
+	assert.NotNil(t, gameConfig)
+	assert.NotNil(t, gamelevelConfig)
 }
 
 // TestSetPlayerState 修改玩家状态
@@ -208,7 +209,7 @@ func TestSetPlayerState(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	result, err := UpdatePlayerState(playerID, 0, 1)
+	result, err := UpdatePlayerState(playerID, 0, 1, 1, "127.0.0.1")
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
 }

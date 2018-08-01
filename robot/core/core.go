@@ -30,7 +30,7 @@ func (r *RobotCore) Init(e *structs.Exposer, param ...string) error {
 		return err
 	}
 	data.InitRobotRedis() //从mysql获取到机器人,存到redis
-	entry.Debugf("server init succeed ...")
+	entry.Debugf("RobotCoreserver init succeed ...")
 	return nil
 }
 

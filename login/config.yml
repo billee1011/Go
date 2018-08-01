@@ -20,6 +20,7 @@ consul_addr: 127.0.0.1:8500
 
 rpc_addr: 127.0.0.1
 rpc_port: 36201
+health_port: 36202
 rpc_server_name: login
 
 

@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
 	"steve/common/data/player"
+	"steve/hall/data"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
@@ -30,6 +31,7 @@ func getPlayerState(playerID uint64) (common.PlayerState, int) {
 
 // HandleGetPlayerInfoReq 处理获取玩家信息请求
 func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
+	// 返回消息
 	response := &hall.HallGetPlayerInfoRsp{}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -37,6 +39,7 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 			Body:  response,
 		},
 	}
+
 	response.ErrCode = proto.Uint32(0)
 	response.Coin = proto.Uint64(player.GetPlayerCoin(playerID))
 	response.NickName = proto.String(player.GetPlayerNickName(playerID))
@@ -67,5 +70,33 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 		"player_id": playerID,
 		"response":  response,
 	}).Infoln("获取玩家状态")
+	return
+}
+
+// HandleGetGameInfoReq client-> 获取游戏信息列表请求
+func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetGameListInfoReq) (rspMsg []exchanger.ResponseMsg) {
+	// 返回消息
+	response := &hall.HallGetGameListInfoRsp{
+		ErrCode: proto.Uint32(1),
+	}
+	rspMsg = []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_HALL_GET_PLAYER_INFO_RSP),
+			Body:  response,
+		},
+	}
+
+	// 逻辑处理
+	gameInfos, gameLevelInfos, err := data.GetGameInfoList()
+	if err == nil {
+		response.GameConfig = ServerGameConfig2Client(gameInfos)
+		response.GameLevelConfig = ServerGameLevelConfig2Client(gameLevelInfos)
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"func_name": "HandleGetGameInfoList",
+		"player_id": playerID,
+		"response":  response,
+	}).Infoln("获取游戏配置")
 	return
 }

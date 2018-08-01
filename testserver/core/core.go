@@ -44,7 +44,9 @@ func (c *myCore) dispatchClientMsg(e exchanger.Exchanger) error {
 
 // 服务初始化
 func (c *myCore) Init(e *structs.Exposer, param ...string) error {
-	runtime.GOMAXPROCS(1)
+	if bSingleThread {
+		runtime.GOMAXPROCS(1)
+	}
 	entry := logrus.WithField("name", "goldCore.Init")
 	// 1.[RPC API]注册当前模块RPC服务处理器
 	if pbService != nil {

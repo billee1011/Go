@@ -2,10 +2,9 @@ package data
 
 import (
 	"fmt"
-	"steve/entity/cache"
+	"steve/entity/db"
 	"steve/server_pb/user"
 	"steve/structs"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -62,20 +61,16 @@ func getRedisByteVal(redisName string, key string) ([]byte, error) {
 	return []byte{}, fmt.Errorf("redis 命令执行失败: %v", err)
 }
 
-func getRedisField(redisName string, key string, field string) (uint64, error) {
+func getRedisField(redisName string, key string, field ...string) ([]interface{}, error) {
 	redisCli, err := redisCliGetter(redisName, 0)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	redisCmd := redisCli.HGet(key, field)
-	if redisCmd.Err() == nil {
-		playerID, err := redisCmd.Uint64()
-		if err != nil {
-			return 0, fmt.Errorf("获取 redis 数据失败")
-		}
-		return playerID, nil
+	result, err := redisCli.HMGet(key, field...).Result()
+	if err == nil {
+		return result, nil
 	}
-	return 0, fmt.Errorf("redis 命令执行失败: %v", redisCmd.Err())
+	return nil, fmt.Errorf("redis 命令执行失败: %v", err)
 }
 
 func setRedisVal(redisName string, key string, val interface{}, duration time.Duration) error {
@@ -91,47 +86,58 @@ func setRedisVal(redisName string, key string, val interface{}, duration time.Du
 }
 
 // setRedisWatch 事务
-func setRedisWatch(redisName string, key string, val interface{}, duration time.Duration) error {
+func setRedisWatch(redisName string, key string, fields map[string]string, duration time.Duration) error {
 	redisCli, err := redisCliGetter(redisName, 0)
+
+	list := make(map[string]interface{}, len(fields))
+	for k, v := range fields {
+		list[k] = v
+	}
+
 	err = redisCli.Watch(func(tx *redis.Tx) error {
-		_, err := tx.Get(key).Result()
+		err := tx.HKeys(key).Err()
 		if err != nil && err != redis.Nil {
 			return err
 		}
-
-		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
-			pipe.Set(key, val, duration)
-			return nil
-		})
-		return err
+		cmd := tx.HMSet(key, list)
+		if cmd.Err() != nil {
+			return fmt.Errorf("set redis watch err: %v ", cmd.Err())
+		}
+		redisCli.Expire(key, duration)
+		return nil
 	}, key)
 	return err
 }
 
-func trans2hallPlayer(cp *cache.HallPlayer, info map[string]string) {
-	cp.NickName = info[cache.NickNameField]
-	cp.Avatar = info[cache.AvatarField]
-	gender, _ := strconv.ParseInt(info[cache.GenderField], 10, 16)
-	cp.Gender = uint64(gender)
-	cp.Name = info[cache.NameField]
-	cp.Phone = info[cache.PhoneField]
+func dbGameConfig2serverGameConfig(dbGameConfigs []db.TGameConfig) (gameInfos []*user.GameConfig) {
+	gameInfos = make([]*user.GameConfig, 0)
+	for _, dbGameConfig := range dbGameConfigs {
+		gameInfo := &user.GameConfig{
+			GameId:   uint32(dbGameConfig.Gameid),
+			GameName: dbGameConfig.Name,
+			GameType: uint32(dbGameConfig.Type),
+		}
+
+		gameInfos = append(gameInfos, gameInfo)
+	}
+	return
 }
 
-func transToGameInfo(configs []gameConfigDetail) (gameConfigs []*user.GameConfigInfo) {
-	gameConfigs = make([]*user.GameConfigInfo, 0)
-	for _, config := range configs {
-		gameConfigs = append(gameConfigs, &user.GameConfigInfo{
-			GameId:     uint32(config.TGameConfig.Gameid),
-			GameName:   config.TGameConfig.Name,
-			GameType:   uint32(config.TGameConfig.Type),
-			LevelId:    uint32(config.TGameLevelConfig.Levelid),
-			LevelName:  config.TGameLevelConfig.Name,
-			BaseScores: uint32(config.TGameLevelConfig.Basescores),
-			LowScores:  uint32(config.TGameLevelConfig.Lowscores),
-			HighScores: uint32(config.TGameLevelConfig.Highscores),
-			MinPeople:  uint32(config.TGameLevelConfig.Minpeople),
-			MaxPeople:  uint32(config.TGameLevelConfig.Maxpeople),
-		})
+func dbGamelevelConfig2serverGameConfig(dbGameConfigs []db.TGameLevelConfig) (gamelevelConfigs []*user.GameLevelConfig) {
+	gamelevelConfigs = make([]*user.GameLevelConfig, 0)
+	for _, dbGameConfig := range dbGameConfigs {
+		gamelevelConfig := &user.GameLevelConfig{
+			GameId:     uint32(dbGameConfig.Gameid),
+			LevelId:    uint32(dbGameConfig.Levelid),
+			LevelName:  dbGameConfig.Name,
+			BaseScores: uint32(dbGameConfig.Basescores),
+			LowScores:  uint32(dbGameConfig.Lowscores),
+			HighScores: uint32(dbGameConfig.Highscores),
+			MinPeople:  uint32(dbGameConfig.Minpeople),
+			MaxPeople:  uint32(dbGameConfig.Maxpeople),
+		}
+
+		gamelevelConfigs = append(gamelevelConfigs, gamelevelConfig)
 	}
-	return gameConfigs
+	return
 }
