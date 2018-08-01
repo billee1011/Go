@@ -18,10 +18,10 @@ import (
 
 func getinit() {
 	conf := mysql.Config{
-		User:                 "root",
-		Passwd:               "123456",
+		User:                 "backuser",
+		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
-		Addr:                 "127.0.0.1:3306",
+		Addr:                 "192.168.7.108:3306",
 		DBName:               "steve",
 		Params:               map[string]string{"charset": "utf8"},
 		AllowNativePasswords: true,
@@ -85,8 +85,8 @@ func Test_grpc_clien(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	coinsR := &robot.CoinsRange{
-		High: 1005,
-		Low:  1002,
+		High: 8000,
+		Low:  5000,
 	}
 	winR := &robot.WinRateRange{
 		High: 50,
@@ -98,7 +98,7 @@ func Test_grpc_clien(t *testing.T) {
 	}
 	rsq, err := client.GetRobotPlayerIDByInfo(ctx, req)
 	assert.Nil(t, err)
-	fmt.Println(rsq)
+	fmt.Println(rsq.GetRobotPlayerId())
 }
 
 func Test_grpc_clien2(t *testing.T) {
@@ -111,7 +111,7 @@ func Test_grpc_clien2(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	req := &robot.SetRobotPlayerStateReq{
-		RobotPlayerId: 13,
+		RobotPlayerId: 2000,
 		State:         robot.RobotPlayerState_RPS_MATCHING,
 	}
 	rsq, err := client.SetRobotPlayerState(ctx, req)

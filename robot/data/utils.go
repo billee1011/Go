@@ -2,7 +2,6 @@ package data
 
 import (
 	"encoding/json"
-	"fmt"
 	"steve/entity/cache"
 	"strconv"
 
@@ -27,8 +26,8 @@ func InterToUint64(param interface{}) uint64 {
 //FmtRobotPlayer 格式化RobotPlayer
 func FmtRobotPlayer(robotPlayer *cache.RobotPlayer) map[string]interface{} {
 	robotPlayerMap := make(map[string]interface{})
-	robotPlayerMap[RobotPlayerNickNameField] = fmt.Sprintf("机器人玩家%v", robotPlayer.PlayerID) // 初始化昵称
-	robotPlayerMap[RobotPlayerStateField] = robotPlayer.State                               //默认是空闲
+	robotPlayerMap[RobotPlayerNickNameField] = robotPlayer.NickName // 初始化昵称
+	robotPlayerMap[RobotPlayerStateField] = robotPlayer.State       //默认是空闲
 	robotPlayerMap[RobotPlayerIDField] = robotPlayer.PlayerID
 	robotPlayerMap[RobotPlayerCoinField] = robotPlayer.Coin
 	robotPlayerMap[RobotPlayerGameIDWinRate] = GameIDWinRateToJSON(robotPlayer.GameIDWinRate)

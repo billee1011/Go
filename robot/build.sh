@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # packet name
-NAME=gateway
+NAME=robot
 
 mkdir ../release/$NAME
 echo "begin building..."
@@ -16,7 +16,6 @@ cp -f ./stop.sh ../release/$NAME/
 
 echo "begin cp so"
 cp -f  ./$NAME.so ../release/$NAME/
-
 
 echo "end  build..."
 
