@@ -1,1 +1,1 @@
-ps -aux | grep serviceloader
+ps -aux | grep gold

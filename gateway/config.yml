@@ -5,6 +5,7 @@ log_stderr: true
 
 rpc_addr: 127.0.0.1
 rpc_port: 36002
+health_port: 36003
 rpc_server_name: gate
 
 lis_client_addr: 0.0.0.0
