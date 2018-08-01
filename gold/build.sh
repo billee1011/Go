@@ -4,8 +4,9 @@
 NAME=gold
 
 mkdir ../bin/$NAME
+mkdir ./bin/
 echo "begin building..."
-go build  -o ./bin/$NAME.so -buildmode=plugin steve/$NAME
+go build  -o ./$NAME.so -buildmode=plugin steve/$NAME
 
 echo "begin copy yml"
 cp  -f ./config.yml ../bin/$NAME/
@@ -18,6 +19,7 @@ cp -f ./stop.sh ../bin/$NAME/
 cp -f  ./stop.sh  ./bin/
 
 echo "begin cp so"
+cp -f  ./$NAME.so ./bin/$NAME.so
 cp -f  ./bin/$NAME.so ../bin/$NAME/
 
 echo "end  build..."
