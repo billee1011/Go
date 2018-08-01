@@ -18,3 +18,7 @@ popd
 pushd match 
 serviceloader match --config=config.yml  &
 popd 
+
+pushd robot 
+serviceloader robot --config=config.yml  &
+popd 
