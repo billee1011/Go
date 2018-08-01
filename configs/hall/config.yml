@@ -5,6 +5,7 @@ log_stderr: true
 
 rpc_addr: 127.0.0.1
 rpc_port: 36301
+health_port: 36302
 rpc_server_name: hall
 
 # redis 

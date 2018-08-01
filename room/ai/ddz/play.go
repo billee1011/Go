@@ -3,11 +3,12 @@ package ddz
 import (
 	"fmt"
 	"steve/entity/poker/ddz"
-	. "steve/room/desks/ddzdesk/flow/ddz/states"
-	"steve/room/interfaces"
+	"steve/room/ai"
+	. "steve/room/flows/ddzflow/ddz/states"
+
+	"steve/entity/poker"
 
 	"github.com/Sirupsen/logrus"
-	"steve/entity/poker"
 )
 
 type playStateAI struct {
@@ -15,13 +16,13 @@ type playStateAI struct {
 
 // GenerateAIEvent 生成 出牌AI 事件
 // 无论是超时、托管还是机器人，胡过了自动胡，没胡过的其他操作都默认弃， 并且产生相应的事件
-func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (result interfaces.AIEventGenerateResult, err error) {
+func (playAI *playStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result ai.AIEventGenerateResult, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "play.go:GenerateAIEvent()"})
 
 	// 产生的事件结果
-	result, err = interfaces.AIEventGenerateResult{
-		Events: []interfaces.AIEvent{},
+	result, err = ai.AIEventGenerateResult{
+		Events: []ai.AIEvent{},
 	}, nil
 
 	ddzContext := params.DDZContext
@@ -63,7 +64,7 @@ func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGeneratePara
 }
 
 // Play 生成出牌请求事件(被动出牌)
-func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
+func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *ai.AIEvent {
 	// 最终打出去的牌
 	resultCards := []uint32{}
 
@@ -183,16 +184,15 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 		CardType: resultCardType, // 打出去的牌型
 	}
 
-	event := interfaces.AIEvent{
+	event := ai.AIEvent{
 		ID:      int32(ddz.EventID_event_chupai_request),
 		Context: request,
 	}
-
 	return &event
 }
 
 // Play 生成出牌请求事件(主动出牌)
-func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
+func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *ai.AIEvent {
 
 	// 玩家手中的牌
 	handCards := player.GetHandCards()
@@ -219,7 +219,7 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 		CardType: resultCardType, // 打出去的牌型
 	}
 
-	event := interfaces.AIEvent{
+	event := ai.AIEvent{
 		ID:      int32(ddz.EventID_event_chupai_request),
 		Context: request,
 	}
