@@ -1,7 +1,6 @@
 package data
 
 import (
-	"fmt"
 	"steve/entity/cache"
 	"steve/structs"
 
@@ -18,9 +17,9 @@ const (
 	//RobotPlayerGameIDWinRate 玩家游戏ID对应的胜率字段名
 	RobotPlayerGameIDWinRate string = "gameidwinrate"
 	//RobotPlayerGameIDField 玩家游戏 ID 字段名
-	RobotPlayerGameIDField string = "game_id"
+	RobotPlayerGameIDField string = "gameid"
 	//RobotPlayerNickNameField 玩家昵称字段
-	RobotPlayerNickNameField string = "nick_name"
+	RobotPlayerNickNameField string = "nickname"
 	//RobotPlayerHeadImageField 玩家头像字段
 	RobotPlayerHeadImageField string = "head_image"
 )
@@ -50,14 +49,19 @@ func InitRobotRedis() {
 
 //GetLeisureRobot 获取空闲机器人
 func GetLeisureRobot() ([]*cache.RobotPlayer, error) {
+	log := logrus.WithFields(logrus.Fields{"func_name": "GetLeisureRobot"})
 	robotPlayerIDAll, err := getRobotIDAll() // 获取所有机器人的玩家ID
-	if err != nil || len(robotPlayerIDAll) == 0 {
-		return nil, fmt.Errorf("获取所有机器人的玩家ID失败 %v", err)
+	if err != nil {
+		return nil, err
+	}
+	if len(robotPlayerIDAll) == 0 {
+		log.Info("数据库中不存在机器人")
+		return []*cache.RobotPlayer{}, nil
 	}
 	robotsIDCoins, lackRobotsID := getRedisLeisureRobotPlayer(robotPlayerIDAll) // 从redis 获取 空闲的RobotPlayer
 	if len(lackRobotsID) > 0 {                                                  // 存在redis 中 不存在 机器人ID
 		robotsIDCoins = getMysqlLeisureRobotPlayer(robotsIDCoins, lackRobotsID) //从mysql中获取空闲的玩家,并存入redis
 	}
-	logrus.WithFields(logrus.Fields{"func_name": "GetLeisureRobot", "lackRobotsID": lackRobotsID, "robotsIDCoins": robotsIDCoins}).Infoln("获取空闲机器人")
+	log.WithFields(logrus.Fields{"lackRobotsID": lackRobotsID, "robotsIDCoins": robotsIDCoins}).Infoln("获取空闲机器人")
 	return robotsIDCoins, nil
 }
