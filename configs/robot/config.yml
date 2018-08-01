@@ -18,13 +18,14 @@ redis_list:
 
 # mysql 数据库列表
 mysql_list:
-  robot:
-    user: root
-    passwd: 123456
-    addr: 127.0.0.1:3306
-    db: robot 
+  steve:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: steve 
     params:
       charset: utf8
+      
 # nsq 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
