@@ -32,32 +32,19 @@ func getMysqlEngineByName(mysqlName string) (*xorm.Engine, error) {
 	return engine, nil
 }
 
-//获取所有机器人的各个属性
-func getMysqlRobotProp(robotMap map[int64]*cache.RobotPlayer) error {
-	// 获取金币
-	if err := getMysqlRobotAllCoins(robotMap); err != nil {
-		return err
-	}
-	// 获取昵称
-	if err := getMysqlRobotNickNames(robotMap); err != nil {
-		return err
-	}
-	return nil
-}
-
 //根据玩家ID获取机器人的各个属性
 func getMysqlRobotPropByPlayerID(playerID uint64) (*cache.RobotPlayer, error) {
 	robotPlayer := &cache.RobotPlayer{}
-	coin, err := getMysqlRobotCoinByPlayerID(playerID) // 金币
+	playerCurrency, err := getMysqlPlayerCurrencyByPlayerID(playerID) // 金币
 	if err != nil {
 		return robotPlayer, err
 	}
-	nickNmae, err := getMysqlNickNameByPlayerID(playerID) // 金币
+	player, err := getMysqlPlayerByPlayerID(playerID) // 金币
 	if err != nil {
 		return robotPlayer, err
 	}
-	robotPlayer.Coin = uint64(coin)
-	robotPlayer.NickName = nickNmae
+	robotPlayer.Coin = uint64(playerCurrency.Coins)
+	robotPlayer.NickName = player.Nickname
 	return robotPlayer, err
 }
 
@@ -79,56 +66,62 @@ func getRobotIDAll() ([]uint64, error) {
 	return robotsIDAll, nil
 }
 
-//根据玩家ID获取机器人的金币
-func getMysqlRobotCoinByPlayerID(playerID uint64) (int, error) {
+//根据玩家ID获取获取玩家货币表上的数据
+func getMysqlPlayerCurrencyByPlayerID(playerID uint64) (*db.TPlayerCurrency, error) {
+	pct := &db.TPlayerCurrency{}
 	engine, err := MysqlEnginefunc(MysqldbName)
 	if err != nil {
-		return 0, err
+		return pct, err
 	}
-	pct := &db.TPlayerCurrency{}
 	where := fmt.Sprintf("playerID=%v", playerID)
 	exist, err := engine.Table(playerCurrencyTableName).Where(where).Select("coins").Get(pct)
 	if err != nil {
-		return 0, err
+		return pct, err
 	}
 	if !exist {
-		return 0, fmt.Errorf("获取机器人金币失败 : %v", playerID)
+		return pct, fmt.Errorf("TPlayerCurrency获取失败 : %v", playerID)
 	}
-	return pct.Coins, nil
+	return pct, nil
 }
 
-// 根据玩家ID获取机器人对应昵称
-func getMysqlNickNameByPlayerID(playerID uint64) (string, error) {
+// 根据玩家ID获取获取玩家表上的数据
+func getMysqlPlayerByPlayerID(playerID uint64) (*db.TPlayer, error) {
+	pt := &db.TPlayer{}
 	engine, err := MysqlEnginefunc(MysqldbName)
 	if err != nil {
-		return "", err
+		return pt, err
 	}
-	pt := &db.TPlayer{}
 	where := fmt.Sprintf("playerID=%v", playerID)
 	exist, err := engine.Table(playerTableName).Where(where).Select("nickname").Get(pt)
 	if err != nil {
-		return "", err
+		return pt, err
 	}
 	if !exist {
-		return "", fmt.Errorf("获取机器人金币失败 : %v", playerID)
+		return pt, fmt.Errorf("TPlayer获取失败 : %v", playerID)
 	}
-	return pt.Nickname, nil
+	return pt, nil
 }
 
-//Join 查询机器人对应在playerCurrencyTable 的金币多个
-func getMysqlRobotAllCoins(robotMap map[int64]*cache.RobotPlayer) error {
+//Join 获取机器人需要的值
+func getMysqlRobotFieldValuedAll(robotMap map[int64]*cache.RobotPlayer) error {
 	engine, err := MysqlEnginefunc(MysqldbName)
 	if err != nil {
 		return err
 	}
-	robots := make([]*db.TPlayerCurrency, 0)
+	// 金币
+	robotsTPCs := make([]*db.TPlayerCurrency, 0)
 	idEqu := fmt.Sprintf("%v.playerID = %v.playerID", playerTableName, playerCurrencyTableName)
 	where := fmt.Sprintf("type=%v", playerType)
-	Select := fmt.Sprintf("%v.playerID,%v.coins", playerCurrencyTableName, playerCurrencyTableName)
-	err = engine.Table(playerCurrencyTableName).Join("INNER", playerTableName, idEqu).Where(where).Select(Select).Find(&robots)
-	for _, robot := range robots {
+	Select := fmt.Sprintf("%v.playerID,%v.coins", playerTableName, playerCurrencyTableName)
+	if err := engine.Table(playerCurrencyTableName).Join("INNER", playerTableName, idEqu).Where(where).Select(Select).Find(&robotsTPCs); err != nil {
+		return err
+	}
+	fmt.Println(robotsTPCs)
+	for _, robot := range robotsTPCs {
 		if rp := robotMap[robot.Playerid]; rp != nil {
-			rp.PlayerID = uint64(robot.Playerid)
+			if rp.PlayerID == 0 {
+				rp.PlayerID = uint64(robot.Playerid)
+			}
 			rp.Coin = uint64(robot.Coins)
 			robotMap[robot.Playerid] = rp
 		} else {
@@ -138,22 +131,16 @@ func getMysqlRobotAllCoins(robotMap map[int64]*cache.RobotPlayer) error {
 			}
 		}
 	}
-	return err
-}
-
-// 查询机器人对应昵称 多个
-func getMysqlRobotNickNames(robotMap map[int64]*cache.RobotPlayer) error {
-	engine, err := MysqlEnginefunc(MysqldbName)
-	if err != nil {
+	// 昵称
+	robotsTPs := make([]*db.TPlayer, 0)
+	if err := engine.Table(playerTableName).Select("playerID,nickname").Where(where).Find(&robotsTPs); err != nil {
 		return err
 	}
-	robots := make([]*db.TPlayer, 0)
-	where := fmt.Sprintf("type=%v", playerType)
-	if err := engine.Table(playerTableName).Select("playerID,nickname").Where(where).Find(&robots); err != nil {
-		return err
-	}
-	for _, robot := range robots {
+	for _, robot := range robotsTPs {
 		if rp := robotMap[robot.Playerid]; rp != nil {
+			if rp.PlayerID == 0 {
+				rp.PlayerID = uint64(robot.Playerid)
+			}
 			rp.NickName = robot.Nickname
 			robotMap[robot.Playerid] = rp
 		} else {
@@ -163,5 +150,5 @@ func getMysqlRobotNickNames(robotMap map[int64]*cache.RobotPlayer) error {
 			}
 		}
 	}
-	return nil
+	return err
 }
