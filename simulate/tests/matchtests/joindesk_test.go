@@ -81,5 +81,5 @@ func TestRobotMatch(t *testing.T) {
 	assert.Nil(t, createExpector.Recv(global.DefaultWaitMessageTime, nil))
 
 	startExpector := player.GetExpector(msgid.MsgID_ROOM_START_GAME_NTF)
-	assert.Nil(t, startExpector.Recv(global.DefaultWaitMessageTime, nil))
+	assert.Nil(t, startExpector.Recv(global.DefaultWaitMessageTime, nil), player.GetID())
 }

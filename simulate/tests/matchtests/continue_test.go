@@ -161,7 +161,6 @@ func Test_ContinueCancelDDZ(t *testing.T) {
 func Test_ContinueMajong(t *testing.T) {
 	players := startAndFinishGame(t)
 	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保匹配服已经接收到续局牌桌
-
 	for _, player := range players {
 		player.AddExpectors(msgid.MsgID_MATCH_CONTINUE_RSP, msgid.MsgID_ROOM_START_GAME_NTF)
 		player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{

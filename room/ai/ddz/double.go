@@ -2,7 +2,8 @@ package ddz
 
 import (
 	"steve/entity/poker/ddz"
-	"steve/room/interfaces"
+
+	"steve/room/ai"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -12,9 +13,9 @@ type doubleStateAI struct {
 
 // GenerateAIEvent 生成 出牌问询AI 事件
 // 无论是超时、托管还是机器人，胡过了自动胡，没胡过的其他操作都默认弃， 并且产生相应的事件
-func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (result interfaces.AIEventGenerateResult, err error) {
-	result, err = interfaces.AIEventGenerateResult{
-		Events: []interfaces.AIEvent{},
+func (h *doubleStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result ai.AIEventGenerateResult, err error) {
+	result, err = ai.AIEventGenerateResult{
+		Events: []ai.AIEvent{},
 	}, nil
 
 	playerID := params.PlayerID
@@ -26,11 +27,14 @@ func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams)
 		}
 	}
 
-	request := &ddz.DoubleRequestEvent{Head: &ddz.RequestEventHead{
-		PlayerId: playerID,
-	}, IsDouble: false,
+	request := &ddz.DoubleRequestEvent{
+		Head: &ddz.RequestEventHead{
+			PlayerId: playerID,
+		},
+		IsDouble: false,
 	}
-	event := interfaces.AIEvent{
+
+	event := ai.AIEvent{
 		ID:      int32(ddz.EventID_event_double_request),
 		Context: request,
 	}
