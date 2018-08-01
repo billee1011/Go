@@ -1,0 +1,185 @@
+id: 1 # 选项 ID
+
+enable_geng: true # 是否启用根
+geng_score: 2 # 根的番数
+geng_method: 2 # 根的计算方式，0相加，1相乘， 2幂乘
+
+enable_hua: false # 是否启用花
+hua_score: 0 # 花的番数
+hua_method: 0 # 花的计算方式，0相加，1相乘， 2幂乘
+enable_fan_type_deal: true #番型处理，是否将胡类型从，番型拿出
+
+# 支持的番型列表
+enable_fan_types:
+  0:  # 平胡
+    id: 0 # 平胡
+    func_id: 0  # 计算函数 ID: 0
+    mutex: []   # 不和任何牌互斥
+    method: 1   # 计算方式：相乘
+    score: 1    # 番数 1
+    subgeng: 0  # 扣除的根数量
+  1:  # 清一色
+    id: 1 # 清一色
+    func_id: 1  # 计算函数 ID : 1
+    mutex: [0]  # 和平胡互斥
+    method: 1   # 计算方式：相乘
+    score: 4    # 番数 4
+    subgeng: 0  # 扣除的根数量
+  2: # 七对
+    id: 2 # 七对
+    func_id: 2  # 计算函数 ID: 2
+    mutex: [0]  # 和平胡互斥
+    method: 1   # 计算方式：相乘
+    score: 4    # 番数 4
+    subgeng: 0  # 扣除的根数量
+  3: # 清七对
+    id: 3 # 清七对
+    func_id: 3  # 计算函数 ID: 3
+    mutex: [0,1,2]  # 和平胡,清一色,七对互斥
+    method: 1   # 计算方式：相乘
+    score: 16   # 番数 16
+    subgeng: 0  # 扣除的根数量
+  4: # 龙七对
+    id: 4 # 龙七对
+    func_id: 4  # 计算函数 ID: 4
+    mutex: [0,2]  # 和平胡,七对互斥
+    method: 1   # 计算方式：相乘
+    score: 8   # 番数 8
+    subgeng: 1  # 扣除的根数量
+  5: # 清龙七对
+    id: 5 # 清龙七对
+    func_id: 5  # 计算函数 ID: 5
+    mutex: [0,1,2,3,4]  # 和平胡,清一色,七对,清七对,龙七对互斥
+    method: 1   # 计算方式：相乘
+    score: 32   # 番数 32
+    subgeng: 1  # 扣除的根数量
+  6: # 碰碰胡
+    id: 6 # 碰碰胡
+    func_id: 6  # 计算函数 ID: 6
+    mutex: [0]  # 和平胡互斥
+    method: 1   # 计算方式：相乘
+    score: 2   # 番数 2
+    subgeng: 0  # 扣除的根数量
+  7: # 清碰
+    id: 7 # 清碰
+    func_id: 7  # 计算函数 ID: 7
+    mutex: [0,1,6]  # 和平胡,清一色,碰碰胡互斥
+    method: 1   # 计算方式：相乘
+    score: 8   # 番数 8
+    subgeng: 0  # 扣除的根数量
+  8: # 金钩钓
+    id: 8 # 金钩钓
+    func_id: 8  # 计算函数 ID: 8
+    mutex: [0,6]  # 和平胡,碰碰胡互斥
+    method: 1   # 计算方式：相乘
+    score: 4   # 番数 4
+    subgeng: 0  # 扣除的根数量
+  9: # 清金钩钓
+    id: 9 # 清金钩钓
+    func_id: 9  # 计算函数 ID: 9
+    mutex: [0,1,6,7,8]  # 和平胡，清一色,碰碰胡,清碰,金钩钓互斥
+    method: 1   # 计算方式：相乘
+    score: 16   # 番数 16
+    subgeng: 0  # 扣除的根数量
+  10: # 十八罗汉
+    id: 10 # 十八罗汉
+    func_id: 10  # 计算函数 ID: 10
+    mutex: [0,6,8]  # 和平胡,碰碰胡,金钩钓互斥
+    method: 1   # 计算方式：相乘
+    score: 64   # 番数 64
+    subgeng: 4  # 扣除的根数量
+  11: # 清十八罗汉
+    id: 11 # 清十八罗汉
+    func_id: 11  # 计算函数 ID: 11
+    mutex: [0,1,6,7,8,9,10]  # 和平胡,清一色,碰碰胡，金钩钓,清碰，清金钩钓,十八罗汉互斥
+    method: 1   # 计算方式：相乘
+    score: 256   # 番数 256
+    subgeng: 4  # 扣除的根数量
+  68: # 天胡
+    id: 68 # 天胡
+    func_id: 78  # 计算函数 ID: 78
+    mutex: []  # 跟自摸互斥
+    method: 1    # 计算方式：相乘
+    score: 32    # 番数 32
+    subgeng: 0   # 扣除的根数量
+  69: # 地胡
+    id: 69 # 地胡
+    func_id: 79  # 计算函数 ID: 79
+    mutex: []  # 跟自摸互斥
+    method: 1    # 计算方式：相乘
+    score: 32    # 番数 32
+    subgeng: 0   # 扣除的根数量
+  75: # 自摸
+    id: 75 # 自摸
+    func_id: 75  # 计算函数 ID: 75
+    mutex: []    # 不跟任何牌互斥
+    method: 1    # 计算方式：相乘
+    score: 2     # 番数 2
+    subgeng: 0  # 扣除的根数量
+  76: # 杠上开花
+    id: 76 # 杠上开花
+    func_id: 44  # 计算函数 ID: 44
+    mutex: []    # 不跟任何牌互斥
+    method: 1    # 计算方式：相乘
+    score: 2     # 番数 2
+    subgeng: 0  # 扣除的根数量
+  77: # 杠上海底捞
+    id: 77 # 杠上海底捞
+    func_id: 77  # 计算函数 ID: 77
+    mutex: [75,76,79]  # 跟自摸,海底捞，杠开互斥
+    method: 1    # 计算方式：相乘
+    score: 4     # 番数 4
+    subgeng: 0   # 扣除的根数量
+  78: # 杠后炮
+    id: 78 # 杠后炮
+    func_id: 76  # 计算函数 ID: 76
+    mutex: []    # 不跟任何牌互斥
+    method: 1    # 计算方式：相乘
+    score: 2     # 番数 2
+    subgeng: 0  # 扣除的根数量
+  79: # 海底捞 最后一张自摸胡牌 
+    id: 79 # 海底捞
+    func_id: 41  # 计算函数 ID: 41
+    mutex: [75]  # 跟自摸互斥
+    method: 1    # 计算方式：相乘
+    score: 2     # 番数 2
+    subgeng: 0   # 扣除的根数量
+  80: # 抢杠胡
+    id: 80 # 抢杠胡
+    func_id: 43  # 计算函数 ID: 43
+    mutex: []    # 不跟任何牌互斥
+    method: 1    # 计算方式：相乘
+    score: 2     # 番数 2
+    subgeng: 0   # 扣除的根数量   
+  81:  # 点炮
+    id: 81 # 点炮
+    func_id: 81  # 计算函数 ID : 81
+    mutex: []   # 不互斥
+    method: 0   # 计算方式：相加
+    score: 0    # 番数 0 
+ #番型对应的胡类型
+fan_type_2_hu_type:     
+  68: # 天胡
+    huType: 7
+  69: # 地胡
+    huType: 8  
+  76: # 杠上开花
+    huType: 3
+  77: # 杠上海底捞
+    huType: 5   
+  78: # 杠后炮  
+    huType: 2   
+  79: # 海底捞月
+    huType: 4  
+      
+#番型对应的结算类型  
+fan_type_2_settle_type:
+  75: #自摸
+    settleType: 4
+  81: #点炮
+    settleType: 3
+  80: #抢杠胡    
+    settleType: 3
+
+
+ 
