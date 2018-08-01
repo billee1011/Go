@@ -5,6 +5,7 @@ log_stderr: true
 
 rpc_addr: 127.0.0.1
 rpc_port: 37001
+health_port: 37002
 rpc_server_name: match
 #health_port: 17001
 
