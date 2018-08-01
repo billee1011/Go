@@ -22,11 +22,12 @@ message GameConfigInfo {
     string game_name = 2;       // 游戏名称
     uint32 game_type = 3;       // 游戏类型
     uint32 level_id = 4;        // 游戏等级
-    uint32 base_scores = 5;     // 游戏底分
-    uint32 low_scores = 6;      // 允许进入最低分
-    uint32 high_scores = 7;     // 允许进入最高分
-    uint32 min_people = 8;      // 允许最低人数
-    uint32 max_people = 9;      // 允许最高人数   
+    string level_name = 5;      // 游戏等级名称  
+    uint32 base_scores = 6;     // 游戏底分
+    uint32 low_scores = 7;      // 允许进入最低分
+    uint32 high_scores = 8;     // 允许进入最高分
+    uint32 min_people = 9;      // 允许最低人数 
+    uint32 max_people = 10;     // 允许最高人数   
 }
 
 

@@ -39,12 +39,13 @@ var gameconfigList = map[int16]string{
 // gameconfigList 类型配置
 var gameLevelconfigList = map[int16]string{
 	1: "levelID",
-	2: "baseScores",
-	3: "lowScores",
-	4: "highScores",
-	5: "minPeople",
-	6: "maxPeople",
-	7: "status",
+	2: "name",
+	3: "baseScores",
+	4: "lowScores",
+	5: "highScores",
+	6: "minPeople",
+	7: "maxPeople",
+	8: "status",
 }
 
 const (

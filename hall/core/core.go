@@ -26,7 +26,11 @@ func (c *hallCore) Init(e *structs.Exposer, param ...string) error {
 		entry.WithError(err).Error("注册RPC服务处理器失败")
 		return err
 	}
-	registerHandles(e.Exchanger)
+	// 注册客户端Client消息处理器
+	if err := registerHandles(e.Exchanger); err != nil {
+		entry.WithError(err).Error("注册客户端Client消息处理器失败")
+		return err
+	}
 
 	entry.Debugf("server init succeed ...")
 

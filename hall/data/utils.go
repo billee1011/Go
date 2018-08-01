@@ -125,6 +125,7 @@ func transToGameInfo(configs []gameConfigDetail) (gameConfigs []*user.GameConfig
 			GameName:   config.TGameConfig.Name,
 			GameType:   uint32(config.TGameConfig.Type),
 			LevelId:    uint32(config.TGameLevelConfig.Levelid),
+			LevelName:  config.TGameLevelConfig.Name,
 			BaseScores: uint32(config.TGameLevelConfig.Basescores),
 			LowScores:  uint32(config.TGameLevelConfig.Lowscores),
 			HighScores: uint32(config.TGameLevelConfig.Highscores),
