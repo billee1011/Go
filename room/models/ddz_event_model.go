@@ -355,26 +355,10 @@ func (model *DDZEventModel) dealResumeRequest(playerID uint64, ddzContext *ddz.D
 
 // handlePlayerEnter 处理玩家进入牌桌
 func (model *DDZEventModel) handlePlayerEnter(enterInfo playerIDWithChannel) {
-	entry := logrus.WithField("player_id", enterInfo.playerID)
-
 	modelMgr := GetModelManager()
 	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerEnter(enterInfo.playerID)
-	// 生成恢复对局事件
-	eventMessage := &ddz.ResumeRequestEvent{
-		Head: &ddz.RequestEventHead{PlayerId: enterInfo.playerID},
-	}
-	// dealResumeRequest()
-	for {
-		eventID := int(ddz.EventID_event_resume_request)
-		eventContext, err := proto.Marshal(eventMessage)
-		if err != nil {
-			entry.WithError(err).Errorln("事件消息序列化失败")
-			break
-		}
-		model.processEvent(eventID, eventContext)
-		entry.Debugln("玩家进入")
-		break
-	}
+	gameContext := model.GetGameContext().(*context2.DDZDeskContext)
+	model.dealResumeRequest(enterInfo.playerID, &gameContext.DDZContext)
 	close(enterInfo.finishChannel)
 }
 
