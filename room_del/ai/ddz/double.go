@@ -1,11 +1,10 @@
 package ddz
 
 import (
-	"steve/room/ai"
-	"steve/server_pb/ddz"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/room/interfaces"
+	"steve/server_pb/ddz"
 )
 
 type doubleStateAI struct {
@@ -13,9 +12,9 @@ type doubleStateAI struct {
 
 // GenerateAIEvent 生成 出牌问询AI 事件
 // 无论是超时、托管还是机器人，胡过了自动胡，没胡过的其他操作都默认弃， 并且产生相应的事件
-func (h *doubleStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result ai.AIEventGenerateResult, err error) {
-	result, err = ai.AIEventGenerateResult{
-		Events: []ai.AIEvent{},
+func (h *doubleStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (result interfaces.AIEventGenerateResult, err error) {
+	result, err = interfaces.AIEventGenerateResult{
+		Events: []interfaces.AIEvent{},
 	}, nil
 
 	playerId := params.PlayerID
@@ -32,7 +31,7 @@ func (h *doubleStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result
 	}, IsDouble: false,
 	}
 	data, _ := proto.Marshal(&request)
-	event := ai.AIEvent{
+	event := interfaces.AIEvent{
 		ID:      int32(ddz.EventID_event_double_request),
 		Context: data,
 	}

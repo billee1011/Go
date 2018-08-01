@@ -2,8 +2,8 @@ package ddz
 
 import (
 	"fmt"
-	"steve/room/ai"
-	. "steve/room/flows/ddzflow/ddz/states"
+	. "steve/room/desks/ddzdesk/flow/ddz/states"
+	"steve/room/interfaces"
 	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
@@ -15,13 +15,13 @@ type playStateAI struct {
 
 // GenerateAIEvent 生成 出牌AI 事件
 // 无论是超时、托管还是机器人，胡过了自动胡，没胡过的其他操作都默认弃， 并且产生相应的事件
-func (playAI *playStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result ai.AIEventGenerateResult, err error) {
+func (playAI *playStateAI) GenerateAIEvent(params interfaces.AIEventGenerateParams) (result interfaces.AIEventGenerateResult, err error) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "play.go:GenerateAIEvent()"})
 
 	// 产生的事件结果
-	result, err = ai.AIEventGenerateResult{
-		Events: []ai.AIEvent{},
+	result, err = interfaces.AIEventGenerateResult{
+		Events: []interfaces.AIEvent{},
 	}, nil
 
 	ddzContext := params.DDZContext
@@ -63,7 +63,7 @@ func (playAI *playStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (res
 }
 
 // Play 生成出牌请求事件(被动出牌)
-func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *ai.AIEvent {
+func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
 	// 最终打出去的牌
 	resultCards := []uint32{}
 
@@ -185,7 +185,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 
 	data, _ := proto.Marshal(&request)
 
-	event := ai.AIEvent{
+	event := interfaces.AIEvent{
 		ID:      int32(ddz.EventID_event_chupai_request),
 		Context: data,
 	}
@@ -194,7 +194,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 }
 
 // Play 生成出牌请求事件(主动出牌)
-func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *ai.AIEvent {
+func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, player *ddz.Player) *interfaces.AIEvent {
 
 	// 玩家手中的牌
 	handCards := player.GetHandCards()
@@ -223,7 +223,7 @@ func (playAI *playStateAI) getActivePlayCardEvent(ddzContext *ddz.DDZContext, pl
 
 	data, _ := proto.Marshal(&request)
 
-	event := ai.AIEvent{
+	event := interfaces.AIEvent{
 		ID:      int32(ddz.EventID_event_chupai_request),
 		Context: data,
 	}

@@ -13,7 +13,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"steve/room/desks/ddzdesk/flow/ddz/states"
+	"steve/room/flows/ddzflow/ddz/states"
 
 	"github.com/golang/protobuf/proto"
 )
