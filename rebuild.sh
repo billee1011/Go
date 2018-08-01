@@ -4,12 +4,12 @@ BIN=Release
 
 
 pushd serviceloader
-./build.sh
+sh ./build.sh
 popd
 
 
 pushd room
-./build.sh
+sh ./build.sh
 popd
 
 
