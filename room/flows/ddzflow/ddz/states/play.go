@@ -70,7 +70,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 		}
 	}
 
-	if !isValidPlayer(context, playerId) {
+	if !IsValidPlayer(context, playerId) {
 		logEntry.WithField("players", getPlayerIds(m)).Errorln("玩家不在本牌桌上!")
 		return int(ddz.StateID_state_playing), global.ErrInvalidRequestPlayer
 	}
@@ -180,7 +180,7 @@ func (s *playState) OnEvent(m machine.Machine, event machine.Event) (int, error)
 	player.OutCards = message.GetCards()
 
 	lastOutCards := ToDDZCards(player.AllOutCards)
-	lastOutCards = AppendAll(lastOutCards, outCards)
+	lastOutCards = append(lastOutCards, outCards...)
 	player.AllOutCards = ToInts(lastOutCards) // for 记牌器
 
 	//更新context

@@ -3,8 +3,8 @@ package states
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	playerdata "steve/common/data/player"
 	"steve/room/flows/ddzflow/machine"
-	playerpkg "steve/room/player"
 	"steve/server_pb/ddz"
 
 	"github.com/Sirupsen/logrus"
@@ -45,12 +45,11 @@ func (s *settleState) settle(m machine.Machine) {
 	lordId := context.LordPlayerId
 	lordWin := winnerId == lordId
 
-	playerMgr := playerpkg.GetPlayerMgr()
 	//找出每个人最大输赢金币
 	maxScores := make(map[uint64]uint64)
 	for _, player := range context.GetPlayers() {
 		playerId := player.PlayerId
-		coin := playerMgr.GetPlayer(playerId).GetCoin()
+		coin := playerdata.GetPlayerCoin(playerId)
 		s := If(playerId == lordId, score*2, score).(uint64)
 		maxScores[playerId] = If(s > coin, coin, s).(uint64)
 	}
@@ -82,7 +81,6 @@ func (s *settleState) settle(m machine.Machine) {
 	var billPlayers []*room.DDZBillPlayerInfo
 	for _, player := range context.GetPlayers() {
 		playerId := player.PlayerId
-		roomPlayer := playerMgr.GetPlayer(playerId)
 		billPlayer := room.DDZBillPlayerInfo{}
 		billPlayer.PlayerId = &playerId
 		var isWin bool
@@ -98,15 +96,15 @@ func (s *settleState) settle(m machine.Machine) {
 		billPlayer.Win = &isWin
 		billPlayer.Base = proto.Int32(int32(base))
 		billPlayer.Multiple = &mul
-		originCoin := roomPlayer.GetCoin()
+		originCoin := playerdata.GetPlayerCoin(playerId)
 		settleScore := settleScores[playerId]
 		if isWin {
-			roomPlayer.SetCoin(originCoin + settleScore) //赢钱
+			playerdata.SetPlayerCoin(playerId, originCoin+settleScore) //赢钱
 		} else {
-			roomPlayer.SetCoin(originCoin - settleScore) //输钱
+			playerdata.SetPlayerCoin(playerId, originCoin-settleScore) //输钱
 		}
 		billPlayer.Score = proto.Int64(int64(settleScore))
-		billPlayer.CurrentScore = proto.Int64(int64(roomPlayer.GetCoin()))
+		billPlayer.CurrentScore = proto.Int64(int64(playerdata.GetPlayerCoin(playerId)))
 		billPlayer.Lord = &player.Lord
 		billPlayer.OutCards = player.OutCards
 		billPlayer.HandCards = player.HandCards
