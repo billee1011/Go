@@ -31,7 +31,14 @@ func RegisterRoomReqHandlers(e exchanger.Exchanger) {
 }
 
 func handleRoomReq(playerID uint64, header *steve_proto_gaterpc.Header, body []byte) (rspMsg []exchanger.ResponseMsg) {
+	entry := logrus.WithFields(logrus.Fields{
+		"player_id": playerID,
+	})
 	player := player.GetPlayerMgr().GetPlayer(playerID)
+	if player == nil {
+		entry.Debugln("玩家不在该 room")
+		return
+	}
 	if player.GetDesk() == nil {
 		logrus.WithField("player_id", playerID).Debugln("not found player desk")
 		return

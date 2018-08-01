@@ -33,6 +33,11 @@ func (manager *ModelManager) InitDeskModel(deskId uint64, modelName []string, de
 			continue
 		}
 		modelMap[name] = model
+	}
+	for _, model := range modelMap {
+		model.Active()
+	}
+	for _, model := range modelMap {
 		model.Start()
 	}
 }
@@ -52,17 +57,27 @@ func (manager *ModelManager) StopDeskModel(deskID uint64) error {
 }
 
 func (manager *ModelManager) GetChatModel(deskId uint64) *ChatModel {
-	model := manager.getModel(deskId)[fixed.Chat]
+	model := manager.getModel(deskId)[fixed.ChatModelName]
 	return model.(*ChatModel)
 }
-func (manager *ModelManager) GetRequestModel(deskId uint64) *RequestModel {
-	model := manager.getModel(deskId)[fixed.Request]
-	return model.(*RequestModel)
+
+// GetRequestModel 获取 request model
+func (manager *ModelManager) GetRequestModel(deskID uint64) *RequestModel {
+	_model := GetModelManager().GetModelByName(deskID, fixed.RequestModelName)
+	if _model == nil {
+		logrus.WithField("desk_id", deskID).Warningln("request model 不存在")
+		return nil
+	}
+	if model, ok := _model.(*RequestModel); ok {
+		return model
+	}
+	logrus.WithField("desk_id", deskID).Warningln("request model 不存在")
+	return nil
 }
 
 // GetMessageModel 获取 message model
 func (manager *ModelManager) GetMessageModel(deskID uint64) *MessageModel {
-	_model := GetModelManager().GetModelByName(deskID, fixed.Message)
+	_model := GetModelManager().GetModelByName(deskID, fixed.MessageModelName)
 	if _model == nil {
 		logrus.WithField("desk_id", deskID).Warningln("message model 不存在")
 		return nil
@@ -74,12 +89,8 @@ func (manager *ModelManager) GetMessageModel(deskID uint64) *MessageModel {
 	return nil
 }
 
-func (manager *ModelManager) GetMjEventModel(deskId uint64) *MjEventModel {
-	model := manager.getModel(deskId)[fixed.Event]
-	return model.(*MjEventModel)
-}
 func (manager *ModelManager) GetPlayerModel(deskId uint64) *PlayerModel {
-	model := manager.getModel(deskId)[fixed.Player]
+	model := manager.getModel(deskId)[fixed.PlayerModelName]
 	return model.(*PlayerModel)
 }
 
@@ -102,11 +113,35 @@ func (manager *ModelManager) getModel(deskId uint64) map[string]DeskModel {
 
 // GetContinueModel 获取续局 model
 func GetContinueModel(deskID uint64) *ContinueModel {
-	_model := GetModelManager().GetModelByName(deskID, fixed.Continue)
+	_model := GetModelManager().GetModelByName(deskID, fixed.ContinueModelName)
 	if _model == nil {
 		return nil
 	}
 	if model, ok := _model.(*ContinueModel); ok {
+		return model
+	}
+	return nil
+}
+
+// GetEventModel 获取 event model
+func GetEventModel(deskID uint64) DeskEventModel {
+	_model := GetModelManager().GetModelByName(deskID, fixed.EventModelName)
+	if _model == nil {
+		return nil
+	}
+	if model, ok := _model.(DeskEventModel); ok {
+		return model
+	}
+	return nil
+}
+
+// GetMjEventModel 获取麻将 Event model
+func GetMjEventModel(deskID uint64) *MjEventModel {
+	_model := GetEventModel(deskID)
+	if _model == nil {
+		return nil
+	}
+	if model, ok := _model.(*MjEventModel); ok {
 		return model
 	}
 	return nil

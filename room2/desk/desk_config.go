@@ -14,9 +14,9 @@ type DeskConfig struct {
 }
 
 //默认自带的
-var defaultModels = []string{fixed.Player, fixed.Message, fixed.Request, fixed.Chat, fixed.Event, fixed.Continue}
+var defaultModels = []string{fixed.PlayerModelName, fixed.MessageModelName, fixed.RequestModelName, fixed.ChatModelName, fixed.EventModelName, fixed.ContinueModelName}
 
-//麻将
+// NewMjDeskCreateConfig 麻将
 func NewMjDeskCreateConfig(context interface{}, settle DeskSettler, num int) DeskConfig {
 	merage := [][]string{defaultModels}
 	names := util.MergeStringArray(merage)
@@ -28,7 +28,7 @@ func NewMjDeskCreateConfig(context interface{}, settle DeskSettler, num int) Des
 	}
 }
 
-//斗地主
+// NewDDZMDeskCreateConfig 斗地主
 func NewDDZMDeskCreateConfig(context interface{}, num int) DeskConfig {
 	merage := [][]string{defaultModels}
 	names := util.MergeStringArray(merage)
@@ -39,7 +39,7 @@ func NewDDZMDeskCreateConfig(context interface{}, num int) DeskConfig {
 	}
 }
 
-//包含基础model
+// NewDeskCreateConfigDefault 包含基础model
 func NewDeskCreateConfigDefault(context interface{}, models ...string) DeskConfig {
 	merage := [][]string{defaultModels, models}
 	names := util.MergeStringArray(merage)

@@ -23,6 +23,7 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.PeiPaiGame = "scxz"
 	params.BankerSeat = 0
+	params.PlayerSeatGold = map[int]uint64{0: 100 * 10000, 1: 100 * 10000, 2: 100 * 10000, 3: 100 * 10000}
 	zimoSeat := 1
 	quitSeat := zimoSeat
 	bankerSeat := params.BankerSeat

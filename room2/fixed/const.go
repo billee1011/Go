@@ -40,12 +40,12 @@ const (
 	// TingStateEvent 听状态事件
 	TingStateEvent
 
-	/* Event Name */
-	Event       = "EventModel"
-	Player      = "PlayerModel"
-	Request     = "RequestModel"
-	Message     = "MessageModel"
-	Trusteeship = "TrusteeshipModel"
-	Chat        = "ChatModel"
-	Continue    = "ContinueModel"
+	/* model Name */
+	EventModelName   = "EventModel"
+	RequestModelName = "RequestModel"
+
+	PlayerModelName   = "PlayerModel"
+	MessageModelName  = "MessageModel"
+	ChatModelName     = "ChatModel"
+	ContinueModelName = "ContinueModel"
 )

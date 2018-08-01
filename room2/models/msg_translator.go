@@ -1,15 +1,16 @@
 package models
 
 import (
+	"errors"
 	"reflect"
 	"steve/client_pb/msgid"
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
-	"errors"
-	"steve/structs/proto/gate_rpc"
 	"steve/client_pb/room"
 	"steve/room2/player"
 	"steve/room2/util"
+	"steve/structs/proto/gate_rpc"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type msgTranslator struct {
@@ -110,16 +111,15 @@ func (t *translator) addTranslators() {
 	t.addTranslator(msgid.MsgID_ROOM_CARTOON_FINISH_REQ, util.TranslateCartoonFinishReq)
 
 	// 斗地主
-	/*t.addTranslator(msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ, ddz.TranslateGrabRequest)
-	t.addTranslator(msgid.MsgID_ROOM_DDZ_DOUBLE_REQ, ddz.TranslateDoubleRequest)
-	t.addTranslator(msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ, ddz.TranslatePlayCardRequest)
-	t.addTranslator(msgid.MsgID_ROOM_DDZ_TUOGUAN_REQ, ddz.TranslateTuoGuanRequest)
-	t.addTranslator(msgid.MsgID_ROOM_DDZ_RESUME_REQ, ddz.TranslateResumeRequest)*/
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_GRAB_LORD_REQ, util.TranslateGrabRequest)
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_DOUBLE_REQ, util.TranslateDoubleRequest)
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_PLAY_CARD_REQ, util.TranslatePlayCardRequest)
+	t.addTranslator(msgid.MsgID_ROOM_DDZ_RESUME_REQ, util.TranslateResumeRequest)
 }
 
 var tran *translator
 
-func GetTranslator() *translator{
+func GetTranslator() *translator {
 	return tran
 }
 

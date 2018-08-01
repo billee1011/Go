@@ -41,6 +41,7 @@ func HandleEvent(params Params) (result Result) {
 		"params":    params,
 	})
 
+	// TODO : 不再需要克隆
 	cloneContext := *proto.Clone(&params.Context).(*ddz.DDZContext)
 
 	result = Result{

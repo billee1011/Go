@@ -3,8 +3,8 @@ package common
 import (
 	"fmt"
 	"net/http"
+	playerdata "steve/common/data/player"
 	"steve/gutils"
-	"steve/room2/player"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -60,13 +60,8 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	roomPlayer := player.GetPlayerMgr().GetPlayer(playerID)
-	if roomPlayer != nil {
-		roomPlayer.SetCoin(gold)
-		respMSG(resp, fmt.Sprintf("配置玩家金币数成功,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, gold), 200)
-	} else {
-		resp.Write([]byte("未找到玩家"))
-	}
+	playerdata.SetPlayerCoin(playerID, gold)
+	respMSG(resp, fmt.Sprintf("配置玩家金币数成功,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, gold), 200)
 }
 
 var peiPaiInfos []peipaiInfo

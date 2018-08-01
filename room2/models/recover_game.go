@@ -74,7 +74,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "getRecoverPlayerInfo",
 	})
-	ctx := d.GetConfig().Context.(*contexts.MjContext).MjContext
+	ctx := d.GetConfig().Context.(*contexts.MajongDeskContext).MjContext
 	mjContext := &ctx
 	deskPlayers := GetModelManager().GetPlayerModel(d.GetUid()).GetDeskPlayers()
 	for _, deskPlayer := range deskPlayers {

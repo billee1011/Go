@@ -27,8 +27,11 @@ func NewContinueModel(desk *desk.Desk) DeskModel {
 
 // GetName 获取 model 名称
 func (model *ContinueModel) GetName() string {
-	return fixed.Chat
+	return fixed.ChatModelName
 }
+
+// Active 激活 model
+func (model *ContinueModel) Active() {}
 
 // Start 启动 model
 func (model *ContinueModel) Start() {
@@ -39,15 +42,8 @@ func (model *ContinueModel) Start() {
 func (model *ContinueModel) Stop() {
 }
 
-// isWinner 判断玩家是否为赢家
-func (model *ContinueModel) isWinner(playerID uint64) bool {
-	settler := model.GetDesk().GetConfig().Settle
-	statistics := settler.GetStatistics()
-	return statistics[playerID] >= 0
-}
-
 // ContinueDesk 开始续局逻辑
-func (model *ContinueModel) ContinueDesk(fixBanker bool, bankerSeat int) {
+func (model *ContinueModel) ContinueDesk(fixBanker bool, bankerSeat int, settleMap map[uint64]int64) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name":   "DeskBase.ContinueDesk",
 		"fix_banker":  fixBanker,
@@ -73,7 +69,7 @@ func (model *ContinueModel) ContinueDesk(fixBanker bool, bankerSeat int) {
 		continuePlayers = append(continuePlayers, &match.ContinuePlayer{
 			PlayerId:   playerID,
 			Seat:       int32(player.GetSeat()),
-			Win:        model.isWinner(playerID),
+			Win:        settleMap[playerID] >= 0,
 			RobotLevel: int32(player.GetRobotLv()),
 		})
 	}

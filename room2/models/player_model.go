@@ -7,7 +7,7 @@ import (
 	"steve/room2/desk"
 	"steve/room2/fixed"
 	playerpkg "steve/room2/player"
-	server_pb "steve/server_pb/majong"
+	"sync"
 )
 
 type playerIDWithChannel struct {
@@ -21,15 +21,17 @@ type PlayerModel struct {
 	players      []*playerpkg.Player
 	enterChannel chan playerIDWithChannel
 	leaveChannel chan playerIDWithChannel
+	stopped      bool
+	mu           sync.Mutex
 }
 
 // GetName get model name
 func (model *PlayerModel) GetName() string {
-	return fixed.Player
+	return fixed.PlayerModelName
 }
 
-// Start start model
-func (model *PlayerModel) Start() {
+// Active 激活 model
+func (model *PlayerModel) Active() {
 	model.players = make([]*playerpkg.Player, model.GetDesk().GetConfig().Num)
 	ids := model.GetDesk().GetConfig().PlayerIds //GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).GetDeskPlayerIDs()
 	for i := 0; i < len(model.players); i++ {
@@ -43,8 +45,14 @@ func (model *PlayerModel) Start() {
 	}
 }
 
+// Start start model
+func (model *PlayerModel) Start() {
+	model.stopped = false
+}
+
 // Stop stop model
 func (model *PlayerModel) Stop() {
+	model.mu.Lock()
 	playerMgr := playerpkg.GetPlayerMgr()
 
 	playerIDs := make([]uint64, 0, len(model.players))
@@ -58,6 +66,25 @@ func (model *PlayerModel) Stop() {
 		}
 	}
 	playerMgr.UnbindPlayerRoomAddr(playerIDs)
+
+	// 消费完所有进入退出
+forstart:
+	for {
+		select {
+		case enterInfo := <-model.enterChannel:
+			{
+				close(enterInfo.finishChannel)
+			}
+		case leaveInfo := <-model.leaveChannel:
+			{
+				close(leaveInfo.finishChannel)
+			}
+		default:
+			break forstart
+		}
+	}
+	model.stopped = true
+	model.mu.Unlock()
 }
 
 // getEnterChannel get enter channel
@@ -82,10 +109,16 @@ func NewPlayertModel(desk *desk.Desk) DeskModel {
 
 // PlayerEnter 玩家进入
 func (model *PlayerModel) PlayerEnter(player *playerpkg.Player) {
+	model.mu.Lock()
+	if model.stopped {
+		model.mu.Unlock()
+		return
+	}
 	model.enterChannel <- playerIDWithChannel{
 		playerID:      player.GetPlayerID(),
 		finishChannel: make(chan error, 0),
 	}
+	model.mu.Unlock()
 }
 
 // handlePlayerEnter 处理玩家重入
@@ -99,34 +132,27 @@ func (model *PlayerModel) handlePlayerEnter(playerID uint64) {
 
 // PlayerQuit 玩家退出
 func (model *PlayerModel) PlayerQuit(player *playerpkg.Player) {
+	model.mu.Lock()
+	if model.stopped {
+		model.mu.Unlock()
+		return
+	}
 	model.leaveChannel <- playerIDWithChannel{
 		playerID:      player.GetPlayerID(),
 		finishChannel: make(chan error, 0),
 	}
+	model.mu.Unlock()
 }
 
 // handlePlayerLeave 处理玩家离开牌桌
-func (model *PlayerModel) handlePlayerLeave(playerID uint64) {
+func (model *PlayerModel) handlePlayerLeave(playerID uint64, needTuoguan bool) {
 	playerMgr := playerpkg.GetPlayerMgr()
 	player := playerMgr.GetPlayer(playerID)
 	player.SetQuit(true)
-	if !player.IsTuoguan() && model.needTuoguan() {
+	if !player.IsTuoguan() && needTuoguan {
 		player.SetTuoguan(true, false)
 	}
 	model.playerQuitEnterDeskNtf(player, room.QuitEnterType_QET_QUIT)
-}
-
-func (model *PlayerModel) needTuoguan() bool {
-	mjContext := model.GetGameContext().(*contexts.MjContext)
-	state := mjContext.MjContext.GetCurState()
-	switch state {
-	case server_pb.StateID_state_init,
-		server_pb.StateID_state_fapai,
-		server_pb.StateID_state_huansanzhang,
-		server_pb.StateID_state_dingque:
-		return false
-	}
-	return true
 }
 
 func (model *PlayerModel) playerQuitEnterDeskNtf(player *playerpkg.Player, qeType room.QuitEnterType) {
@@ -145,7 +171,7 @@ func (model *PlayerModel) playerQuitEnterDeskNtf(player *playerpkg.Player, qeTyp
 }
 
 func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value bool) {
-	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MjContext).MjContext.Players {
+	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MajongDeskContext).MjContext.Players {
 		if p.GetPalyerId() == player.GetPlayerID() {
 			p.IsQuit = value
 		}

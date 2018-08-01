@@ -19,8 +19,12 @@ type MessageModel struct {
 }
 
 func (model *MessageModel) GetName() string {
-	return fixed.Message
+	return fixed.MessageModelName
 }
+
+// Active 激活 model
+func (model *MessageModel) Active() {}
+
 func (model *MessageModel) Start() {
 
 }
@@ -66,7 +70,9 @@ func (model *MessageModel) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgI
 		playerIDs = m.GetDeskPlayerIDs()
 		logEntry = logEntry.WithField("all_player_ids", playerIDs)
 	}
-	playerIDs = model.removeQuit(playerIDs)
+	if exceptQuit {
+		playerIDs = model.removeQuit(playerIDs)
+	}
 	logEntry = logEntry.WithField("real_dest_player_ids", playerIDs)
 
 	if len(playerIDs) == 0 {
@@ -79,8 +85,14 @@ func (model *MessageModel) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgI
 func (model *MessageModel) removeQuit(playerIDs []uint64) []uint64 {
 	result := []uint64{}
 	for _, playerID := range playerIDs {
+		entry := logrus.WithField("player_id", playerID)
 		pla := player.GetPlayerMgr().GetPlayer(playerID)
-		if pla == nil || pla.IsQuit() || pla.GetDesk() != model.GetDesk() {
+		if pla == nil {
+			entry.Debugln("未获取到玩家对象")
+			continue
+		}
+		if pla.IsQuit() || pla.GetDesk() != model.GetDesk() {
+			entry.Debugln(pla.IsQuit(), pla.GetDesk() == nil, pla.GetDesk() == model.GetDesk())
 			continue
 		}
 		result = append(result, playerID)

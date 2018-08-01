@@ -79,11 +79,10 @@ func (mgr *DeskManager) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 	}
 
 	GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
-	//mgr.deskMap.Store(desk.GetUid(),desk)
 	return
 }
 
-//创建桌子并初始化所有model
+// CreateDeskObj 创建桌子并初始化所有model
 func (mgr *DeskManager) CreateDeskObj(length int, players []uint64, gameID int, robotLvs []int, req *roommgr.CreateDeskRequest) (*deskpkg.Desk, error) {
 	var config deskpkg.DeskConfig
 	var context interface{}
@@ -91,19 +90,18 @@ func (mgr *DeskManager) CreateDeskObj(length int, players []uint64, gameID int, 
 	desk := deskpkg.NewDesk(id, gameID, players[:], &config)
 	playerSli := players[:]
 	var err error
-	var ctx interface{}
 	switch gameID {
 	case GameId_GAMEID_DOUDIZHU:
 		context = contexts.CreateInitDDZContext(playerSli)
 		config = deskpkg.NewDDZMDeskCreateConfig(context, length)
 	default:
-		ctx, err = contexts.CreateMajongContext(playerSli, gameID, req.GetBankerSeat(), req.GetFixBanker())
-		config = deskpkg.NewMjDeskCreateConfig(ctx, NewMajongSettle(), length)
+		context, err = contexts.CreateMajongContext(playerSli, gameID, req.GetBankerSeat(), req.GetFixBanker())
+		config = deskpkg.NewMjDeskCreateConfig(context, NewMajongSettle(), length)
 	}
 	if err != nil {
 		return nil, err
 	}
-	desk.GetConfig().Context = ctx
+	desk.GetConfig().Context = context
 	desk.GetConfig().PlayerIds = players
 	player.GetPlayerMgr().InitDeskData(players, 2, robotLvs)
 	player.GetPlayerMgr().BindPlayerRoomAddr(players, gameID)

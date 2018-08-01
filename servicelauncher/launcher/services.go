@@ -1,16 +1,16 @@
 package launcher
 
 import (
-	"github.com/spf13/viper"
 	gatewaycore "steve/gateway/core"
-	matchcore "steve/match/core"
-	roomcore "steve/room/core"
 	hallcore "steve/hall/core"
 	logincore "steve/login/core"
+	matchcore "steve/match/core"
+	roomcore "steve/room/core"
 	"steve/serviceloader/loader"
 	"steve/structs/service"
+
 	"github.com/Sirupsen/logrus"
-	"steve/room2"
+	"github.com/spf13/viper"
 )
 
 func Init(args []string) {
@@ -45,14 +45,14 @@ func LoadService(name string, options ...loader.ServiceOption) {
 		svr = roomcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
-	case "room2":
-		svr = core.NewService()
+		// case "room2":
+		// 	svr = core.NewService()
 	}
 	if svr != nil {
 		svr.Init(exposer)
 		loader.Run(svr, exposer, opt)
-	}else{
-		logrus.Errorln("no service found service name : ",svr)
+	} else {
+		logrus.Errorln("no service found service name : ", svr)
 		panic("no service found")
 	}
 }

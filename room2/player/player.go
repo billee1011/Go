@@ -20,7 +20,6 @@ type Player struct {
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
 	robotLv     int    // 机器人等级
-	detached    bool   // 是否和牌桌解除关联
 	desk        *desk.Desk
 
 	mu sync.RWMutex

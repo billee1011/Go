@@ -1,30 +1,30 @@
 package models
 
 import (
-	"github.com/Sirupsen/logrus"
-	"steve/client_pb/room"
-	"github.com/golang/protobuf/proto"
 	"steve/client_pb/msgid"
+	"steve/client_pb/room"
+	"steve/room2/desk"
+	"steve/room2/fixed"
+	"steve/room2/player"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
-	"steve/room2/player"
-	"steve/room2/fixed"
-	"steve/room2/desk"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 type ChatModel struct {
 	BaseModel
 }
 
-func (model ChatModel) GetName() string {
-	return fixed.Chat
+func (model *ChatModel) GetName() string {
+	return fixed.ChatModelName
 }
-func (model ChatModel) Start() {
+func (model *ChatModel) Active() {}
 
-}
-func (model ChatModel) Stop() {
+func (model *ChatModel) Start() {}
 
-}
+func (model *ChatModel) Stop() {}
 
 func NewChatModel(desk *desk.Desk) DeskModel {
 	result := &ChatModel{}

@@ -15,12 +15,9 @@ import (
 
 // AutoEventGenerateParams 生成自动事件的参数
 type AutoEventGenerateParams struct {
-	// MajongContext  *majong.MajongContext
-	Desk           *desk.Desk
-	CurTime        time.Time
-	StartTime      time.Time
-	RobotLv        map[uint64]int
-	TuoGuanPlayers []uint64
+	Desk      *desk.Desk
+	StartTime time.Time
+	RobotLv   map[uint64]int
 }
 
 // AutoEventGenerateResult 自动事件生成结果
@@ -51,7 +48,7 @@ func GetAtEvent() DeskAutoEventGenerator {
 func (aeg *autoEventGenerator) handlePlayerAI(result *AutoEventGenerateResult, AI CommonAI,
 	playerID uint64, deskObj *desk.Desk, aiType AIType, robotLv int) {
 
-	gameContext := deskObj.GetConfig().Context.(*contexts.MjContext)
+	gameContext := deskObj.GetConfig().Context.(*contexts.MajongDeskContext)
 	mjContext := gameContext.MjContext
 
 	aiResult, err := AI.GenerateAIEvent(AIEventGenerateParams{
@@ -103,7 +100,7 @@ func (aeg *autoEventGenerator) handleDDZPlayerAI(result *AutoEventGenerateResult
 	// 未出错时，把产生的每一个AI事件压入结果集
 	if err == nil {
 		for _, aiEvent := range aiResult.Events {
-			params := desk.CreateEventParams() // TODO ： 斗地主事件参数未定义
+			params := desk.CreateEventParams(aiEvent.Context, playerID)
 			event := desk.NewDeskEvent(int(aiEvent.ID), fixed.OverTimeEvent, deskObj, params)
 			result.Events = append(result.Events, event)
 		}
@@ -114,7 +111,7 @@ func (aeg *autoEventGenerator) handleDDZPlayerAI(result *AutoEventGenerateResult
 func (aeg *autoEventGenerator) handleOverTime(AI CommonAI, stateTime time.Time, deskObj *desk.Desk) (
 	finish bool, result AutoEventGenerateResult) {
 
-	gameContext := deskObj.GetConfig().Context.(*contexts.MjContext)
+	gameContext := deskObj.GetConfig().Context.(*contexts.MajongDeskContext)
 	mjContext := gameContext.MjContext
 
 	finish, result = false, AutoEventGenerateResult{
@@ -140,7 +137,7 @@ func (aeg *autoEventGenerator) handleHuStateAuto(AI CommonAI, stateTime time.Tim
 		Events: []desk.DeskEvent{},
 	}
 
-	gameContext := deskObj.GetConfig().Context.(*contexts.MjContext)
+	gameContext := deskObj.GetConfig().Context.(*contexts.MajongDeskContext)
 	mjContext := gameContext.MjContext
 	duration := time.Second * time.Duration(viper.GetInt(config.HuStateTimeOut))
 	if duration == 0 || time.Now().Sub(stateTime) < duration {
@@ -162,7 +159,7 @@ func (aeg *autoEventGenerator) handleTingStateAuto(AI CommonAI, stateTime time.T
 	finish, result = false, AutoEventGenerateResult{
 		Events: []desk.DeskEvent{},
 	}
-	gameContext := deskObj.GetConfig().Context.(*contexts.MjContext)
+	gameContext := deskObj.GetConfig().Context.(*contexts.MajongDeskContext)
 	mjContext := gameContext.MjContext
 	duration := time.Second * time.Duration(viper.GetInt(config.TingStateTimeOut))
 	if duration == 0 || time.Now().Sub(stateTime) < duration {
@@ -251,7 +248,7 @@ func (aeg *autoEventGenerator) handleDDZTuoGuan(deskObj *desk.Desk, AI CommonAI,
 	for _, playerID := range playerIDs {
 		player := playerMgr.GetPlayer(playerID)
 		if player.IsTuoguan() {
-			aeg.handlePlayerAI(&result, AI, playerID, deskObj, TuoGuangAI, 0)
+			aeg.handleDDZPlayerAI(&result, AI, playerID, deskObj, TuoGuangAI, 0)
 		}
 	}
 	return result
@@ -278,7 +275,7 @@ func (aeg *autoEventGenerator) GenerateV2(params *AutoEventGenerateParams) (resu
 		ddzContext := _gameContext.(*contexts.DDZDeskContext).DDZContext
 		state = int32(ddzContext.GetCurState())
 	} else {
-		mjContext := _gameContext.(*contexts.MjContext).MjContext
+		mjContext := _gameContext.(*contexts.MajongDeskContext).MjContext
 		state = int32(mjContext.GetCurState())
 	}
 
@@ -311,7 +308,7 @@ func (aeg *autoEventGenerator) GenerateV2(params *AutoEventGenerateParams) (resu
 		}
 		result = aeg.handleTuoGuan(params.Desk, AI, params.StartTime)
 
-		mjContext := _gameContext.(*contexts.MjContext).MjContext
+		mjContext := _gameContext.(*contexts.MajongDeskContext).MjContext
 		// 超过 1s 处理机器人事件
 		if time.Now().Sub(params.StartTime) > 1*time.Second {
 			players := mjContext.GetPlayers()
