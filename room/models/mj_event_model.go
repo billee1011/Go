@@ -155,7 +155,7 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 			{
 				mjContext := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext)
 				stateNumber := event.Params.Params[0].(int)
-				context := event.Params.Params[1].([]byte)
+				context := event.Params.Params[1]
 				if needCompareStateNumber(&event) && stateNumber != mjContext.StateNumber {
 					continue
 				}
@@ -167,7 +167,7 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 			{
 				events := model.genTimerEvent()
 				for _, event := range events {
-					context := event.Params.Params[1].([]byte)
+					context := event.Params.Params[1]
 					if model.processEvent(event.EventID, context) {
 						return
 					}

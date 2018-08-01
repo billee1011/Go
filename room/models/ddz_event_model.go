@@ -367,8 +367,8 @@ func (model *DDZEventModel) getEventPlayerID(event desk.DeskEvent) uint64 {
 }
 
 // getEventContext 获取事件现场
-func (model *DDZEventModel) getEventContext(event desk.DeskEvent) []byte {
-	return event.Params.Params[0].([]byte)
+func (model *DDZEventModel) getEventContext(event desk.DeskEvent) interface{} {
+	return event.Params.Params[0]
 }
 
 // recordTuoguanOverTimeCount 记录托管超时计数
