@@ -103,6 +103,7 @@ func allocServerIDNew(rp *RegisterParams) string {
 // consul对服务进行健康检查
 func statusHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "status ok!")
+	//logrus.Debugln("check consul ok")
 }
 
 // consul对服务进行健康检查,通过Http提供检查接口

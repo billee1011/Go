@@ -4,8 +4,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	backendpb "github.com/bsm/grpclb/grpclb_backend_v1"
-	balancerpb "github.com/bsm/grpclb/grpclb_balancer_v1"
+	backendpb "steve/thirdpart/github.com/bsm/grpclb/grpclb_backend_v1"
+	balancerpb "steve/thirdpart/github.com/bsm/grpclb/grpclb_balancer_v1"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

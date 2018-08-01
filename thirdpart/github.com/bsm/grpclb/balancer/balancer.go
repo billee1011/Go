@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"sort"
 
-	balancerpb "github.com/bsm/grpclb/grpclb_balancer_v1"
+	balancerpb "steve/thirdpart/github.com/bsm/grpclb/grpclb_balancer_v1"
 )
 
 // Balancer algorithm interface
