@@ -18,8 +18,6 @@ const (
 	RobotPlayerGameIDField string = "gameid"
 	//RobotPlayerNickNameField 玩家昵称字段
 	RobotPlayerNickNameField string = "nickname"
-	//RobotPlayerHeadImageField 玩家头像字段
-	RobotPlayerHeadImageField string = "head_image"
 )
 
 var Exposer *structs.Exposer

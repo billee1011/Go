@@ -20,7 +20,7 @@ type HallPlayer struct {
 type RobotPlayer struct {
 	PlayerID      uint64            `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 	NickName      string            `protobuf:"bytes,2,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	HeadImage     string            `protobuf:"bytes,3,opt,name=head_image,json=headImage" json:"head_image,omitempty"`
+	Avatar        string            `protobuf:"bytes,3,opt,name=avatar" json:"avatar,omitempty"`
 	Coin          uint64            `protobuf:"varint,4,opt,name=coin" json:"coin,omitempty"`
 	State         uint64            `protobuf:"varint,5,opt,name=state" json:"state,omitempty"`
 	GameIDWinRate map[uint64]uint64 `protobuf:"bytes,6,rep,name=game_id_win_rate,json=gameIdWinRate" json:"game_id_win_rate,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`

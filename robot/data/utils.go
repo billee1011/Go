@@ -28,6 +28,7 @@ func FmtRobotPlayer(robotPlayer *cache.RobotPlayer) map[string]interface{} {
 	robotPlayerMap := make(map[string]interface{})
 	robotPlayerMap[RobotPlayerNickNameField] = robotPlayer.NickName // 初始化昵称
 	robotPlayerMap[cache.PlayerStateField] = robotPlayer.State      //默认是空闲
+	robotPlayerMap[cache.AvatarField] = robotPlayer.Avatar          // 头像 TODO
 	robotPlayerMap[RobotPlayerIDField] = robotPlayer.PlayerID
 	robotPlayerMap[RobotPlayerCoinField] = robotPlayer.Coin
 	robotPlayerMap[RobotPlayerGameIDWinRate] = GameIDWinRateToJSON(robotPlayer.GameIDWinRate)

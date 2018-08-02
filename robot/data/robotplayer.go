@@ -31,7 +31,7 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*cache.RobotPlayer
 }
 
 //getMysqlLeisureRobotPlayer 从mysql中获取空闲的玩家,并存入redis
-func getMysqlLeisureRobotPlayer(robotsIDCoins []*cache.RobotPlayer, lackRobotsID []uint64) []*cache.RobotPlayer {
+func getMysqlLeisureRobotPlayer(robotsPlayers []*cache.RobotPlayer, lackRobotsID []uint64) []*cache.RobotPlayer {
 	log := logrus.WithFields(logrus.Fields{"func_name": "getMysqlLeisureRobotPlayer"})
 	failedIDErrMpa := make(map[uint64]error) //存入redis 失败 playerID
 	for _, playerID := range lackRobotsID {
@@ -45,11 +45,65 @@ func getMysqlLeisureRobotPlayer(robotsIDCoins []*cache.RobotPlayer, lackRobotsID
 			failedIDErrMpa[playerID] = err
 		}
 		robotPlayer.PlayerID = playerID
-		robotsIDCoins = append(robotsIDCoins, robotPlayer)
+		robotsPlayers = append(robotsPlayers, robotPlayer)
 	}
 	if len(failedIDErrMpa) > 0 {
 		log = log.WithFields(logrus.Fields{"failedIDErrMpa": failedIDErrMpa})
 	}
 	log.Info("从mysql获取机器人,并存入redis")
-	return robotsIDCoins
+	return robotsPlayers
+}
+
+//获取机器人需要的值
+func getMysqlRobotFieldValuedAll(robotMap map[int64]*cache.RobotPlayer) error {
+	//gameid-winrate 游戏id对应的胜率
+	robotsPGs, err := getMysqlRobotGameWinRateAll()
+	if err != nil {
+		return err
+	}
+	for _, robot := range robotsPGs {
+		if rp := robotMap[robot.Playerid]; rp != nil {
+			rp.GameIDWinRate[uint64(robot.Gameid)] = uint64(robot.Winningrate)
+			robotMap[robot.Playerid] = rp
+		} else {
+			robotMap[robot.Playerid] = &cache.RobotPlayer{
+				PlayerID:      uint64(robot.Playerid),
+				GameIDWinRate: map[uint64]uint64{uint64(robot.Gameid): uint64(robot.Winningrate)},
+			}
+		}
+	}
+	// 金币
+	robotsTPCs, err := getMysqlRobotCoinAll()
+	if err != nil {
+		return err
+	}
+	for _, robot := range robotsTPCs {
+		if rp := robotMap[robot.Playerid]; rp != nil {
+			rp.Coin = uint64(robot.Coins)
+			robotMap[robot.Playerid] = rp
+		} else {
+			robotMap[robot.Playerid] = &cache.RobotPlayer{
+				PlayerID: uint64(robot.Playerid),
+				Coin:     uint64(robot.Coins),
+			}
+		}
+	}
+
+	// 昵称
+	robotsTPs, err := getMysqlRobotNicknameAll()
+	if err != nil {
+		return err
+	}
+	for _, robot := range robotsTPs {
+		if rp := robotMap[robot.Playerid]; rp != nil {
+			rp.NickName = robot.Nickname
+			robotMap[robot.Playerid] = rp
+		} else {
+			robotMap[robot.Playerid] = &cache.RobotPlayer{
+				PlayerID: uint64(robot.Playerid),
+				NickName: robot.Nickname,
+			}
+		}
+	}
+	return err
 }
