@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-redis/redis"
@@ -30,6 +31,9 @@ var RedisClifunc = getRobotRedis
 var errRobotRedisGain = errors.New("robot_redis 获取失败")
 var errRobotRedisOpertaion = errors.New("robot_redis 操作失败")
 
+// redis 过期时间
+var RedisTimeOut = time.Hour * 24 * 30
+
 // getRobotRedis 获取大厅服redis
 func getRobotRedis() *redis.Client {
 
@@ -41,16 +45,16 @@ func getRobotRedis() *redis.Client {
 	return redis
 }
 
-//AddRobottFiled 添加机器人到redis
-func AddRobottFiled(playerID uint64, fields map[string]interface{}) error {
+//AddRobotWatch 添加机器人到redis
+func AddRobotWatch(playerID uint64, fields map[string]interface{}, duration time.Duration) error {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "SetRobotFields",
 		"playerID":  playerID,
 		"fields":    fields,
 	})
-	client := RedisClifunc()
+	redisCli := RedisClifunc()
 	key := fmt.Sprintf(robotRedisKey, playerID)
-	err := client.Watch(func(tx *redis.Tx) error {
+	err := redisCli.Watch(func(tx *redis.Tx) error {
 		result, err := tx.HKeys(key).Result()
 		if err != nil && err != redis.Nil {
 			return err
@@ -59,29 +63,27 @@ func AddRobottFiled(playerID uint64, fields map[string]interface{}) error {
 			return fmt.Errorf("key已经存在 %v", key)
 		}
 		tx.HMSet(key, fields)
-		if err != nil {
-			entry.WithError(err).Errorln("数据格式错误")
-		}
-		return err
+		redisCli.Expire(key, duration)
+		return nil
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")
-		return AddRobottFiled(playerID, fields)
+		return AddRobotWatch(playerID, fields, duration)
 	}
 	return err
 }
 
-// SetRobotFiled 设置机器人属性
-func SetRobotFiled(playerID uint64, fieldName string, val interface{}) error {
+// SetRobotWatch 设置机器人属性
+func SetRobotWatch(playerID uint64, fieldName string, val interface{}, duration time.Duration) error {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "SetRobotFiled",
 		"playerID":  playerID,
 		"fieldName": fieldName,
 		"val":       val,
 	})
-	client := RedisClifunc()
+	redisCli := RedisClifunc()
 	key := fmt.Sprintf(robotRedisKey, playerID)
-	err := client.Watch(func(tx *redis.Tx) error {
+	err := redisCli.Watch(func(tx *redis.Tx) error {
 		result, err := tx.HKeys(key).Result()
 		if err != nil && err != redis.Nil {
 			return fmt.Errorf("设置机器人属性失败 %v", err)
@@ -90,44 +92,12 @@ func SetRobotFiled(playerID uint64, fieldName string, val interface{}) error {
 			return fmt.Errorf("key不存在 %v", key)
 		}
 		tx.HSet(key, fieldName, val)
-		if err != nil {
-			entry.WithError(err).Errorln("数据格式错误")
-		}
-		return err
+		redisCli.Expire(key, duration)
+		return nil
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")
-		return SetRobotFiled(playerID, fieldName, val)
-	}
-	return err
-}
-
-// SetRobotFields 设置机器人多个属性
-func SetRobotFields(playerID uint64, fields map[string]interface{}) error {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "SetRobotFields",
-		"playerID":  playerID,
-		"fields":    fields,
-	})
-	client := RedisClifunc()
-	key := fmt.Sprintf(robotRedisKey, playerID)
-	err := client.Watch(func(tx *redis.Tx) error {
-		result, err := tx.HKeys(key).Result()
-		if err != nil && err != redis.Nil {
-			return fmt.Errorf("设置机器人多个属性失败 %v", err)
-		}
-		if len(result) == 0 {
-			return fmt.Errorf("key不存在 %v", key)
-		}
-		tx.HMSet(key, fields)
-		if err != nil {
-			entry.WithError(err).Errorln("数据格式错误")
-		}
-		return err
-	}, key)
-	if err == redis.TxFailedErr {
-		entry.WithError(err).Errorln("重试")
-		return SetRobotFields(playerID, fields)
+		return SetRobotWatch(playerID, fieldName, val, duration)
 	}
 	return err
 }
@@ -173,29 +143,31 @@ func GetRobotStringFiled(playerID uint64, fieldName string) (string, error) {
 	return val, nil
 }
 
-// SetRobotPlayerFields 设置机器人玩家多个属性
-func SetRobotPlayerFields(playerID uint64, fields map[string]interface{}) error {
+// SetRobotPlayerWatchs 设置机器人玩家多个属性
+func SetRobotPlayerWatchs(playerID uint64, fields map[string]interface{}, duration time.Duration) error {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "SetRobotPlayerFields",
 		"playerID":  playerID,
 		"fields":    fields,
 	})
-	client := RedisClifunc()
+	redisCli := RedisClifunc()
 	key := fmt.Sprintf(robotRedisKey, playerID)
 
-	err := client.Watch(func(tx *redis.Tx) error {
-		_, err := tx.Get(key).Uint64()
+	err := redisCli.Watch(func(tx *redis.Tx) error {
+		result, err := tx.HKeys(key).Result()
 		if err != nil && err != redis.Nil {
-			entry.WithError(err).Errorln("key不存在")
-			return err
+			return fmt.Errorf("设置机器人多个属性失败 %v", err)
+		}
+		if len(result) == 0 {
+			return fmt.Errorf("key不存在 %v", key)
 		}
 		tx.HMSet(key, fields)
-		entry.WithError(err).Errorln("数据格式错误")
-		return err
+		redisCli.Expire(key, duration)
+		return nil
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")
-		return SetRobotPlayerFields(playerID, fields)
+		return SetRobotPlayerWatchs(playerID, fields, duration)
 	}
 	return err
 }

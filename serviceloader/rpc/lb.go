@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bsm/grpclb/balancer"
-	"github.com/bsm/grpclb/discovery/consul"
+	"steve/thirdpart/github.com/bsm/grpclb/balancer"
+	"steve/thirdpart/github.com/bsm/grpclb/discovery/consul"
 	"github.com/hashicorp/consul/api"
 	"github.com/Sirupsen/logrus"
 	"time"

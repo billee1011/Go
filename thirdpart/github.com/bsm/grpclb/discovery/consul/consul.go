@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bsm/grpclb/balancer"
+	"steve/thirdpart/github.com/bsm/grpclb/balancer"
 	"github.com/hashicorp/consul/api"
 )
 

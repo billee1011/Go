@@ -197,8 +197,8 @@ func GetPlayerGameInfo(playerID uint64, gameID uint32) (exist bool, info *db.TPl
 	return
 }
 
-// GetPlayerState 获取游戏状态
-func GetPlayerState(playerID uint64) (state uint32, err error) {
+// GetPlayerState 获取游戏状态,游戏id
+func GetPlayerState(playerID uint64) (state, gameID uint32, err error) {
 	enrty := logrus.WithFields(logrus.Fields{
 		"func_name": GetPlayerState,
 		"playerID":  playerID,
@@ -207,12 +207,15 @@ func GetPlayerState(playerID uint64) (state uint32, err error) {
 	redisKey := cache.FmtPlayerIDKey(playerID)
 
 	val := make([]interface{}, 0)
-	val, err = getRedisField(playerRedisName, redisKey, cache.PlayerStateField)
+	val, err = getRedisField(playerRedisName, redisKey, cache.PlayerStateField, cache.GameIDField)
 
 	if err != nil {
 		enrty.WithError(err).Warningln("get player state from redis fail")
 	}
-	state = uint32(val[0].(uint32))
+	rstate, _ := strconv.Atoi(val[0].(string))
+	rgameID, _ := strconv.Atoi(val[1].(string))
+	state, gameID = uint32(rstate), uint32(rgameID)
+
 	return
 }
 

@@ -89,6 +89,7 @@ func init() {
 	mapArgs["hport"] = rootCmd.Flags().String("hport", "", "server rpc health port")
 	mapArgs["gid"] = rootCmd.Flags().String("gid", "", "group id")
 	mapArgs["sid"] = rootCmd.Flags().String("sid", "", "server id")
+	mapArgs["rid"] = rootCmd.Flags().String("rid", "", "server hash id")
 	mapArgs["type"] = rootCmd.Flags().String("type", "", "server type")
 	mapArgs["data"] = rootCmd.Flags().String("data", "", "server data")
 	mapArgs["level"] = rootCmd.Flags().String("level", "", "server level")

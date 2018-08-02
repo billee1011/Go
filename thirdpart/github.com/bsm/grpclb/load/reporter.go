@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	pb "github.com/bsm/grpclb/grpclb_backend_v1"
+	pb "steve/thirdpart/github.com/bsm/grpclb/grpclb_backend_v1"
 	"golang.org/x/net/context"
 )
 

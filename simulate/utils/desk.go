@@ -366,7 +366,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]
 func DDZjoinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]uint64, error) {
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "joinDesk",
+		"func_name": "DDZjoinDesk",
 		"GameID":    gameID,
 	})
 

@@ -7,10 +7,11 @@ import (
 	logincore "steve/login/core"
 	matchcore "steve/match/core"
 	"steve/serviceloader/loader"
-	"steve/structs/service"
-
-	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
+	"steve/structs/service"
+	"github.com/Sirupsen/logrus"
+	testcore "steve/testserver/core"
+
 )
 
 func Init(args []string, flagList map[string]*string) {
@@ -50,6 +51,8 @@ func LoadService(name string, options ...loader.ServiceOption) {
 		svr = matchcore.NewService()
 	// case "room":
 	// 	svr = roomcore.NewService()
+	case "testserver":
+		svr = testcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
 	case "gold":

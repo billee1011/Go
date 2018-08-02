@@ -62,7 +62,7 @@ type levelGlobalInfo struct {
 	sucPlayers map[uint64]uint64
 
 	// 已成功匹配的桌子，Key:桌子ID，Value:桌子信息
-	sucDesks map[uint64]*matchDesk
+	sucDesks map[uint64]*sucDesk
 }
 
 // gameInfo 单个游戏的匹配信息
@@ -229,74 +229,79 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 	rsp, err := hallClient.GetGameListInfo(context.Background(), &user.GetGameListInfoReq{})
 
 	// 不成功时，报错
-	if err != nil {
+	if err != nil || rsp == nil {
 		logrus.WithError(err).Errorln("从hall服获取游戏场次配置信息失败!!!")
 		return false
 	}
 
-	allGameInfo := rsp.GetGameInfo()
+	// 返回的不是成功，报错
+	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
+		logrus.WithError(err).Errorln("从hall服获取游戏场次配置信息成功，但errCode显示失败")
+		return false
+	}
 
-	logrus.Debugf("hall服发送%v个游戏配置信息", len(allGameInfo))
+	// 游戏配置
+	rspGameConfig := rsp.GetGameConfig()
+	logrus.Debugf("hall服发送了%v个游戏配置信息", len(rspGameConfig))
+	for i := 0; i < len(rspGameConfig); i++ {
+		pGameConf := rspGameConfig[i]
 
-	for i := 0; i < len(allGameInfo); i++ {
-		pGameConfig := allGameInfo[i]
-
-		logrus.Debugf("现在处理第%v个游戏配置信息，配置如下：%v", i+1, pGameConfig)
-
-		rGameID := uint32(pGameConfig.GetGameId())
-
-		// 新场次配置
-		newLevelConf := gameLevelConfig{
-			levelID:            pGameConfig.GetLevelId(),
-			levelName:          pGameConfig.GetGameName(),
-			bottomScore:        pGameConfig.GetBaseScores(),
-			minGold:            int64(pGameConfig.GetLowScores()),
-			maxGold:            int64(pGameConfig.GetBaseScores()),
-			minNeedPlayerCount: pGameConfig.GetMinPeople(),
-			maxNeedPlayerCount: pGameConfig.GetMaxPeople(),
+		// 游戏需不存在
+		_, exist := manager.allGame[pGameConf.GetGameId()]
+		if exist {
+			logrus.Errorln("游戏ID:%v存在重复", pGameConf.GetGameId())
+			return false
 		}
 
-		// 新场次匹配申请通道
-		newLevelChan := make(chan reqMatchPlayer, 1024)
+		// 新游戏配置信息
+		newGameConf := gameConfig{
+			gameID:      pGameConf.GetGameId(),
+			gameName:    pGameConf.GetGameName(),
+			levelConfig: map[uint32]gameLevelConfig{},
+		}
 
-		gInfo, exist := manager.allGame[rGameID]
+		// 加入该游戏
+		manager.allGame[pGameConf.GetGameId()] = gameInfo{
+			allLevelChan: map[uint32]chan reqMatchPlayer{},
+			config:       newGameConf}
+	}
 
-		// 不存在就新建
+	// 场次配置
+	rspLevelConfig := rsp.GetGameLevelConfig()
+	logrus.Debugf("hall服发送了%v个场次配置信息", len(rspLevelConfig))
+	for i := 0; i < len(rspLevelConfig); i++ {
+		pLevelConf := rspLevelConfig[i]
+
+		// 游戏需存在
+		gInfo, exist := manager.allGame[pLevelConf.GetGameId()]
 		if !exist {
-
-			// 游戏配置
-			newGameConf := gameInfo{
-				allLevelChan: map[uint32]chan reqMatchPlayer{
-					newLevelConf.levelID: newLevelChan,
-				},
-
-				config: gameConfig{
-					gameID:   rGameID,
-					gameName: allGameInfo[i].GetGameName(),
-					levelConfig: map[uint32]gameLevelConfig{
-						newLevelConf.levelID: newLevelConf,
-					},
-				},
-			}
-
-			// 加入该游戏
-			manager.allGame[rGameID] = newGameConf
-		} else {
-			// 已经存在游戏的话，则添加新层级
-
-			// 层级不能已存在
-			_, exist := gInfo.config.levelConfig[pGameConfig.GetLevelId()]
-			if exist {
-				logrus.Errorln("游戏ID:%v中存在重复的场次ID：%v", pGameConfig.GetGameId(), pGameConfig.GetLevelId())
-				return false
-			}
-
-			// 加入该层级
-			gInfo.config.levelConfig[pGameConfig.GetLevelId()] = newLevelConf
-
-			// 该层级的申请通道
-			gInfo.allLevelChan[pGameConfig.GetLevelId()] = newLevelChan
+			logrus.Errorln("游戏ID:%v中不存在", pLevelConf.GetGameId())
+			return false
 		}
+
+		// 场次需不存在
+		_, exist = gInfo.config.levelConfig[pLevelConf.GetLevelId()]
+		if exist {
+			logrus.Errorln("游戏ID:%v中场次ID:%v存在重复", pLevelConf.GetGameId(), pLevelConf.GetLevelId())
+			return false
+		}
+
+		// 新场次配置信息
+		newLevelConf := gameLevelConfig{
+			levelID:            pLevelConf.GetLevelId(),
+			levelName:          pLevelConf.GetLevelName(),
+			bottomScore:        pLevelConf.GetBaseScores(),
+			minGold:            int64(pLevelConf.GetLowScores()),
+			maxGold:            int64(pLevelConf.GetHighScores()),
+			minNeedPlayerCount: pLevelConf.GetMinPeople(),
+			maxNeedPlayerCount: pLevelConf.GetMaxPeople(),
+		}
+
+		// 加入该场次
+		gInfo.config.levelConfig[pLevelConf.GetLevelId()] = newLevelConf
+
+		// 该场次的申请通道
+		gInfo.allLevelChan[pLevelConf.GetLevelId()] = make(chan reqMatchPlayer, 1024)
 	}
 
 	logrus.Debugf("接收hall服的游戏配置信息结束，配置如下：%v", manager.allGame)
@@ -470,16 +475,50 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 		return false
 	}
 
+	tNowTime := time.Now().Unix()
+
 	for i := 0; i < len(pDesk.players); i++ {
 
 		deskID, exist := pGlobalInfo.sucPlayers[pDesk.players[i].playerID]
+
 		// 上一局的桌子ID相同，说明同桌
 		if exist && selfDeskID == deskID {
-			return true
+
+			// 找到该桌子
+			desk, exist := pGlobalInfo.sucDesks[deskID]
+			if exist {
+				// 接着检测成功时间，若未超过同桌限制时间，认为是上局同桌
+				if tNowTime-desk.sucTime < web.GetSameDeskLimitTime() {
+					return true
+				}
+			}
 		}
 	}
 
 	return false
+}
+
+// 检测指定金币数和指定桌子是否匹配
+// true表匹配，false表不匹配
+func (manager *matchManager) checkGoldMatchDesk(goldNum int64, pDesk *matchDesk) bool {
+
+	// 参数检测
+	if pDesk == nil {
+		logrus.Errorln("checkGoldMatchDesk() 参数错误，pDesk == nil，返回")
+		return false
+	}
+
+	nowTime := time.Now().Unix()
+
+	// 金币差异度(百分比)
+	goldDiff := (float64(goldNum) - float64(pDesk.aveGold)) / float64(pDesk.aveGold)
+
+	// 检测金币范围
+	if (float32(goldDiff)) > manager.getGoldValue(nowTime-pDesk.createTime) {
+		return false
+	}
+
+	return true
 }
 
 // 为指定玩家执行首次匹配
@@ -510,7 +549,10 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		robotLv:  0,
 		seat:     -1,
 		IP:       IPStringToUInt32(reqPlayer.IP),
+		gold:     reqPlayer.gold,
 	}
+
+	nowTime := time.Now().Unix()
 
 	///////////////////////////////////////////////////////// 先检测首次匹配范围是不是有桌子 ///////////////////////////////////////////////
 
@@ -540,7 +582,9 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			desk := iter.Value.(*matchDesk)
 
 			// 检测金币范围
-			// todo
+			if !manager.checkGoldMatchDesk(reqPlayer.gold, desk) {
+				continue
+			}
 
 			// 检测IP地址
 			if manager.checkPlayerSameIP(&newMatchPlayer, desk) {
@@ -589,8 +633,6 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		lastIndexs = append(lastIndexs, i)
 	}
 
-	nowTime := time.Now().Unix()
-
 	// 遍历lastIndexs
 	for i := 0; i < len(lastIndexs); i++ {
 		index := int8(lastIndexs[i])
@@ -629,7 +671,9 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			}
 
 			// 检测金币范围
-			// todo
+			if !manager.checkGoldMatchDesk(reqPlayer.gold, desk) {
+				continue
+			}
 
 			// 检测IP地址
 			if manager.checkPlayerSameIP(&newMatchPlayer, desk) {
@@ -702,9 +746,9 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 	globalInfo := levelGlobalInfo{
 		gameID:       gameID,
 		levelID:      levelID,
-		allRateDesks: make([]list.List, 101),  // 胜率1% - 100%的所有匹配桌子
-		sucPlayers:   map[uint64]uint64{},     // 已成功匹配的玩家，Key:玩家ID，Value:桌子ID
-		sucDesks:     map[uint64]*matchDesk{}, // 已成功匹配的桌子，Key:桌子ID，Value:桌子信息
+		allRateDesks: make([]list.List, 101), // 胜率1% - 100%的所有匹配桌子
+		sucPlayers:   map[uint64]uint64{},    // 已成功匹配的玩家，Key:玩家ID，Value:桌子ID
+		sucDesks:     map[uint64]*sucDesk{},  // 已成功匹配的桌子，Key:桌子ID，Value:桌子信息
 	}
 
 	// 2秒1次的合并定时器
@@ -858,6 +902,14 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 		return fmt.Sprintf("玩家金币数大于游戏场次金币要求最大值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
+	// 获取该游戏的胜率
+	// 计算该游戏的胜率，已经乘以100,比如：50表胜率为50%
+	playerWinRate, err := requestPlayerWinRate(playerID, gameID)
+	if err != nil {
+		logrus.Errorln("从hall服获取玩家胜率失败")
+		return fmt.Sprintf("从hall服获取玩家胜率失败，游戏ID:%v，场次ID:%v，请求的玩家ID:%v", gameID, levelID, playerID)
+	}
+
 	// 全部检测通过
 
 	// 获取该场次的申请通道
@@ -867,16 +919,14 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 		return fmt.Sprintf("请求匹配的游戏存在，场次存在，但找不到该场次的匹配申请通道，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
-	// 计算该游戏的胜率，已经乘以100,比如：50表胜率为50%
-	// 暂时写死，todo
-	playerWinRate := 50
+	clientIP, _ := requestPlayerIP(playerID)
 
 	// 压入通道
 	reqMatchChan <- reqMatchPlayer{
 		playerID: playerID,            // playerID
 		winRate:  int8(playerWinRate), // 胜率
 		gold:     playerGold,          // 金币数
-		IP:       "127.0.01",          // IP地址
+		IP:       clientIP,            // IP地址
 	}
 
 	logEntry.Debugln("离开函数")
@@ -1077,8 +1127,14 @@ func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchD
 		"desk":   pDesk,
 	})
 
+	// 原总金币数
+	oldAllGold := pDesk.aveGold * int64(len(pDesk.players))
+
 	// 压入该玩家
 	pDesk.players = append(pDesk.players, *pPlayer)
+
+	// 计算平均金币
+	pDesk.aveGold = (oldAllGold + pPlayer.gold) / int64(len(pDesk.players))
 
 	logrus.Debugf("桌子%v压入了玩家%v\n", pDesk, pPlayer)
 

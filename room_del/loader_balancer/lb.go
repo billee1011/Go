@@ -5,7 +5,7 @@ import (
 	"steve/structs/sgrpc"
 	"steve/room/interfaces/global"
 	"github.com/Sirupsen/logrus"
-	bckd "github.com/bsm/grpclb/grpclb_backend_v1"
+	bckd "steve/thirdpart/github.com/bsm/grpclb/grpclb_backend_v1"
 )
 
 /*

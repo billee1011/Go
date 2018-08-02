@@ -49,6 +49,8 @@ const (
 	PhoneField = "phone"
 	// PlayerStateField ...玩家状态
 	PlayerStateField = "game_state"
+	// GameIDField ...正在进行的游戏id
+	GameIDField = "game_id"
 	// GateAddrField ...网关服地址
 	GateAddrField = "gate_addr"
 	// MatchAddrField ...匹配服地址
