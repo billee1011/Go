@@ -13,7 +13,7 @@ rpc_server_name: testserver
 #RPC服务组名
 #group_name: 1000,1001
 #RPC服务健康监控Port
-#health_port: 16307
+health_port: 36317
 
 #consul 服务中心配置
 consul_addr: 192.168.7.108:8500

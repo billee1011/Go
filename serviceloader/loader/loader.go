@@ -74,9 +74,9 @@ func CreateExposer(opt *Option) *structs.Exposer {
 	RegisterLBReporter(exposer.RPCServer)
 	// Hash路由方式，将server Id 设置为负载值
 	if viper.GetString("rpc_lb") == "hash" {
-		sidArg, ok := IntArg("sid")
-		if ok && sidArg >= 0 && sidArg < 10000{
-			exposer.RPCServer.SetScore(int64(sidArg))
+		ridArg, ok := IntArg("rid")
+		if ok && ridArg >= 0 && ridArg < 10000{
+			exposer.RPCServer.SetScore(int64(ridArg))
 		}
 	}
 

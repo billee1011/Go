@@ -80,12 +80,6 @@ func RegisterServer(rp *RegisterParams) {
 		return
 	}
 	serverID := allocServerIDNew(rp)
-	// 命令行参数替换配置文件参数
-	// 如果命令行启动参数定义了服务ID，启用启动参数定义的服务ID
-	sidArg, ok := StringArg("sid")
-	if ok && len(sidArg) > 0 {
-		serverID = sidArg
-	}
 
 	logEntry = logEntry.WithField("server_id", serverID)
 
