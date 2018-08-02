@@ -51,7 +51,7 @@ var gameLevelconfigList = map[int16]string{
 
 const (
 	playerRedisName          = "player"
-	playerMysqlName          = "steve"
+	playerMysqlName          = "player"
 	playerTableName          = "t_player"
 	playerCurrencyTableName  = "t_player_currency"
 	playerGameTableName      = "t_player_game"
