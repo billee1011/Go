@@ -9,6 +9,7 @@ type ClientPlayer interface {
 	GetClient() Client
 	GetUsrName() string
 	GetAccountID() uint64
+	GetToken() string
 	AddExpectors(msgID ...msgid.MsgID)
 	GetExpector(msgID msgid.MsgID) MessageExpector
 }

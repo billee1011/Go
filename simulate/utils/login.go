@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
-	"steve/client_pb/gate"
 	"steve/client_pb/login"
 	msgid "steve/client_pb/msgid"
 	"steve/simulate/config"
@@ -25,6 +23,7 @@ type clientPlayer struct {
 	usrName   string
 	accountID uint64
 	expectors map[msgid.MsgID]interfaces.MessageExpector
+	token     string
 }
 
 func (p *clientPlayer) GetID() uint64 {
@@ -45,6 +44,11 @@ func (p *clientPlayer) GetUsrName() string {
 func (p *clientPlayer) GetAccountID() uint64 {
 	return p.accountID
 }
+
+func (p *clientPlayer) GetToken() string {
+	return p.token
+}
+
 func (p *clientPlayer) AddExpectors(msgIDs ...msgid.MsgID) {
 	for _, msgID := range msgIDs {
 		p.expectors[msgID], _ = p.client.ExpectMessage(msgID)
@@ -55,40 +59,54 @@ func (p *clientPlayer) GetExpector(msgID msgid.MsgID) interfaces.MessageExpector
 	return p.expectors[msgID]
 }
 
-func createPlayer(playerID uint64, coin uint64, client interfaces.Client, accountID uint64, userName string) *clientPlayer {
-	return &clientPlayer{
-		playerID:  playerID,
-		coin:      coin,
-		client:    client,
-		usrName:   userName,
-		accountID: accountID,
-		expectors: make(map[msgid.MsgID]interfaces.MessageExpector),
-	}
-}
-
-// LoginNewPlayer 自动分配账号 ID， 生成账号名称，然后登录
-func LoginNewPlayer() (interfaces.ClientPlayer, error) {
-	accountID := global.AllocAccountID()
-	accountName := GenerateAccountName(accountID)
-	return LoginPlayer(accountID, accountName)
-}
-
-// LoginPlayer 登录玩家
-func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer, error) {
+func loginPlayer(request *login.LoginAuthReq) (interfaces.ClientPlayer, error) {
 	gateClient := connect.NewTestClient(config.GetGatewayServerAddr(), config.GetClientVersion())
 	if gateClient == nil {
 		return nil, fmt.Errorf("连接网关服失败")
 	}
-	loginResponse, err := RequestAuth(gateClient, accountID, accountName, time.Minute*5)
+	response := &login.LoginAuthRsp{}
+	err := facade.Request(gateClient, msgid.MsgID_LOGIN_AUTH_REQ, request,
+		global.DefaultWaitMessageTime, msgid.MsgID_LOGIN_AUTH_RSP, response)
 	if err != nil {
-		return nil, fmt.Errorf("登录失败: %v", err)
+		return nil, fmt.Errorf("请求登录失败：%v", err)
 	}
-	errCode := loginResponse.GetErrCode()
-	if errCode != login.ErrorCode_SUCCESS {
-		return nil, fmt.Errorf("登录失败： %v", errCode)
+	if response.GetErrCode() != login.ErrorCode_SUCCESS {
+		return nil, fmt.Errorf("登录失败，错误码：%v", response.GetErrCode())
 	}
-	playerID := loginResponse.GetPlayerId()
-	return createPlayer(playerID, 0, gateClient, accountID, ""), nil
+	logrus.Infoln("登录成功", response)
+	return &clientPlayer{
+		playerID:  response.GetPlayerId(),
+		accountID: request.GetAccountId(),
+		coin:      0,
+		client:    gateClient,
+		usrName:   "",
+		expectors: make(map[msgid.MsgID]interfaces.MessageExpector),
+		token:     response.GetToken(),
+	}, nil
+}
+
+// LoginNewPlayer 自动分配账号 ID， 生成账号名称，然后登录
+func LoginNewPlayer() (interfaces.ClientPlayer, error) {
+	return loginPlayer(&login.LoginAuthReq{
+		AccountId: proto.Uint64(global.AllocAccountID()),
+	})
+}
+
+// LoginPlayerByToken 使用 token 登录玩家
+func LoginPlayerByToken(playerID uint64, token string) (interfaces.ClientPlayer, error) {
+	request := &login.LoginAuthReq{
+		PlayerId: proto.Uint64(playerID),
+		Token:    proto.String(token),
+	}
+	return loginPlayer(request)
+}
+
+// LoginPlayer 登录玩家
+// TODO: delete
+func LoginPlayer(accountID uint64, accountName string) (interfaces.ClientPlayer, error) {
+	return loginPlayer(&login.LoginAuthReq{
+		AccountId: proto.Uint64(accountID),
+	})
 }
 
 func UpdatePlayerClientInfo(client interfaces.Client, player interfaces.ClientPlayer, deskData *DeskData) {
@@ -134,29 +152,4 @@ func RequestAuth(client interfaces.Client, accountID uint64, accountName string,
 	response := &login.LoginAuthRsp{}
 	err := facade.Request(client, msgid.MsgID_LOGIN_AUTH_REQ, request, global.DefaultWaitMessageTime, msgid.MsgID_LOGIN_AUTH_RSP, response)
 	return response, err
-}
-
-// RequestGateAuth 请求向网关服认证
-func RequestGateAuth(client interfaces.Client, playerID uint64, expire int64, token string) error {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "RequestGateAuth",
-		"player_id": playerID,
-		"expire":    expire,
-		"token":     token,
-	})
-	request := &gate.GateAuthReq{
-		PlayerId: proto.Uint64(playerID),
-		Expire:   proto.Int64(expire),
-		Token:    proto.String(token),
-	}
-	response := &gate.GateAuthRsp{}
-	err := facade.Request(client, msgid.MsgID_GATE_AUTH_REQ, request, global.DefaultWaitMessageTime, msgid.MsgID_GATE_AUTH_RSP, response)
-	if err != nil {
-		entry.WithError(err).Errorln("请求失败")
-		return errors.New("请求失败")
-	}
-	if response.GetErrCode() != gate.ErrCode_SUCCESS {
-		return fmt.Errorf("网关认证失败，错误码：%v", response.GetErrCode())
-	}
-	return nil
 }
