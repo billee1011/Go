@@ -4,13 +4,17 @@ package login;
 
 // LoginRequest 登录请求
 message LoginRequest {
-    uint64 account_id = 1;   // 账号 ID
+    uint64 account_id = 1;   // 账号 ID (将废弃)
+    bytes request_data = 2;  // 客户端请求数据， 解包后参考 client_pb/login.LoginAuthReq
+    uint64 player_id = 3;   // 玩家 ID
+    string token = 4;       // token 
 }
 
 // LoginResponse 登录应答
 message LoginResponse {
     uint32 err_code = 1;    // 错误码
     uint64 player_id = 2;   // 玩家 ID
+    string token = 3; // token，用于重连登录
 }
 
 // LoginService 登录服务

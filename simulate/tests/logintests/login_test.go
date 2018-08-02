@@ -19,6 +19,17 @@ func Test_Login(t *testing.T) {
 	assert.NotNil(t, player)
 }
 
+// Test_LoginByToken 测试使用 token 登录
+func Test_LoginByToken(t *testing.T) {
+	player, err := utils.LoginNewPlayer()
+	assert.Nil(t, err)
+	assert.NotNil(t, player)
+	player2, err := utils.LoginPlayerByToken(player.GetID(), player.GetToken())
+	assert.Nil(t, err)
+	assert.NotNil(t, player2)
+	assert.Equal(t, player.GetID(), player2.GetID())
+}
+
 // Test_AnotherLogin 顶号测试
 // step 1. 登录新玩家
 // step 2. 创建新的连接，向网关服认证同一个用户
