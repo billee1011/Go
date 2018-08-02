@@ -5,6 +5,7 @@ import (
 	"steve/entity/cache"
 	"steve/entity/db"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/go-xorm/xorm"
 )
 
@@ -34,24 +35,28 @@ func getMysqlEngineByName(mysqlName string) (*xorm.Engine, error) {
 }
 
 //根据玩家ID获取机器人的各个属性
-func getMysqlRobotPropByPlayerID(playerID uint64) (*cache.RobotPlayer, error) {
+func getMysqlRobotPropByPlayerID(playerID uint64) *cache.RobotPlayer {
 	robotPlayer := &cache.RobotPlayer{}
 	playerCurrency, err := getMysqlPlayerCurrencyByPlayerID(playerID, "coins") // 金币
 	if err != nil {
-		return robotPlayer, err
-	}
-	playerGame, err := getMysqlPlayerGameByPlayerID(playerID, "gameID,winningRate") //游戏ID和胜率
-	if err != nil {
-		return robotPlayer, err
+		logrus.Errorf("msql获取金币失败 err(%v)", playerID, err)
 	}
 	player, err := getMysqlPlayerByPlayerID(playerID, "nickname") // 昵称
 	if err != nil {
-		return robotPlayer, err
+		logrus.Errorf("msql获取昵称失败 err(%v)", playerID, err)
 	}
-	robotPlayer.GameIDWinRate[uint64(playerGame.Gameid)] = uint64(playerGame.Winningrate)
+	playerGame, err := getMysqlPlayerGameByPlayerID(playerID, "gameID,winningRate") //游戏ID和胜率
+	if err != nil {
+		logrus.Errorf("msql获取游戏ID和胜率失败 err(%v)", playerID, err)
+	}
+	if robotPlayer.GameIDWinRate == nil || len(robotPlayer.GameIDWinRate) == 0 {
+		robotPlayer.GameIDWinRate = map[uint64]uint64{uint64(playerGame.Gameid): uint64(playerGame.Winningrate)}
+	} else {
+		robotPlayer.GameIDWinRate[uint64(playerGame.Gameid)] = uint64(playerGame.Winningrate)
+	}
 	robotPlayer.Coin = uint64(playerCurrency.Coins)
 	robotPlayer.NickName = player.Nickname
-	return robotPlayer, err
+	return robotPlayer
 }
 
 // 获取所有机器人PlayerID

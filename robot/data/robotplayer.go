@@ -35,13 +35,9 @@ func getMysqlLeisureRobotPlayer(robotsPlayers []*cache.RobotPlayer, lackRobotsID
 	log := logrus.WithFields(logrus.Fields{"func_name": "getMysqlLeisureRobotPlayer"})
 	failedIDErrMpa := make(map[uint64]error) //存入redis 失败 playerID
 	for _, playerID := range lackRobotsID {
-		robotPlayer, err := getMysqlRobotPropByPlayerID(playerID) // 从mysql获取 的一定是空闲的
-		if err != nil {
-			failedIDErrMpa[playerID] = err
-			continue
-		}
-		err = AddRobotWatch(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut) // 存入redis
-		if err != nil {
+		robotPlayer := getMysqlRobotPropByPlayerID(playerID) // 从mysql获取 的一定是空闲的
+		// 存入redis
+		if err := AddRobotWatch(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut); err != nil {
 			failedIDErrMpa[playerID] = err
 		}
 		robotPlayer.PlayerID = playerID
