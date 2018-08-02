@@ -91,6 +91,7 @@ message GetPlayerStateRsp{
     int32 err_code = 1;           // 错误信息
     PlayerState state = 2;        // 玩家 ID  
     uint32 game_id = 3;           // 正在进行的游戏id
+    uint32 level_id = 4;          // 正在进行的场次id
 }
 
 
@@ -116,8 +117,9 @@ message UpdatePlayerStateReq{
     uint64 player_id = 1;                    // 玩家ID  
     PlayerState old_state = 2;               // 旧状态       
     PlayerState new_state = 3;               // 新状态  
-    ServerType server_type = 4;              // 服务类型
-    string server_addr = 5;                  // 服务地址
+    uint32 game_id = 4;                      // 游戏ID
+    ServerType server_type = 5;              // 服务类型
+    string server_addr = 6;                  // 服务地址
 }
 
 // UpdatePlayerStateRsp  更新玩家状态应答
