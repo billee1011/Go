@@ -7,7 +7,7 @@ import (
 
 	"google.golang.org/grpc/grpclog"
 
-	balancerpb "github.com/bsm/grpclb/grpclb_balancer_v1"
+	balancerpb "steve/thirdpart/github.com/bsm/grpclb/grpclb_balancer_v1"
 )
 
 type backends struct {

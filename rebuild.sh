@@ -33,6 +33,9 @@ pushd robot
 sh ./build.sh
 popd
 
+pushd gold
+sh ./build.sh
+popd
 
 sh ./simulate/packtests.sh
 

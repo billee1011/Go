@@ -9,7 +9,7 @@ import (
 	"context"
 	"steve/structs/sgrpc"
 
-	bckd "github.com/bsm/grpclb/grpclb_backend_v1"
+	bckd "steve/thirdpart/github.com/bsm/grpclb/grpclb_backend_v1"
 	"github.com/Sirupsen/logrus"
 )
 

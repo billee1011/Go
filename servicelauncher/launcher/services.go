@@ -1,22 +1,22 @@
 package launcher
 
 import (
-	"github.com/spf13/viper"
 	gatewaycore "steve/gateway/core"
-	matchcore "steve/match/core"
 	goldcore "steve/gold/core"
-	roomcore "steve/room/core"
 	hallcore "steve/hall/core"
 	logincore "steve/login/core"
+	matchcore "steve/match/core"
 	"steve/serviceloader/loader"
+	"github.com/spf13/viper"
 	"steve/structs/service"
 	"github.com/Sirupsen/logrus"
-	"steve/room2"
+	testcore "steve/testserver/core"
+
 )
 
 func Init(args []string, flagList map[string]*string) {
 	// 处理命令行
-	for k, v := range  flagList {
+	for k, v := range flagList {
 		loader.SetArg(k, *v)
 	}
 	LoadService(args[0],
@@ -30,8 +30,6 @@ func Init(args []string, flagList map[string]*string) {
 		loader.WithGroupName(viper.GetString("group_name")),
 
 		loader.WithParams(args[1:]))
-
-
 
 }
 
@@ -51,8 +49,10 @@ func LoadService(name string, options ...loader.ServiceOption) {
 		svr = logincore.NewService()
 	case "match":
 		svr = matchcore.NewService()
-	case "room":
-		svr = roomcore.NewService()
+	// case "room":
+	// 	svr = roomcore.NewService()
+	case "testserver":
+		svr = testcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
 	case "gold":
@@ -61,8 +61,8 @@ func LoadService(name string, options ...loader.ServiceOption) {
 	if svr != nil {
 		svr.Init(exposer)
 		loader.Run(svr, exposer, opt)
-	}else{
-		logrus.Errorln("no service found service name : ",svr)
+	} else {
+		logrus.Errorln("no service found service name : ", svr)
 		panic("no service found")
 	}
 }

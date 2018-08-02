@@ -80,12 +80,6 @@ func RegisterServer(rp *RegisterParams) {
 		return
 	}
 	serverID := allocServerIDNew(rp)
-	// 命令行参数替换配置文件参数
-	// 如果命令行启动参数定义了服务ID，启用启动参数定义的服务ID
-	sidArg, ok := StringArg("sid")
-	if ok && len(sidArg) > 0 {
-		serverID = sidArg
-	}
 
 	logEntry = logEntry.WithField("server_id", serverID)
 
@@ -103,6 +97,8 @@ func allocServerIDNew(rp *RegisterParams) string {
 // consul对服务进行健康检查
 func statusHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "status ok!")
+	fmt.Println("check consul ok")
+	//logrus.Debugln("check consul ok")
 }
 
 // consul对服务进行健康检查,通过Http提供检查接口
@@ -152,8 +148,8 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 	if healthPort > 0 {
 		ck = &api.AgentServiceCheck{
 			HTTP:     "http://" + healthAddr + "/status",
-			Interval: "5s", // 检查间隔
-			Timeout:  "3s", // 响应超时时间
+			Interval: "3s", // 检查间隔
+			Timeout:  "5s", // 响应超时时间
 			DeregisterCriticalServiceAfter: "300s", // 注销节点超时时间
 		}
 	}

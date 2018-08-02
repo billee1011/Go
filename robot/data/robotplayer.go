@@ -12,14 +12,14 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*cache.RobotPlayer
 	robotsIDCoins := make([]*cache.RobotPlayer, 0)
 	lackRobotsID := make([]uint64, 0) // 没有存入redis的机器人
 	for _, robotPlayerID := range robotPlayerIDAll {
-		robotPlayerInfo, err := GetRobotFields(robotPlayerID, RobotPlayerCoinField, RobotPlayerStateField, RobotPlayerGameIDWinRate)
+		robotPlayerInfo, err := GetRobotFields(robotPlayerID, RobotPlayerCoinField, cache.PlayerStateField, RobotPlayerGameIDWinRate)
 		if err != nil || len(robotPlayerInfo) == 0 {
 			lackRobotsID = append(lackRobotsID, robotPlayerID)
 			continue
 		}
 		robotPlayer := &cache.RobotPlayer{}
-		robotPlayer.State = InterToUint64(robotPlayerInfo[RobotPlayerStateField]) // 玩家状态
-		if robotPlayer.State != uint64(robot.RobotPlayerState_RPS_IDIE) {
+		robotPlayer.State = InterToUint64(robotPlayerInfo[cache.PlayerStateField]) // 玩家状态
+		if robotPlayer.State != uint64(robot.RobotPlayerState_RPS_IDIE) {          //是空闲状态
 			continue
 		}
 		robotPlayer.PlayerID = robotPlayerID                                                                // 玩家ID
@@ -40,7 +40,7 @@ func getMysqlLeisureRobotPlayer(robotsIDCoins []*cache.RobotPlayer, lackRobotsID
 			failedIDErrMpa[playerID] = err
 			continue
 		}
-		err = AddRobottFiled(playerID, FmtRobotPlayer(robotPlayer)) // 存入redis
+		err = AddRobotWatch(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut) // 存入redis
 		if err != nil {
 			failedIDErrMpa[playerID] = err
 		}

@@ -63,7 +63,7 @@ func TestPlaycard1(t *testing.T) {
 	assert.NotNil(t, resumeRspExpect)
 
 	// 发出恢复对局请求
-	_, resumeErr := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_DDZ_RESUME_REQ), &room.DDZResumeGameReq{})
+	_, resumeErr := client.SendPackage(utils.CreateMsgHead(msgid.MsgID_ROOM_RESUME_GAME_REQ), &room.RoomResumeGameReq{})
 	assert.Nil(t, resumeErr)
 
 	resumeRsp := room.DDZResumeGameRsp{}

@@ -3,7 +3,7 @@ package balancer
 import (
 	"sync"
 
-	balancerpb "github.com/bsm/grpclb/grpclb_balancer_v1"
+	balancerpb "steve/thirdpart/github.com/bsm/grpclb/grpclb_balancer_v1"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

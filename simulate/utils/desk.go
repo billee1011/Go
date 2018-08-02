@@ -13,7 +13,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"steve/room/desks/ddzdesk/flow/ddz/states"
+	"steve/room/flows/ddzflow/ddz/states"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -98,6 +98,15 @@ func StartGame(params structs.StartGameParams) (*DeskData, error) {
 			return nil, err
 		}
 	}
+	playerIDs := make([]uint64, 0, len(dd.Players))
+	for playerID := range dd.Players {
+		playerIDs = append(playerIDs, playerID)
+	}
+	logrus.WithFields(logrus.Fields{
+		"players": playerIDs,
+		"params":  params,
+	}).Infoln("游戏开始完成")
+
 	return &dd, nil
 }
 
