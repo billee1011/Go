@@ -61,6 +61,7 @@ type matchPlayer struct {
 	robotLv  int    // 机器人等级，为 0 时表示非机器人
 	seat     int    // 座号
 	IP       uint32 // IP地址
+	gold     int64  // 金币数
 }
 
 // matchPlayer转为字符串
@@ -92,16 +93,23 @@ type matchDesk struct {
 	deskID          uint64        // 桌子唯一ID
 	gameID          uint32        // 游戏ID
 	levelID         uint32        // 场次ID
-	gold            int64         // 桌子的金币（也是第一个玩家的金币数）
+	aveGold         int64         // 桌子的平均金币
 	needPlayerCount uint8         // 满桌需要的玩家数量
 	players         []matchPlayer // 桌子中的所有玩家
 	createTime      int64         // 桌子创建时间(单位：秒)
 }
 
+// 已成功的牌桌，用于计算玩家上局是否同桌
+type sucDesk struct {
+	gameID  uint32 // 游戏ID
+	levelID uint32 // 场次ID
+	sucTime int64  // 成功时间
+}
+
 // matchDesk转为字符串
 func (pDesk *matchDesk) String() string {
 	return fmt.Sprintf("gameID: %v, levelID: %v, gold: %v, needPlayerCount:%v, players:%v, createTime:%v",
-		pDesk.gameID, pDesk.levelID, pDesk.gold, pDesk.needPlayerCount, pDesk.players, pDesk.createTime)
+		pDesk.gameID, pDesk.levelID, pDesk.aveGold, pDesk.needPlayerCount, pDesk.players, pDesk.createTime)
 }
 
 /* // createDesk 创建一个新牌桌
@@ -138,7 +146,7 @@ func createMatchDesk(deskID uint64, gameID uint32, levelID uint32, needPlayerCou
 	}).Debugln("创建匹配牌桌")
 
 	return &matchDesk{
-		gold:            gold,
+		aveGold:         gold,
 		needPlayerCount: needPlayerCount,
 		players:         make([]matchPlayer, 0, needPlayerCount),
 		createTime:      time.Now().Unix(),
