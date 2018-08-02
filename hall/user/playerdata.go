@@ -127,7 +127,7 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	}, nil
 
 	// 逻辑处理
-	state, err := data.GetPlayerState(req.GetPlayerId())
+	state, _, err := data.GetPlayerState(req.GetPlayerId())
 
 	if err == nil {
 		rsp.State, rsp.ErrCode = user.PlayerState(state), int32(user.ErrCode_EC_SUCCESS)

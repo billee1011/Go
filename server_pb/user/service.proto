@@ -89,7 +89,8 @@ message GetPlayerStateReq{
 // GetPlayerStateRsp 获取玩家状态应答
 message GetPlayerStateRsp{
     int32 err_code = 1;           // 错误信息
-    PlayerState state = 2;
+    PlayerState state = 2;        // 玩家 ID  
+    uint32 game_id = 3;           // 正在进行的游戏id
 }
 
 
@@ -104,9 +105,10 @@ message GetPlayerGameInfoRsp{
     int32 err_code = 1;            // 错误信息
     uint32 game_id = 2;            // 返回的游戏ID
     uint32 winning_rate =3;        // 指定游戏胜率
-    uint32 total_burea = 4;        // 总局数
-    uint32 max_winning_stream = 5; // 最高连胜
-    uint32 max_multiple = 6;       // 最大获胜倍数 
+    uint32 Winning_burea = 4;      // 获胜局数
+    uint32 total_burea = 5;        // 总局数 
+    uint32 max_winning_stream = 6; // 最高连胜  
+    uint32 max_multiple = 7;       // 最大获胜倍数 
 }
 
 // UpdatePlayerStateReq 更新玩家状态
