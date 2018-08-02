@@ -21,10 +21,10 @@ type TGameSummary struct {
 // TGameDetail 游戏明细
 type TGameDetail struct {
 	Sumaryid   int64     `json:"Sumaryid  "`
-	Playerid   int64     `json:"Playerid  "`
-	Deskid     int       `json:"Deskid    "`
+	Playerid   uint64    `json:"Playerid  "`
+	Deskid     int64     `json:"Deskid    "`
 	Gameid     int       `json:"Gameid    "`
-	Amount     int       `json:"Amount    "`
+	Amount     int64     `json:"Amount    "`
 	Iswinner   int       `json:"Iswinner  "`
 	Createtime time.Time `json:"Createtime"`
 	Createby   string    `json:"Createby  "`
@@ -41,5 +41,5 @@ type RoundCurrency struct {
 // SettleDetail 对局金币流水明细
 type SettleDetail struct {
 	Playerid  uint64 `json:"Playerid"`
-	ChangeVal uint64 `json:"ChangeVal"`
+	ChangeVal int64  `json:"ChangeVal"`
 }
