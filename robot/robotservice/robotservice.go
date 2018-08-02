@@ -29,7 +29,7 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 		RobotPlayerId: 0,
 		ErrCode:       int32(robot.ErrCode_EC_SUCCESS),
 	}
-	// gameID := request.GetGameId()             // 游戏
+	gameID := request.GetGame().GetGameId()   // 游戏ID
 	coinsRange := request.GetCoinsRange()     // 金币范围
 	winRateRange := request.GetWinRateRange() // 胜率范围
 	// 检验请求是否合法
@@ -37,15 +37,21 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 		rsp.ErrCode = int32(robot.ErrCode_EC_Args)
 		return rsp, nil
 	}
-	robotsIDCoins, err := data.GetLeisureRobot() // 获取机空闲的器人
+	robotsPlayers, err := data.GetLeisureRobot() // 获取机空闲的器人
 	if err != nil {
 		rsp.ErrCode = int32(robot.ErrCode_EC_FAIL)
 		return rsp, err
 	}
 	var RobotPlayerID uint64
-	// 符合的指定金币数的机器人
-	for _, robotPlayer := range robotsIDCoins {
-		currCoins := int32(robotPlayer.Coin)
+	// 符合的指定金币数和胜率的机器人
+	for _, robotPlayer := range robotsPlayers {
+		// 游戏ID对应的胜率
+		winRate, exist := robotPlayer.GameIDWinRate[uint64(gameID)]
+		if !exist || winRate > uint64(winRateRange.High) || winRate < uint64(winRateRange.Low) {
+			continue
+		}
+		// 金币
+		currCoins := int64(robotPlayer.Coin)
 		if currCoins <= coinsRange.High && currCoins >= coinsRange.Low {
 			RobotPlayerID = robotPlayer.PlayerID
 			break

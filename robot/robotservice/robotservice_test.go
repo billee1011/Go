@@ -57,7 +57,11 @@ func Test_grpc_clien(t *testing.T) {
 		High: 50,
 		Low:  50,
 	}
+	game := &robot.GameConfig{
+		GameId: 1,
+	}
 	req := &robot.GetRobotPlayerIDReq{
+		Game:         game,
 		CoinsRange:   coinsR,
 		WinRateRange: winR,
 	}
