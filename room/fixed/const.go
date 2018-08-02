@@ -41,6 +41,8 @@ const (
 	HuStateEvent
 	// TingStateEvent 听状态事件
 	TingStateEvent
+	// SpecialOverTimeEvent 胡听状态下的超时事件
+	SpecialOverTimeEvent
 
 	/* model Name */
 	EventModelName   = "EventModel"

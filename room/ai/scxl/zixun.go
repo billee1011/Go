@@ -60,7 +60,7 @@ func (h *zixunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 
 func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) (aiEvent ai.AIEvent) {
 	switch params.AIType {
-	case ai.OverTimeAI:
+	case ai.OverTimeAI, ai.SpecialOverTimeAI:
 		aiEvent = h.generateOverTime(player, mjContext)
 	case ai.TuoGuangAI:
 		aiEvent = h.generateTuoGuang(player, mjContext)
@@ -139,11 +139,11 @@ func (h *zixunStateAI) checkAIEvent(player *majong.Player, mjContext *majong.Maj
 			return fmt.Errorf("听的类型下，玩家有特殊操作的时候不处理")
 		}
 	}
-	// if params.AIType == ai.HuAI {
-	// 	if len(record.GetEnableAngangCards()) > 0 ||
-	// 		len(record.GetEnableBugangCards()) > 0 {
-	// 		return fmt.Errorf("胡的类型下，玩家有除了胡之外的特殊操作不处理")
-	// 	}
-	// }
+	if params.AIType == ai.HuAI {
+		if len(record.GetEnableAngangCards()) > 0 ||
+			len(record.GetEnableBugangCards()) > 0 {
+			return fmt.Errorf("胡的类型下，玩家有除了胡之外的特殊操作不处理")
+		}
+	}
 	return nil
 }
