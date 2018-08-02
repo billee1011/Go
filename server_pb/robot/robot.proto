@@ -6,8 +6,8 @@ import "enum.proto";
 
 // GameConfig 游戏玩法信息
 message GameConfig {
-    uint32 game_id  = 1;         // 游戏 id
-    uint32 level_id = 2;        //  场次 id 
+    uint32 game_id = 1;         // 游戏 id
+    uint32 level_id = 2;        // 场次 id
 }
 
 //GameWinRate 游戏对应的胜率
