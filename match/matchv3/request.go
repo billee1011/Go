@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"steve/match/web"
 	"steve/server_pb/gold"
 	"steve/server_pb/room_mgr"
+	"steve/server_pb/user"
 	"steve/structs"
 
 	"github.com/Sirupsen/logrus"
@@ -143,39 +145,96 @@ func requestPlayerWinRate(playerID uint64, gameID uint32) (float32, error) {
 
 	exposer := structs.GetGlobalExposer()
 
-	// 获取robot服的Connection
-	robotConnection, err := exposer.RPCClient.GetConnectByServerName("robot")
-	if err != nil || robotConnection == nil {
-		logEntry.WithError(err).Errorln("获得robot服的gRPC失败!!!")
-		return 0, fmt.Errorf("获得robot服的gRPC失败!!!")
+	// 获取hall服的Connection
+	hallConnection, err := exposer.RPCClient.GetConnectByServerName("hall")
+	if err != nil || hallConnection == nil {
+		logEntry.WithError(err).Errorln("获得hall服的gRPC失败!!!")
+		return 0, fmt.Errorf("获得hall服的gRPC失败!!!")
 	}
 
-	// 请求结构体
-	/*reqGold := gold.GetGoldReq{
-		Item: &gold.GetItem{
-			Uid:      playerID,
-			GoldType: int32(0),
-			Value:    0,
-		},
+	hallClient := user.NewPlayerDataClient(hallConnection)
+
+	// 向hall服请求游戏信息
+	rsp, err := hallClient.GetPlayerGameInfo(context.Background(), &user.GetPlayerGameInfoReq{PlayerId: playerID, GameId: gameID})
+
+	// 不成功时，报错
+	if err != nil || rsp == nil {
+		logrus.WithError(err).Errorln("从hall服获取玩家的胜率失败!!!")
+		return 0, fmt.Errorf("从hall服获取玩家的胜率失败!!!")
 	}
 
-	 	goldClient := gold.NewGoldClient(goldConnection)
+	// 返回的不是成功，报错
+	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
+		logrus.WithError(err).Errorln("从hall服获取玩家胜率成功，但errCode显示失败!!!")
+		return 0, fmt.Errorf("从hall服获取玩家胜率成功，但errCode显示失败!!!")
+	}
 
-	   	// 调用room服的创建桌子
-	   	rspGold, err := goldClient.GetGold(context.Background(), &reqGold)
+	// 计算胜率
+	var winRate float64 = 0.0
+
+	if rsp.GetTotalBurea() < web.GetMinGameTimes() {
+		winRate = 0.5
+		logEntry.Debugf("玩家总局数为：%v，少于规定的%v场，所以胜率定为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
+	} else {
+		winRate = float64(rsp.GetMaxWinningStream()) / float64(rsp.GetTotalBurea())
+		logEntry.Debugf("玩家总局数为：%v，胜利局数为：%v，计算得到胜率为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
+	}
+
+	result := float32(winRate) * 100
+
+	return result, nil
+}
+
+// requestPlayerIP 向hall服请求指定玩家的信息
+// playerID : 玩家playerID
+// gameID 	: 游戏ID
+func requestPlayerIP(playerID uint64) (string, error) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"playerID": playerID,
+	})
+
+	logEntry.Debugln("进入函数")
+
+	return "127.0.0.1", nil
+
+	/* 	exposer := structs.GetGlobalExposer()
+
+	   	// 获取hall服的Connection
+	   	hallConnection, err := exposer.RPCClient.GetConnectByServerName("hall")
+	   	if err != nil || hallConnection == nil {
+	   		logEntry.WithError(err).Errorln("获得hall服的gRPC失败!!!")
+	   		return 0, fmt.Errorf("获得hall服的gRPC失败!!!")
+	   	}
+
+	   	hallClient := user.NewPlayerDataClient(hallConnection)
+
+	   	// 向hall服请求游戏信息
+	   	rsp, err := hallClient.GetPlayerGameInfo(context.Background(), &user.GetPlayerGameInfoReq{PlayerId: playerID, GameId: gameID})
 
 	   	// 不成功时，报错
-	   	if err != nil || rspGold == nil {
-	   		logEntry.WithError(err).Errorln("从gold服获取玩家金钱数据失败!!!")
-	   		return 0, fmt.Errorf("从gold服获取玩家金钱数据失败!!!")
+	   	if err != nil || rsp == nil {
+	   		logrus.WithError(err).Errorln("从hall服获取玩家的胜率失败!!!")
+	   		return 0, fmt.Errorf("从hall服获取玩家的胜率失败!!!")
 	   	}
 
-	   	// 其他出错
-	   	if rspGold.GetErrCode() != gold.ResultStat_SUCCEED || rspGold.GetErrDesc() != "" {
-	   		logEntry.Errorf("从gold服获取玩家金钱数据出错，errCode:%v，errDesc:%v \n", rspGold.GetErrCode(), rspGold.GetErrDesc())
-	   		return 0, fmt.Errorf("从gold服获取玩家金钱数据出错，errCode:%v，errDesc:%v \n", rspGold.GetErrCode(), rspGold.GetErrDesc())
+	   	// 返回的不是成功，报错
+	   	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
+	   		logrus.WithError(err).Errorln("从hall服获取玩家胜率成功，但errCode显示失败!!!")
+	   		return 0, fmt.Errorf("从hall服获取玩家胜率成功，但errCode显示失败!!!")
 	   	}
 
-	   	logEntry.Debugln("create desk success.") */
-	return 0.5, nil
+	   	// 计算胜率
+	   	var winRate float64 = 0.0
+
+	   	if rsp.GetTotalBurea() < web.GetMinGameTimes() {
+	   		winRate = 0.5
+	   		logEntry.Debugf("玩家总局数为：%v，少于规定的%v场，所以胜率定为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
+	   	} else {
+	   		winRate = float64(rsp.GetMaxWinningStream()) / float64(rsp.GetTotalBurea())
+	   		logEntry.Debugf("玩家总局数为：%v，胜利局数为：%v，计算得到胜率为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
+	   	}
+
+	   	result := float32(winRate) * 100
+
+	   	return result, nil */
 }
