@@ -6,8 +6,14 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
+var robotState = map[robot.RobotPlayerState]bool{
+	robot.RobotPlayerState_RPS_IDIE:     true,
+	robot.RobotPlayerState_RPS_MATCHING: true,
+	robot.RobotPlayerState_RPS_GAMEING:  true,
+}
+
 // 检验金币和胜率
-func checkCoinsWinRtaeRange(coinsRange *robot.CoinsRange, winRateRange *robot.WinRateRange) bool {
+func checkGetLeisureRobotArgs(coinsRange *robot.CoinsRange, winRateRange *robot.WinRateRange, newState int) bool {
 	switch {
 	case coinsRange.High < coinsRange.Low:
 		logrus.Warningln("coinsRange:High Must be greater than or equal to Low")
@@ -22,6 +28,10 @@ func checkCoinsWinRtaeRange(coinsRange *robot.CoinsRange, winRateRange *robot.Wi
 		logrus.Warningln("winRateRange:Both High and Low must be greater than or equal to 0")
 		return false
 	}
+	if robot.RobotPlayerState(newState) == robot.RobotPlayerState_RPS_IDIE || !robotState[robot.RobotPlayerState(newState)] {
+		logrus.Warningln("Robot Player_state is incorrect, newState:%d", newState)
+		return false
+	}
 	return true
 }
 
@@ -30,11 +40,6 @@ func checkSateArgs(playerID uint64, newState, oldState, serverType int, serverAd
 	if playerID < 0 {
 		logrus.Warningln("Robot Player ID cannot be less than 0:%v", playerID)
 		return false
-	}
-	robotState := map[robot.RobotPlayerState]bool{
-		robot.RobotPlayerState_RPS_IDIE:     true,
-		robot.RobotPlayerState_RPS_MATCHING: true,
-		robot.RobotPlayerState_RPS_GAMEING:  true,
 	}
 	if oldState != newState && (!robotState[robot.RobotPlayerState(oldState)] || !robotState[robot.RobotPlayerState(newState)]) {
 		logrus.Warningln("Robot Player_state is incorrect, oldState:%d,newState:%d", oldState, newState)
