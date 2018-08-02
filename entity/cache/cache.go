@@ -26,9 +26,13 @@ type RobotPlayer struct {
 	GameIDWinRate map[uint64]uint64 `protobuf:"bytes,6,rep,name=game_id_win_rate,json=gameIdWinRate" json:"game_id_win_rate,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 }
 
+// key formats
 const (
 	// AccountPlayerKey 账号关联的玩家
 	AccountPlayerKey = "account:player:%v"
+
+	// playerTokenKeyFmt
+	playerTokenKeyFmt = "playertoken:%d"
 )
 
 // Player redis字段
@@ -63,4 +67,9 @@ func FmtAccountPlayerKey(accountID uint64) string {
 // FmtPlayerIDKey 玩家ID key
 func FmtPlayerIDKey(playerID uint64) string {
 	return fmt.Sprintf("player:%v", playerID)
+}
+
+// FmtPlayerTokenKey format player's token key
+func FmtPlayerTokenKey(playerID uint64) string {
+	return fmt.Sprintf(playerTokenKeyFmt, playerID)
 }
