@@ -28,8 +28,6 @@ It has these top-level messages:
 	UpdatePlayerStateRsp
 	GetGameListInfoReq
 	GetGameListInfoRsp
-	GetPlayerServerInfoReq
-	GetPlayerServerInfoRsp
 */
 package user
 
