@@ -1,4 +1,4 @@
-package log
+package gamelog
 
 import "time"
 

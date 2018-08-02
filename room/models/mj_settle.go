@@ -1,17 +1,23 @@
 package models
 
 import (
+	"encoding/json"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	"steve/entity/gamelog"
 	majongpb "steve/entity/majong"
 	"steve/gutils"
+	"steve/gutils/topics"
 	"steve/room/contexts"
 	"steve/room/desk"
 	"steve/room/fixed"
 	"steve/room/majong/utils"
 	playerpkg "steve/room/player"
+	"steve/room/util"
+	"steve/structs"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -471,6 +477,11 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 
 // RoundSettle 单局结算
 func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.DeskConfig) {
+	majongSettle.roundSettle(desk, config)
+	majongSettle.gameLog(desk)
+}
+
+func (majongSettle *MajongSettle) roundSettle(desk *desk.Desk, config *desk.DeskConfig) {
 	mjContext := config.Context.(*contexts.MajongDeskContext).MjContext
 	// 牌局所有结算信息
 	contextSInfos := mjContext.SettleInfos
@@ -719,3 +730,82 @@ func CanRoundSettle(playerID uint64, huQuitPlayers map[uint64]bool, settleOption
 	}
 	return true
 }
+
+func (majongSettle *MajongSettle) gameLog(desk *desk.Desk) {
+	majongSettle.genGameSummary(desk)
+	majongSettle.genGameDetail(desk)
+}
+
+// TGameSummary 游戏记录汇总
+// type TGameSummary struct {
+// 	Sumaryid      int64           `json:"	Sumaryid "`
+// 	Deskid        int64           `json:"	Deskid "`
+// 	Gameid        int             `json:"	Gameid        "`
+// 	Levelid       int             `json:"	Levelid       "`
+// 	Playerids     []uint64        `json:"	Playerids    "`
+// 	Scoreinfo     []int64         `json:" Scoreinfo    "`
+// 	Winnerids     []uint64        `json:"	Winnerids    "`
+// 	Roundcurrency []RoundCurrency `json:"	Roundcurrency"`
+// 	Createtime    time.Time       `json:"	Createtime    "`
+// 	Createby      string          `json:"	Createby      "`
+// 	Updatetime    time.Time       `json:"	Updatetime    "`
+// 	Updateby      string          `json:"	Updateby      "`
+// }
+func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "MajongSettle.genGameSummary",
+		"player_id": desk.GetUid(),
+	})
+	gameSummary := gamelog.TGameSummary{
+		Sumaryid: int64(util.GenUniqueID()),
+		Deskid:   int64(desk.GetUid()),
+		Gameid:   desk.GetGameId(),
+		//Levelid: desk.GetConfig().Context
+	}
+	data, err := json.Marshal(gameSummary)
+	if err != nil {
+		logEntry.WithError(err).Errorln("序列化失败")
+	}
+	publisher := structs.GetGlobalExposer().Publisher
+	publisher.Publish(topics.GameSummaryRecord, data)
+}
+
+// RoundCurrency 对局金币流水
+// type RoundCurrency struct {
+// 	Settletype    int32          `json:"Settletype"`
+// 	Settledetails []SettleDetail `json:"Settledetails"`
+// }
+
+// // SettleDetail 对局金币流水明细
+// type SettleDetail struct {
+// 	Playerid  uint64 `json:"Playerid"`
+// 	ChangeVal uint64 `json:"ChangeVal"`
+// }
+
+func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"func_name": "MajongSettle.genGameDetail",
+		"player_id": desk.GetUid(),
+	})
+	gameDetail := gamelog.TGameDetail{}
+	data, err := json.Marshal(gameDetail)
+	if err != nil {
+		logEntry.WithError(err).Errorln("序列化失败")
+	}
+	publisher := structs.GetGlobalExposer().Publisher
+	publisher.Publish(topics.GameSummaryRecord, data)
+}
+
+// // TGameDetail 游戏明细
+// type TGameDetail struct {
+// 	Sumaryid   int64     `json:"Sumaryid  "`
+// 	Playerid   int64     `json:"Playerid  "`
+// 	Deskid     int       `json:"Deskid    "`
+// 	Gameid     int       `json:"Gameid    "`
+// 	Amount     int       `json:"Amount    "`
+// 	Iswinner   int       `json:"Iswinner  "`
+// 	Createtime time.Time `json:"Createtime"`
+// 	Createby   string    `json:"Createby  "`
+// 	Updatetime time.Time `json:"Updatetime"`
+// 	Updateby   string    `json:"Updateby  "`
+// }
