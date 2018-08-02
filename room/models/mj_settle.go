@@ -52,13 +52,7 @@ func NewMajongSettle() *MajongSettle {
 
 // GetStatistics 获取统计信息
 func (majongSettle *MajongSettle) GetStatistics() map[uint64]int64 {
-	statistics := make(map[uint64]int64, 4)
-	for _, settleMap := range majongSettle.settleMap {
-		for playerID, value := range settleMap {
-			statistics[playerID] = statistics[playerID] + value
-		}
-	}
-	return statistics
+	return majongSettle.roundScore
 }
 
 // Settle 单次结算
@@ -732,36 +726,31 @@ func CanRoundSettle(playerID uint64, huQuitPlayers map[uint64]bool, settleOption
 }
 
 func (majongSettle *MajongSettle) gameLog(desk *desk.Desk) {
-	majongSettle.genGameSummary(desk)
-	majongSettle.genGameDetail(desk)
+	summaryID := int64(util.GenUniqueID())
+	majongSettle.genGameSummary(desk, summaryID)
+	majongSettle.genGameDetail(desk, summaryID)
 }
 
-// TGameSummary 游戏记录汇总
-// type TGameSummary struct {
-// 	Sumaryid      int64           `json:"	Sumaryid "`
-// 	Deskid        int64           `json:"	Deskid "`
-// 	Gameid        int             `json:"	Gameid        "`
-// 	Levelid       int             `json:"	Levelid       "`
-// 	Playerids     []uint64        `json:"	Playerids    "`
-// 	Scoreinfo     []int64         `json:" Scoreinfo    "`
-// 	Winnerids     []uint64        `json:"	Winnerids    "`
-// 	Roundcurrency []RoundCurrency `json:"	Roundcurrency"`
-// 	Createtime    time.Time       `json:"	Createtime    "`
-// 	Createby      string          `json:"	Createby      "`
-// 	Updatetime    time.Time       `json:"	Updatetime    "`
-// 	Updateby      string          `json:"	Updateby      "`
-// }
-func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk) {
+func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk, summaryID int64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "MajongSettle.genGameSummary",
 		"player_id": desk.GetUid(),
 	})
+
 	gameSummary := gamelog.TGameSummary{
-		Sumaryid: int64(util.GenUniqueID()),
+		Sumaryid: summaryID,
 		Deskid:   int64(desk.GetUid()),
 		Gameid:   desk.GetGameId(),
-		//Levelid: desk.GetConfig().Context
+		// Levelid: todo,
+		Playerids: desk.GetPlayerIds(),
+		// Createtime: todo,
 	}
+	// scoreinfo and winners
+	gameSummary.Scoreinfo, gameSummary.Winnerids = majongSettle.getScoreinfoWinners(desk)
+	// RoundCurrency
+	gameSummary.Roundcurrency = majongSettle.getRoundCurrency(desk.GetConfig())
+
+	// 序列化
 	data, err := json.Marshal(gameSummary)
 	if err != nil {
 		logEntry.WithError(err).Errorln("序列化失败")
@@ -770,42 +759,100 @@ func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk) {
 	publisher.Publish(topics.GameSummaryRecord, data)
 }
 
-// RoundCurrency 对局金币流水
-// type RoundCurrency struct {
-// 	Settletype    int32          `json:"Settletype"`
-// 	Settledetails []SettleDetail `json:"Settledetails"`
-// }
-
-// // SettleDetail 对局金币流水明细
-// type SettleDetail struct {
-// 	Playerid  uint64 `json:"Playerid"`
-// 	ChangeVal uint64 `json:"ChangeVal"`
-// }
-
-func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk) {
+func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "MajongSettle.genGameDetail",
 		"player_id": desk.GetUid(),
 	})
-	gameDetail := gamelog.TGameDetail{}
-	data, err := json.Marshal(gameDetail)
-	if err != nil {
-		logEntry.WithError(err).Errorln("序列化失败")
+	roundScore := majongSettle.roundScore
+	bigWinner := getBigWinner(roundScore)
+	for _, playerID := range desk.GetPlayerIds() {
+		gameDetail := gamelog.TGameDetail{
+			Sumaryid: summaryID,
+			Playerid: playerID,
+			Deskid:   int64(desk.GetUid()),
+			Gameid:   desk.GetGameId(),
+			Amount:   roundScore[playerID],
+			//Createtime: todo 含义
+		}
+		if playerID == bigWinner {
+			gameDetail.Iswinner = 1
+		}
+		data, err := json.Marshal(gameDetail)
+		if err != nil {
+			logEntry.WithError(err).Errorln("序列化失败")
+		}
+		publisher := structs.GetGlobalExposer().Publisher
+		publisher.Publish(topics.GameDetailRecord, data)
 	}
-	publisher := structs.GetGlobalExposer().Publisher
-	publisher.Publish(topics.GameSummaryRecord, data)
+
 }
 
-// // TGameDetail 游戏明细
-// type TGameDetail struct {
-// 	Sumaryid   int64     `json:"Sumaryid  "`
-// 	Playerid   int64     `json:"Playerid  "`
-// 	Deskid     int       `json:"Deskid    "`
-// 	Gameid     int       `json:"Gameid    "`
-// 	Amount     int       `json:"Amount    "`
-// 	Iswinner   int       `json:"Iswinner  "`
-// 	Createtime time.Time `json:"Createtime"`
-// 	Createby   string    `json:"Createby  "`
-// 	Updatetime time.Time `json:"Updatetime"`
-// 	Updateby   string    `json:"Updateby  "`
-// }
+func (majongSettle *MajongSettle) getRoundCurrency(config *desk.DeskConfig) (currencys []gamelog.RoundCurrency) {
+	currencys = make([]gamelog.RoundCurrency, len(majongSettle.settleMap)+len(majongSettle.revertScore))
+
+	id2typeMap := majongSettle.getSettleid2TypeMap(config)
+	var index int
+	for id, scoreMap := range majongSettle.settleMap {
+		currencys[index].Settletype = int32(id2typeMap[id])
+		for playerID, score := range scoreMap {
+			detail := gamelog.SettleDetail{
+				Playerid:  playerID,
+				ChangeVal: score,
+			}
+			currencys[index].Settledetails = append(currencys[index].Settledetails, detail)
+		}
+		index++
+	}
+
+	for _, scoreMap := range majongSettle.revertScore {
+		currencys[index].Settletype = int32(majongpb.SettleType_settle_taxrebeat)
+		for playerID, score := range scoreMap {
+			detail := gamelog.SettleDetail{
+				Playerid:  playerID,
+				ChangeVal: score,
+			}
+			currencys[index].Settledetails = append(currencys[index].Settledetails, detail)
+		}
+		index++
+	}
+	return
+}
+
+func (majongSettle *MajongSettle) getSettleid2TypeMap(config *desk.DeskConfig) (id2tyepMap map[uint64]majongpb.SettleType) {
+	mjContext := config.Context.(*contexts.MajongDeskContext).MjContext
+	contextSInfos := mjContext.SettleInfos
+	id2tyepMap = make(map[uint64]majongpb.SettleType, len(contextSInfos))
+	for _, info := range contextSInfos {
+		id2tyepMap[info.GetId()] = info.GetSettleType()
+	}
+	return
+}
+
+func (majongSettle *MajongSettle) getScoreinfoWinners(desk *desk.Desk) (scoreInfo []int64, winners []uint64) {
+	scoreInfo = make([]int64, len(desk.GetPlayerIds()))
+	scoreStatistics := desk.GetConfig().Settle.GetStatistics()
+	for index, playerID := range desk.GetPlayerIds() {
+		if score, ok := scoreStatistics[playerID]; ok {
+			scoreInfo[index] = score
+			if score > 0 {
+				winners = append(winners, playerID)
+			}
+		} else {
+			scoreInfo[index] = 0
+		}
+	}
+	return
+}
+
+func getBigWinner(roundScore map[uint64]int64) uint64 {
+	var bigWinner uint64
+	var maxScore int64
+	for playerID, score := range roundScore {
+		if score > maxScore {
+			maxScore = score
+			bigWinner = playerID
+		}
+	}
+	return bigWinner
+}
