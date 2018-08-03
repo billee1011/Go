@@ -5,6 +5,7 @@ import (
 	"steve/gold/data"
 	"steve/gold/define"
 	"sync"
+	"time"
 )
 
 /*
@@ -82,6 +83,8 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		"createTime": createTm,
 	})
 
+
+
 	if !gm.checkGoldType(goldType) {
 		entry.Errorln("gold type error")
 		return 0, define.ErrGoldType
@@ -91,6 +94,7 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 	mu := gm.GetMutex(uid)
 	mu.Lock()
 	defer mu.Unlock()
+
 
 	u, err := gm.getUser(uid)
 	if u == nil {
@@ -105,20 +109,46 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		return 0, define.ErrSeqNo
 	}
 
+	tm := time.Unix(createTm, 0)
+
+	plog := new (define.GoldLog)
+	plog.TradeID = seq
+	plog.PlayerID = uid
+	plog.Channel = channel
+	plog.CurrencyType = goldType
+
+	plog.Amount = value
+	plog.BeforeBalance = before
+	plog.AfterBalance = after
+
+	plog.TradeTime = tm.Format("2006-01-02 03:04:05")
+	plog.Status = 1
+	plog.GameId = gameId
+	plog.Level = level
+	plog.FuncId = funcId
 
 	// 加金币前，玩家当前金币值
 	before, err = u.Get(goldType)
 	if err != nil {
 		entry.Errorln("get gold error")
+		plog.Status = 2
+		// 插入金币交易记录到DB
+		data.InsertGoldLog(plog)
 		return 0, err
 	}
+	plog.BeforeBalance = before
+	plog.AfterBalance = after
 
 	// 加金币后，玩家当前金币值
 	after, err = u.Add(goldType, value)
 	if err != nil {
 		entry.Errorln("add opr error")
+		plog.Status = 2
+		// 插入金币交易记录到DB
+		data.InsertGoldLog(plog)
 		return 0, err
 	}
+
 
 	entry = logrus.WithFields(logrus.Fields{
 		"opr":        "add_gold",
@@ -143,6 +173,8 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 	if err != nil {
 		entry.Errorln("save cacheordb error")
 	}
+	// 插入金币交易记录到DB
+	data.InsertGoldLog(plog)
 
 	return after, nil
 }
