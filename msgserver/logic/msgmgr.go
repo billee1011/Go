@@ -296,9 +296,6 @@ func (gm *MsgMgr) getLevelHorseRace(level int64, m map[int64]*define.HorseRace) 
 		if hc.CheckStatus == define.StateStart {
 			list = append(list, hc.Content)
 		}
-		//if gm.checkHorseBegin(hc) {
-		//	list = append(list, hc.Content)
-		//}
 	}
 
 	return list, horse.TickTime, horse.SleepTime, true
