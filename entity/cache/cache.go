@@ -55,9 +55,19 @@ func FmtAccountPlayerKey(accountID uint64) string {
 	return fmt.Sprintf(AccountPlayerKey, accountID)
 }
 
+// FmtGameInfoConfigKey 游戏信息 key
+func FmtGameInfoConfigKey() string {
+	return "gameInfoconfig"
+}
+
 // FmtPlayerIDKey 玩家ID key
 func FmtPlayerIDKey(playerID uint64) string {
 	return fmt.Sprintf("player:%v", playerID)
+}
+
+// FmtPlayerGameInfoKey 玩家游戏信息
+func FmtPlayerGameInfoKey(gameID uint32) string {
+	return fmt.Sprintf("playergame:%v", gameID)
 }
 
 // FmtPlayerTokenKey format player's token key

@@ -20,23 +20,28 @@ var redisPlayerCli *redis.Client
 
 func init() {
 	conf := mysql.Config{
-		User:                 "root",
-		Passwd:               "12345678",
+		User:                 "backuser",
+		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
 		Addr:                 "192.168.7.108:3306",
 		DBName:               "steve",
-		Params:               map[string]string{"charset": "utf8"},
 		AllowNativePasswords: true,
+		Params:               map[string]string{"charset": "utf8"},
 	}
-	mysqlPlayerEngine, _ := xorm.NewEngine("mysql", conf.FormatDSN())
+	dsn := conf.FormatDSN()
+	println(dsn)
+	// "root:123456@tcp(127.0.0.1:3306)/player?maxAllowedPacket=0&charset=utf8"
+	mysqlPlayerEngine, _ := xorm.NewEngine("mysql", dsn)
 
 	redisPlayerCli = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
-
 	mysqlEngineGetter = func(mysqlName string) (*xorm.Engine, error) {
+		if err := mysqlPlayerEngine.Ping(); err != nil {
+			return nil, fmt.Errorf("ping mysql 失败(%s)", err.Error())
+		}
 		return mysqlPlayerEngine, nil
 	}
 	redisCliGetter = func(redis string, db int) (*redis.Client, error) {
@@ -49,6 +54,7 @@ func NewPlayerData(accID uint64, playerID uint64) {
 	InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      0,
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -106,6 +112,7 @@ func TestInitPlayerData(t *testing.T) {
 	err = InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      0,
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -183,6 +190,15 @@ func TestGetPlayerInfo(t *testing.T) {
 	assert.NotNil(t, player.Nickname)
 }
 
+// TestGetPlayerGameInfo 获取玩家游戏信息
+func TestGetPlayerGameInfo(t *testing.T) {
+	exists, playerGameInfo, err := GetPlayerGameInfo(2000, 1)
+
+	assert.Equal(t, exists, true)
+	assert.Nil(t, err)
+	assert.NotNil(t, playerGameInfo)
+}
+
 // TestGetGameInfoList 获取游戏信息
 func TestGetGameInfoList(t *testing.T) {
 	gameConfig, gamelevelConfig, err := GetGameInfoList()
@@ -219,8 +235,45 @@ func TestUpdatePlayerInfo(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	exists, result, err := UpdatePlayerInfo(playerID, "mr_wang", "我是一个帅哥", 1)
+	err = SetPlayerFields(playerID, []string{"nickname"}, &db.TPlayer{
+		Nickname: "mr_wang",
+	})
 	assert.Nil(t, err)
-	assert.Equal(t, true, result)
-	assert.Equal(t, true, exists)
+}
+
+func Test_SetGetPlayerFields(t *testing.T) {
+	alloc, err := gutils.NewNode(300)
+	assert.Nil(t, err)
+	accID := alloc.Generate().Int64()
+	playerID := uint64(AllocPlayerID())
+	nickName := fmt.Sprintf("player%d", playerID)
+	assert.Nil(t, InitPlayerData(db.TPlayer{
+		Accountid: int64(accID),
+		Playerid:  int64(playerID),
+		Nickname:  nickName,
+	}))
+	dbPlayer, err := GetPlayerInfo(playerID, []string{"nickname"}...)
+	assert.Nil(t, err)
+	assert.NotNil(t, dbPlayer)
+	assert.Equal(t, nickName, dbPlayer.Nickname)
+
+	dbPlayerRedis, err := getPlayerFieldsFromRedis(playerID, []string{"nickname"})
+	assert.Nil(t, err)
+	assert.Equal(t, nickName, dbPlayerRedis.Nickname)
+
+	// 更新昵称
+	newNickName := "someothername"
+	assert.Nil(t, SetPlayerFields(playerID, []string{"nickname"}, &db.TPlayer{Nickname: newNickName}))
+
+	dbPlayerRedis, err = getPlayerFieldsFromRedis(playerID, []string{"nickname"})
+	assert.Nil(t, err)
+	assert.Equal(t, newNickName, dbPlayerRedis.Nickname)
+
+	dbPlayer, err = GetPlayerInfo(playerID, []string{"nickname"}...)
+	assert.Nil(t, err)
+	assert.Equal(t, newNickName, dbPlayer.Nickname)
+}
+
+func init() {
+	viper.SetDefault("node", 200)
 }

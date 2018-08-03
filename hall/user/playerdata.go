@@ -3,10 +3,11 @@ package user
 import (
 	"context"
 	"fmt"
-	"steve/common/data/player"
 	"steve/entity/cache"
 	"steve/entity/db"
+	"steve/external/goldclient"
 	"steve/hall/data"
+	"steve/server_pb/gold"
 	"steve/server_pb/user"
 	"time"
 
@@ -103,11 +104,18 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 	}
 
 	// 逻辑处理
-	exist, result, err := data.UpdatePlayerInfo(playerID, nickName, avatar, gender)
+	fields := []string{cache.NickName, cache.Avatar, cache.Gender}
+	dbPlayer := db.TPlayer{
+		Playerid: int64(playerID),
+		Nickname: nickName,
+		Gender:   int(gender),
+		Avatar:   avatar,
+	}
+	err = data.SetPlayerFields(playerID, fields, &dbPlayer)
 
 	// 返回消息
-	if exist {
-		rsp.Result = result
+	if err == nil {
+		rsp.Result = true
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 
@@ -210,10 +218,10 @@ func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.Get
 	}, nil
 
 	// 逻辑处理
-	rsp.GameConfig, rsp.GameLevelConfig, err = data.GetGameInfoList()
-
+	gameConfig, gameLevelConfig, err := data.GetGameInfoList()
 	// 返回消息
 	if err == nil {
+		rsp.GameConfig, rsp.GameLevelConfig = DBGameConfig2Server(gameConfig), DBGamelevelConfig2Sercer(gameLevelConfig)
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 	return
@@ -226,12 +234,14 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-	// TODO: 使用正式的金币服
-	player.SetPlayerCoin(playerID, 10*10000)
+
+	// 设置玩家货币信息
+	goldclient.AddGold(playerID, int16(gold.GoldType_GOLD_COIN), 10*10000, 0, 0)
 
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      int(data.AllocShowUID()),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称

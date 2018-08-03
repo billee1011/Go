@@ -4,6 +4,9 @@
 
 用于在IDE里调试服务，实现方式是绕开了用plugin加载服务，直接通过对应服务的NewService()得到一个新服务，后面的加载仍然调用serviceloader/loader里的方法进行。
 
+为了兼容有些包里有init方法直接在获取exposer，把cmd的init也放到更早的init里  
+目前的真正入口方法是cmd/root.go的init方法
+
 ## 服务的配置位置
 
 ```servicelauncher/launcher/services.go```

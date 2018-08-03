@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"steve/entity/cache"
 	"steve/entity/db"
-	"steve/server_pb/user"
 	"steve/structs"
 	"strconv"
 	"time"
@@ -51,18 +50,6 @@ func getRedisUint64Val(redisName string, key string) (uint64, error) {
 	return 0, fmt.Errorf("redis 命令执行失败: %v", redisCmd.Err())
 }
 
-func getRedisByteVal(redisName string, key string) ([]byte, error) {
-	redisCli, err := redisCliGetter(redisName, 0)
-	if err != nil {
-		return []byte{}, err
-	}
-	data, err := redisCli.Get(key).Bytes()
-	if err == nil {
-		return data, nil
-	}
-	return []byte{}, fmt.Errorf("redis 命令执行失败: %v", err)
-}
-
 func getRedisField(redisName string, key string, field ...string) ([]interface{}, error) {
 	redisCli, err := redisCliGetter(redisName, 0)
 	if err != nil {
@@ -87,61 +74,21 @@ func setRedisVal(redisName string, key string, val interface{}, duration time.Du
 	return nil
 }
 
-// setRedisWatch 事务
-func setRedisWatch(redisName string, key string, fields map[string]string, duration time.Duration) error {
+func setRedisFields(redisName string, key string, fields map[string]string, duration time.Duration) error {
 	redisCli, err := redisCliGetter(redisName, 0)
-
-	list := make(map[string]interface{}, len(fields))
-	for k, v := range fields {
-		list[k] = v
+	if err != nil {
+		return err
 	}
-
-	err = redisCli.Watch(func(tx *redis.Tx) error {
-		err := tx.HKeys(key).Err()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		cmd := tx.HMSet(key, list)
-		if cmd.Err() != nil {
-			return fmt.Errorf("set redis watch err: %v ", cmd.Err())
-		}
-		redisCli.Expire(key, duration)
-		return nil
-	}, key)
-	return err
-}
-
-func dbGameConfig2serverGameConfig(dbGameConfigs []db.TGameConfig) (gameInfos []*user.GameConfig) {
-	gameInfos = make([]*user.GameConfig, 0)
-	for _, dbGameConfig := range dbGameConfigs {
-		gameInfo := &user.GameConfig{
-			GameId:   uint32(dbGameConfig.Gameid),
-			GameName: dbGameConfig.Name,
-			GameType: uint32(dbGameConfig.Type),
-		}
-
-		gameInfos = append(gameInfos, gameInfo)
+	kv := make(map[string]interface{}, len(fields))
+	for k, field := range fields {
+		kv[k] = field
 	}
-	return
-}
-
-func dbGamelevelConfig2serverGameConfig(dbGameConfigs []db.TGameLevelConfig) (gamelevelConfigs []*user.GameLevelConfig) {
-	gamelevelConfigs = make([]*user.GameLevelConfig, 0)
-	for _, dbGameConfig := range dbGameConfigs {
-		gamelevelConfig := &user.GameLevelConfig{
-			GameId:     uint32(dbGameConfig.Gameid),
-			LevelId:    uint32(dbGameConfig.Levelid),
-			LevelName:  dbGameConfig.Name,
-			BaseScores: uint32(dbGameConfig.Basescores),
-			LowScores:  uint32(dbGameConfig.Lowscores),
-			HighScores: uint32(dbGameConfig.Highscores),
-			MinPeople:  uint32(dbGameConfig.Minpeople),
-			MaxPeople:  uint32(dbGameConfig.Maxpeople),
-		}
-
-		gamelevelConfigs = append(gamelevelConfigs, gamelevelConfig)
+	status := redisCli.HMSet(key, kv)
+	if status.Err() != nil {
+		return fmt.Errorf("设置失败(%v)", status.Err())
 	}
-	return
+	redisCli.Expire(key, duration)
+	return nil
 }
 
 func generateDbPlayer(playerID uint64, info map[string]string) *db.TPlayer {
@@ -153,6 +100,7 @@ func generateDbPlayer(playerID uint64, info map[string]string) *db.TPlayer {
 	return &db.TPlayer{
 		Playerid:   int64(playerID),
 		Gender:     int(gender),
+		Nickname:   info[cache.NickName],
 		Avatar:     info[cache.Avatar],
 		Channelid:  int(channelID),
 		Provinceid: int(provinceID),
