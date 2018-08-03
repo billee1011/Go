@@ -1,7 +1,10 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
+	"steve/entity/cache"
+	"steve/entity/db"
 	"steve/structs"
 
 	"github.com/go-redis/redis"
@@ -48,66 +51,20 @@ func GetPlayerMaxwinningstream(key string) (int, error) {
 	return int(MaxStream), nil
 }
 
-// UpdatePlayerWinRate 更新玩家胜率
-func UpdatePlayerWinRate(key string, rate int) error {
+// UpdatePlayerGameToredis 更新玩家胜率
+func UpdatePlayerGameToredis(tpg *db.TPlayerGame) error {
+	key := cache.FmtPlayerIDKey(uint64(tpg.Gameid))
+	gameKey := cache.FmtPlayerGameInfoKey(uint32(tpg.Gameid))
 	redisCli, err := RedisCliGetter(redisName, 0)
 	if err != nil {
 		return err
 	}
-	// cache.FmtPlayerIDKey()
-	// redisCli.HMGet(key, "winning")
+	message, err := json.Marshal(tpg)
+	if err != nil {
+		return err
+	}
 	redisCli.HMSet(key, map[string]interface{}{
-		"winningRate": rate,
+		gameKey: string(message),
 	})
 	return nil
 }
-
-// // GetPlayerGameInfo 获取玩家游戏信息
-// func GetPlayerGameInfo(playerID uint64, gameID uint32) (exist bool, info *db.TPlayerGame, err error) {
-// 	exist, info, err = false, new(db.TPlayerGame), nil
-
-// 	rKey := cache.FmtPlayerIDKey(playerID)
-// 	// 从redis获取
-// 	val, _ := getRedisField(playerRedisName, rKey, cache.FmtPlayerGameInfoKey(gameID))
-// 	err = json.Unmarshal([]byte(val[0].(string)), info)
-// 	if err == nil {
-// 		exist = true
-// 		return
-// 	}
-
-// 	engine, err := mysqlEngineGetter(playerMysqlName)
-
-// 	where := fmt.Sprintf("playerID=%d and gameID='%d'", playerID, gameID)
-// 	exist, err = engine.Table(playerGameTableName).Where(where).Get(info)
-
-// 	if err != nil {
-// 		err = fmt.Errorf("select t_player_game sql err：%v", err)
-// 		return
-// 	}
-// 	// 更新redis
-// 	data, _ := json.Marshal(info)
-// 	rFields := map[string]string{
-// 		cache.FmtPlayerGameInfoKey(gameID): string(data),
-// 	}
-// 	if err = setRedisFields(playerRedisName, rKey, rFields, redisTimeOut); err != nil {
-// 		err = fmt.Errorf("save game_config  into redis fail： %v", err)
-// 	}
-// 	return
-// }
-
-// func setRedisFields(redisName string, key string, fields map[string]string, duration time.Duration) error {
-// 	redisCli, err := redisCliGetter(redisName, 0)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	kv := make(map[string]interface{}, len(fields))
-// 	for k, field := range fields {
-// 		kv[k] = field
-// 	}
-// 	status := redisCli.HMSet(key, kv)
-// 	if status.Err() != nil {
-// 		return fmt.Errorf("设置失败(%v)", status.Err())
-// 	}
-// 	redisCli.Expire(key, duration)
-// 	return nil
-// }

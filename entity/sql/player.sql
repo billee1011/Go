@@ -37,6 +37,7 @@ create table t_player
     primary key,
   accountID    bigint                 not null,
   playerID     bigint                 not null,
+  showUID     int                 not null,
   type         int default '1'        not null
   comment '1.普通玩家
 2.机器人

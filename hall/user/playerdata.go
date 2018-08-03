@@ -3,12 +3,12 @@ package user
 import (
 	"context"
 	"fmt"
-	"steve/common/data/player"
 	"steve/entity/cache"
 	"steve/entity/db"
+	"steve/external/goldclient"
 	"steve/hall/data"
+	"steve/server_pb/gold"
 	"steve/server_pb/user"
-	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -66,15 +66,15 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 	playerID := req.GetPlayerId()
 
 	// 逻辑处理
-	info, err := data.GetPlayerInfo(playerID)
+	fields := []string{cache.NickName, cache.Gender, cache.Avatar, cache.ChannelID, cache.ProvinceID, cache.CityID}
+	player, err := data.GetPlayerInfo(playerID, fields...)
 
 	// 返回消息
 	if err == nil {
-		rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
-		rsp.NickName, rsp.Avatar = info[cache.NickNameField], info[cache.AvatarField]
-		rsp.Name, rsp.Phone = info[cache.NameField], info[cache.PhoneField]
-		value, _ := strconv.ParseInt(info[cache.GenderField], 10, 64)
-		rsp.IpAddr, rsp.Gender = string("127.0.0.1"), uint32(value)
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		rsp.PlayerId, rsp.Gender = playerID, uint32(player.Gender)
+		rsp.NickName, rsp.Avatar = player.Nickname, player.Avatar
+		rsp.ChannelId, rsp.ProvinceId, rsp.CityId = uint32(player.Channelid), uint32(player.Provinceid), uint32(player.Cityid)
 	}
 
 	return
@@ -94,8 +94,6 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 	playerID := req.GetPlayerId()
 	nickName := req.GetNickName() // 昵称
 	avatar := req.GetAvatar()     // 头像
-	name := req.GetName()         // 姓名
-	phone := req.GetPhone()       // 电话
 	gender := req.GetGender()     // 性别
 
 	// 校验入参
@@ -106,11 +104,18 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 	}
 
 	// 逻辑处理
-	exist, result, err := data.UpdatePlayerInfo(playerID, nickName, avatar, name, phone, gender)
+	fields := []string{cache.NickName, cache.Avatar, cache.Gender}
+	dbPlayer := db.TPlayer{
+		Playerid: int64(playerID),
+		Nickname: nickName,
+		Gender:   int(gender),
+		Avatar:   avatar,
+	}
+	err = data.SetPlayerFields(playerID, fields, &dbPlayer)
 
 	// 返回消息
-	if exist {
-		rsp.Result = result
+	if err == nil {
+		rsp.Result = true
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 
@@ -128,10 +133,12 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	}, nil
 
 	// 逻辑处理
-	state, _, err := data.GetPlayerState(req.GetPlayerId())
+	pState, err := data.GetPlayerState(req.GetPlayerId())
 
 	if err == nil {
-		rsp.State, rsp.ErrCode = user.PlayerState(state), int32(user.ErrCode_EC_SUCCESS)
+		rsp.State, rsp.GameId, rsp.IpAddr = user.PlayerState(pState.State), pState.GameID, pState.IPAddr
+		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = pState.GateAddr, pState.MatchAddr, pState.RoomAddr
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 	return
 }
@@ -211,10 +218,10 @@ func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.Get
 	}, nil
 
 	// 逻辑处理
-	rsp.GameConfig, rsp.GameLevelConfig, err = data.GetGameInfoList()
-
+	gameConfig, gameLevelConfig, err := data.GetGameInfoList()
 	// 返回消息
 	if err == nil {
+		rsp.GameConfig, rsp.GameLevelConfig = DBGameConfig2Server(gameConfig), DBGamelevelConfig2Sercer(gameLevelConfig)
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 	return
@@ -227,12 +234,14 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-	// TODO: 使用正式的金币服
-	player.SetPlayerCoin(playerID, 10*10000)
+
+	// 设置玩家货币信息
+	goldclient.AddGold(playerID, int16(gold.GoldType_GOLD_COIN), 10*10000, 0, 0)
 
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      int(data.AllocShowUID()),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称

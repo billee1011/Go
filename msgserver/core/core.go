@@ -46,7 +46,7 @@ func (c *myCore) Init(e *structs.Exposer, param ...string) error {
 	if bSingleThread {
 		runtime.GOMAXPROCS(1)
 	}
-	entry := logrus.WithField("name", "goldCore.Init")
+	entry := logrus.WithField("name", "core.Init")
 	// 1.[RPC API]注册当前模块RPC服务处理器
 	if pbService != nil {
 		if err := e.RPCServer.RegisterService(pbService, pbServerImp); err != nil {
@@ -58,6 +58,13 @@ func (c *myCore) Init(e *structs.Exposer, param ...string) error {
 	// 2.[C/S消息]分派客户端消息(Client Msg),进行MsgID -->Func()
 	if err := c.dispatchClientMsg(e.Exchanger); err != nil {
 		entry.WithError(err).Error("注册客户端Client消息处理器失败")
+		return err
+	}
+
+	// 3.初始化服务
+	err := InitServer()
+	if err != nil {
+		entry.WithError(err).Error("初始化服务失败")
 		return err
 	}
 

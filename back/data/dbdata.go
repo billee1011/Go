@@ -12,58 +12,6 @@ import (
 
 const dbName = "steve"
 
-// GetTotalBureau 获取玩家总场次
-func GetTotalBureau(userID uint64, gameID int) (uint64, error) {
-	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
-	if err != nil {
-		return 0, err
-	}
-	sql := fmt.Sprintf("select totalBureau from t_player_game where userID = '%v' and gameID = '%v';", userID, gameID)
-	result, err := engine.QueryString(sql)
-	if err != nil {
-		return 0, err
-	}
-	if len(result) != 1 {
-		return 0, fmt.Errorf("not only result")
-	}
-	kv := result[0]
-	for _, v := range kv {
-		value, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-
-		}
-		return uint64(value), nil
-	}
-	return 0, fmt.Errorf("no value")
-}
-
-// UpdateTotalBureau 更新玩家总局数
-func UpdateTotalBureau(userID uint64, gameID int, totalCount uint64) error {
-	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
-	if err != nil {
-		return err
-	}
-	sql := fmt.Sprintf("update t_player_game set totalBureau=%v where userID = '%v' and gameID = '%v';", totalCount, userID, gameID)
-	_, err = engine.Exec(sql)
-	if err != nil {
-		return err
-	}
-	// _, err := result.RowsAffected()
-	return nil
-}
-
-// UpdateMaxWinningStreak 更新玩家最高连胜
-func UpdateMaxWinningStreak() {
-
-}
-
-// UpdateMaxMultiple 更新玩家获胜最大倍数
-func UpdateMaxMultiple() {
-
-}
-
 // GetWinningRate 更新胜率
 func GetWinningRate() {
 	//读mysql获取当前的胜率，通过胜率×总局数获取赢的局数
@@ -121,6 +69,7 @@ func UpdateTPlayerGame(tpg *db.TPlayerGame) error {
 		return err
 	}
 	_, err = engine.Update(tpg, &db.TPlayerGame{Gameid: tpg.Gameid, Playerid: tpg.Playerid})
+
 	if err != nil {
 		logrus.Errorln(err)
 		return err

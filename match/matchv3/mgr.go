@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"steve/external/goldclient"
+	"steve/external/hallclient"
+	"steve/external/robotclient"
 	"steve/match/web"
 	"steve/server_pb/gold"
 	"steve/server_pb/user"
@@ -498,27 +500,53 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 	return false
 }
 
-// 检测指定金币数和指定桌子是否匹配
-// true表匹配，false表不匹配
-func (manager *matchManager) checkGoldMatchDesk(goldNum int64, pDesk *matchDesk) bool {
+// 获取指定金币数经过间隔为interval秒后的金币匹配范围
+// goldNum  : 金币数
+// inteval  : 间隔的秒数
+// 返回值
+// minGold  : 金币最小值
+// maxGold  : 金币最大值
+func (manager *matchManager) getGoldRange(goldNum int64, inteval int64) (minGold int64, maxGold int64) {
 
-	// 参数检测
-	if pDesk == nil {
-		logrus.Errorln("checkGoldMatchDesk() 参数错误，pDesk == nil，返回")
-		return false
+	// 差异百分比
+	goldValue := manager.getGoldValue(inteval)
+
+	// 桌子金币匹配范围最小值
+	minGold = int64(float64(goldNum) * float64(1-goldValue))
+	if minGold < 0 {
+		minGold = 0
 	}
 
-	nowTime := time.Now().Unix()
+	//桌子金币匹配范围最大值
+	maxGold = int64(float64(goldNum) * float64(1+goldValue))
 
-	// 金币差异度(百分比)
-	goldDiff := (float64(goldNum) - float64(pDesk.aveGold)) / float64(pDesk.aveGold)
+	return
+}
 
-	// 检测金币范围
-	if (float32(goldDiff)) > manager.getGoldValue(nowTime-pDesk.createTime) {
-		return false
+// 获取指定的胜率经过间隔为interval秒后的胜率匹配范围
+// rate     : 指定的胜率
+// inteval  : 间隔的秒数
+// 返回值
+// minRate  : 胜率起始值
+// maxRate  : 金币最大值
+func (manager *matchManager) getWinRateRange(rate int8, inteval int64) (minRate int8, maxRate int8) {
+
+	// 胜率浮动值
+	rateValue := manager.getWinRateValue(inteval)
+
+	// 胜率匹配范围最小值
+	minRate = rate - rateValue
+	if minRate < 0 {
+		minRate = 0
 	}
 
-	return true
+	//桌子金币匹配范围最大值
+	maxRate = rate + rateValue
+	if maxRate > 100 {
+		maxRate = 100
+	}
+
+	return
 }
 
 // 为指定玩家执行首次匹配
@@ -582,7 +610,8 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			desk := iter.Value.(*matchDesk)
 
 			// 检测金币范围
-			if !manager.checkGoldMatchDesk(reqPlayer.gold, desk) {
+			minGold, maxGold := manager.getGoldRange(desk.aveGold, nowTime-desk.createTime)
+			if reqPlayer.gold < minGold || reqPlayer.gold > maxGold {
 				continue
 			}
 
@@ -608,10 +637,7 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 	// 找到的话，则加入桌子，返回
 	if pFindDesk != nil {
 		// 把玩家加入桌子
-		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk) == false {
-			logEntry.Errorf("首次范围检测时，玩家%v加入桌子失败，返回\n", reqPlayer.playerID)
-			return
-		}
+		manager.addPlayerToDesk(&newMatchPlayer, pFindDesk)
 
 		// 成功入桌即返回
 		logEntry.Debugf("首次范围检测时，胜率为%v的玩家%v匹配进桌子%v，正常返回", reqPlayer.winRate, reqPlayer.playerID, pFindDesk)
@@ -671,7 +697,8 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			}
 
 			// 检测金币范围
-			if !manager.checkGoldMatchDesk(reqPlayer.gold, desk) {
+			minGold, maxGold := manager.getGoldRange(desk.aveGold, nowTime-desk.createTime)
+			if reqPlayer.gold < minGold || reqPlayer.gold > maxGold {
 				continue
 			}
 
@@ -697,10 +724,7 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 	// 找到的话，则加入桌子，返回
 	if pFindDesk != nil {
 		// 把玩家加入桌子
-		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk) == false {
-			logEntry.Errorf("二次范围检测时，玩家%v加入桌子失败，返回\n", reqPlayer.playerID)
-			return
-		}
+		manager.addPlayerToDesk(&newMatchPlayer, pFindDesk)
 
 		// 成功入桌即返回
 		logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，正常返回", reqPlayer.winRate, reqPlayer.playerID, pFindDesk)
@@ -719,10 +743,7 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 	}
 
 	// 把该玩家压入桌子
-	if manager.addPlayerToDesk(&newMatchPlayer, newDesk) == false {
-		logEntry.Errorf("新建桌子后，玩家%v加入桌子失败，返回\n", reqPlayer.playerID)
-		return
-	}
+	manager.addPlayerToDesk(&newMatchPlayer, newDesk)
 
 	logEntry.Debugf("胜率为%v的玩家%v匹配失败后，创建桌子并加入，正常返回", reqPlayer.winRate, reqPlayer.playerID)
 
@@ -902,13 +923,23 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 		return fmt.Sprintf("玩家金币数大于游戏场次金币要求最大值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
-	// 获取该游戏的胜率
-	// 计算该游戏的胜率，已经乘以100,比如：50表胜率为50%
-	playerWinRate, err := requestPlayerWinRate(playerID, gameID)
-	if err != nil {
-		logrus.Errorln("从hall服获取玩家胜率失败")
-		return fmt.Sprintf("从hall服获取玩家胜率失败，游戏ID:%v，场次ID:%v，请求的玩家ID:%v", gameID, levelID, playerID)
+	// 获取该玩家的信息
+	// 计算该玩家的信息，已经乘以100,比如：50表胜率为50%
+	pPlayerInfo, err := hallclient.GetPlayerInfo(playerID)
+	if err != nil || pPlayerInfo == nil {
+		logrus.WithError(err).Errorln("从hall服获取玩家信息失败")
+		return fmt.Sprintf("从hall服获取玩家信息失败，游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
+
+	// 获取胜率
+	pPlayerGameInfo, err := hallclient.GetPlayerGameInfo(playerID, gameID)
+	if err != nil || pPlayerGameInfo == nil {
+		logrus.WithError(err).Errorln("从hall服获取玩家游戏信息失败")
+		return fmt.Sprintf("从hall服获取玩家游戏信息失败，游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
+	}
+
+	// 计算胜率 todo
+	playerWinRate := pPlayerGameInfo.GetWinningRate()
 
 	// 全部检测通过
 
@@ -919,14 +950,12 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 		return fmt.Sprintf("请求匹配的游戏存在，场次存在，但找不到该场次的匹配申请通道，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
-	clientIP, _ := requestPlayerIP(playerID)
-
 	// 压入通道
 	reqMatchChan <- reqMatchPlayer{
-		playerID: playerID,            // playerID
-		winRate:  int8(playerWinRate), // 胜率
-		gold:     playerGold,          // 金币数
-		IP:       clientIP,            // IP地址
+		playerID: playerID,                // playerID
+		winRate:  int8(playerWinRate),     // 胜率
+		gold:     playerGold,              // 金币数
+		IP:       pPlayerInfo.GetIpAddr(), // IP地址
 	}
 
 	logEntry.Debugln("离开函数")
@@ -1112,14 +1141,14 @@ func (manager *matchManager) addDeskPlayer2Desk(deskPlayer *deskPlayer, desk *de
 } */
 
 // 将玩家添加到牌桌
-// pMatchPlayer : 匹配的玩家
-//
-func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchDesk) (bSuc bool) {
+// pMatchPlayer : 要加入的玩家
+// pDesk 		: 要加入的桌子
+func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchDesk) {
 
 	// 参数检测
 	if pPlayer == nil || pDesk == nil {
-		logrus.Error("参数错误，pPlayer == nil || pDesk == nil，返回")
-		return false
+		logrus.Error("严重错误，pPlayer == nil || pDesk == nil，返回")
+		return
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -1151,8 +1180,6 @@ func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchD
 	if uint8(len(pDesk.players)) >= needPlayerCount {
 		manager.onDeskFull(pDesk)
 	}
-
-	return true
 }
 
 /* // fillRobots 填充机器人
@@ -1271,7 +1298,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 			// 距离桌子创建时间的间隔
 			interval := tNowTime - desk.createTime
 
-			// 不足1秒的，不检测，因为新建一个桌子时已检测过
+			// 不足1秒的，不检测，因为新建一个桌子时已检测过，不存在可合并的
 			if interval < 1 {
 				continue
 			}
@@ -1323,6 +1350,12 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 
 					merDesk := merIter.Value.(*matchDesk)
 
+					// 检测金币范围
+					minGold, maxGold := manager.getGoldRange(merDesk.aveGold, tNowTime-merDesk.createTime)
+					if desk.aveGold < minGold || desk.aveGold > maxGold {
+						continue
+					}
+
 					// IP是否存在相同的
 					if manager.checkDeskSameIP(desk, merDesk) {
 						continue
@@ -1367,16 +1400,55 @@ func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
 	// 当前时间
 	tNowTime := time.Now().Unix()
 
+	// 机器人加入时间
+	joinTime := web.GetRobotJoinTime()
+
 	// 所有的概率
 	var index int8 = 0
 	for ; index <= 100; index++ {
+
 		// 该概率下所有的桌子
 		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
 
 			desk := iter.Value.(*matchDesk)
 
-			if tNowTime-desk.createTime > 100 {
+			// 间隔秒数
+			interval := tNowTime - desk.createTime
 
+			// 超过时间，则开始加入机器人
+			if interval > int64(joinTime.Seconds()) {
+
+				// 胜率范围
+				beginRate := index - manager.getWinRateValue(interval)
+				if beginRate < 0 {
+					beginRate = 0
+				}
+				endRate := index + manager.getWinRateValue(interval)
+				if endRate > 100 {
+					endRate = 100
+				}
+
+				// 金币范围
+				minGold, maxGold := manager.getGoldRange(desk.aveGold, interval)
+
+				// 从hall服获取一个空闲的机器人
+				newRobot, err := robotclient.GetRobot(globalInfo.gameID, globalInfo.levelID, beginRate, endRate, minGold, maxGold)
+				if err != nil || newRobot == nil {
+					logEntry.WithError(err).Error("从hall服获取机器人失败!!!")
+					continue
+				}
+
+				// 新建一个匹配玩家(机器人)
+				newMatchPlayer := matchPlayer{
+					playerID: newRobot.RobotPlayerId,
+					robotLv:  1, // todo
+					seat:     -1,
+					IP:       0,
+					gold:     0, // todo
+				}
+
+				// 把玩家加入桌子
+				manager.addPlayerToDesk(&newMatchPlayer, desk)
 			}
 		}
 	}

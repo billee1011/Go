@@ -10,19 +10,6 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// 更新总局数
-func updateTotalBuearu(detailInfo gamelog.TGameDetail) {
-	logEntry := logrus.WithFields(logrus.Fields{})
-	totalBureau, err := data.GetTotalBureau(detailInfo.Playerid, detailInfo.Gameid)
-	if err != nil {
-		logEntry.Errorf("failed to get totalBureau,err：%v", err)
-	}
-	totalBureau++
-	if err = data.UpdateTotalBureau(detailInfo.Playerid, detailInfo.Gameid, totalBureau); err != nil {
-		logEntry.Errorf("failed to update totalBureau,err：%v", err)
-	}
-}
-
 func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 	playerGame, err := data.GetTPlayerGame(detailInfo.Gameid, detailInfo.Playerid)
 	if err != nil {
@@ -56,7 +43,11 @@ func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 	}
 	// 更新胜率
 	playerGame.Winningrate = int(math.Floor((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*100 + 0.5))
+
 	if err := data.UpdateTPlayerGame(playerGame); err != nil {
+		return err
+	}
+	if err := data.UpdatePlayerGameToredis(playerGame); err != nil {
 		return err
 	}
 	return nil
