@@ -30,6 +30,9 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 		UserData: proto.Uint32(req.GetUserData()),
 		ErrCode:  room.RoomError_SUCCESS.Enum(),
 	}
+	// 退出暂时总是回复成功
+	// TODO : 血战的换对手需要等退出完成后才返回
+	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
@@ -39,10 +42,7 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	if desk == nil {
 		return
 	}
-	response.ErrCode = room.RoomError_SUCCESS.Enum()
 	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
-
-	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 	return
 }
 
