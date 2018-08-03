@@ -110,6 +110,34 @@ func Test_Tuoguan_Shunzi(t *testing.T) {
 	assert.Equal(t, int(0x28), int(outInts[4]))
 }
 
+// 测试托管的顺子
+func Test_Tuoguan_Shunzi1(t *testing.T) {
+
+	// 手中的牌（987665224）
+	handCards := states.ToDDZCards([]uint32{0x3A, 0x29, 0x28, 0x27, 0x16, 0x26, 0x22, 0x32, 0x24}) //2246678910
+
+	// 上次出的牌（43567）
+	lastCards := states.ToDDZCards([]uint32{0x34, 0x43, 0x45, 0x46, 0x47})
+
+	// 是否成功
+	bSuc, outCards := states.GetMinBiggerShunzi(handCards, lastCards)
+
+	// 应该是成功的
+	assert.Equal(t, true, bSuc)
+
+	logrus.Errorf("Test_Tuoguan_Shunzi()::outCards = %v", outCards)
+
+	// 出的牌
+	outInts := states.ToInts(outCards)
+
+	// 应该是678910
+	assert.Equal(t, int(0x16), int(outInts[0]))
+	assert.Equal(t, int(0x27), int(outInts[1]))
+	assert.Equal(t, int(0x28), int(outInts[2]))
+	assert.Equal(t, int(0x29), int(outInts[3]))
+	assert.Equal(t, int(0x3A), int(outInts[4]))
+}
+
 // 测试托管的连对
 func Test_Tuoguan_Pairs(t *testing.T) {
 

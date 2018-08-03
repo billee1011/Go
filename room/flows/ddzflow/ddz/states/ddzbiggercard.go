@@ -278,7 +278,7 @@ func GetMinBiggerShunzi(allPokes []Poker, speciPoke []Poker) (bool, []Poker) {
 
 		// 起点牌必须存在
 		if !exist {
-			break
+			continue
 		}
 
 		bAllExist := true
