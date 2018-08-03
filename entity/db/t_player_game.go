@@ -6,7 +6,7 @@ import (
 
 type TPlayerGame struct {
 	Id               int64     `xorm:"pk autoincr BIGINT(20)"`
-	Userid           int64     `xorm:"not null BIGINT(20)"`
+	Playerid         int64     `xorm:"not null BIGINT(20)"`
 	Gameid           int       `xorm:"INT(11)"`
 	Gamename         string    `xorm:"VARCHAR(64)"`
 	Winningrate      int       `xorm:"comment('百分比表示，50%，只记录 50，精确到个位数') INT(11)"`

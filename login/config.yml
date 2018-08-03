@@ -24,14 +24,9 @@ health_port: 36202
 rpc_server_name: login
 
 
-# mysql 数据库列表
-mysql_list:
-  log:
-    user: root
-    passwd: 123456
-    addr: 127.0.0.1:3306
-    db: log 
-    params:
-      charset: utf8
+redis_list:
+  player: 
+    addr: 127.0.0.1:6379
+    passwd: 
 
 node: 1
