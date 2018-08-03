@@ -37,7 +37,7 @@ func InitRobotRedis() {
 	}
 	failedIDErrMpa := make(map[uint64]error) //存入redis 失败 playerID
 	for playerID, robotPlayer := range robotMap {
-		err := AddRobotWatch(uint64(playerID), FmtRobotPlayer(robotPlayer), RedisTimeOut)
+		err := SetRobotPlayerWatchs(uint64(playerID), FmtRobotPlayer(robotPlayer), RedisTimeOut)
 		if err != nil {
 			failedIDErrMpa[uint64(playerID)] = err
 			continue
