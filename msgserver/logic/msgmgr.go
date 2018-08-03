@@ -51,8 +51,8 @@ func (gm *MsgMgr) GetHorseRace(uid uint64) ([]string, int32, int32, error) {
 	// 2.从redis获取目前开启的跑马灯(达到开始时间和结束时间之间)。
 	// 3.按照从市ID-》省ID-》渠道ID的顺序获取跑马灯，如果获取到马上返回。
 	// 4.如果开启不使用上级配置的开关，则不向上检索.
-	channel, prov, city := gm.getUserInfo(uid)
-	if channel == 0 {
+	channel, prov, city, ok := gm.getUserInfo(uid)
+	if !ok {
 		return nil, 0, 0, errors.New("获取玩家渠道ID失败")
 	}
 
@@ -72,7 +72,7 @@ func (gm *MsgMgr) GetHorseRace(uid uint64) ([]string, int32, int32, error) {
 		}
 	}
 
-	if channel != 0 {
+	if channel >= 0 {
 		// 最后读取渠道级别的跑马灯
 		str, tick, sleep, ok := gm.getLevelHorseRace(channel, gm.channelList)
 		if ok {
@@ -97,7 +97,7 @@ func (gm *MsgMgr) getHorseRaceFromDB() error {
 	gm.provList = make(map[int64]*define.HorseRace)
 	gm.channelList = make(map[int64]*define.HorseRace)
 	for _, horse := range  gm.horseList {
-		if horse.Channel <= 0 {
+		if horse.Channel < 0 {
 			continue
 		}
 		if horse.Prov == 0 && horse.City == 0 {
@@ -202,17 +202,18 @@ func (gm *MsgMgr) sendHorseRaceChangedNtf(horse *define.HorseRace) error {
 
 // 调用hall接口获取用户信息
 // 返回:渠道ID，省ID，城市ID
-func (gm *MsgMgr) getUserInfo(uid uint64) (int64, int64, int64) {
+func (gm *MsgMgr) getUserInfo(uid uint64) (int64, int64, int64, bool) {
 
+	//return 1, 0, 0
 	info, err := hallclient.GetPlayerInfo(uid)
 	if err != nil {
-		return 0, 0, 0
+		return 0, 0, 0, false
 	}
 	if info == nil {
-		return 0, 0, 0
+		return 0, 0, 0, false
 	}
 
-	return int64(info.ChannelId), int64(info.ProvinceId), int64(info.CityId)
+	return int64(info.ChannelId), int64(info.ProvinceId), int64(info.CityId), true
 }
 
 func (gm *MsgMgr)SetUpdateTag(hc *define.HorseContent, status int8) bool {
