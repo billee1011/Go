@@ -18,6 +18,6 @@ func registerHandles(e exchanger.Exchanger) error {
 	panicRegister(msgid.MsgID_HALL_GET_PLAYER_INFO_REQ, user.HandleGetPlayerInfoReq)
 	panicRegister(msgid.MsgID_HALL_GET_PLAYER_STATE_REQ, user.HandleGetPlayerStateReq)
 	panicRegister(msgid.MsgID_HALL_GET_GAME_INFO_REQ, user.HandleGetGameInfoReq)
-
+	panicRegister(msgid.MsgID_HALL_REAL_NAME_REQ, user.HandleRealNameReq)
 	return nil
 }
