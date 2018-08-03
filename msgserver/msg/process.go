@@ -31,13 +31,15 @@ func ProcessGetHorseRaceReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		Body:  response,
 	}}
 
-	list, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	list, tick, sleep, err := logic.GetMsgMgr().GetHorseRace(playerID)
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
 		return nil
 	}
 	response.Content = list
+	response.Tick = &tick
+	response.Sleep = &sleep
 
 	return ret
 }
