@@ -119,6 +119,13 @@ func Test_IsTriplesAndSingles6(t *testing.T) {
 	assert.Equal(t, uint32(7), pivot.PointWeight)
 }
 
+func Test_IsTriplesAndSingles7(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x15, 0x25, 0x35, 0x17, 0x27, 0x37, 0x28, 0x48, 0x38, 0x29, 0x49, 0x39}) //555 777888999 全三牌型
+	is, pivot := states.IsTriplesAndSingles(cards)
+	assert.Equal(t, true, is)
+	assert.Equal(t, uint32(9), pivot.PointWeight)
+}
+
 func Test_IsPairs(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x14, 0x24, 0x35, 0x45})
 	is, pivot := states.IsPairs(cards)
@@ -194,6 +201,13 @@ func Test_CardSort(t *testing.T) {
 	})
 	cards = states.DDZSortDescend(cards)
 	assert.Equal(t, cards, []uint32{0x0F, 0x0E, 0x42, 0x22, 0x21, 0x11, 0x1D, 0x2C, 0x2B, 0x1B, 0x3A, 0x49, 0x48, 0x37, 0x26, 0x15, 0x34, 0x13})
+}
+
+func Test_GetMaxSamePoint(t *testing.T) {
+	cards := states.ToDDZCards([]uint32{0x13, 0x24, 0x35, 0x3A, 0x17, 0x1A, 0x39, 0x4A, 0x1B, 0x2A, 0x3D, 0x41})
+	pointWeight, count := states.GetMaxSamePoint(cards)
+	assert.Equal(t, pointWeight, states.ToDDZCard(0x1A).PointWeight)
+	assert.Equal(t, int(count), 4)
 }
 
 func randCard() uint32 {
