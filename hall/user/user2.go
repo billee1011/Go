@@ -33,9 +33,9 @@ func HandleGetPlayerInfoReq2(playerID uint64, header *steve_proto_gaterpc.Header
 	player, err := data.GetPlayerInfo(playerID)
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
-		response.NickName = proto.String(player.NickName)
-		response.Avator = proto.String(player.Avator)
-		response.Gender = proto.Uint32(player.Gender)
+		response.NickName = proto.String(player.Nickname)
+		response.Avator = proto.String(player.Avatar)
+		response.Gender = proto.Uint32(uint32(player.Gender))
 	}
 
 	// 获取玩家货币信息
@@ -45,10 +45,10 @@ func HandleGetPlayerInfoReq2(playerID uint64, header *steve_proto_gaterpc.Header
 	}
 
 	// 获取玩家游戏信息
-	state, gameID, _, _, _, _, err := data.GetPlayerState(playerID)
+	pState, err := data.GetPlayerState(playerID)
 	if err == nil {
-		response.PlayerState = common.PlayerState(state).Enum()
-		response.GameId = common.GameId(gameID).Enum()
+		response.PlayerState = common.PlayerState(pState.State).Enum()
+		response.GameId = common.GameId(pState.GameID).Enum()
 	}
 
 	return
@@ -114,12 +114,12 @@ func HandleGetPlayerStateReq2(playerID uint64, header *steve_proto_gaterpc.Heade
 	}
 
 	// 逻辑处理
-	state, gameID, _, _, _, _, err := data.GetPlayerState(playerID)
+	pState, err := data.GetPlayerState(playerID)
 
 	// 返回结果
 	if err == nil {
-		response.PlayerState = common.PlayerState(state).Enum()
-		response.GameId = common.GameId(gameID).Enum()
+		response.PlayerState = common.PlayerState(pState.State).Enum()
+		response.GameId = common.GameId(pState.GameID).Enum()
 	}
 
 	return

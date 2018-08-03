@@ -21,16 +21,6 @@ var idAllocObject *gutils.Node
 // redis 过期时间
 var redisTimeOut = time.Hour * 24 * 30
 
-// 玩家基本信息列表
-var playerInfoList = map[int32]string{
-	1: "nickname",
-	2: "avatar",
-	3: "gender",
-	4: "channelID",
-	5: "provinceID",
-	6: "cityID",
-}
-
 const (
 	playerRedisName          = "player"
 	playerMysqlName          = "steve"
@@ -77,16 +67,16 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	return
 }
 
-// GetPlayerInfo 根据玩家id获取玩家的基本信息
-func GetPlayerInfo(playerID uint64) (player *PlayerInfo, err error) {
-	player, err = new(PlayerInfo), nil
+// GetPlayerInfo 根据玩家id获取玩家个人资料信息
+func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err error) {
+	dbPlayer, err = new(db.TPlayer), nil
 
 	engine, err := mysqlEngineGetter(playerMysqlName)
 	if err != nil {
 		return
 	}
 	strCol := ""
-	for _, col := range playerInfoList {
+	for _, col := range fields {
 		if len(strCol) > 0 {
 			strCol += ","
 		}
@@ -103,8 +93,7 @@ func GetPlayerInfo(playerID uint64) (player *PlayerInfo, err error) {
 		err = fmt.Errorf("玩家存在多条信息记录： %v", err)
 		return
 	}
-	player.generatePlayerInfo(res[0])
-
+	dbPlayer = generateDbPlayer(playerID, res[0])
 	return
 }
 
@@ -118,44 +107,26 @@ func UpdatePlayerInfo(playerID uint64, nickName, avatar string, gender uint32) (
 	})
 	exist, result, err = true, true, nil
 
-	rfields := make(map[string]interface{}, 0)
-	if nickName != "" {
-		rfields[cache.NickName] = nickName
-	}
-	if avatar != "" {
-		rfields[cache.Avatar] = avatar
-	}
-	if gender == 1 || gender == 2 {
-		rfields[cache.Gender] = gender
+	tbPlayer := db.TPlayer{
+		Nickname: nickName,
+		Gender:   int(gender),
+		Avatar:   avatar,
 	}
 
-	strCol := "playerID="
-	strCol += fmt.Sprintf("'%v'", playerID)
-	for key, field := range rfields {
-		strCol += ","
-		strCol += key
-		strCol += "="
-		strCol += fmt.Sprintf("'%v'", field)
-	}
 	engine, err := mysqlEngineGetter(playerMysqlName)
-	sql := fmt.Sprintf("update t_player set %s  where playerID=?;", strCol)
-	res, sqlerror := engine.Exec(sql, playerID)
-	if sqlerror != nil {
-		entry.WithError(sqlerror).Errorln("update t_player mysql fail,sql:=%s", sql)
-		exist, result, err = true, false, sqlerror
+	affected, uerr := engine.Update(&tbPlayer, db.TPlayer{Playerid: int64(playerID)})
+
+	if uerr != nil {
+		entry.WithError(err).Errorln("update t_player mysql fail")
+		exist, result, err = true, false, uerr
+		return
 	}
-	if aff, aerr := res.RowsAffected(); aff == 0 {
+	if affected == 0 {
 		entry.WithError(err).Errorln("update t_player playerId:%d 不存在", playerID)
-		exist, result, err = false, false, aerr
+		exist, result, err = false, false, nil
+		return
 	}
 
-	// list := make(map[string]string, len(rfields))
-	// for key, field := range rfields {
-	// 	list[key] = field.(string)
-	// }
-	// if err = SavePlayerInfoToRedis(playerID, list, playerRedisName); err != nil {
-	// 	err = fmt.Errorf("save playerInfo  into redis fail： %v", err)
-	// }
 	return
 }
 

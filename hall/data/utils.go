@@ -2,9 +2,11 @@ package data
 
 import (
 	"fmt"
+	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/server_pb/user"
 	"steve/structs"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -140,4 +142,20 @@ func dbGamelevelConfig2serverGameConfig(dbGameConfigs []db.TGameLevelConfig) (ga
 		gamelevelConfigs = append(gamelevelConfigs, gamelevelConfig)
 	}
 	return
+}
+
+func generateDbPlayer(playerID uint64, info map[string]string) *db.TPlayer {
+	gender, _ := strconv.ParseInt(info[cache.Gender], 10, 64)
+	channelID, _ := strconv.ParseInt(info[cache.ChannelID], 10, 64)
+	provinceID, _ := strconv.ParseInt(info[cache.ProvinceID], 10, 64)
+	cityID, _ := strconv.ParseInt(info[cache.CityID], 10, 64)
+
+	return &db.TPlayer{
+		Playerid:   int64(playerID),
+		Gender:     int(gender),
+		Avatar:     info[cache.Avatar],
+		Channelid:  int(channelID),
+		Provinceid: int(provinceID),
+		Cityid:     int(cityID),
+	}
 }

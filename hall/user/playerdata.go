@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"steve/common/data/player"
+	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/hall/data"
 	"steve/server_pb/user"
@@ -64,14 +65,15 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 	playerID := req.GetPlayerId()
 
 	// 逻辑处理
-	player, err := data.GetPlayerInfo(playerID)
+	fields := []string{cache.NickName, cache.Gender, cache.Avatar, cache.ChannelID, cache.ProvinceID, cache.CityID}
+	player, err := data.GetPlayerInfo(playerID, fields...)
 
 	// 返回消息
 	if err == nil {
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
-		rsp.PlayerId, rsp.Gender = playerID, player.Gender
-		rsp.NickName, rsp.Avatar = player.NickName, player.Avator
-		rsp.ChannelId, rsp.ProvinceId, rsp.CityId = player.ChannelID, player.ProvinceID, player.CityID
+		rsp.PlayerId, rsp.Gender = playerID, uint32(player.Gender)
+		rsp.NickName, rsp.Avatar = player.Nickname, player.Avatar
+		rsp.ChannelId, rsp.ProvinceId, rsp.CityId = uint32(player.Channelid), uint32(player.Provinceid), uint32(player.Cityid)
 	}
 
 	return
@@ -123,11 +125,11 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	}, nil
 
 	// 逻辑处理
-	state, gameID, ipAddr, gateAddr, matchAddr, roomAddr, err := data.GetPlayerState(req.GetPlayerId())
+	pState, err := data.GetPlayerState(req.GetPlayerId())
 
 	if err == nil {
-		rsp.State, rsp.GameId, rsp.IpAddr = user.PlayerState(state), gameID, ipAddr
-		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = gateAddr, matchAddr, roomAddr
+		rsp.State, rsp.GameId, rsp.IpAddr = user.PlayerState(pState.State), pState.GameID, pState.IPAddr
+		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = pState.GateAddr, pState.MatchAddr, pState.RoomAddr
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 	return
