@@ -7,7 +7,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const redisName = "steve"
+const redisName = "back"
 
 func getRedisCli(redis string, db int) (*redis.Client, error) {
 	exposer := structs.GetGlobalExposer()
