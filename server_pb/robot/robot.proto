@@ -47,8 +47,10 @@ message GetRobotPlayerIDReq {
 
 //GetRobotPlayerIDRsp 机器人ID响应
 message GetRobotPlayerIDRsp {
-    uint64 robot_player_id = 1;   // 机器人玩家id
-    int32 err_code = 2;           // 错误信息
+    uint64 robot_player_id = 1;    // 机器人玩家id
+    int64  coin            = 2;    // 玩家金币数
+    int32  win_rate        = 3;    // 胜率
+    int32  err_code        = 4;    // 错误信息
 }
 
 //SetRobotPlayerStateReq 設置机器人玩家状态請求

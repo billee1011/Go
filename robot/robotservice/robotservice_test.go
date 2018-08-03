@@ -68,7 +68,7 @@ func Test_grpc_clien(t *testing.T) {
 	}
 	rsq, err := client.GetRobotPlayerIDByInfo(ctx, req)
 	assert.Nil(t, err)
-	fmt.Println(rsq.GetRobotPlayerId())
+	fmt.Println(rsq)
 	assert.Equal(t, rsq.GetErrCode(), int32(robot.ErrCode_EC_SUCCESS))
 }
 
