@@ -60,7 +60,7 @@ func (gm *GoldMgr) GetMutex(uid uint64) *sync.RWMutex{
 }
 
 // 加金币
-func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, funcId int32, channel int64, createTm int64) (int64, error) {
+func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, funcId int32, channel int64, createTm int64, gameId,level int32) (int64, error) {
 	// 1. 先获取玩家当前金币值, GetGold()
 	// 2. 在内存中对玩家金币进行加减
 	// 3. 将变化后的值写到redis和DB
@@ -69,6 +69,8 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 
 	entry := logrus.WithFields(logrus.Fields{
 		"opr":        "add_gold",
+		"gameId":      gameId,
+		"level":       level,
 		"uid":        uid,
 		"funcId":     funcId,
 		"goldType":   goldType,
@@ -120,6 +122,8 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 
 	entry = logrus.WithFields(logrus.Fields{
 		"opr":        "add_gold",
+		"gameId":      gameId,
+		"level":       level,
 		"uid":        uid,
 		"funcId":     funcId,
 		"goldType":   goldType,
