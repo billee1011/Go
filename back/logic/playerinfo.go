@@ -5,7 +5,6 @@ import (
 	"math"
 	"steve/back/data"
 	"steve/entity/gamelog"
-	"sync"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -18,11 +17,7 @@ func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 	//总局数+1
 	playerGame.Totalbureau++
 	key := fmt.Sprintf("win_stream:%v@%v", playerGame.Playerid, playerGame.Gameid)
-	// contiWin := 0
 	winStream, _ := data.GetPlayerMaxwinningstream(key)
-	// if v, ok := MaxBurea.LoadOrStore(key, 0); ok {
-	// 	winStream = v.(int)
-	// }
 	if detailInfo.Amount > 0 {
 		//胜局+1
 		playerGame.Winningburea++
@@ -52,6 +47,3 @@ func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 	}
 	return nil
 }
-
-// MaxBurea 暂时本地储存最大连胜
-var MaxBurea = new(sync.Map)
