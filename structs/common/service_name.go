@@ -16,4 +16,7 @@ const (
 
 	// LoginServiceName Login 服务名称
 	LoginServiceName = "login"
+
+	// RobotServiceName robot 服务名称
+	RobotServiceName = "robot"
 )

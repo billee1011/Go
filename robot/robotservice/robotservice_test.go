@@ -60,13 +60,13 @@ func Test_grpc_clien(t *testing.T) {
 	game := &robot.GameConfig{
 		GameId: 1,
 	}
-	req := &robot.GetRobotPlayerIDReq{
+	req := &robot.GetLeisureRobotInfoReq{
 		Game:         game,
 		CoinsRange:   coinsR,
 		WinRateRange: winR,
 		NewState:     robot.RobotPlayerState_RPS_MATCHING,
 	}
-	rsq, err := client.GetRobotPlayerIDByInfo(ctx, req)
+	rsq, err := client.GetLeisureRobotInfoByInfo(ctx, req)
 	assert.Nil(t, err)
 	fmt.Println(rsq)
 	assert.Equal(t, rsq.GetErrCode(), int32(robot.ErrCode_EC_SUCCESS))
