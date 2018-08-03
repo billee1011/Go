@@ -7,6 +7,7 @@ import (
 	"steve/msgserver/data"
 	"errors"
 	"github.com/Sirupsen/logrus"
+	"steve/external/hallclient"
 )
 
 /*
@@ -158,7 +159,10 @@ func (gm *MsgMgr) runCheckHorseChange() error{
 		for _, horse := range gm.channelList {
 			gm.checkHorseChanged(horse)
 		}
+		//gm.testGetHorseRace()
 		time.Sleep(time.Minute)
+
+
 	}
 
 	return nil
@@ -177,12 +181,12 @@ func (gm *MsgMgr) checkHorseChanged(horse *define.HorseRace) bool {
 		if gm.checkHorseBegin(hc) {
 			if gm.SetUpdateTag(hc, define.StateStart) {
 				isUpdate = true
-				break
+
 			}
 		} else {
 			if gm.SetUpdateTag(hc, define.StateStop) {
 				isUpdate = true
-				break
+
 			}
 		}
 	}
@@ -191,7 +195,7 @@ func (gm *MsgMgr) checkHorseChanged(horse *define.HorseRace) bool {
 }
 
 // 发送跑马灯变化通知
-func (gm *MsgMgr) sendHorseRaceChangedNtf() error {
+func (gm *MsgMgr) sendHorseRaceChangedNtf(horse *define.HorseRace) error {
 
 	return nil
 }
@@ -200,7 +204,15 @@ func (gm *MsgMgr) sendHorseRaceChangedNtf() error {
 // 返回:渠道ID，省ID，城市ID
 func (gm *MsgMgr) getUserInfo(uid uint64) (int64, int64, int64) {
 
-	return 0, 0, 0
+	info, err := hallclient.GetPlayerInfo(uid)
+	if err != nil {
+		return 0, 0, 0
+	}
+	if info == nil {
+		return 0, 0, 0
+	}
+
+	return int64(info.ChannelId), int64(info.ProvinceId), int64(info.CityId)
 }
 
 func (gm *MsgMgr)SetUpdateTag(hc *define.HorseContent, status int8) bool {
@@ -292,3 +304,9 @@ func (gm *MsgMgr) getLevelHorseRace(level int64, m map[int64]*define.HorseRace) 
 	return list, horse.TickTime, horse.SleepTime, true
 }
 
+
+func (gm *MsgMgr) testGetHorseRace() {
+	gm.GetHorseRace(1001)
+	//gm.GetHorseRace(1002)
+
+}
