@@ -14,12 +14,7 @@ func SaveSummaryInfo(summaryInfo gamelog.TGameSummary) {
 	insertSummaryInfo(summaryInfo)
 }
 
-// SavePlayerGameInfo 向db更新player的信息
-func SavePlayerGameInfo(summaryInfo gamelog.TGameSummary) {
-
-}
-
-// SetWinningPercentage 计算玩家的胜率
-func SetWinningPercentage() {
-
+// UpdatePlayerGameInfo 向db更新player的信息
+func UpdatePlayerGameInfo(detailInfo gamelog.TGameDetail) {
+	updatePlayerInfo(detailInfo)
 }

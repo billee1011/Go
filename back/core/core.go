@@ -15,7 +15,6 @@ func NewService() service.Service {
 }
 
 func (c *backCore) Init(e *structs.Exposer, param ...string) error {
-
 	return nil
 }
 

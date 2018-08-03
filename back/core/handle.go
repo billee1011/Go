@@ -37,6 +37,7 @@ func (plh *gameDetailHandler) HandleMessage(message *nsq.Message) error {
 		return fmt.Errorf("消息反序列化失败：%v", err)
 	}
 	logic.SaveDetailInfo(gameDetail)
+	logic.UpdatePlayerGameInfo(gameDetail)
 	return nil
 }
 

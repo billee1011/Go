@@ -6,10 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"github.com/stretchr/testify/assert"
 )
+
+var redisPlayerCli *redis.Client
 
 func init() {
 	conf := mysql.Config{
@@ -23,8 +26,17 @@ func init() {
 	}
 	mysqlPlayerEngine, _ := xorm.NewEngine("mysql", conf.FormatDSN())
 
+	redisPlayerCli = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
 	data.MysqlEngineGetter = func(mysqlName string) (*xorm.Engine, error) {
 		return mysqlPlayerEngine, nil
+	}
+	data.RedisCliGetter = func(redis string, db int) (*redis.Client, error) {
+		return redisPlayerCli, nil
 	}
 }
 
@@ -82,4 +94,20 @@ func TestInsertDetail(t *testing.T) {
 		Updateby:   "1",
 	}
 	assert.Nil(t, insertDetailInfo(detail))
+}
+
+func TestUpdatePlayerGame(t *testing.T) {
+	detail := gamelog.TGameDetail{
+		Sumaryid:   123,
+		Playerid:   6,
+		Deskid:     1,
+		Gameid:     4,
+		Amount:     -1,
+		Iswinner:   1,
+		Createtime: time.Now(),
+		Createby:   "1",
+		Updatetime: time.Now(),
+		Updateby:   "1",
+	}
+	assert.Nil(t, updatePlayerInfo(detail))
 }

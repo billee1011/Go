@@ -87,32 +87,75 @@ func GetMaxMultiple() {
 }
 
 // GetTPlayerGame 获取t_player_game的信息
-func GetTPlayerGame(gameID uint64, playerID uint64) (db.TPlayerGame, error) {
-	tpg := db.TPlayerGame{}
+func GetTPlayerGame(gameID int, playerID uint64) (*db.TPlayerGame, error) {
+	tpg := &db.TPlayerGame{}
 	engine, err := MysqlEngineGetter(dbName)
 	if err != nil {
 		logrus.Errorln(err)
 		return tpg, err
 	}
-	sql := fmt.Sprintf("select * from t_player_game where userID='%v' and gameID='%v'", playerID, gameID)
+	sql := fmt.Sprintf("select * from t_player_game where playerID='%v' and gameID='%v'", playerID, gameID)
 	result, err := engine.QueryString(sql)
 	if err != nil {
 		return tpg, err
 	}
+	if len(result) == 0 {
+		//说明这个玩家第一玩游戏，初始化第一局
+		tpg.Gameid = gameID
+		tpg.Playerid = int64(playerID)
+		InsertTPlayerGame(tpg)
+		return tpg, nil
+	}
 	if len(result) != 1 {
 		return tpg, fmt.Errorf("num of result is not only")
 	}
-	translationTGP(result[0], &tpg)
+	translationTPG(result[0], tpg)
 	return tpg, nil
 }
 
-func translationTGP(kv map[string]string, tpg *db.TPlayerGame) {
+// UpdateTPlayerGame 更新t_player_game的信息
+func UpdateTPlayerGame(tpg *db.TPlayerGame) error {
+	engine, err := MysqlEngineGetter(dbName)
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	_, err = engine.Update(tpg, &db.TPlayerGame{Gameid: tpg.Gameid, Playerid: tpg.Playerid})
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	return nil
+}
+
+// InsertTPlayerGame 初始化第一条playerGame信息
+func InsertTPlayerGame(tpg *db.TPlayerGame) error {
+	engine, err := MysqlEngineGetter(dbName)
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	_, err = engine.Insert(tpg)
+	if err != nil {
+		logrus.Errorln(err)
+		return err
+	}
+	return nil
+}
+
+func translationTPG(kv map[string]string, tpg *db.TPlayerGame) {
 	for k, v := range kv {
 		switch k {
 		case "id":
 			tpg.Id, _ = strconv.ParseInt(v, 10, 64)
-		case "userID":
-			tpg.Userid, _ = strconv.ParseInt(v, 10, 64)
+		case "playerID":
+			tpg.Playerid, _ = strconv.ParseInt(v, 10, 64)
+		case "gameID":
+			tpg.Gameid, _ = strconv.Atoi(v)
+		case "totalBureau":
+			tpg.Totalbureau, _ = strconv.Atoi(v)
+		case "winningBurea":
+			tpg.Winningburea, _ = strconv.Atoi(v)
 		}
 	}
 }

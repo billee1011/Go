@@ -95,3 +95,20 @@ create table t_player_currency
   updateBy       varchar(64)  null
 )ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家虚拟货币表';  
 
+CREATE TABLE `t_player_game` (
+	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+	`playerID` bigint(20) NOT NULL,
+	`gameID` int(11) DEFAULT NULL,
+	`gameName` varchar(64) DEFAULT NULL,
+	`winningRate` int(11) DEFAULT NULL COMMENT '百分比表示，50%，只记录 50，精确到个位数',
+	`winningBurea` int(11) DEFAULT NULL COMMENT '获胜局数',
+	`totalBureau` int(11) DEFAULT NULL COMMENT '总局数',
+	`maxWinningStream` int(11) DEFAULT NULL COMMENT '最高连胜',
+	`maxMultiple` int(11) DEFAULT NULL COMMENT '最大获胜倍数',
+	`createTime` datetime DEFAULT NULL,
+	`createBy` varchar(64) DEFAULT NULL,
+	`updateTime` datetime DEFAULT NULL,
+	`updateBy` varchar(64) DEFAULT NULL,
+	PRIMARY KEY (`id`)
+  ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1 COMMENT='玩家游戏汇总信息';
+
