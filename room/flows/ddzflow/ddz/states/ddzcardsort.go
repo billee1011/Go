@@ -34,9 +34,8 @@ var (
 type Poker struct {
 	Suit        uint32 //花色 0x00,0x10,0x20,0x30,xx40
 	Point       uint32 //点数 0x01-0x0D(A-K), 0x0E(小王), 0x0F(大王)
-	Weight      uint32 //带花色权重,用于带花色大小比较
+	Weight      uint32 //带花色权重,用于带花色大小比较，同点数的在一起
 	PointWeight uint32 //无花色权重，用于无花色大小比较
-	SortWeight  uint32 //排序权重，用于排序，同点数需要在一起
 }
 
 func (c Poker) String() string {
@@ -93,7 +92,7 @@ type DDZCardSlice []Poker
 
 func (cs DDZCardSlice) Len() int           { return len(cs) }
 func (cs DDZCardSlice) Swap(i, j int)      { cs[i], cs[j] = cs[j], cs[i] }
-func (cs DDZCardSlice) Less(i, j int) bool { return cs[i].SortWeight < cs[j].SortWeight }
+func (cs DDZCardSlice) Less(i, j int) bool { return cs[i].Weight < cs[j].Weight }
 
 type DDZPointSlice []Poker
 
@@ -116,8 +115,7 @@ func ToDDZCard(card uint32) Poker {
 	} else {
 		result.PointWeight = result.Point
 	}
-	result.Weight = result.Suit + result.PointWeight          //带花色权重
-	result.SortWeight = result.PointWeight*5 + result.Suit/16 //点数相同的放在一起
+	result.Weight = result.PointWeight*5 + result.Suit/16 //带花色权重
 	return result
 }
 
