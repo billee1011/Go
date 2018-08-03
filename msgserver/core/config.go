@@ -7,6 +7,7 @@ package core
 import (
 	"steve/client_pb/msgid"
 	"steve/msgserver/msg"
+	"steve/msgserver/logic"
 )
 
 
@@ -28,7 +29,15 @@ var mapMsg  = map[msgid.MsgID] interface{} {
 	msgid.MsgID_MSGSVR_GET_HORSE_RACE_REQ:msg.ProcessGetHorseRaceReq,
 }
 
-
+/////////////////////////////[4.服务初始化配置]////////////////////////////////////////////
+// 比如从DB或文件加载配置
+func InitServer() error {
+	err := logic.GetMsgMgr().Init()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 
 
