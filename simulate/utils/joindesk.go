@@ -8,6 +8,7 @@ import (
 	"steve/simulate/interfaces"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // ApplyJoinDesk 申请加入牌桌，从match
@@ -17,7 +18,7 @@ func ApplyJoinDesk(player interfaces.ClientPlayer, gameID common.GameId) (*match
 		"user_id":   player.GetID(),
 	})
 	req := match.MatchReq{
-		GameId: &gameID,
+		GameId: proto.Uint32(uint32(gameID)),
 	}
 	rsp := match.MatchRsp{}
 
@@ -36,7 +37,7 @@ func ApplyJoinDeskPlayers(players []interfaces.ClientPlayer, gameID common.GameI
 		"func_name": "ApplyJoinDeskPlayers",
 	})
 	req := match.MatchReq{
-		GameId: &gameID,
+		GameId: proto.Uint32(uint32(gameID)),
 	}
 	rsp := match.MatchRsp{}
 	for _, player := range players {

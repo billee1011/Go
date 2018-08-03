@@ -16,7 +16,7 @@ serviceloader login --config=config.yml  &
 popd 
 
 pushd match 
-serviceloader match --config=config.yml  &
+#serviceloader match --config=config.yml  &
 popd 
 
 pushd gold 

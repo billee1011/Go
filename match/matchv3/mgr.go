@@ -572,8 +572,11 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		return
 	}
 
-	// 找到的匹配的桌子
-	var pFindDesk *matchDesk = nil
+	// 找到的匹配桌子
+	var pFindIter *list.Element = nil
+
+	// 找到的匹配桌子所在index
+	var pFindIndex int8 = -1
 
 	// 新建一个匹配玩家
 	newMatchPlayer := matchPlayer{
@@ -632,16 +635,22 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindDesk == nil) || (pFindDesk != nil && desk.createTime < pFindDesk.createTime) {
-				pFindDesk = desk
+			if (pFindIter == nil) || (pFindIter != nil && desk.createTime < pFindIter.Value.(*matchDesk).createTime) {
+				pFindIter = iter
+				pFindIndex = i
 			}
 		}
 	}
 
 	// 找到的话，则加入桌子，返回
-	if pFindDesk != nil {
+	if pFindIter != nil && pFindIndex != -1 {
+		findList := globalInfo.allRateDesks[pFindIndex]
+		pFindDesk := pFindIter.Value.(*matchDesk)
+
 		// 把玩家加入桌子
-		manager.addPlayerToDesk(&newMatchPlayer, pFindDesk)
+		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk) {
+			findList.Remove(pFindIter)
+		}
 
 		// 成功入桌即返回
 		logEntry.Debugf("首次范围检测时，胜率为%v的玩家%v匹配进桌子%v，正常返回", reqPlayer.winRate, reqPlayer.playerID, pFindDesk)
@@ -719,16 +728,22 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindDesk == nil) || (pFindDesk != nil && desk.createTime < pFindDesk.createTime) {
-				pFindDesk = desk
+			if (pFindIter == nil) || (pFindIter != nil && desk.createTime < pFindIter.Value.(*matchDesk).createTime) {
+				pFindIter = iter
+				pFindIndex = index
 			}
 		}
 	}
 
 	// 找到的话，则加入桌子，返回
-	if pFindDesk != nil {
+	if pFindIter != nil && pFindIndex != -1 {
+		findList := globalInfo.allRateDesks[pFindIndex]
+		pFindDesk := pFindIter.Value.(*matchDesk)
+
 		// 把玩家加入桌子
-		manager.addPlayerToDesk(&newMatchPlayer, pFindDesk)
+		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk) {
+			findList.Remove(pFindIter)
+		}
 
 		// 成功入桌即返回
 		logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，正常返回", reqPlayer.winRate, reqPlayer.playerID, pFindDesk)
@@ -1107,12 +1122,13 @@ func (manager *matchManager) onPlayerLogin(playerID uint64) {
 // 将玩家添加到牌桌
 // pMatchPlayer : 要加入的玩家
 // pDesk 		: 要加入的桌子
-func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchDesk) {
+// 返回 true表桌子已满且已发送给room，可删除，false表桌子未满
+func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchDesk) bool {
 
 	// 参数检测
 	if pPlayer == nil || pDesk == nil {
 		logrus.Error("严重错误，pPlayer == nil || pDesk == nil，返回")
-		return
+		return false
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -1145,7 +1161,11 @@ func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchD
 	// 满员时的处理
 	if uint8(len(pDesk.players)) >= pDesk.needPlayerCount {
 		manager.onDeskFull(pDesk)
+
+		return true
 	}
+
+	return false
 }
 
 /* // fillRobots 填充机器人
@@ -1414,8 +1434,12 @@ func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
 	var index int8 = 0
 	for ; index <= 100; index++ {
 
+		var next *list.Element
 		// 该概率下所有的桌子
-		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
+		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = next {
+
+			// 提前保存下一个
+			next = iter.Next()
 
 			desk := iter.Value.(*matchDesk)
 
@@ -1438,24 +1462,37 @@ func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
 				// 金币范围
 				minGold, maxGold := manager.getGoldRange(desk.aveGold, interval)
 
+				reqRobot := robotclient.LeisureRobotReqInfo{
+					CoinHigh:    maxGold,
+					CoinLow:     minGold,
+					WinRateHigh: int32(endRate),
+					WinRateLow:  int32(beginRate),
+					GameID:      globalInfo.gameID,
+					LevelID:     globalInfo.levelID,
+				}
+
 				// 从hall服获取一个空闲的机器人
-				newRobot, err := robotclient.GetRobot(globalInfo.gameID, globalInfo.levelID, beginRate, endRate, minGold, maxGold)
-				if err != nil || newRobot == nil {
+				robotPlayerID, robotGold, _, err := robotclient.GetLeisureRobotInfoByInfo(reqRobot)
+				if err != nil {
 					logEntry.WithError(err).Error("从hall服获取机器人失败!!!")
 					continue
 				}
 
 				// 新建一个匹配玩家(机器人)
 				newMatchPlayer := matchPlayer{
-					playerID: newRobot.RobotPlayerId,
+					playerID: robotPlayerID,
 					robotLv:  1, // todo
 					seat:     -1,
 					IP:       0,
-					gold:     0, // todo
+					gold:     robotGold, // todo
 				}
 
 				// 把玩家加入桌子
-				manager.addPlayerToDesk(&newMatchPlayer, desk)
+				if manager.addPlayerToDesk(&newMatchPlayer, desk) {
+
+					// 桌子已满，则删除
+					globalInfo.allRateDesks[index].Remove(iter)
+				}
 			}
 		}
 	}

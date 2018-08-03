@@ -210,7 +210,9 @@ func (m *GetLeisureRobotInfoReq) GetNewState() RobotPlayerState {
 // GetLeisureRobotInfoRsp 获取空闲机器人信息响应
 type GetLeisureRobotInfoRsp struct {
 	RobotPlayerId uint64 `protobuf:"varint,1,opt,name=robot_player_id,json=robotPlayerId" json:"robot_player_id,omitempty"`
-	ErrCode       int32  `protobuf:"varint,2,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	Coin          int64  `protobuf:"varint,2,opt,name=coin" json:"coin,omitempty"`
+	WinRate       int32  `protobuf:"varint,3,opt,name=win_rate,json=winRate" json:"win_rate,omitempty"`
+	ErrCode       int32  `protobuf:"varint,4,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
 }
 
 func (m *GetLeisureRobotInfoRsp) Reset()                    { *m = GetLeisureRobotInfoRsp{} }
