@@ -28,6 +28,7 @@ type TGameDetail struct {
 	Gameid     int       `json:" Gameid     "`
 	Amount     int64     `json:" Amount     "`
 	Iswinner   int       `json:" Iswinner   "`
+	MaxTimes   uint32    `json:" MaxTimes   "`
 	Createtime time.Time `json:" Createtime "`
 	Createby   string    `json:" Createby   "`
 	Updatetime time.Time `json:" Updatetime "`

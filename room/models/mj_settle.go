@@ -99,8 +99,6 @@ func (majongSettle *MajongSettle) normalSettle(desk *desk.Desk, mjContext *majon
 		}
 		if CanInstantSettle(sInfo.SettleType, settleOption) { // 立即结算
 			majongSettle.instantSettle(desk, sInfo, score, brokerPlayers, giveUpPlayers)
-			// 生成结算日志
-			// majongSettle.genGameDetail(desk, score)
 		}
 		// 生成结算完成事件
 		GenerateSettleEvent(desk, sInfo.SettleType, brokerPlayers)
@@ -483,7 +481,7 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 // RoundSettle 单局结算
 func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.DeskConfig) {
 	majongSettle.roundSettle(desk, config)
-	majongSettle.gameLog(desk)
+	majongSettle.gameLog(desk, config)
 }
 
 func (majongSettle *MajongSettle) roundSettle(desk *desk.Desk, config *desk.DeskConfig) {
@@ -739,11 +737,10 @@ func CanRoundSettle(playerID uint64, huQuitPlayers map[uint64]bool, settleOption
 	return true
 }
 
-func (majongSettle *MajongSettle) gameLog(desk *desk.Desk) {
+func (majongSettle *MajongSettle) gameLog(desk *desk.Desk, config *desk.DeskConfig) {
 	summaryID := int64(util.GenUniqueID())
 	majongSettle.genGameSummary(desk, summaryID)
-	//
-	majongSettle.genGameDetail(desk, summaryID)
+	majongSettle.genGameDetail(desk, summaryID, config)
 }
 
 func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk, summaryID int64) {
@@ -777,26 +774,30 @@ func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk, summaryID int6
 	}
 }
 
-func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64) {
+func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64, config *desk.DeskConfig) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "MajongSettle.genGameDetail",
 		"player_id": desk.GetUid(),
 	})
+	mjContext := config.Context.(*contexts.MajongDeskContext).MjContext
 	roundScore := majongSettle.roundScore
 	bigWinner := getBigWinner(roundScore)
 	for _, playerID := range desk.GetPlayerIds() {
 		gameDetail := gamelog.TGameDetail{
-			Detailid: int64(util.GenUniqueID()),
-			Sumaryid: summaryID, //desk.GetSummaryID(),
-			Playerid: playerID,
-			Deskid:   int64(desk.GetUid()),
-			Gameid:   desk.GetGameId(),
-			Amount:   roundScore[playerID],
-			//Createtime: todo 含义
+			Detailid:   int64(util.GenUniqueID()),
+			Sumaryid:   summaryID, //desk.GetSummaryID(),
+			Playerid:   playerID,
+			Deskid:     int64(desk.GetUid()),
+			Gameid:     desk.GetGameId(),
+			Amount:     roundScore[playerID],
+			Createtime: time.Now(),
 		}
 		if playerID == bigWinner {
 			gameDetail.Iswinner = 1
 		}
+		player := util.GetMajongPlayer(playerID, &mjContext)
+		gameDetail.MaxTimes = player.GetMaxCardValue()
+
 		data, err := json.Marshal(gameDetail)
 		if err != nil {
 			logEntry.WithError(err).Errorln("序列化失败")
