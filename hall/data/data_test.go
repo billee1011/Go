@@ -175,11 +175,12 @@ func TestGetPlayerInfo(t *testing.T) {
 	accID := uint64(alloc.Generate().Int64())
 
 	NewPlayerData(accID, playerID)
+	fields := []string{cache.NickName, cache.Gender, cache.Avatar, cache.ChannelID, cache.ProvinceID, cache.CityID}
 
-	player, err := GetPlayerInfo(playerID)
+	player, err := GetPlayerInfo(playerID, fields...)
 
 	assert.Nil(t, err)
-	assert.NotNil(t, player.NickName)
+	assert.NotNil(t, player.Nickname)
 }
 
 // TestGetGameInfoList 获取游戏信息
