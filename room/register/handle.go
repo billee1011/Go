@@ -36,6 +36,9 @@ func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 		return
 	}
 	desk := player.GetDesk()
+	if desk == nil {
+		return
+	}
 	response.ErrCode = room.RoomError_SUCCESS.Enum()
 	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
 
