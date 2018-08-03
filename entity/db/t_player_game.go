@@ -11,7 +11,6 @@ type TPlayerGame struct {
 	Gamename         string    `xorm:"VARCHAR(64)"`
 	Winningrate      int       `xorm:"comment('百分比表示，50%，只记录 50，精确到个位数') INT(11)"`
 	Winningburea     int       `xorm:"comment('获胜局数') INT(11)"`
-	Winbureau        int       `xorm:"comment('胜利局数') INT(11)"`
 	Totalbureau      int       `xorm:"comment('总局数') INT(11)"`
 	Maxwinningstream int       `xorm:"comment('最高连胜') INT(11)"`
 	Maxmultiple      int       `xorm:"comment('最大获胜倍数') INT(11)"`
