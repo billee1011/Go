@@ -11,13 +11,13 @@ import (
 )
 
 // GetRobot 获取玩家游戏信息
-// gameID:   游戏ID
-// levelID:	 场次ID
-// beginRate:   胜率起值
-// endRate:	 胜率
-// gameID:   游戏ID
-// levelID:	 场次ID
-// return:   获取到的机器人信息
+// gameID:   	游戏ID
+// levelID:	 	场次ID
+// beginRate:   胜率最小值
+// endRate:	 	胜率最大值
+// beginGold:   金币最低值
+// endGold:	 	金币最大值
+// return:   	获取到的机器人信息，错误信息
 func GetRobot(gameID uint32, levelID uint32, beginRate int8, endRate int8, beginGold int64, endGold int64) (*robot.GetRobotPlayerIDRsp, error) {
 
 	// 得到服务连接
@@ -33,7 +33,7 @@ func GetRobot(gameID uint32, levelID uint32, beginRate int8, endRate int8, begin
 	rsp, err := client.GetRobotPlayerIDByInfo(context.Background(), &robot.GetRobotPlayerIDReq{
 		Game:         &robot.GameConfig{GameId: gameID, LevelId: levelID},
 		WinRateRange: &robot.WinRateRange{Low: int32(beginRate), High: int32(endRate)},
-		CoinsRange:   &robot.CoinsRange{Low: int32(beginGold), High: int32(endGold)},
+		CoinsRange:   &robot.CoinsRange{Low: beginGold, High: endGold},
 	})
 
 	// 检测返回值

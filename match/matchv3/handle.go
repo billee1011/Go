@@ -25,7 +25,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 
 	// 默认的回复消息
 	response := &match.MatchRsp{
-		ErrCode: proto.Int32(0),
+		ErrCode: proto.Int32(int32(match.MatchError_EC_SUCCESS)),
 		ErrDesc: proto.String("成功"),
 	}
 
@@ -46,7 +46,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 
 	// 如果处于游戏状态，返回
 	if curState == user.PlayerState_PS_GAMEING {
-		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_MATCH_ALREADY_GAMEING))
+		response.ErrCode = proto.Int32(int32(match.MatchError_EC_ALREADY_GAMEING))
 		response.ErrDesc = proto.String("已经在游戏中了")
 
 		logEntry.Warningf("匹配时发现已经在游戏状态中了，所在游戏ID:%v，所在场次ID:%v \n", curGameID, curLevelID)
@@ -55,7 +55,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 
 	// 如果处于匹配状态，返回
 	if curState == user.PlayerState_PS_MATCHING {
-		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_MATCH_ALREADY_MATCHING))
+		response.ErrCode = proto.Int32(int32(match.MatchError_EC_ALREADY_MATCHING))
 		response.ErrDesc = proto.String("已经在匹配中了")
 
 		logEntry.Warningf("匹配时发现已经在匹配状态中了，正在匹配游戏ID:%v，正在匹配场次ID:%v \n", curGameID, curLevelID)
@@ -99,6 +99,63 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		response.ErrDesc = proto.String("通知hall服更改玩家状态为匹配状态时失败")
 
 		logEntry.Errorf("内部错误，通知hall服更改玩家状态为匹配状态时失败，可能是客户端刚刚匹配了其他游戏导致，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", reqGameID, reqLevelID, playerID)
+		return
+	}
+
+	// 设置状态成功
+	logEntry.Debugln("离开函数")
+
+	return
+}
+
+// HandleCancelMatchReq 取消匹配的处理(来自网关服)
+func HandleCancelMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req match.CancelMatchReq) (ret []exchanger.ResponseMsg) {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"request":  req,
+		"playerID": playerID,
+	})
+
+	logEntry.Debugln("进入函数")
+
+	// 默认的回复消息
+	response := &match.CancelMatchRsp{
+		ErrCode: proto.Int32(int32(match.MatchError_EC_SUCCESS)),
+		ErrDesc: proto.String("成功"),
+	}
+
+	ret = []exchanger.ResponseMsg{{
+		MsgID: uint32(msgid.MsgID_MATCH_RSP),
+		Body:  response,
+	}}
+
+	// 玩家当前状态
+	curState, curGameID, curLevelID, err := hallclient.GetPlayerState(playerID)
+	if err != nil {
+		response.ErrCode = proto.Int32(int32(match.MatchError_EC_FAIL))
+		response.ErrDesc = proto.String("从hall服获取玩家状态出错")
+
+		logEntry.Errorln("内部错误，从hall服获取玩家状态出错")
+		return
+	}
+
+	// 若不是匹配状态，返回
+	if curState != user.PlayerState_PS_MATCHING {
+		response.ErrCode = proto.Int32(int32(match.MatchError_EC_NOT_IN_MATCHING))
+		response.ErrDesc = proto.String("不在匹配中")
+
+		logEntry.Warningf("取消匹配时发现不在匹配状态中")
+		return
+	}
+
+	// 分发该游戏，该场次的匹配请求通道
+	errString := matchMgr.dispatchCancelMatchReq(playerID, curGameID, curLevelID)
+
+	// 处理过程有错，回复客户端，且服务器自身报错
+	if errString != "" {
+		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
+		response.ErrDesc = &errString
+
+		logEntry.Errorf("内部错误，分发客户端的取消匹配失败")
 		return
 	}
 
