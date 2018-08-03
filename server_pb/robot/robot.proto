@@ -37,16 +37,16 @@ message CoinsRange {
    int64 low  = 2; //低
 }
 
-// GetRobotPlayerIDReq 获取机器人ID请求
-message GetRobotPlayerIDReq {
+// GetLeisureRobotInfoReq 获取空闲机器人信息请求
+message GetLeisureRobotInfoReq {
     GameConfig   game               = 1; // 游戏
     WinRateRange win_rate_range     = 2; //胜率范围
     CoinsRange   coins_range        = 3; //金币范围
     RobotPlayerState new_state      = 4; //获取成功时设置的状态
 }
 
-//GetRobotPlayerIDRsp 机器人ID响应
-message GetRobotPlayerIDRsp {
+//GetLeisureRobotInfoRsp 获取空闲机器人信息响应
+message GetLeisureRobotInfoRsp {
     uint64 robot_player_id = 1;    // 机器人玩家id
     int64  coin            = 2;    // 玩家金币数
     int32  win_rate        = 3;    // 胜率
@@ -69,6 +69,6 @@ message SetRobotPlayerStateRsp {
 }
 
 service RobotService {
-     rpc GetRobotPlayerIDByInfo(GetRobotPlayerIDReq) returns (GetRobotPlayerIDRsp) {}
+     rpc GetLeisureRobotInfoByInfo(GetLeisureRobotInfoReq) returns (GetLeisureRobotInfoRsp) {}
      rpc SetRobotPlayerState(SetRobotPlayerStateReq) returns (SetRobotPlayerStateRsp) {}
 }

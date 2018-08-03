@@ -14,8 +14,8 @@ It has these top-level messages:
 	RobotPlayerInfo
 	WinRateRange
 	CoinsRange
-	GetRobotPlayerIDReq
-	GetRobotPlayerIDRsp
+	GetLeisureRobotInfoReq
+	GetLeisureRobotInfoRsp
 	SetRobotPlayerStateReq
 	SetRobotPlayerStateRsp
 */

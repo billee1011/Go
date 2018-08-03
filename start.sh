@@ -19,6 +19,10 @@ pushd match
 serviceloader match --config=config.yml  &
 popd 
 
+pushd gold 
+sh ./start.sh
+popd 
+
 pushd robot 
 serviceloader robot --config=config.yml  &
 popd 

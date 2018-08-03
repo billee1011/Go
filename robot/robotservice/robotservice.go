@@ -3,7 +3,6 @@ package robotservice
 import (
 	"context"
 	"fmt"
-	"steve/entity/cache"
 	"steve/robot/data"
 	"steve/server_pb/robot"
 	"strconv"
@@ -22,10 +21,10 @@ func DefaultRobot() *Robotservice {
 	return defaultObject
 }
 
-//GetRobotPlayerIDByInfo 根据请求信息获取机器人玩家ID
-func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robot.GetRobotPlayerIDReq) (*robot.GetRobotPlayerIDRsp, error) {
-	logrus.Debugln("GetRobotPlayerIDByInfo req", *request)
-	rsp := &robot.GetRobotPlayerIDRsp{
+//GetLeisureRobotInfoByInfo 获取空闲机器人信息
+func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *robot.GetLeisureRobotInfoReq) (*robot.GetLeisureRobotInfoRsp, error) {
+	logrus.Debugln("GetLeisureRobotInfoByInfo req", *request)
+	rsp := &robot.GetLeisureRobotInfoRsp{
 		RobotPlayerId: 0,
 		Coin:          0,
 		WinRate:       0,
@@ -38,7 +37,7 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 	// 检验请求是否合法
 	if !checkGetLeisureRobotArgs(coinsRange, winRateRange, newState) {
 		rsp.ErrCode = int32(robot.ErrCode_EC_Args)
-		return rsp, nil
+		return rsp, fmt.Errorf("参数错误")
 	}
 	robotsPlayers, err := data.GetLeisureRobot() // 获取机空闲的器人
 	if err != nil {
@@ -68,7 +67,7 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 		return rsp, fmt.Errorf("没有适合的机器人")
 	}
 	//获取到机器人ID,并将redis该ID的状态为匹配状态
-	if err := data.SetRobotWatch(RobotPlayerID, cache.PlayerStateField, newState, data.RedisTimeOut); err != nil {
+	if err := data.SetRobotWatch(RobotPlayerID, data.RobotPlayerStateField, newState, data.RedisTimeOut); err != nil {
 		return rsp, err
 	}
 	rsp.ErrCode = int32(robot.ErrCode_EC_SUCCESS)
@@ -98,7 +97,7 @@ func (r *Robotservice) SetRobotPlayerState(ctx context.Context, request *robot.S
 	}
 
 	//比较请求旧状态是否是当前状态
-	val, _ := data.GetRobotStringFiled(playerID, cache.PlayerStateField)
+	val, _ := data.GetRobotStringFiled(playerID, data.RobotPlayerStateField)
 	state, _ := strconv.Atoi(val)
 	if oldState != state {
 		rsp.ErrCode = int32(robot.ErrCode_EC_Args)
@@ -107,13 +106,13 @@ func (r *Robotservice) SetRobotPlayerState(ctx context.Context, request *robot.S
 
 	//修改状态和服务地址
 	serverField := map[robot.ServerType]string{
-		robot.ServerType_ST_GATE:  cache.GateAddrField,
-		robot.ServerType_ST_MATCH: cache.MatchAddrField,
-		robot.ServerType_ST_ROOM:  cache.RoomAddrField,
+		robot.ServerType_ST_GATE:  data.RobotPlayerGateAddrField,
+		robot.ServerType_ST_MATCH: data.RobotPlayerMatchAddrField,
+		robot.ServerType_ST_ROOM:  data.RobotPlayerRoomAddrField,
 	}[robot.ServerType(severType)]
 	rfields := map[string]interface{}{
-		cache.PlayerStateField: fmt.Sprintf("%d", newState),
-		serverField:            serverAddr,
+		data.RobotPlayerStateField: fmt.Sprintf("%d", newState),
+		serverField:                serverAddr,
 	}
 	if err := data.SetRobotPlayerWatchs(playerID, rfields, data.RedisTimeOut); err != nil {
 		rsp.ErrCode = int32(robot.ErrCode_EC_FAIL)

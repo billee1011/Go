@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"steve/structs"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -36,8 +37,8 @@ var RedisTimeOut = time.Hour * 24 * 30
 
 // getRobotRedis 获取大厅服redis
 func getRobotRedis() *redis.Client {
-
-	redis, err := Exposer.RedisFactory.NewClient()
+	e := structs.GetGlobalExposer()
+	redis, err := e.RedisFactory.NewClient()
 	if err != nil {
 		logrus.WithError(err).Errorln(errRobotRedisGain)
 		return nil

@@ -20,6 +20,9 @@ cp login/config.yml configs/login/config.yml
 go build -o bin/hall/hall.so -o hall/hall.so -buildmode=plugin steve/hall 
 cp hall/config.yml configs/hall/config.yml 
 
+go build -o bin/gold/gold.so -o gold/gold.so -buildmode=plugin steve/gold 
+cp gold/config.yml configs/gold/config.yml 
+
 go build -o bin/robot/robot.so -o robot/robot.so -buildmode=plugin steve/robot 
 cp robot/config.yml configs/robot/config.yml 
 

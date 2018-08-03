@@ -23,7 +23,6 @@ func NewService() service.Service {
 func (r *RobotCore) Init(e *structs.Exposer, param ...string) error {
 	entry := logrus.WithField("name", "RobotCore.Init")
 	r.e = e
-	data.Exposer = e
 	// 注册当前模块RPC服务处理器
 	if err := e.RPCServer.RegisterService(robot.RegisterRobotServiceServer, robotservice.DefaultRobot()); err != nil {
 		entry.WithError(err).Error("注册RPC服务处理器失败")
