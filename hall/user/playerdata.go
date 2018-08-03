@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"steve/entity/cache"
 	"steve/entity/db"
-	"steve/external/goldclient"
 	"steve/hall/data"
-	"steve/server_pb/gold"
 	"steve/server_pb/user"
 	"time"
 
@@ -234,9 +232,6 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-
-	// 设置玩家货币信息
-	goldclient.AddGold(playerID, int16(gold.GoldType_GOLD_COIN), 10*10000, 0, 0)
 
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),

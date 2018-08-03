@@ -49,12 +49,12 @@ func GetPlayerByAccount(accountID uint64) (uint64, error) {
 // GetPlayerState 获取玩家状态
 // param:   uid:玩家ID
 // return:  玩家状态，正在进行的游戏ID,正在进行的场次ID,错误信息
-func GetPlayerState(uid uint64) (user.PlayerState, uint32, uint32, error) {
+func GetPlayerState(uid uint64) (*user.GetPlayerStateRsp, error) {
 
 	// 得到服务连接
 	con, err := getHallServer()
 	if err != nil || con == nil {
-		return 0, 0, 0, errors.New("no hall connection")
+		return nil, errors.New("no hall connection")
 	}
 
 	// 新建Client
@@ -67,13 +67,10 @@ func GetPlayerState(uid uint64) (user.PlayerState, uint32, uint32, error) {
 
 	// 检测返回值
 	if err != nil {
-		return 0, 0, 0, err
+		return nil, err
 	}
 
-	if rsp.ErrCode != int32(user.ErrCode_EC_SUCCESS) {
-		return 0, 0, 0, errors.New("get player state from hall failed")
-	}
-	return rsp.GetState(), rsp.GetGameId(), rsp.GetLevelId(), nil
+	return rsp, nil
 }
 
 // UpdatePlayerState 更新玩家状态
