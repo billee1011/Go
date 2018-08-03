@@ -11,14 +11,15 @@ import (
 
 func insertSummaryInfo(info gamelog.TGameSummary) error {
 	summary := db.TGameSumary{
-		Sumaryid:   info.Sumaryid,
-		Deskid:     info.Deskid,
-		Gameid:     info.Gameid,
-		Levelid:    info.Levelid,
-		Createtime: info.Createtime,
-		Createby:   info.Createby,
-		Updatetime: info.Updatetime,
-		Updateby:   info.Updateby,
+		Sumaryid:     info.Sumaryid,
+		Deskid:       info.Deskid,
+		Gameid:       info.Gameid,
+		Levelid:      info.Levelid,
+		Gameovertime: info.Gameovertime,
+		Createtime:   info.Createtime,
+		Createby:     info.Createby,
+		Updatetime:   info.Updatetime,
+		Updateby:     info.Updateby,
 	}
 	if playeridsData, err := translantPlayerids(info.Playerids); err == nil {
 		summary.Playerids = playeridsData
