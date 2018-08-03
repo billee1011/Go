@@ -18,8 +18,6 @@ const (
 	RobotPlayerGameIDField string = "gameid"
 	//RobotPlayerNickNameField 玩家昵称字段
 	RobotPlayerNickNameField string = "nickname"
-	//RobotPlayerHeadImageField 玩家头像字段
-	RobotPlayerHeadImageField string = "head_image"
 )
 
 var Exposer *structs.Exposer
@@ -56,10 +54,10 @@ func GetLeisureRobot() ([]*cache.RobotPlayer, error) {
 		log.Info("数据库中不存在机器人")
 		return []*cache.RobotPlayer{}, nil
 	}
-	robotsIDCoins, lackRobotsID := getRedisLeisureRobotPlayer(robotPlayerIDAll) // 从redis 获取 空闲的RobotPlayer
-	if len(lackRobotsID) > 0 {                                                  // 存在redis 中 不存在 机器人ID
-		robotsIDCoins = getMysqlLeisureRobotPlayer(robotsIDCoins, lackRobotsID) //从mysql中获取空闲的玩家,并存入redis
+	robots, lackRobotsID := getRedisLeisureRobotPlayer(robotPlayerIDAll) // 从redis 获取 空闲的RobotPlayer
+	if len(lackRobotsID) > 0 {                                           // 存在redis 中 不存在 机器人ID
+		robots = getMysqlLeisureRobotPlayer(robots, lackRobotsID) //从mysql中获取空闲的玩家,并存入redis
 	}
-	log.WithFields(logrus.Fields{"lackRobotsID": lackRobotsID, "robotsIDCoins": robotsIDCoins}).Infoln("获取空闲机器人")
-	return robotsIDCoins, nil
+	log.WithFields(logrus.Fields{"lackRobotsID": lackRobotsID}).Infoln("获取空闲机器人")
+	return robots, nil
 }

@@ -27,30 +27,45 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 	logrus.Debugln("GetRobotPlayerIDByInfo req", *request)
 	rsp := &robot.GetRobotPlayerIDRsp{
 		RobotPlayerId: 0,
-		ErrCode:       int32(robot.ErrCode_EC_SUCCESS),
+		ErrCode:       int32(robot.ErrCode_EC_FAIL),
 	}
-	// gameID := request.GetGameId()             // 游戏
+	gameID := request.GetGame().GetGameId()   // 游戏ID
 	coinsRange := request.GetCoinsRange()     // 金币范围
 	winRateRange := request.GetWinRateRange() // 胜率范围
+	newState := int(request.GetNewState())    // 获取成功时设置的状态
 	// 检验请求是否合法
-	if !checkCoinsWinRtaeRange(coinsRange, winRateRange) {
+	if !checkGetLeisureRobotArgs(coinsRange, winRateRange, newState) {
 		rsp.ErrCode = int32(robot.ErrCode_EC_Args)
 		return rsp, nil
 	}
-	robotsIDCoins, err := data.GetLeisureRobot() // 获取机空闲的器人
+	robotsPlayers, err := data.GetLeisureRobot() // 获取机空闲的器人
 	if err != nil {
 		rsp.ErrCode = int32(robot.ErrCode_EC_FAIL)
 		return rsp, err
 	}
 	var RobotPlayerID uint64
-	// 符合的指定金币数的机器人
-	for _, robotPlayer := range robotsIDCoins {
-		currCoins := int32(robotPlayer.Coin)
+	// 符合的指定金币数和胜率的机器人
+	for _, robotPlayer := range robotsPlayers {
+		// 游戏ID对应的胜率
+		winRate, exist := robotPlayer.GameIDWinRate[uint64(gameID)]
+		if !exist || winRate > uint64(winRateRange.High) || winRate < uint64(winRateRange.Low) {
+			continue
+		}
+		// 金币
+		currCoins := int64(robotPlayer.Coin)
 		if currCoins <= coinsRange.High && currCoins >= coinsRange.Low {
 			RobotPlayerID = robotPlayer.PlayerID
 			break
 		}
 	}
+	if RobotPlayerID == 0 {
+		return rsp, fmt.Errorf("没有适合的机器人")
+	}
+	//获取到机器人ID,并将redis该ID的状态为匹配状态
+	if err := data.SetRobotWatch(RobotPlayerID, cache.PlayerStateField, newState, data.RedisTimeOut); err != nil {
+		return rsp, err
+	}
+	rsp.ErrCode = int32(robot.ErrCode_EC_SUCCESS)
 	rsp.RobotPlayerId = RobotPlayerID
 	return rsp, err
 }
@@ -63,8 +78,8 @@ func (r *Robotservice) SetRobotPlayerState(ctx context.Context, request *robot.S
 		ErrCode: int32(robot.ErrCode_EC_SUCCESS),
 	}
 	playerID := request.GetRobotPlayerId()
-	newState := int(request.GetNewstate())
-	oldState := int(request.GetOldstate())
+	newState := int(request.GetNewState())
+	oldState := int(request.GetOldState())
 	severType := int(request.GetServerType())
 	serverAddr := request.GetServerAddr()
 

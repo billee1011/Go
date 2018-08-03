@@ -33,7 +33,7 @@ func HandleLoginRequest(clientID uint64, reqHeader *base.Header, body []byte) (r
 		return nil
 	}
 
-	response := execLogin(clientID, request)
+	response := execLogin(clientID, &request)
 	body, err := proto.Marshal(&response)
 	if err != nil {
 		entry.WithError(err).Errorln("序列化失败")
@@ -50,7 +50,7 @@ func HandleLoginRequest(clientID uint64, reqHeader *base.Header, body []byte) (r
 }
 
 // execLogin 执行登录
-func execLogin(clientID uint64, clientRequest login.LoginAuthReq) (clientResponse login.LoginAuthRsp) {
+func execLogin(clientID uint64, clientRequest *login.LoginAuthReq) (clientResponse login.LoginAuthRsp) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name":  "execLogin",
 		"client_id":  clientID,
@@ -67,15 +67,16 @@ func execLogin(clientID uint64, clientRequest login.LoginAuthReq) (clientRespons
 		entry.Warningln("客户端已经登录")
 		return
 	}
-	// TODO : 校验 token
-	playerID, err := callLoginService(clientRequest.GetAccountId())
+	response, err := callLoginService(clientRequest)
 	if err != nil {
 		entry.Errorln(err)
 		return
 	}
-
-	clientResponse.ErrCode = login.ErrorCode_SUCCESS.Enum()
-	clientResponse.PlayerId = proto.Uint64(playerID)
+	if response.GetErrCode() != login.ErrorCode_SUCCESS {
+		return
+	}
+	clientResponse = *response
+	playerID := response.GetPlayerId()
 
 	checkAnother(playerID)
 	connection.AttachPlayer(playerID)
@@ -107,22 +108,31 @@ func pubLoginMessage(playerID uint64) {
 }
 
 // callLoginService 调用登录服务
-func callLoginService(accountID uint64) (playerID uint64, err error) {
+func callLoginService(clientRequest *login.LoginAuthReq) (clientResponse *login.LoginAuthRsp, err error) {
 	exposer := structs.GetGlobalExposer()
 	cc, err := exposer.RPCClient.GetConnectByServerName(common.LoginServiceName)
 	if err != nil {
+		err = fmt.Errorf("获取登录服连接失败:%v", err)
 		return
 	}
 	loginClient := server_login_pb.NewLoginServiceClient(cc)
 	request := server_login_pb.LoginRequest{
-		AccountId: accountID,
+		AccountId:   clientRequest.GetAccountId(),
+		RequestData: clientRequest.GetRequestData(),
+		PlayerId:    clientRequest.GetPlayerId(),
+		Token:       clientRequest.GetToken(),
 	}
 	response, err := loginClient.Login(context.Background(), &request)
 	if err != nil {
+		err = fmt.Errorf("登录 RPC 调用失败:%v", err)
 		return
 	}
-	playerID = response.GetPlayerId()
-	return playerID, nil
+	clientResponse = &login.LoginAuthRsp{
+		ErrCode:  login.ErrorCode(response.GetErrCode()).Enum(),
+		PlayerId: proto.Uint64(response.GetPlayerId()),
+		Token:    proto.String(response.GetToken()),
+	}
+	return
 }
 
 // checkAnother 顶号检查

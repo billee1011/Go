@@ -23,5 +23,5 @@ func Test_GetPlayerInfo(t *testing.T) {
 	response := hall.HallGetPlayerInfoRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &response))
 	assert.Zero(t, response.GetErrCode())
-	assert.NotEmpty(t, response.GetNickName())
+	// assert.NotEmpty(t, response.GetNickName())
 }

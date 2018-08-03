@@ -6,9 +6,8 @@ import "enum.proto";
 
 // GameConfig 游戏玩法信息
 message GameConfig {
-    uint32 game_id = 1;         // 游戏 id
-    string game_name = 2;       // 游戏名称
-    uint32 game_type = 3;       // 游戏类型
+    uint32 game_id  = 1;         // 游戏 id
+    uint32 level_id = 2;        //  场次 id 
 }
 
 //GameWinRate 游戏对应的胜率
@@ -17,14 +16,13 @@ message GameWinRate {
     int32 win_rate = 2;          // 胜率
 }
 
-//RobotPlayerInfo 机器人I玩家详情
+//RobotPlayerInfo 机器人玩家信息
 message RobotPlayerInfo {
-    uint64 player_id = 1;         // 玩家id
-    string nick_name = 2;         // 玩家昵称
-    string head_image = 3;        // 玩家头像
-    uint64 coin = 4;              // 玩家金币数
-    RobotPlayerState state = 5; // 玩家状态
-    GameWinRate game_win_rate = 6;    //游戏对应的胜率
+    string nick_name = 1;         // 玩家昵称
+    string avatar = 2;            // 玩家头像
+    uint64 coin = 3;              // 玩家金币数
+    RobotPlayerState state = 4;   // 玩家状态
+    GameWinRate game_win_rate = 5;    //游戏对应的胜率
 }
 
 // WinRateRange 胜率范围
@@ -35,15 +33,16 @@ message WinRateRange {
 
 // CoinsRange 金币范围
 message CoinsRange {
-   int32 high = 1; //高
-   int32 low  = 2; //低
+   int64 high = 1; //高
+   int64 low  = 2; //低
 }
 
 // GetRobotPlayerIDReq 获取机器人ID请求
 message GetRobotPlayerIDReq {
-    GameConfig game = 1;              // 游戏
-    WinRateRange win_rate_range  = 2; //胜率范围
-    CoinsRange   coins_range     = 3; //金币范围
+    GameConfig   game               = 1; // 游戏
+    WinRateRange win_rate_range     = 2; //胜率范围
+    CoinsRange   coins_range        = 3; //金币范围
+    RobotPlayerState new_state      = 4; //获取成功时设置的状态
 }
 
 //GetRobotPlayerIDRsp 机器人ID响应
@@ -55,8 +54,8 @@ message GetRobotPlayerIDRsp {
 //SetRobotPlayerStateReq 設置机器人玩家状态請求
 message SetRobotPlayerStateReq {
     uint64 robot_player_id     = 1;  // 机器人玩家id
-    RobotPlayerState newstate  = 2;  // 新机器人玩家状态
-    RobotPlayerState oldstate  = 3;  // 旧机器人玩家状态
+    RobotPlayerState new_state = 2;  // 新机器人玩家状态
+    RobotPlayerState old_state = 3;  // 旧机器人玩家状态
     ServerType server_type     = 4;  // 服务类型
     string server_addr         = 5;  // 服务地址
 }

@@ -16,6 +16,7 @@ import (
 	playerpkg "steve/room/player"
 	"steve/room/util"
 	"steve/structs"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -341,11 +342,10 @@ func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, broke
 			PlayerID:  0,
 		}*/
 
-		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish), fixed.NormalEvent, desks, desk.CreateEventParams(
-			desks.GetConfig().Context.(*contexts.MajongDeskContext).StateNumber,
-			eventContext,
-			0,
-		))
+		event := desk.DeskEvent{EventID: int(majongpb.EventID_event_settle_finish), EventType: fixed.NormalEvent, Desk: desks,
+			StateNumber: desks.GetConfig().Context.(*contexts.MajongDeskContext).StateNumber,
+			Context:     eventContext,
+		}
 		GetMjEventModel(desks.GetUid()).PushEvent(event)
 	}
 }
@@ -742,8 +742,8 @@ func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk, summaryID int6
 		Deskid:   int64(desk.GetUid()),
 		Gameid:   desk.GetGameId(),
 		// Levelid: todo,
-		Playerids: desk.GetPlayerIds(),
-		// Createtime: todo,
+		Playerids:    desk.GetPlayerIds(),
+		Gameovertime: time.Now(),
 	}
 	// scoreinfo and winners
 	gameSummary.Scoreinfo, gameSummary.Winnerids = majongSettle.getScoreinfoWinners(desk)
@@ -756,7 +756,10 @@ func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk, summaryID int6
 		logEntry.WithError(err).Errorln("序列化失败")
 	}
 	publisher := structs.GetGlobalExposer().Publisher
-	publisher.Publish(topics.GameSummaryRecord, data)
+	err = publisher.Publish(topics.GameSummaryRecord, data)
+	if err != nil {
+		logEntry.WithError(err).Errorln("发布topic： GameSummaryRecord 失败")
+	}
 }
 
 func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64) {
@@ -768,6 +771,7 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 	bigWinner := getBigWinner(roundScore)
 	for _, playerID := range desk.GetPlayerIds() {
 		gameDetail := gamelog.TGameDetail{
+			Detailid: int64(util.GenUniqueID()),
 			Sumaryid: summaryID,
 			Playerid: playerID,
 			Deskid:   int64(desk.GetUid()),
@@ -783,7 +787,10 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 			logEntry.WithError(err).Errorln("序列化失败")
 		}
 		publisher := structs.GetGlobalExposer().Publisher
-		publisher.Publish(topics.GameDetailRecord, data)
+		err = publisher.Publish(topics.GameDetailRecord, data)
+		if err != nil {
+			logEntry.WithError(err).Errorln("发布topic： GameDetailRecord失败")
+		}
 	}
 
 }
