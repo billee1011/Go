@@ -11,6 +11,7 @@ import (
 	"steve/structs/service"
 	"github.com/Sirupsen/logrus"
 	testcore "steve/testserver/core"
+	msgcore "steve/msgserver/core"
 
 )
 
@@ -53,6 +54,8 @@ func LoadService(name string, options ...loader.ServiceOption) {
 	// 	svr = roomcore.NewService()
 	case "testserver":
 		svr = testcore.NewService()
+	case "msgserver":
+		svr = msgcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
 	case "gold":
