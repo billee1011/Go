@@ -8,6 +8,7 @@ import (
 
 func insertDetailInfo(info gamelog.TGameDetail) error {
 	detail := db.TGameDetail{
+		Detailid:   info.Detailid,
 		Sumaryid:   info.Sumaryid,
 		Playerid:   int64(info.Playerid),
 		Deskid:     info.Deskid,
