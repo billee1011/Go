@@ -20,7 +20,7 @@ func Test_IsBomb(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43})
 	is, pivot := states.IsBomb(cards)
 	assert.Equal(t, true, is)
-	assert.Equal(t, &cards[3], pivot)
+	assert.Equal(t, &cards[0], pivot)
 }
 
 func Test_IsBombAndPairs(t *testing.T) {
@@ -137,7 +137,7 @@ func Test_IsShunZi1(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x39, 0x2A, 0x3B, 0x2C, 0x1D, 0x11}) // 9 10 J Q K A
 	is, pivot := states.IsShunZi(cards)
 	assert.Equal(t, true, is)
-	assert.Equal(t, &cards[5], pivot)
+	assert.Equal(t, &cards[0], pivot)
 }
 
 func Test_IsShunZi2(t *testing.T) {
@@ -151,7 +151,7 @@ func Test_IsTriple(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33})
 	is, pivot := states.IsTriple(cards)
 	assert.Equal(t, true, is)
-	assert.Equal(t, &cards[2], pivot)
+	assert.Equal(t, &cards[0], pivot)
 }
 
 func Test_IsTripleAndPair(t *testing.T) {
@@ -172,7 +172,7 @@ func Test_IsPair(t *testing.T) {
 	cards := states.ToDDZCards([]uint32{0x13, 0x23})
 	is, pivot := states.IsPair(cards)
 	assert.Equal(t, true, is)
-	assert.Equal(t, &cards[1], pivot)
+	assert.Equal(t, &cards[0], pivot)
 }
 
 func Test_IsSingle(t *testing.T) {
