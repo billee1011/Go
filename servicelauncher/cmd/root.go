@@ -23,7 +23,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"steve/servicelauncher/launcher"
+	"steve/serviceloader/loader"
 )
 
 var cfgFile string
@@ -42,9 +42,10 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		launcher.Init(args, mapArgs)
+		Init(args, mapArgs)
 	},
 }
+
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -79,6 +80,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	Execute()
 }
 
 func _init() {
@@ -139,4 +141,36 @@ func initLogger() {
 	logrus.SetLevel(logrus.DebugLevel)
 	//logger.SetupLog(viper.GetString("log_prefix"), viper.GetString("log_dir"),
 	//	viper.GetString("log_level"), viper.GetBool("log_stderr"))
+}
+
+func Init(args []string, flagList map[string]*string) {
+	// 处理命令行
+	for k, v := range flagList {
+		loader.SetArg(k, *v)
+	}
+	LoadService(args[0],
+		loader.WithRPCParams(viper.GetString("rpc_certi_file"), viper.GetString("rpc_key_file"), viper.GetString("rpc_addr"), viper.GetInt("rpc_port"),
+			viper.GetString("rpc_server_name")),
+		loader.WithClientRPCCA(viper.GetString("rpc_ca_file"), viper.GetString("certi_server_name")),
+		loader.WithRedisOption(viper.GetString("redis_addr"), viper.GetString("redis_passwd")),
+		loader.WithConsulAddr(viper.GetString("consul_addr")),
+		loader.WithPProf(viper.GetString("pprofExposeType"), viper.GetInt("pprofHttpPort")),
+		loader.WithHealthPort(viper.GetInt("health_port")),
+		loader.WithGroupName(viper.GetString("group_name")),
+
+		loader.WithParams(args[1:]))
+
+}
+
+var ServiceName string
+var Option loader.Option
+// LoadService load service appointed by name
+func LoadService(name string, options ...loader.ServiceOption)loader.Option {
+	ServiceName = name
+	opt := loader.LoadOptions(options...)
+	Option = opt
+	exposer := loader.CreateExposer(&opt)
+	loader.RegisterServer2(&opt)
+	loader.RegisterHealthServer(exposer.RPCServer)
+	return opt
 }
