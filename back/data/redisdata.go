@@ -48,6 +48,20 @@ func GetPlayerMaxwinningstream(key string) (int, error) {
 	return int(MaxStream), nil
 }
 
+// UpdatePlayerWinRate 更新玩家胜率
+func UpdatePlayerWinRate(key string, rate int) error {
+	redisCli, err := RedisCliGetter(redisName, 0)
+	if err != nil {
+		return err
+	}
+	// cache.FmtPlayerIDKey()
+	// redisCli.HMGet(key, "winning")
+	redisCli.HMSet(key, map[string]interface{}{
+		"winningRate": rate,
+	})
+	return nil
+}
+
 // // GetPlayerGameInfo 获取玩家游戏信息
 // func GetPlayerGameInfo(playerID uint64, gameID uint32) (exist bool, info *db.TPlayerGame, err error) {
 // 	exist, info, err = false, new(db.TPlayerGame), nil
