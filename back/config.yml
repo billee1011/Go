@@ -21,9 +21,11 @@ log_stderr: true
 #consul 服务中心配置
 consul_addr: 127.0.0.1:8500
 
+redis_list:
+  back:
 #redis 配置
-redis_addr: 127.0.0.1:6379
-redis_passwd:
+    addr: 127.0.0.1:6379
+    passwd:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
 mysql_list:
