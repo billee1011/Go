@@ -70,8 +70,7 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *AutoEventGenerateResult, A
 			eventType = fixed.SpecialOverTimeEvent
 		}
 		for _, aiEvent := range aiResult.Events {
-			params := desk.CreateEventParams(gameContext.StateNumber, aiEvent.Context, playerID)
-			event := desk.NewDeskEvent(int(aiEvent.ID), eventType, deskObj, params)
+			event := desk.DeskEvent{EventID: int(aiEvent.ID), EventType: eventType, Context: aiEvent.Context, PlayerID: playerID, StateNumber: gameContext.StateNumber, Desk: deskObj}
 			result.Events = append(result.Events, event)
 		}
 	}
@@ -101,8 +100,7 @@ func (aeg *autoEventGenerator) handleDDZPlayerAI(result *AutoEventGenerateResult
 	// 未出错时，把产生的每一个AI事件压入结果集
 	if err == nil {
 		for _, aiEvent := range aiResult.Events {
-			params := desk.CreateEventParams(aiEvent.Context, playerID)
-			event := desk.NewDeskEvent(int(aiEvent.ID), fixed.OverTimeEvent, deskObj, params)
+			event := desk.DeskEvent{EventID: int(aiEvent.ID), EventType: fixed.OverTimeEvent, Context: aiEvent.Context, PlayerID: playerID, Desk: deskObj}
 			result.Events = append(result.Events, event)
 		}
 	}
