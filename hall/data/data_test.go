@@ -218,7 +218,7 @@ func TestSetPlayerState(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	result, err := UpdatePlayerState(playerID, 0, 1, 1, "127.0.0.1")
+	result, err := UpdatePlayerState(playerID, 0, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
 }
