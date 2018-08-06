@@ -427,14 +427,14 @@ func getPlayerStateFromRedis(playerID uint64, fields ...string) (*PlayerState, e
 		return nil, fmt.Errorf("执行 redis 命令失败(%s)", cmd.Err().Error())
 	}
 	result, err := cmd.Result()
-	if err != nil || len(result) != len(fields) {
+	if err != nil {
 		return nil, fmt.Errorf("获取 redis 结果失败(%s) fields=(%v)", err.Error(), fields)
 	}
 	var playerState PlayerState
 	for index, field := range fields {
 		v, ok := result[index].(string)
 		if !ok {
-			return nil, fmt.Errorf("错误的数据类型。field=%s val=%v", field, result[index])
+			continue
 		}
 		if err = setPlayerStateByField(&playerState, field, v); err != nil {
 			return nil, err
