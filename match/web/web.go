@@ -20,6 +20,8 @@ var configs = struct {
 	winRateCompuBase      float32       // 计算公式的基础胜率(百分比，例如：0.02表2%)
 	goldCompuBase         float32       // 计算公式的基础金币(百分比，例如：0.02表2%)
 	maxCompuValidTime     uint32        // 计算公式的最大有效时间(单位：秒，超过此值时匹配正无穷)
+	bLimitSameIP          bool          // 是否限制重复IP
+	bLimitLastSameDesk    bool          // 是否检测上局同桌
 }{
 	robotJoinTime:         20 * time.Second,
 	continueDismissTime:   20 * time.Second,
@@ -32,6 +34,8 @@ var configs = struct {
 	winRateCompuBase:      0.02,
 	goldCompuBase:         0.2,
 	maxCompuValidTime:     15,
+	bLimitSameIP:          true,
+	bLimitLastSameDesk:    true,
 }
 
 // GetRobotJoinTime 获取机器人加入匹配的时间
@@ -88,6 +92,16 @@ func GetGoldCompuBase() float32 {
 // GetMaxCompuValidTime 获取计算公式的最大有效时间
 func GetMaxCompuValidTime() uint32 {
 	return configs.maxCompuValidTime
+}
+
+// GetLimitSameIP 获取是否限制相同IP
+func GetLimitSameIP() bool {
+	return configs.bLimitSameIP
+}
+
+// GetLimitLastSameDesk 获取是否限制上局同桌
+func GetLimitLastSameDesk() bool {
+	return configs.bLimitLastSameDesk
 }
 
 func handleChangeDurationVal(d *time.Duration, min, max time.Duration, w http.ResponseWriter, r *http.Request, formField string) {

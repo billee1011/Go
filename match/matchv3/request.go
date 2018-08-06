@@ -2,13 +2,10 @@ package matchv3
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
-	"steve/match/web"
-	"steve/server_pb/gold"
 	"steve/server_pb/room_mgr"
-	"steve/server_pb/user"
 	"steve/structs"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -29,7 +26,7 @@ func randSeat(desk *matchDesk) {
 }
 
 // sendCreateDesk 向room服请求创建牌桌，创建失败时则重新请求
-func sendCreateDesk(desk matchDesk) {
+func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "sendCreateDesk",
 		"desk":      desk,
@@ -79,112 +76,25 @@ func sendCreateDesk(desk matchDesk) {
 		return
 	}
 
+	// 成功时的处理
+
 	// 通知桌子的玩家
+	// todo
+
+	// 记录匹配成功的玩家同桌信息
+	for i := 0; i < len(desk.players); i++ {
+		globalInfo.sucPlayers[desk.players[i].playerID] = desk.deskID
+	}
+
+	// 记录匹配成功的桌子信息
+	newSucDesk := sucDesk{
+		gameID:  desk.gameID,
+		levelID: desk.levelID,
+		sucTime: time.Now().Unix(),
+	}
+	globalInfo.sucDesks[desk.deskID] = &newSucDesk
 
 	logEntry.Debugln("离开函数，room服创建桌子成功")
 
 	return
-}
-
-// requestPlayerGold 向gold服请求指定玩家，指定货币类型的数量
-// playerID : 玩家playerID
-// goldType : 货币类型，对应枚举 gold.GoldType
-func requestPlayerGold(playerID uint64, goldType gold.GoldType) (int64, error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"playerID": playerID,
-		"goldType": goldType,
-	})
-
-	logEntry.Debugln("进入函数")
-
-	exposer := structs.GetGlobalExposer()
-
-	// 获取gold的Connection
-	goldConnection, err := exposer.RPCClient.GetConnectByServerName("gold")
-	if err != nil || goldConnection == nil {
-		logEntry.WithError(err).Errorln("获得gold服的gRPC失败!!!")
-		return 0, fmt.Errorf("获得gold服的gRPC失败!!!")
-	}
-
-	// 请求结构体
-	reqGold := gold.GetGoldReq{
-		Item: &gold.GetItem{
-			Uid:      playerID,
-			GoldType: int32(goldType),
-			Value:    0,
-		},
-	}
-
-	goldClient := gold.NewGoldClient(goldConnection)
-
-	// 调用room服的创建桌子
-	rspGold, err := goldClient.GetGold(context.Background(), &reqGold)
-
-	// 不成功时，报错
-	if err != nil || rspGold == nil {
-		logEntry.WithError(err).Errorln("从gold服获取玩家金钱数据失败!!!")
-		return 0, fmt.Errorf("从gold服获取玩家金钱数据失败!!!")
-	}
-
-	// 其他出错
-	if rspGold.GetErrCode() != gold.ResultStat_SUCCEED || rspGold.GetErrDesc() != "" {
-		logEntry.Errorf("从gold服获取玩家金钱数据出错，errCode:%v，errDesc:%v \n", rspGold.GetErrCode(), rspGold.GetErrDesc())
-		return 0, fmt.Errorf("从gold服获取玩家金钱数据出错，errCode:%v，errDesc:%v \n", rspGold.GetErrCode(), rspGold.GetErrDesc())
-	}
-
-	logEntry.Debugln("create desk success.")
-	return rspGold.GetItem().GetValue(), nil
-}
-
-// requestPlayerWinRate 向hall服请求指定玩家，指定游戏的胜率
-// playerID : 玩家playerID
-// gameID 	: 游戏ID
-func requestPlayerWinRate(playerID uint64, gameID uint32) (float32, error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"playerID": playerID,
-		"gameID":   gameID,
-	})
-
-	logEntry.Debugln("进入函数")
-
-	exposer := structs.GetGlobalExposer()
-
-	// 获取hall服的Connection
-	hallConnection, err := exposer.RPCClient.GetConnectByServerName("hall")
-	if err != nil || hallConnection == nil {
-		logEntry.WithError(err).Errorln("获得hall服的gRPC失败!!!")
-		return 0, fmt.Errorf("获得hall服的gRPC失败!!!")
-	}
-
-	hallClient := user.NewPlayerDataClient(hallConnection)
-
-	// 向hall服请求游戏信息
-	rsp, err := hallClient.GetPlayerGameInfo(context.Background(), &user.GetPlayerGameInfoReq{PlayerId: playerID, GameId: gameID})
-
-	// 不成功时，报错
-	if err != nil || rsp == nil {
-		logrus.WithError(err).Errorln("从hall服获取玩家的胜率失败!!!")
-		return 0, fmt.Errorf("从hall服获取玩家的胜率失败!!!")
-	}
-
-	// 返回的不是成功，报错
-	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
-		logrus.WithError(err).Errorln("从hall服获取玩家胜率成功，但errCode显示失败!!!")
-		return 0, fmt.Errorf("从hall服获取玩家胜率成功，但errCode显示失败!!!")
-	}
-
-	// 计算胜率
-	var winRate float64 = 0.0
-
-	if rsp.GetTotalBurea() < web.GetMinGameTimes() {
-		winRate = 0.5
-		logEntry.Debugf("玩家总局数为：%v，少于规定的%v场，所以胜率定为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
-	} else {
-		winRate = float64(rsp.GetMaxWinningStream()) / float64(rsp.GetTotalBurea())
-		logEntry.Debugf("玩家总局数为：%v，胜利局数为：%v，计算得到胜率为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
-	}
-
-	result := float32(winRate) * 100
-
-	return result, nil
 }
