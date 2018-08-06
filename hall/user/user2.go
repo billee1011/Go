@@ -17,7 +17,7 @@ import (
 )
 
 // HandleGetPlayerInfoReq2 处理获取玩家个人资料请求
-func HandleGetPlayerInfoReq2(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
+func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
 	logrus.Debugln("Handle get player info req", req)
 
 	// 默认返回消息
@@ -101,7 +101,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 }
 
 // HandleGetPlayerStateReq2 获取玩家游戏状态信息
-func HandleGetPlayerStateReq2(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
+func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
 	logrus.Debugln("Handle get player state req", req)
 
 	// 默认返回消息
