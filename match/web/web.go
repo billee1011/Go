@@ -28,7 +28,7 @@ var configs = struct {
 	continueRobotTime:     3 * time.Second,
 	robotContinueRateWin:  0.9,
 	robotContinueRateLoss: 0.7,
-	sameDeskLimitTime:     60,
+	sameDeskLimitTime:     300,
 	defaulWintRate:        50,
 	minGameTimes:          50,
 	winRateCompuBase:      0.02,

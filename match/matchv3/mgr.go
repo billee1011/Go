@@ -901,8 +901,11 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 	// 1秒1次的合并定时器
 	mergeTimer := time.NewTicker(time.Second * 1)
 
-	// 1秒1次的超时定时器
-	timeoutTimer := time.NewTicker(time.Second * 1)
+	// 1秒1次的超时定时器(检测匹配桌子是否超时，添加机器人)
+	deskTimer := time.NewTicker(time.Second * 1)
+
+	// 60秒1次的超时定时器(检测之前成功的玩家是否超时)
+	sucTimer := time.NewTicker(time.Second * 60)
 
 	// 本场次的匹配申请通道
 	gameInfo, exist := manager.allGame[gameID]
@@ -929,17 +932,17 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 					manager.cancelMatch(&globalInfo, &req) // 取消匹配
 				}
 			}
-		//case pl := <-manager.loginChannel: // 登录玩家
-		//	{
-		//		manager.onPlayerLogin(pl.playerID)
-		//	}
 		case <-mergeTimer.C: // 合并定时器
 			{
-				//manager.mergeDesks(&globalInfo)
+				manager.mergeDesks(&globalInfo)
 			}
-		case <-timeoutTimer.C: // 超时定时器
+		case <-deskTimer.C: // 桌子超时定时器
 			{
-				manager.checkTimeout(&globalInfo)
+				manager.checkDeskTimeout(&globalInfo)
+			}
+		case <-sucTimer.C: // 匹配成功超时定时器
+			{
+				manager.checkSucTimeout(&globalInfo)
 			}
 		}
 	}
@@ -1502,8 +1505,8 @@ func (manager *matchManager) removePlayerFromDesk(pPlayer *matchPlayer, pDesk *m
 	pDesk.aveGold = allGold / int64(len(pDesk.players))
 }
 
-// checkTimeout 检测超时
-func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
+// checkDeskTimeout 检测桌子是否超时
+func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 	if globalInfo == nil {
 		logrus.Errorln("checkTimeout()，参数错误，globalInfo == nil，返回")
 		return
@@ -1517,7 +1520,7 @@ func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
 	// 当前时间
 	tNowTime := time.Now().Unix()
 
-	logEntry.Debugf("进入超时检测函数，当前时间：%v \n", tNowTime)
+	logEntry.Debugf("进入桌子超时检测函数，当前时间：%v \n", tNowTime)
 
 	// 机器人加入时间
 	joinTime := int64(web.GetRobotJoinTime().Seconds())
@@ -1600,5 +1603,52 @@ func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	logEntry.Debugln("离开超时检测函数")
+	logEntry.Debugln("离开桌子超时检测函数")
+}
+
+// checkSucTimeout 检测之前匹配成功的是否超时
+func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
+
+	// 参数检测
+	if globalInfo == nil {
+		logrus.Errorln("checkSucTimeout()，参数错误，globalInfo == nil，返回")
+		return
+	}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"gameID":  globalInfo.gameID,
+		"levelID": globalInfo.levelID,
+	})
+
+	// 当前时间
+	tNowTime := time.Now().Unix()
+
+	logEntry.Debugf("进入匹配成功超时检测函数，当前时间：%v \n", tNowTime)
+
+	// 新建，然后再替换
+	newSucDesks := map[uint64]*sucDesk
+	newSucPlayers := map[uint64]uint64
+
+	// 先遍历桌子，只记录未超时的
+	for key, desk := range globalInfo.sucDesks {
+		if tNowTime - desk.createTime < web.GetSameDeskLimitTime() {
+			newSucDesks[desk.deskID] = desk
+		}
+	}
+
+	// 替换桌子
+	global.sucDesks = newSucDesks
+
+	// 再遍历玩家，只记录桌子存在的
+	for playerID, deskID := range global.sucPlayers {
+		_, exist := globalInfo.sucDesks[playerID]
+		if exist {
+			newSucPlayers[playerID] = deskID
+		}
+	}
+
+	// 替换玩家
+	global.sucPlayers = newSucPlayers
+
+	logEntry.Debugln("离开匹配成功超时检测函数")
 }
