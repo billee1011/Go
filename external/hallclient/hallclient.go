@@ -74,9 +74,9 @@ func GetPlayerState(uid uint64) (*user.GetPlayerStateRsp, error) {
 }
 
 // UpdatePlayerState 更新玩家状态
-// param: uid 玩家ID, oldState 玩家当前状态， newState 要更新状态， serverType 服务类型，serverAddr 服务地址
+// param: uid 玩家ID, oldState 玩家当前状态， newState 要更新状态， gameID 游戏ID，levelID 场次ID
 // return: 更新结果，错误信息
-func UpdatePlayerState(uid uint64, oldState user.PlayerState, newState user.PlayerState, gameID uint32, levelID uint32, serverType user.ServerType, serverAddr string) (bool, error) {
+func UpdatePlayerState(uid uint64, oldState user.PlayerState, newState user.PlayerState, gameID uint32, levelID uint32) (bool, error) {
 
 	// 得到服务连接
 	con, err := getHallServer()
@@ -89,9 +89,73 @@ func UpdatePlayerState(uid uint64, oldState user.PlayerState, newState user.Play
 
 	// 调用RPC方法
 	rsp, err := client.UpdatePlayerState(context.Background(), &user.UpdatePlayerStateReq{
+		PlayerId: uid,
+		OldState: oldState,
+		NewState: newState,
+	})
+
+	// 检测返回值
+	if err != nil {
+		return false, err
+	}
+
+	if rsp.ErrCode != int32(user.ErrCode_EC_SUCCESS) {
+		return false, errors.New("update player state failed")
+	}
+
+	return true, nil
+}
+
+// UpdatePlayerGateInfo 更新玩家网关信息
+// param: uid 玩家ID, ipAddr 客户端地址， gateAddr 网关服地址
+// return: 更新结果，错误信息
+func UpdatePlayerGateInfo(uid uint64, ipAddr, gateAddr string) (bool, error) {
+
+	// 得到服务连接
+	con, err := getHallServer()
+	if err != nil || con == nil {
+		return false, errors.New("no connection")
+	}
+
+	// 新建Client
+	client := user.NewPlayerDataClient(con)
+
+	// 调用RPC方法
+	rsp, err := client.UpdatePlayerGateInfo(context.Background(), &user.UpdatePlayerGateInfoReq{
+		PlayerId: uid,
+		IpAddr:   ipAddr,
+		GateAddr: gateAddr,
+	})
+
+	// 检测返回值
+	if err != nil {
+		return false, err
+	}
+
+	if rsp.ErrCode != int32(user.ErrCode_EC_SUCCESS) {
+		return false, errors.New("update player state failed")
+	}
+
+	return true, nil
+}
+
+// UpdatePlayeServerAddr 更新玩家服务端地址
+// param: uid 玩家ID, serverType 服务端类型 serverAddr 服务端地址
+// return: 更新结果，错误信息
+func UpdatePlayeServerAddr(uid uint64, serverType user.ServerType, serverAddr string) (bool, error) {
+
+	// 得到服务连接
+	con, err := getHallServer()
+	if err != nil || con == nil {
+		return false, errors.New("no connection")
+	}
+
+	// 新建Client
+	client := user.NewPlayerDataClient(con)
+
+	// 调用RPC方法
+	rsp, err := client.UpdatePlayerServerAddr(context.Background(), &user.UpdatePlayerServerAddrReq{
 		PlayerId:   uid,
-		OldState:   oldState,
-		NewState:   newState,
 		ServerType: serverType,
 		ServerAddr: serverAddr,
 	})

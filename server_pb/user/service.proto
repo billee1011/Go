@@ -16,6 +16,7 @@ enum ServerType{
     ST_ROOM = 2;  // 房间服
 }
 
+
 // GameConfig 游戏玩法信息
 message GameConfig {
     uint32 game_id = 1;         // 游戏 ID
@@ -63,7 +64,6 @@ message GetPlayerInfoRsp {
     uint32 channel_id = 6;        // 渠道 ID
     uint32 province_id = 7;       // 省份 ID
     uint32 city_id = 8;           // 城市 ID
-    string ip_addr = 9;           // 玩家ip地址  
 }
 
 // UpdatePlayerInfoReq 修改玩家信息
@@ -117,18 +117,31 @@ message GetPlayerGameInfoRsp{
     uint32 max_multiple = 7;       // 最大获胜倍数 
 }
 
-// UpdatePlayerStateReq 更新玩家状态
+// UpdatePlayerGateInfoReq 更新玩家网关信息
+message UpdatePlayerGateInfoReq{
+    uint64 player_id = 1;                    // 玩家ID  
+    string ip_addr = 2;                      // 客户端IP地址  
+    string gate_addr = 3;                    // 网关服务地址
+}  
+
+// UpdatePlayerStateReq 更新玩家游戏状态
 message UpdatePlayerStateReq{
     uint64 player_id = 1;                    // 玩家ID  
     PlayerState old_state = 2;               // 旧状态       
     PlayerState new_state = 3;               // 新状态  
     uint32 game_id = 4;                      // 游戏ID
-    ServerType server_type = 5;              // 服务类型
-    string server_addr = 6;                  // 服务地址
 }
 
-// UpdatePlayerStateRsp  更新玩家状态应答
-message UpdatePlayerStateRsp{
+// UpdatePlayerServerAddrReq 更新玩家服务端地址
+message UpdatePlayerServerAddrReq{ 
+    uint64 player_id = 1;                    // 玩家ID  
+    ServerType server_type = 5;              // 服务类型
+    string server_addr = 6;                  // 服务地址
+
+}
+
+// UpdatePlayerRsp  更新玩家应答
+message UpdatePlayerRsp{
     int32 err_code = 1;           // 错误信息
     bool result = 2;              // 更新结果
 }
@@ -158,7 +171,11 @@ service PlayerData {
     //  GetPlayerGameInfo 获取玩家游戏信息
     rpc GetPlayerGameInfo(GetPlayerGameInfoReq) returns (GetPlayerGameInfoRsp);
     // UpdatePlayerState 更新玩家状态
-    rpc UpdatePlayerState(UpdatePlayerStateReq) returns (UpdatePlayerStateRsp) ;
+    rpc UpdatePlayerState(UpdatePlayerStateReq) returns (UpdatePlayerRsp) ;
+     // UpdatePlayerGateInfo 更新玩家网关信息
+    rpc UpdatePlayerGateInfo(UpdatePlayerGateInfoReq) returns (UpdatePlayerRsp) ;
+     // UpdatePlayerServerAddr 更新玩家服务端信息 
+    rpc UpdatePlayerServerAddr(UpdatePlayerServerAddrReq) returns (UpdatePlayerRsp) ;
     // GetGameListInfo 获取游戏列表
     rpc GetGameListInfo(GetGameListInfoReq) returns (GetGameListInfoRsp);
    

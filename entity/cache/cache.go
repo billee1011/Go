@@ -40,6 +40,8 @@ const (
 	GameState = "game_state"
 	// GameID ...正在进行的游戏id
 	GameID = "game_id"
+	// LevelID ...正在进行的游戏场次id
+	LevelID = "level_id"
 	// IPAddr ... 玩家ip地址
 	IPAddr = "ip_addr"
 	// GateAddr ...网关服地址
@@ -73,12 +75,12 @@ func FmtGameInfoConfigKey() string {
 
 // FmtPlayerIDKey 玩家ID key
 func FmtPlayerIDKey(playerID uint64) string {
-	return fmt.Sprintf("player:%v", playerID)
+	return fmt.Sprintf("player_%v:pinfo", playerID)
 }
 
 // FmtPlayerGameInfoKey 玩家游戏信息
-func FmtPlayerGameInfoKey(gameID uint32) string {
-	return fmt.Sprintf("playergame:%v", gameID)
+func FmtPlayerGameInfoKey(playerID uint64, gameID uint32) string {
+	return fmt.Sprintf("player_%v:ginfo_%v", playerID, gameID)
 }
 
 // FmtPlayerTokenKey format player's token key

@@ -2,10 +2,8 @@ package data
 
 import (
 	"fmt"
-	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/structs"
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -91,29 +89,31 @@ func setRedisFields(redisName string, key string, fields map[string]string, dura
 	return nil
 }
 
-func generateDbPlayer(playerID uint64, info map[string]string) *db.TPlayer {
-	gender, _ := strconv.Atoi(info[cache.Gender])
-	channelID, _ := strconv.Atoi(info[cache.ChannelID])
-	provinceID, _ := strconv.Atoi(info[cache.ProvinceID])
-	cityID, _ := strconv.Atoi(info[cache.CityID])
-
-	return &db.TPlayer{
-		Playerid:   int64(playerID),
-		Gender:     int(gender),
-		Nickname:   info[cache.NickName],
-		Avatar:     info[cache.Avatar],
-		Channelid:  int(channelID),
-		Provinceid: int(provinceID),
-		Cityid:     int(cityID),
+func generateDbPlayer(playerID uint64, info map[string]string, fields ...string) (dbPlayer *db.TPlayer, err error) {
+	dbPlayer, err = new(db.TPlayer), nil
+	for _, field := range fields {
+		v, ok := info[field]
+		if !ok {
+			return nil, fmt.Errorf("错误的数据类型。field=%s val=%v", field, info)
+		}
+		if err = setDBPlayerByField(dbPlayer, field, v); err != nil {
+			return nil, err
+		}
 	}
+	return
 }
 
-func generateDbPlayerGame(playerID uint64, gameID uint32, info map[string]string) *db.TPlayerGame {
-	winningRate, _ := strconv.Atoi(info[cache.WinningRate])
+func generateDbPlayerGame(playerID uint64, gameID uint32, info map[string]string, fields ...string) (dbPlayerGame *db.TPlayerGame, err error) {
+	dbPlayerGame, err = new(db.TPlayerGame), nil
 
-	return &db.TPlayerGame{
-		Playerid:    int64(playerID),
-		Gameid:      int(gameID),
-		Winningrate: int(winningRate),
+	for _, field := range fields {
+		v, ok := info[field]
+		if !ok {
+			return nil, fmt.Errorf("错误的数据类型。field=%s val=%v", field, info)
+		}
+		if err = setDBPlayerGameByField(dbPlayerGame, field, v); err != nil {
+			return nil, err
+		}
 	}
+	return
 }
