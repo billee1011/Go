@@ -19,4 +19,7 @@ const (
 
 	// RobotServiceName robot 服务名称
 	RobotServiceName = "robot"
+	
+	// 跑马灯服务名称
+	MsgServiceName = "msgserver"
 )

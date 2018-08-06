@@ -9,7 +9,6 @@ import (
 	msgcore "steve/msgserver/core"
 	"steve/serviceloader/loader"
 	"steve/structs/service"
-	testcore "steve/testserver/core"
 
 	"github.com/Sirupsen/logrus"
 

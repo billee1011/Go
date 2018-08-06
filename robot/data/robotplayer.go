@@ -46,7 +46,7 @@ func getMysqlLeisureRobotPlayer(robotsPlayers []*cache.RobotPlayer, lackRobotsID
 	for _, playerID := range lackRobotsID {
 		robotPlayer := getMysqlRobotPropByPlayerID(playerID) // 从mysql获取 的一定是空闲的
 		// 存入redis
-		if err := AddRobotWatch(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut); err != nil {
+		if err := SetRobotPlayerWatchs(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut); err != nil {
 			failedIDErrMpa[playerID] = err
 		}
 		robotPlayer.PlayerID = playerID

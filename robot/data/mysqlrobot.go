@@ -12,7 +12,6 @@ import (
 	"github.com/go-xorm/xorm"
 )
 
-// 是否需要验证操作玩家是否有权限
 const (
 	// MysqldbName 数据库名
 	MysqldbName             = "steve"

@@ -9,6 +9,7 @@ import (
 	"steve/structs"
 	"steve/structs/proto/gate_rpc"
 	"steve/structs/service"
+	"steve/gateway/nsq"
 )
 
 type gatewayCore struct {
@@ -26,6 +27,8 @@ func (c *gatewayCore) Init(e *structs.Exposer, param ...string) error {
 		return err
 	}
 	register.RegisteHandlers(e.Exchanger)
+	// 初始化NSQ
+	nsq.Init()
 	return c.registerGateService()
 }
 
