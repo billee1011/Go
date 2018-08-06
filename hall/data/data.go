@@ -21,9 +21,38 @@ var idAllocObject *gutils.Node
 // redis 过期时间
 var redisTimeOut = time.Hour * 24 * 30
 
+// 玩家基本信息列表
+var playerInfoList = map[int32]string{
+	1: "nickname",
+	2: "avatar",
+	3: "gender",
+	4: "name",
+	5: "phone",
+	6: "idCard",
+}
+
+// gameconfigList 游戏配置
+var gameconfigList = map[int16]string{
+	1: "gameID",
+	2: "name",
+	3: "type",
+}
+
+// gameconfigList 类型配置
+var gameLevelconfigList = map[int16]string{
+	1: "levelID",
+	2: "name",
+	3: "baseScores",
+	4: "lowScores",
+	5: "highScores",
+	6: "minPeople",
+	7: "maxPeople",
+	8: "status",
+}
+
 const (
 	playerRedisName          = "player"
-	playerMysqlName          = "steve"
+	playerMysqlName          = "player"
 	playerTableName          = "t_player"
 	playerCurrencyTableName  = "t_player_currency"
 	playerGameTableName      = "t_player_game"
@@ -67,9 +96,204 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	return
 }
 
-// GetPlayerInfo 根据玩家id获取玩家个人资料信息
-func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err error) {
-	dbPlayer, err = new(db.TPlayer), nil
+// GetPlayerFields 获取玩家的指定字段值
+func GetPlayerFields(playerID uint64, fields []string) (*db.TPlayer, error) {
+	if dbPlayer, err := getPlayerFieldsFromRedis(playerID, fields); err == nil {
+		return dbPlayer, nil
+	}
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return nil, fmt.Errorf("获取 mysql 引擎失败(%s)", err.Error())
+	}
+	var dbPlayer db.TPlayer
+	exist, err := engine.Table(playerTableName).Where("playerID = ?", playerID).Cols(fields...).Get(&dbPlayer)
+	if !exist || err != nil {
+		return nil, fmt.Errorf("获取数据失败。exist=%v, err=%s", exist, err.Error())
+	}
+	if err = updatePlayerFieldsToRedis(playerID, fields, &dbPlayer); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"player_id": playerID,
+			"fields":    fields,
+		}).WithError(err).Errorln("更新 redis 失败")
+		// 因为拿到数据了，所以不返回失败
+	}
+	return &dbPlayer, nil
+}
+
+// SetPlayerFields 设置玩家指定字段值
+func SetPlayerFields(playerID uint64, fields []string, dbPlayer *db.TPlayer) error {
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return fmt.Errorf("获取 mysql 引擎失败(%s)", err.Error())
+	}
+	_, err = engine.Table(playerTableName).Where("playerID = ?", playerID).Cols(fields...).Update(dbPlayer)
+	if err != nil {
+		return fmt.Errorf("更新失败 (%v)", err.Error())
+	}
+	if err = updatePlayerFieldsToRedis(playerID, fields, dbPlayer); err != nil {
+		return fmt.Errorf("更新 redis 失败(%v)", err.Error())
+	}
+	return nil
+}
+
+func getPlayerFieldsFromRedis(playerID uint64, fields []string) (*db.TPlayer, error) {
+	redisCli, err := redisCliGetter(playerRedisName, 0)
+	if err != nil {
+		return nil, fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
+	}
+	playerKey := cache.FmtPlayerIDKey(playerID)
+	cmd := redisCli.HMGet(playerKey, fields...)
+	if cmd.Err() != nil {
+		return nil, fmt.Errorf("执行 redis 命令失败(%s)", cmd.Err().Error())
+	}
+	result, err := cmd.Result()
+	if err != nil || len(result) != len(fields) {
+		return nil, fmt.Errorf("获取 redis 结果失败(%s) fields=(%v)", err.Error(), fields)
+	}
+	var dbPlayer db.TPlayer
+	for index, field := range fields {
+		v, ok := result[index].(string)
+		if !ok {
+			return nil, fmt.Errorf("错误的数据类型。field=%s val=%v", field, result[index])
+		}
+		if err = setDBPlayerByField(&dbPlayer, field, v); err != nil {
+			return nil, err
+		}
+	}
+	redisCli.Expire(playerKey, time.Hour*24)
+	return &dbPlayer, nil
+}
+
+// setDBPlayerFieldByName 设置 dbPlayer 中的指定字段
+func setDBPlayerByField(dbPlayer *db.TPlayer, field string, val string) error {
+	switch field {
+	case "id":
+		dbPlayer.Id, _ = strconv.ParseInt(val, 10, 64)
+	case "accountID":
+		dbPlayer.Accountid, _ = strconv.ParseInt(val, 10, 64)
+	case "playerID":
+		dbPlayer.Playerid, _ = strconv.ParseInt(val, 10, 64)
+	case "type":
+		dbPlayer.Type, _ = strconv.Atoi(val)
+	case "channelID":
+		dbPlayer.Channelid, _ = strconv.Atoi(val)
+	case "nickname":
+		dbPlayer.Nickname = val
+	case "gender":
+		dbPlayer.Gender, _ = strconv.Atoi(val)
+	case "avatar":
+		dbPlayer.Avatar = val
+	case "provinceID":
+		dbPlayer.Provinceid, _ = strconv.Atoi(val)
+	case "cityID":
+		dbPlayer.Cityid, _ = strconv.Atoi(val)
+	case "name":
+		dbPlayer.Name = val
+	case "phone":
+		dbPlayer.Phone = val
+	case "idCard":
+		dbPlayer.Idcard = val
+	case "isWhiteList":
+		dbPlayer.Iswhitelist, _ = strconv.Atoi(val)
+	case "zipCode":
+		dbPlayer.Zipcode, _ = strconv.Atoi(val)
+	case "shippingAddr":
+		dbPlayer.Shippingaddr = val
+	case "status":
+		dbPlayer.Status, _ = strconv.Atoi(val)
+	case "remark":
+	case "createTime":
+	case "createBy":
+	case "updateTime":
+	case "updateBy":
+		return nil
+	default:
+		return fmt.Errorf("未处理的字段:%s", field)
+	}
+	return nil
+}
+
+func getDBPlayerField(field string, dbPlayer *db.TPlayer) (interface{}, error) {
+	var v interface{}
+	switch field {
+	case "id":
+		v = dbPlayer.Id
+	case "accountID":
+		v = dbPlayer.Accountid
+	case "playerID":
+		v = dbPlayer.Playerid
+	case "type":
+		v = dbPlayer.Type
+	case "channelID":
+		v = dbPlayer.Channelid
+	case "nickname":
+		v = dbPlayer.Nickname
+	case "gender":
+		v = dbPlayer.Gender
+	case "avatar":
+		v = dbPlayer.Avatar
+	case "provinceID":
+		v = dbPlayer.Provinceid
+	case "cityID":
+		v = dbPlayer.Cityid
+	case "name":
+		v = dbPlayer.Name
+	case "phone":
+		v = dbPlayer.Phone
+	case "idCard":
+		v = dbPlayer.Idcard
+	case "isWhiteList":
+		v = dbPlayer.Iswhitelist
+	case "zipCode":
+		v = dbPlayer.Zipcode
+	case "shippingAddr":
+		v = dbPlayer.Shippingaddr
+	case "status":
+		v = dbPlayer.Status
+	case "remark":
+		v = dbPlayer.Remark
+	case "createTime":
+		v = dbPlayer.Createtime
+	case "createBy":
+		v = dbPlayer.Createby
+	case "updateTime":
+		v = dbPlayer.Updatetime
+	case "updateBy":
+		v = dbPlayer.Updateby
+	default:
+		return nil, fmt.Errorf("不能识别的字段: %s", field)
+	}
+	return v, nil
+}
+
+func updatePlayerFieldsToRedis(playerID uint64, fields []string, dbPlayer *db.TPlayer) error {
+	redisCli, err := redisCliGetter(playerRedisName, 0)
+	if err != nil {
+		return fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
+	}
+	playerKey := cache.FmtPlayerIDKey(playerID)
+	kv := make(map[string]interface{}, len(fields))
+	for _, field := range fields {
+		v, err := getDBPlayerField(field, dbPlayer)
+		if err != nil {
+			return err
+		}
+		if v == nil {
+			continue
+		}
+		kv[field] = v
+	}
+	status := redisCli.HMSet(playerKey, kv)
+	if status.Err() != nil {
+		return fmt.Errorf("设置失败(%v)", status.Err())
+	}
+	redisCli.Expire(playerKey, time.Hour*24)
+	return nil
+}
+
+// GetPlayerInfo 根据玩家id获取玩家的基本信息
+func GetPlayerInfo(playerID uint64) (info map[string]string, err error) {
+	info, err = map[string]string{}, nil
 
 	engine, err := mysqlEngineGetter(playerMysqlName)
 	if err != nil {

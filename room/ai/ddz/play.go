@@ -86,56 +86,7 @@ func (playAI *playStateAI) getPassivePlayCardEvent(ddzContext *ddz.DDZContext, p
 	// 上家出的牌，转换为poke
 	curOutPokes := ToDDZCards(ddzContext.GetCurOutCards())
 
-	// 是否有压制的牌
-	bSuc := false
-
-	// 压制牌的数组
-	sendPukes := []Poker{}
-
-	switch curCardType {
-	case poker.CardType_CT_SINGLE: // 单牌
-		bSuc, sendPukes = GetMinBiggerSingle(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_PAIR: // 对子
-		bSuc, sendPukes = GetMinBiggerPair(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_SHUNZI: // 顺子
-		bSuc, sendPukes = GetMinBiggerShunzi(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_PAIRS: // 连对
-		bSuc, sendPukes = GetMinBiggerPairs(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_TRIPLE: // 三张
-		bSuc, sendPukes = GetMinBiggerTriple(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_3AND1: // 三带一
-		bSuc, sendPukes = GetMinBigger3And1(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_3AND2: // 三带二
-		bSuc, sendPukes = GetMinBigger3And2(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_TRIPLES: // 飞机
-		bSuc, sendPukes = GetMinBiggerTriples(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_3SAND1S: // 飞机带翅膀1，例：JJJQQQKKK + 856
-		bSuc, sendPukes = GetMinBigger3sAnd1s(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_3SAND2S: // 飞机带翅膀2，例：JJJQQQKKK + 885566
-		bSuc, sendPukes = GetMinBigger3sAnd2s(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_4SAND1S: // 四带两个单张
-		bSuc, sendPukes = GetMinBigger4sAnd1s(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_4SAND2S: // 四带两个对子
-		bSuc, sendPukes = GetMinBigger4sAnd2s(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_BOMB: // 炸弹
-		bSuc, sendPukes = GetMinBiggerBoom(handPokes, curOutPokes)
-		break
-	case poker.CardType_CT_KINGBOMB: // 火箭
-		bSuc, sendPukes = GetMinBiggerKingBoom(handPokes, curOutPokes)
-		break
-	}
+	bSuc, sendPukes := GetMinBiggerCards(handPokes, curOutPokes)
 
 	// 有压制的牌，则出的牌和上家牌型一致
 	if bSuc {
