@@ -114,29 +114,54 @@ func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err
 }
 
 // GetPlayerGameInfo 获取玩家游戏信息
-func GetPlayerGameInfo(playerID uint64, gameID uint32) (exist bool, info *db.TPlayerGame, err error) {
-	exist, info, err = false, new(db.TPlayerGame), nil
+func GetPlayerGameInfo(playerID uint64, gameID uint32, fields ...string) (exist bool, dbPlayerGame *db.TPlayerGame, err error) {
+	exist, dbPlayerGame, err = true, new(db.TPlayerGame), nil
 
 	rKey := cache.FmtPlayerIDKey(playerID)
 	// 从redis获取
 	val, _ := getRedisField(playerRedisName, rKey, cache.FmtPlayerGameInfoKey(gameID))
 	if len(val) != 0 && val[0] != nil {
-		json.Unmarshal([]byte(val[0].(string)), info)
-		exist = true
-		return
+		str := strings.Split(val[0].(string), ",")
+		if len(str) == len(fields) {
+			json.Unmarshal([]byte(val[0].(string)), dbPlayerGame)
+			return
+		}
 	}
 
 	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return
+	}
+	strCol := ""
+	for _, col := range fields {
+		if len(strCol) > 0 {
+			strCol += ","
+		}
+		strCol += col
+	}
 
-	where := fmt.Sprintf("playerID=%d and gameID='%d'", playerID, gameID)
-	exist, err = engine.Table(playerGameTableName).Where(where).Get(info)
+	sql := fmt.Sprintf("select %s from t_player_game  where playerID='%d' and gameID='%d';", strCol, playerID, gameID)
+	res, err := engine.QueryString(sql)
 
 	if err != nil {
 		err = fmt.Errorf("select t_player_game sql err：%v", err)
 		return
 	}
+
+	if len(res) == 0 {
+		exist = false
+		err = fmt.Errorf("玩家不存在 gameId:%d 信息记录： %v", gameID, err)
+		return
+	}
+
+	if len(res) != 1 {
+		err = fmt.Errorf("玩家存在多条 gameId:%d 信息记录： %v", gameID, err)
+		return
+	}
+
+	dbPlayerGame = generateDbPlayerGame(playerID, gameID, res[0])
 	// 更新redis
-	data, _ := json.Marshal(info)
+	data, _ := json.Marshal(res[0])
 	rFields := map[string]string{
 		cache.FmtPlayerGameInfoKey(gameID): string(data),
 	}
@@ -253,14 +278,16 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 	if err != nil {
 		return
 	}
-	err = engine.Table(gameconfigTableName).Find(&gameConfig)
+	strCol := "id,gameID,name,type"
+	err = engine.Table(gameconfigTableName).Select(strCol).Find(&gameConfig)
 
 	if err != nil {
 		err = fmt.Errorf("select sql error： %v", err)
 		return
 	}
 
-	err = engine.Table(gamelevelconfigTableName).Find(&gamelevelConfig)
+	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,status,tag,remark"
+	err = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
 
 	if err != nil {
 		err = fmt.Errorf("select sql error： %v", err)

@@ -92,10 +92,10 @@ func setRedisFields(redisName string, key string, fields map[string]string, dura
 }
 
 func generateDbPlayer(playerID uint64, info map[string]string) *db.TPlayer {
-	gender, _ := strconv.ParseInt(info[cache.Gender], 10, 64)
-	channelID, _ := strconv.ParseInt(info[cache.ChannelID], 10, 64)
-	provinceID, _ := strconv.ParseInt(info[cache.ProvinceID], 10, 64)
-	cityID, _ := strconv.ParseInt(info[cache.CityID], 10, 64)
+	gender, _ := strconv.Atoi(info[cache.Gender])
+	channelID, _ := strconv.Atoi(info[cache.ChannelID])
+	provinceID, _ := strconv.Atoi(info[cache.ProvinceID])
+	cityID, _ := strconv.Atoi(info[cache.CityID])
 
 	return &db.TPlayer{
 		Playerid:   int64(playerID),
@@ -105,5 +105,15 @@ func generateDbPlayer(playerID uint64, info map[string]string) *db.TPlayer {
 		Channelid:  int(channelID),
 		Provinceid: int(provinceID),
 		Cityid:     int(cityID),
+	}
+}
+
+func generateDbPlayerGame(playerID uint64, gameID uint32, info map[string]string) *db.TPlayerGame {
+	winningRate, _ := strconv.Atoi(info[cache.WinningRate])
+
+	return &db.TPlayerGame{
+		Playerid:    int64(playerID),
+		Gameid:      int(gameID),
+		Winningrate: int(winningRate),
 	}
 }

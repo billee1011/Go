@@ -156,7 +156,8 @@ func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.G
 	}, nil
 
 	// 逻辑处理
-	exists, info, err := data.GetPlayerGameInfo(playerID, gameID)
+	fields := []string{cache.WinningRate, cache.WinningBurea, cache.TotalBurea, cache.MaxWinningStream, cache.MaxMultiple}
+	exists, info, err := data.GetPlayerGameInfo(playerID, gameID, fields...)
 
 	// 返回消息
 	if !exists {

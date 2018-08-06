@@ -192,7 +192,7 @@ func TestGetPlayerInfo(t *testing.T) {
 
 // TestGetPlayerGameInfo 获取玩家游戏信息
 func TestGetPlayerGameInfo(t *testing.T) {
-	exists, playerGameInfo, err := GetPlayerGameInfo(2000, 1)
+	exists, playerGameInfo, err := GetPlayerGameInfo(2000, 1, []string{cache.WinningBurea, cache.WinningRate, cache.TotalBurea, cache.MaxMultiple, cache.MaxWinningStream}...)
 
 	assert.Equal(t, exists, true)
 	assert.Nil(t, err)

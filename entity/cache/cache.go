@@ -48,6 +48,17 @@ const (
 	MatchAddr = "match_addr"
 	// RoomAddr ...房间服地址
 	RoomAddr = "room_addr"
+
+	// WinningRate ... 对应gameID：游戏胜率
+	WinningRate = "winningRate"
+	// WinningBurea ... 对应gameID：赢的局数
+	WinningBurea = "winningBurea"
+	// TotalBurea ... 对应gameID：总局数
+	TotalBurea = "totalBureau"
+	// MaxWinningStream ... 对应gameID：最大连胜
+	MaxWinningStream = "maxWinningStream"
+	// MaxMultiple ... 对应gameID：最大倍数
+	MaxMultiple = "maxMultiple"
 )
 
 // FmtAccountPlayerKey 账号所关联玩家 key
