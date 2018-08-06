@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"steve/common/data/helper"
 	"steve/common/data/redis"
+	"steve/external/goldclient"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -133,12 +134,31 @@ func setPlayerStringField(playerID uint64, fieldName string, value string) error
 
 // GetPlayerCoin 获取玩家的金币数
 func GetPlayerCoin(playerID uint64) uint64 {
-	return getPlayerUint64Field(playerID, playerCoinField)
+	//return getPlayerUint64Field(playerID, playerCoinField)
+	gold, err := goldclient.GetGold(playerID, 1) // goldtype todo
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"func_name": "Player.GetCoin",
+			"player_id": playerID,
+		}).WithError(err).Errorln("room获取金币失败")
+	}
+	return uint64(gold)
 }
 
 // SetPlayerCoin 设置玩家金币数
 func SetPlayerCoin(playerID uint64, coin uint64) error {
 	return setPlayerUint64Field(playerID, playerCoinField, coin)
+}
+
+// AddPlayerCoin 修改玩家金币数
+func AddPlayerCoin(playerID uint64, changeVal int64, gameID int, level int32) {
+	_, err := goldclient.AddGold(playerID, 1, changeVal, 0, 0, int32(gameID), level)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"func_name": "Player.AddCoin",
+			"player_id": playerID,
+		}).Errorln("room扣减金币失败")
+	}
 }
 
 // SetPlayerNickName 设置玩家昵称

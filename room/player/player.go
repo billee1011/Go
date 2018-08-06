@@ -123,13 +123,21 @@ func (dp *Player) SetTuoguan(tuoguan bool, notify bool) {
 	}
 }
 
-func (p *Player) GetCoin() uint64 {
-	return playerdata.GetPlayerCoin(p.PlayerID)
+// GetCoin 获取玩家金币
+func (dp *Player) GetCoin() uint64 {
+	return uint64(playerdata.GetPlayerCoin(dp.GetPlayerID()))
 }
 
-func (p *Player) SetCoin(coin uint64) {
-	playerdata.SetPlayerCoin(p.PlayerID, coin)
+// AddCoin 修改玩家金币
+func (dp *Player) AddCoin(changeVal int64) {
+	playerdata.AddPlayerCoin(dp.GetPlayerID(), changeVal, dp.GetDesk().GetGameId(), 0)
 }
+
+// SetCoin 设置玩家金币， 用不到
+/*
+func (dp *Player) SetCoin(coin uint64) {
+	playerdata.SetPlayerCoin(dp.PlayerID, coin)
+}*/
 
 // 判断玩家是否在线
 func (p *Player) IsOnline() bool {

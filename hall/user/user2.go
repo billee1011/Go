@@ -4,6 +4,8 @@ import (
 	"steve/client_pb/common"
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
+	"steve/entity/cache"
+	"steve/entity/db"
 	"steve/external/goldclient"
 	"steve/hall/data"
 	"steve/server_pb/gold"
@@ -15,7 +17,7 @@ import (
 )
 
 // HandleGetPlayerInfoReq2 处理获取玩家个人资料请求
-func HandleGetPlayerInfoReq2(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
+func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
 	logrus.Debugln("Handle get player info req", req)
 
 	// 默认返回消息
@@ -71,26 +73,26 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	}
 
 	// 参数校验
-	if req.Gender != nil && (req.GetGender() != 1 || req.GetGender() != 2) {
-		response.ErrCode = proto.Uint32(1)
+	dbPlayer := db.TPlayer{
+		Playerid: int64(playerID),
+	}
+	if req.Gender != nil && (req.GetGender() == 1 || req.GetGender() == 2) {
+		dbPlayer.Gender = int(req.GetGender())
 	}
 
-	if req.NickName != nil && req.GetNickName() == "" {
-		response.ErrCode = proto.Uint32(1)
+	if req.NickName != nil && req.GetNickName() != "" {
+		dbPlayer.Nickname = req.GetNickName()
 	}
+	if req.Avator != nil && req.GetAvator() != "" {
+		dbPlayer.Avatar = req.GetAvator()
 
-	if req.Avator != nil && req.GetAvator() == "" {
-		response.ErrCode = proto.Uint32(1)
 	}
 
 	// 逻辑处理
-	exist, result, _ := data.UpdatePlayerInfo(playerID, req.GetNickName(), req.GetAvator(), req.GetGender())
+	fields := []string{cache.NickName, cache.Avatar, cache.Gender}
+	error := data.SetPlayerFields(playerID, fields, &dbPlayer)
 
-	if !result {
-		response.ErrCode = proto.Uint32(1)
-	}
-
-	if exist {
+	if error == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.Result = proto.Bool(true)
 	}
@@ -99,7 +101,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 }
 
 // HandleGetPlayerStateReq2 获取玩家游戏状态信息
-func HandleGetPlayerStateReq2(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
+func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
 	logrus.Debugln("Handle get player state req", req)
 
 	// 默认返回消息
@@ -145,8 +147,8 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 
 	// 返回结果
 	if err == nil {
-		response.GameConfig = ServerGameConfig2Client(gameInfos)
-		response.GameLevelConfig = ServerGameLevelConfig2Client(gameLevelInfos)
+		response.GameConfig = DBGameConfig2Client(gameInfos)
+		response.GameLevelConfig = DBGamelevelConfig2Client(gameLevelInfos)
 	}
 
 	return
