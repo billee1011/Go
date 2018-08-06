@@ -131,7 +131,7 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	}, nil
 
 	// 逻辑处理
-	pState, err := data.GetPlayerState(req.GetPlayerId())
+	pState, err := data.GetPlayerState(req.GetPlayerId(), []string{cache.GameState}...)
 
 	if err == nil {
 		rsp.GameId, rsp.LevelId = uint32(pState.GameID), uint32(pState.LevelID)

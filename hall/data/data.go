@@ -72,6 +72,8 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 
 // GetPlayerInfo 根据玩家id获取玩家个人资料信息
 func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err error) {
+	logrus.Debugln("get player info playerId :%d, fields:%s", playerID, fields)
+
 	dbPlayer, err = new(db.TPlayer), nil
 
 	// 从redis获取
@@ -176,7 +178,7 @@ func GetPlayerState(playerID uint64, fields ...string) (pState *PlayerState, err
 		"playerID":  playerID,
 	})
 
-	pState, err = getPlayerStateFromRedis(playerID, playerRedisName)
+	pState, err = getPlayerStateFromRedis(playerID, fields...)
 
 	if err != nil {
 		enrty.WithError(err).Warningln("get player state from redis fail")
@@ -392,6 +394,7 @@ func InitPlayerState(playerID int64) (err error) {
 	rfields := map[string]string{
 		cache.GameState: fmt.Sprintf("%d", user.PlayerState_PS_IDIE),
 		cache.IPAddr:    fmt.Sprintf("%s", "127.0.0.1"),
+		cache.GateAddr:  fmt.Sprintf("%s", "127.0.0.1:36002"),
 	}
 
 	if err = setRedisFields(playerRedisName, redisKey, rfields, redisTimeOut); err != nil {
