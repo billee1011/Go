@@ -11,7 +11,6 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
-
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -108,11 +107,11 @@ func TestInitPlayerData(t *testing.T) {
 	exist, _, err := GetPlayerIDByAccountID(accID)
 	assert.False(t, exist)
 	assert.Nil(t, err)
-
+	showUID := AllocShowUID()
 	err = InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
-		Showuid:      0,
+		Showuid:      int(showUID),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -192,7 +191,7 @@ func TestGetPlayerInfo(t *testing.T) {
 
 // TestGetPlayerGameInfo 获取玩家游戏信息
 func TestGetPlayerGameInfo(t *testing.T) {
-	exists, playerGameInfo, err := GetPlayerGameInfo(2000, 1)
+	exists, playerGameInfo, err := GetPlayerGameInfo(2000, 1, []string{cache.WinningBurea, cache.WinningRate, cache.TotalBurea, cache.MaxMultiple, cache.MaxWinningStream}...)
 
 	assert.Equal(t, exists, true)
 	assert.Nil(t, err)

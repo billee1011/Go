@@ -40,7 +40,9 @@ var PlayerState_value = map[string]int32{
 func (x PlayerState) String() string {
 	return proto.EnumName(PlayerState_name, int32(x))
 }
-func (PlayerState) EnumDescriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
+func (PlayerState) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{0}
+}
 
 // ServerType 服务类型
 type ServerType int32
@@ -65,7 +67,9 @@ var ServerType_value = map[string]int32{
 func (x ServerType) String() string {
 	return proto.EnumName(ServerType_name, int32(x))
 }
-func (ServerType) EnumDescriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
+func (ServerType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{1}
+}
 
 // GameConfig 游戏玩法信息
 type GameConfig struct {
@@ -74,10 +78,29 @@ type GameConfig struct {
 	GameType uint32 `protobuf:"varint,3,opt,name=game_type,json=gameType" json:"game_type,omitempty"`
 }
 
-func (m *GameConfig) Reset()                    { *m = GameConfig{} }
-func (m *GameConfig) String() string            { return proto.CompactTextString(m) }
-func (*GameConfig) ProtoMessage()               {}
-func (*GameConfig) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
+func (m *GameConfig) Reset()         { *m = GameConfig{} }
+func (m *GameConfig) String() string { return proto.CompactTextString(m) }
+func (*GameConfig) ProtoMessage()    {}
+func (*GameConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{0}
+}
+func (m *GameConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GameConfig.Unmarshal(m, b)
+}
+func (m *GameConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GameConfig.Marshal(b, m, deterministic)
+}
+func (dst *GameConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameConfig.Merge(dst, src)
+}
+func (m *GameConfig) XXX_Size() int {
+	return xxx_messageInfo_GameConfig.Size(m)
+}
+func (m *GameConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_GameConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GameConfig proto.InternalMessageInfo
 
 func (m *GameConfig) GetGameId() uint32 {
 	if m != nil {
@@ -102,14 +125,39 @@ func (m *GameConfig) GetGameType() uint32 {
 
 // GameConfigLevel 游戏场次信息
 type GameLevelConfig struct {
-	GameId     uint32 `protobuf:"varint,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	LevelId    uint32 `protobuf:"varint,2,opt,name=level_id,json=levelId" json:"level_id,omitempty"`
-	LevelName  string `protobuf:"bytes,3,opt,name=level_name,json=levelName" json:"level_name,omitempty"`
-	BaseScores uint32 `protobuf:"varint,4,opt,name=base_scores,json=baseScores" json:"base_scores,omitempty"`
-	LowScores  uint32 `protobuf:"varint,5,opt,name=low_scores,json=lowScores" json:"low_scores,omitempty"`
-	HighScores uint32 `protobuf:"varint,6,opt,name=high_scores,json=highScores" json:"high_scores,omitempty"`
-	MinPeople  uint32 `protobuf:"varint,7,opt,name=min_people,json=minPeople" json:"min_people,omitempty"`
-	MaxPeople  uint32 `protobuf:"varint,8,opt,name=max_people,json=maxPeople" json:"max_people,omitempty"`
+	GameId               uint32   `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	LevelId              uint32   `protobuf:"varint,2,opt,name=level_id,json=levelId,proto3" json:"level_id,omitempty"`
+	LevelName            string   `protobuf:"bytes,3,opt,name=level_name,json=levelName,proto3" json:"level_name,omitempty"`
+	BaseScores           uint32   `protobuf:"varint,4,opt,name=base_scores,json=baseScores,proto3" json:"base_scores,omitempty"`
+	LowScores            uint32   `protobuf:"varint,5,opt,name=low_scores,json=lowScores,proto3" json:"low_scores,omitempty"`
+	HighScores           uint32   `protobuf:"varint,6,opt,name=high_scores,json=highScores,proto3" json:"high_scores,omitempty"`
+	MinPeople            uint32   `protobuf:"varint,7,opt,name=min_people,json=minPeople,proto3" json:"min_people,omitempty"`
+	MaxPeople            uint32   `protobuf:"varint,8,opt,name=max_people,json=maxPeople,proto3" json:"max_people,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GameLevelConfig) Reset()         { *m = GameLevelConfig{} }
+func (m *GameLevelConfig) String() string { return proto.CompactTextString(m) }
+func (*GameLevelConfig) ProtoMessage()    {}
+func (*GameLevelConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{1}
+}
+func (m *GameLevelConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GameLevelConfig.Unmarshal(m, b)
+}
+func (m *GameLevelConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GameLevelConfig.Marshal(b, m, deterministic)
+}
+func (dst *GameLevelConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameLevelConfig.Merge(dst, src)
+}
+func (m *GameLevelConfig) XXX_Size() int {
+	return xxx_messageInfo_GameLevelConfig.Size(m)
+}
+func (m *GameLevelConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_GameLevelConfig.DiscardUnknown(m)
 }
 
 func (m *GameLevelConfig) Reset()                    { *m = GameLevelConfig{} }
@@ -178,10 +226,29 @@ type GetPlayerByAccountReq struct {
 	AccountId uint64 `protobuf:"varint,1,opt,name=account_id,json=accountId" json:"account_id,omitempty"`
 }
 
-func (m *GetPlayerByAccountReq) Reset()                    { *m = GetPlayerByAccountReq{} }
-func (m *GetPlayerByAccountReq) String() string            { return proto.CompactTextString(m) }
-func (*GetPlayerByAccountReq) ProtoMessage()               {}
-func (*GetPlayerByAccountReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
+func (m *GetPlayerByAccountReq) Reset()         { *m = GetPlayerByAccountReq{} }
+func (m *GetPlayerByAccountReq) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerByAccountReq) ProtoMessage()    {}
+func (*GetPlayerByAccountReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{2}
+}
+func (m *GetPlayerByAccountReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerByAccountReq.Unmarshal(m, b)
+}
+func (m *GetPlayerByAccountReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerByAccountReq.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerByAccountReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerByAccountReq.Merge(dst, src)
+}
+func (m *GetPlayerByAccountReq) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerByAccountReq.Size(m)
+}
+func (m *GetPlayerByAccountReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerByAccountReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPlayerByAccountReq proto.InternalMessageInfo
 
 func (m *GetPlayerByAccountReq) GetAccountId() uint64 {
 	if m != nil {
@@ -192,8 +259,33 @@ func (m *GetPlayerByAccountReq) GetAccountId() uint64 {
 
 // GetPlayerByAccountRsp 根据账号获取玩家应答
 type GetPlayerByAccountRsp struct {
-	ErrCode  int32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	PlayerId uint64 `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
+	ErrCode              int32    `protobuf:"varint,1,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	PlayerId             uint64   `protobuf:"varint,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetPlayerByAccountRsp) Reset()         { *m = GetPlayerByAccountRsp{} }
+func (m *GetPlayerByAccountRsp) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerByAccountRsp) ProtoMessage()    {}
+func (*GetPlayerByAccountRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{3}
+}
+func (m *GetPlayerByAccountRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerByAccountRsp.Unmarshal(m, b)
+}
+func (m *GetPlayerByAccountRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerByAccountRsp.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerByAccountRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerByAccountRsp.Merge(dst, src)
+}
+func (m *GetPlayerByAccountRsp) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerByAccountRsp.Size(m)
+}
+func (m *GetPlayerByAccountRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerByAccountRsp.DiscardUnknown(m)
 }
 
 func (m *GetPlayerByAccountRsp) Reset()                    { *m = GetPlayerByAccountRsp{} }
@@ -220,10 +312,29 @@ type GetPlayerInfoReq struct {
 	PlayerId uint64 `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 }
 
-func (m *GetPlayerInfoReq) Reset()                    { *m = GetPlayerInfoReq{} }
-func (m *GetPlayerInfoReq) String() string            { return proto.CompactTextString(m) }
-func (*GetPlayerInfoReq) ProtoMessage()               {}
-func (*GetPlayerInfoReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
+func (m *GetPlayerInfoReq) Reset()         { *m = GetPlayerInfoReq{} }
+func (m *GetPlayerInfoReq) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerInfoReq) ProtoMessage()    {}
+func (*GetPlayerInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{4}
+}
+func (m *GetPlayerInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerInfoReq.Unmarshal(m, b)
+}
+func (m *GetPlayerInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerInfoReq.Merge(dst, src)
+}
+func (m *GetPlayerInfoReq) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerInfoReq.Size(m)
+}
+func (m *GetPlayerInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPlayerInfoReq proto.InternalMessageInfo
 
 func (m *GetPlayerInfoReq) GetPlayerId() uint64 {
 	if m != nil {
@@ -234,21 +345,42 @@ func (m *GetPlayerInfoReq) GetPlayerId() uint64 {
 
 // GetPlayerInfoRsp 获取玩家信息应答
 type GetPlayerInfoRsp struct {
-	ErrCode    int32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	PlayerId   uint64 `protobuf:"varint,2,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
-	NickName   string `protobuf:"bytes,3,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	Avatar     string `protobuf:"bytes,4,opt,name=avatar" json:"avatar,omitempty"`
-	Gender     uint32 `protobuf:"varint,5,opt,name=gender" json:"gender,omitempty"`
-	ChannelId  uint32 `protobuf:"varint,6,opt,name=channel_id,json=channelId" json:"channel_id,omitempty"`
-	ProvinceId uint32 `protobuf:"varint,7,opt,name=province_id,json=provinceId" json:"province_id,omitempty"`
-	CityId     uint32 `protobuf:"varint,8,opt,name=city_id,json=cityId" json:"city_id,omitempty"`
-	IpAddr     string `protobuf:"bytes,9,opt,name=ip_addr,json=ipAddr" json:"ip_addr,omitempty"`
+	ErrCode              int32    `protobuf:"varint,1,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	PlayerId             uint64   `protobuf:"varint,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	NickName             string   `protobuf:"bytes,3,opt,name=nick_name,json=nickName,proto3" json:"nick_name,omitempty"`
+	Avatar               string   `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Gender               uint32   `protobuf:"varint,5,opt,name=gender,proto3" json:"gender,omitempty"`
+	ChannelId            uint32   `protobuf:"varint,6,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	ProvinceId           uint32   `protobuf:"varint,7,opt,name=province_id,json=provinceId,proto3" json:"province_id,omitempty"`
+	CityId               uint32   `protobuf:"varint,8,opt,name=city_id,json=cityId,proto3" json:"city_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetPlayerInfoRsp) Reset()                    { *m = GetPlayerInfoRsp{} }
-func (m *GetPlayerInfoRsp) String() string            { return proto.CompactTextString(m) }
-func (*GetPlayerInfoRsp) ProtoMessage()               {}
-func (*GetPlayerInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
+func (m *GetPlayerInfoRsp) Reset()         { *m = GetPlayerInfoRsp{} }
+func (m *GetPlayerInfoRsp) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerInfoRsp) ProtoMessage()    {}
+func (*GetPlayerInfoRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{5}
+}
+func (m *GetPlayerInfoRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerInfoRsp.Unmarshal(m, b)
+}
+func (m *GetPlayerInfoRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerInfoRsp.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerInfoRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerInfoRsp.Merge(dst, src)
+}
+func (m *GetPlayerInfoRsp) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerInfoRsp.Size(m)
+}
+func (m *GetPlayerInfoRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerInfoRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPlayerInfoRsp proto.InternalMessageInfo
 
 func (m *GetPlayerInfoRsp) GetErrCode() int32 {
 	if m != nil {
@@ -306,13 +438,6 @@ func (m *GetPlayerInfoRsp) GetCityId() uint32 {
 	return 0
 }
 
-func (m *GetPlayerInfoRsp) GetIpAddr() string {
-	if m != nil {
-		return m.IpAddr
-	}
-	return ""
-}
-
 // UpdatePlayerInfoReq 修改玩家信息
 type UpdatePlayerInfoReq struct {
 	PlayerId uint64 `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
@@ -323,10 +448,29 @@ type UpdatePlayerInfoReq struct {
 	Phone    string `protobuf:"bytes,6,opt,name=phone" json:"phone,omitempty"`
 }
 
-func (m *UpdatePlayerInfoReq) Reset()                    { *m = UpdatePlayerInfoReq{} }
-func (m *UpdatePlayerInfoReq) String() string            { return proto.CompactTextString(m) }
-func (*UpdatePlayerInfoReq) ProtoMessage()               {}
-func (*UpdatePlayerInfoReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{6} }
+func (m *UpdatePlayerInfoReq) Reset()         { *m = UpdatePlayerInfoReq{} }
+func (m *UpdatePlayerInfoReq) String() string { return proto.CompactTextString(m) }
+func (*UpdatePlayerInfoReq) ProtoMessage()    {}
+func (*UpdatePlayerInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{6}
+}
+func (m *UpdatePlayerInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdatePlayerInfoReq.Unmarshal(m, b)
+}
+func (m *UpdatePlayerInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdatePlayerInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *UpdatePlayerInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdatePlayerInfoReq.Merge(dst, src)
+}
+func (m *UpdatePlayerInfoReq) XXX_Size() int {
+	return xxx_messageInfo_UpdatePlayerInfoReq.Size(m)
+}
+func (m *UpdatePlayerInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdatePlayerInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdatePlayerInfoReq proto.InternalMessageInfo
 
 func (m *UpdatePlayerInfoReq) GetPlayerId() uint64 {
 	if m != nil {
@@ -372,8 +516,33 @@ func (m *UpdatePlayerInfoReq) GetPhone() string {
 
 // UpdatePlayerInfoRsp 修改玩家信息应答
 type UpdatePlayerInfoRsp struct {
-	ErrCode int32 `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	Result  bool  `protobuf:"varint,2,opt,name=result" json:"result,omitempty"`
+	ErrCode              int32    `protobuf:"varint,1,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	Result               bool     `protobuf:"varint,2,opt,name=result,proto3" json:"result,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdatePlayerInfoRsp) Reset()         { *m = UpdatePlayerInfoRsp{} }
+func (m *UpdatePlayerInfoRsp) String() string { return proto.CompactTextString(m) }
+func (*UpdatePlayerInfoRsp) ProtoMessage()    {}
+func (*UpdatePlayerInfoRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{7}
+}
+func (m *UpdatePlayerInfoRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdatePlayerInfoRsp.Unmarshal(m, b)
+}
+func (m *UpdatePlayerInfoRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdatePlayerInfoRsp.Marshal(b, m, deterministic)
+}
+func (dst *UpdatePlayerInfoRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdatePlayerInfoRsp.Merge(dst, src)
+}
+func (m *UpdatePlayerInfoRsp) XXX_Size() int {
+	return xxx_messageInfo_UpdatePlayerInfoRsp.Size(m)
+}
+func (m *UpdatePlayerInfoRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdatePlayerInfoRsp.DiscardUnknown(m)
 }
 
 func (m *UpdatePlayerInfoRsp) Reset()                    { *m = UpdatePlayerInfoRsp{} }
@@ -400,10 +569,29 @@ type GetPlayerStateReq struct {
 	PlayerId uint64 `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 }
 
-func (m *GetPlayerStateReq) Reset()                    { *m = GetPlayerStateReq{} }
-func (m *GetPlayerStateReq) String() string            { return proto.CompactTextString(m) }
-func (*GetPlayerStateReq) ProtoMessage()               {}
-func (*GetPlayerStateReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
+func (m *GetPlayerStateReq) Reset()         { *m = GetPlayerStateReq{} }
+func (m *GetPlayerStateReq) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerStateReq) ProtoMessage()    {}
+func (*GetPlayerStateReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{8}
+}
+func (m *GetPlayerStateReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerStateReq.Unmarshal(m, b)
+}
+func (m *GetPlayerStateReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerStateReq.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerStateReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerStateReq.Merge(dst, src)
+}
+func (m *GetPlayerStateReq) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerStateReq.Size(m)
+}
+func (m *GetPlayerStateReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerStateReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPlayerStateReq proto.InternalMessageInfo
 
 func (m *GetPlayerStateReq) GetPlayerId() uint64 {
 	if m != nil {
@@ -414,14 +602,39 @@ func (m *GetPlayerStateReq) GetPlayerId() uint64 {
 
 // GetPlayerStateRsp 获取玩家状态应答
 type GetPlayerStateRsp struct {
-	ErrCode   int32       `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	State     PlayerState `protobuf:"varint,2,opt,name=state,enum=user.PlayerState" json:"state,omitempty"`
-	GameId    uint32      `protobuf:"varint,3,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	LevelId   uint32      `protobuf:"varint,4,opt,name=level_id,json=levelId" json:"level_id,omitempty"`
-	IpAddr    string      `protobuf:"bytes,5,opt,name=ip_addr,json=ipAddr" json:"ip_addr,omitempty"`
-	MatchAddr string      `protobuf:"bytes,6,opt,name=match_addr,json=matchAddr" json:"match_addr,omitempty"`
-	GateAddr  string      `protobuf:"bytes,7,opt,name=gate_addr,json=gateAddr" json:"gate_addr,omitempty"`
-	RoomAddr  string      `protobuf:"bytes,8,opt,name=room_addr,json=roomAddr" json:"room_addr,omitempty"`
+	ErrCode              int32       `protobuf:"varint,1,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	State                PlayerState `protobuf:"varint,2,opt,name=state,proto3,enum=user.PlayerState" json:"state,omitempty"`
+	GameId               uint32      `protobuf:"varint,3,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	LevelId              uint32      `protobuf:"varint,4,opt,name=level_id,json=levelId,proto3" json:"level_id,omitempty"`
+	IpAddr               string      `protobuf:"bytes,5,opt,name=ip_addr,json=ipAddr,proto3" json:"ip_addr,omitempty"`
+	MatchAddr            string      `protobuf:"bytes,6,opt,name=match_addr,json=matchAddr,proto3" json:"match_addr,omitempty"`
+	GateAddr             string      `protobuf:"bytes,7,opt,name=gate_addr,json=gateAddr,proto3" json:"gate_addr,omitempty"`
+	RoomAddr             string      `protobuf:"bytes,8,opt,name=room_addr,json=roomAddr,proto3" json:"room_addr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *GetPlayerStateRsp) Reset()         { *m = GetPlayerStateRsp{} }
+func (m *GetPlayerStateRsp) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerStateRsp) ProtoMessage()    {}
+func (*GetPlayerStateRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{9}
+}
+func (m *GetPlayerStateRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerStateRsp.Unmarshal(m, b)
+}
+func (m *GetPlayerStateRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerStateRsp.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerStateRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerStateRsp.Merge(dst, src)
+}
+func (m *GetPlayerStateRsp) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerStateRsp.Size(m)
+}
+func (m *GetPlayerStateRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerStateRsp.DiscardUnknown(m)
 }
 
 func (m *GetPlayerStateRsp) Reset()                    { *m = GetPlayerStateRsp{} }
@@ -487,8 +700,33 @@ func (m *GetPlayerStateRsp) GetRoomAddr() string {
 
 // GetPlayerGameInfoReq 获取玩家游戏信息
 type GetPlayerGameInfoReq struct {
-	PlayerId uint64 `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
-	GameId   uint32 `protobuf:"varint,2,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
+	PlayerId             uint64   `protobuf:"varint,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	GameId               uint32   `protobuf:"varint,2,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetPlayerGameInfoReq) Reset()         { *m = GetPlayerGameInfoReq{} }
+func (m *GetPlayerGameInfoReq) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerGameInfoReq) ProtoMessage()    {}
+func (*GetPlayerGameInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{10}
+}
+func (m *GetPlayerGameInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerGameInfoReq.Unmarshal(m, b)
+}
+func (m *GetPlayerGameInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerGameInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerGameInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerGameInfoReq.Merge(dst, src)
+}
+func (m *GetPlayerGameInfoReq) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerGameInfoReq.Size(m)
+}
+func (m *GetPlayerGameInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerGameInfoReq.DiscardUnknown(m)
 }
 
 func (m *GetPlayerGameInfoReq) Reset()                    { *m = GetPlayerGameInfoReq{} }
@@ -512,13 +750,38 @@ func (m *GetPlayerGameInfoReq) GetGameId() uint32 {
 
 // GetPlayerGameInfoRsp 获取玩家游戏信息应答
 type GetPlayerGameInfoRsp struct {
-	ErrCode          int32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	GameId           uint32 `protobuf:"varint,2,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	WinningRate      uint32 `protobuf:"varint,3,opt,name=winning_rate,json=winningRate" json:"winning_rate,omitempty"`
-	WinningBurea     uint32 `protobuf:"varint,4,opt,name=Winning_burea,json=WinningBurea" json:"Winning_burea,omitempty"`
-	TotalBurea       uint32 `protobuf:"varint,5,opt,name=total_burea,json=totalBurea" json:"total_burea,omitempty"`
-	MaxWinningStream uint32 `protobuf:"varint,6,opt,name=max_winning_stream,json=maxWinningStream" json:"max_winning_stream,omitempty"`
-	MaxMultiple      uint32 `protobuf:"varint,7,opt,name=max_multiple,json=maxMultiple" json:"max_multiple,omitempty"`
+	ErrCode              int32    `protobuf:"varint,1,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	GameId               uint32   `protobuf:"varint,2,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	WinningRate          uint32   `protobuf:"varint,3,opt,name=winning_rate,json=winningRate,proto3" json:"winning_rate,omitempty"`
+	WinningBurea         uint32   `protobuf:"varint,4,opt,name=Winning_burea,json=WinningBurea,proto3" json:"Winning_burea,omitempty"`
+	TotalBurea           uint32   `protobuf:"varint,5,opt,name=total_burea,json=totalBurea,proto3" json:"total_burea,omitempty"`
+	MaxWinningStream     uint32   `protobuf:"varint,6,opt,name=max_winning_stream,json=maxWinningStream,proto3" json:"max_winning_stream,omitempty"`
+	MaxMultiple          uint32   `protobuf:"varint,7,opt,name=max_multiple,json=maxMultiple,proto3" json:"max_multiple,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetPlayerGameInfoRsp) Reset()         { *m = GetPlayerGameInfoRsp{} }
+func (m *GetPlayerGameInfoRsp) String() string { return proto.CompactTextString(m) }
+func (*GetPlayerGameInfoRsp) ProtoMessage()    {}
+func (*GetPlayerGameInfoRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{11}
+}
+func (m *GetPlayerGameInfoRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPlayerGameInfoRsp.Unmarshal(m, b)
+}
+func (m *GetPlayerGameInfoRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPlayerGameInfoRsp.Marshal(b, m, deterministic)
+}
+func (dst *GetPlayerGameInfoRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPlayerGameInfoRsp.Merge(dst, src)
+}
+func (m *GetPlayerGameInfoRsp) XXX_Size() int {
+	return xxx_messageInfo_GetPlayerGameInfoRsp.Size(m)
+}
+func (m *GetPlayerGameInfoRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPlayerGameInfoRsp.DiscardUnknown(m)
 }
 
 func (m *GetPlayerGameInfoRsp) Reset()                    { *m = GetPlayerGameInfoRsp{} }
@@ -575,20 +838,95 @@ func (m *GetPlayerGameInfoRsp) GetMaxMultiple() uint32 {
 	return 0
 }
 
-// UpdatePlayerStateReq 更新玩家状态
-type UpdatePlayerStateReq struct {
-	PlayerId   uint64      `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
-	OldState   PlayerState `protobuf:"varint,2,opt,name=old_state,json=oldState,enum=user.PlayerState" json:"old_state,omitempty"`
-	NewState   PlayerState `protobuf:"varint,3,opt,name=new_state,json=newState,enum=user.PlayerState" json:"new_state,omitempty"`
-	GameId     uint32      `protobuf:"varint,4,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	ServerType ServerType  `protobuf:"varint,5,opt,name=server_type,json=serverType,enum=user.ServerType" json:"server_type,omitempty"`
-	ServerAddr string      `protobuf:"bytes,6,opt,name=server_addr,json=serverAddr" json:"server_addr,omitempty"`
+// UpdatePlayerGateInfoReq 更新玩家网关信息
+type UpdatePlayerGateInfoReq struct {
+	PlayerId             uint64   `protobuf:"varint,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	IpAddr               string   `protobuf:"bytes,2,opt,name=ip_addr,json=ipAddr,proto3" json:"ip_addr,omitempty"`
+	GateAddr             string   `protobuf:"bytes,3,opt,name=gate_addr,json=gateAddr,proto3" json:"gate_addr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UpdatePlayerStateReq) Reset()                    { *m = UpdatePlayerStateReq{} }
-func (m *UpdatePlayerStateReq) String() string            { return proto.CompactTextString(m) }
-func (*UpdatePlayerStateReq) ProtoMessage()               {}
-func (*UpdatePlayerStateReq) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{12} }
+func (m *UpdatePlayerGateInfoReq) Reset()         { *m = UpdatePlayerGateInfoReq{} }
+func (m *UpdatePlayerGateInfoReq) String() string { return proto.CompactTextString(m) }
+func (*UpdatePlayerGateInfoReq) ProtoMessage()    {}
+func (*UpdatePlayerGateInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{12}
+}
+func (m *UpdatePlayerGateInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdatePlayerGateInfoReq.Unmarshal(m, b)
+}
+func (m *UpdatePlayerGateInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdatePlayerGateInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *UpdatePlayerGateInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdatePlayerGateInfoReq.Merge(dst, src)
+}
+func (m *UpdatePlayerGateInfoReq) XXX_Size() int {
+	return xxx_messageInfo_UpdatePlayerGateInfoReq.Size(m)
+}
+func (m *UpdatePlayerGateInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdatePlayerGateInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdatePlayerGateInfoReq proto.InternalMessageInfo
+
+func (m *UpdatePlayerGateInfoReq) GetPlayerId() uint64 {
+	if m != nil {
+		return m.PlayerId
+	}
+	return 0
+}
+
+func (m *UpdatePlayerGateInfoReq) GetIpAddr() string {
+	if m != nil {
+		return m.IpAddr
+	}
+	return ""
+}
+
+func (m *UpdatePlayerGateInfoReq) GetGateAddr() string {
+	if m != nil {
+		return m.GateAddr
+	}
+	return ""
+}
+
+// UpdatePlayerStateReq 更新玩家游戏状态
+type UpdatePlayerStateReq struct {
+	PlayerId             uint64      `protobuf:"varint,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	OldState             PlayerState `protobuf:"varint,2,opt,name=old_state,json=oldState,proto3,enum=user.PlayerState" json:"old_state,omitempty"`
+	NewState             PlayerState `protobuf:"varint,3,opt,name=new_state,json=newState,proto3,enum=user.PlayerState" json:"new_state,omitempty"`
+	GameId               uint32      `protobuf:"varint,4,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *UpdatePlayerStateReq) Reset()         { *m = UpdatePlayerStateReq{} }
+func (m *UpdatePlayerStateReq) String() string { return proto.CompactTextString(m) }
+func (*UpdatePlayerStateReq) ProtoMessage()    {}
+func (*UpdatePlayerStateReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{13}
+}
+func (m *UpdatePlayerStateReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdatePlayerStateReq.Unmarshal(m, b)
+}
+func (m *UpdatePlayerStateReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdatePlayerStateReq.Marshal(b, m, deterministic)
+}
+func (dst *UpdatePlayerStateReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdatePlayerStateReq.Merge(dst, src)
+}
+func (m *UpdatePlayerStateReq) XXX_Size() int {
+	return xxx_messageInfo_UpdatePlayerStateReq.Size(m)
+}
+func (m *UpdatePlayerStateReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdatePlayerStateReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdatePlayerStateReq proto.InternalMessageInfo
 
 func (m *UpdatePlayerStateReq) GetPlayerId() uint64 {
 	if m != nil {
@@ -618,39 +956,102 @@ func (m *UpdatePlayerStateReq) GetGameId() uint32 {
 	return 0
 }
 
-func (m *UpdatePlayerStateReq) GetServerType() ServerType {
+// UpdatePlayerServerAddrReq 更新玩家服务端地址
+type UpdatePlayerServerAddrReq struct {
+	PlayerId             uint64     `protobuf:"varint,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	ServerType           ServerType `protobuf:"varint,5,opt,name=server_type,json=serverType,proto3,enum=user.ServerType" json:"server_type,omitempty"`
+	ServerAddr           string     `protobuf:"bytes,6,opt,name=server_addr,json=serverAddr,proto3" json:"server_addr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *UpdatePlayerServerAddrReq) Reset()         { *m = UpdatePlayerServerAddrReq{} }
+func (m *UpdatePlayerServerAddrReq) String() string { return proto.CompactTextString(m) }
+func (*UpdatePlayerServerAddrReq) ProtoMessage()    {}
+func (*UpdatePlayerServerAddrReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{14}
+}
+func (m *UpdatePlayerServerAddrReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdatePlayerServerAddrReq.Unmarshal(m, b)
+}
+func (m *UpdatePlayerServerAddrReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdatePlayerServerAddrReq.Marshal(b, m, deterministic)
+}
+func (dst *UpdatePlayerServerAddrReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdatePlayerServerAddrReq.Merge(dst, src)
+}
+func (m *UpdatePlayerServerAddrReq) XXX_Size() int {
+	return xxx_messageInfo_UpdatePlayerServerAddrReq.Size(m)
+}
+func (m *UpdatePlayerServerAddrReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdatePlayerServerAddrReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdatePlayerServerAddrReq proto.InternalMessageInfo
+
+func (m *UpdatePlayerServerAddrReq) GetPlayerId() uint64 {
+	if m != nil {
+		return m.PlayerId
+	}
+	return 0
+}
+
+func (m *UpdatePlayerServerAddrReq) GetServerType() ServerType {
 	if m != nil {
 		return m.ServerType
 	}
 	return ServerType_ST_GATE
 }
 
-func (m *UpdatePlayerStateReq) GetServerAddr() string {
+func (m *UpdatePlayerServerAddrReq) GetServerAddr() string {
 	if m != nil {
 		return m.ServerAddr
 	}
 	return ""
 }
 
-// UpdatePlayerStateRsp  更新玩家状态应答
-type UpdatePlayerStateRsp struct {
-	ErrCode int32 `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	Result  bool  `protobuf:"varint,2,opt,name=result" json:"result,omitempty"`
+// UpdatePlayerRsp  更新玩家应答
+type UpdatePlayerRsp struct {
+	ErrCode              int32    `protobuf:"varint,1,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	Result               bool     `protobuf:"varint,2,opt,name=result,proto3" json:"result,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UpdatePlayerStateRsp) Reset()                    { *m = UpdatePlayerStateRsp{} }
-func (m *UpdatePlayerStateRsp) String() string            { return proto.CompactTextString(m) }
-func (*UpdatePlayerStateRsp) ProtoMessage()               {}
-func (*UpdatePlayerStateRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{13} }
+func (m *UpdatePlayerRsp) Reset()         { *m = UpdatePlayerRsp{} }
+func (m *UpdatePlayerRsp) String() string { return proto.CompactTextString(m) }
+func (*UpdatePlayerRsp) ProtoMessage()    {}
+func (*UpdatePlayerRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{15}
+}
+func (m *UpdatePlayerRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdatePlayerRsp.Unmarshal(m, b)
+}
+func (m *UpdatePlayerRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdatePlayerRsp.Marshal(b, m, deterministic)
+}
+func (dst *UpdatePlayerRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdatePlayerRsp.Merge(dst, src)
+}
+func (m *UpdatePlayerRsp) XXX_Size() int {
+	return xxx_messageInfo_UpdatePlayerRsp.Size(m)
+}
+func (m *UpdatePlayerRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdatePlayerRsp.DiscardUnknown(m)
+}
 
-func (m *UpdatePlayerStateRsp) GetErrCode() int32 {
+var xxx_messageInfo_UpdatePlayerRsp proto.InternalMessageInfo
+
+func (m *UpdatePlayerRsp) GetErrCode() int32 {
 	if m != nil {
 		return m.ErrCode
 	}
 	return 0
 }
 
-func (m *UpdatePlayerStateRsp) GetResult() bool {
+func (m *UpdatePlayerRsp) GetResult() bool {
 	if m != nil {
 		return m.Result
 	}
@@ -659,6 +1060,31 @@ func (m *UpdatePlayerStateRsp) GetResult() bool {
 
 // GetGameListInfoReq 获取游戏列表信息
 type GetGameListInfoReq struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetGameListInfoReq) Reset()         { *m = GetGameListInfoReq{} }
+func (m *GetGameListInfoReq) String() string { return proto.CompactTextString(m) }
+func (*GetGameListInfoReq) ProtoMessage()    {}
+func (*GetGameListInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{16}
+}
+func (m *GetGameListInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGameListInfoReq.Unmarshal(m, b)
+}
+func (m *GetGameListInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGameListInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *GetGameListInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGameListInfoReq.Merge(dst, src)
+}
+func (m *GetGameListInfoReq) XXX_Size() int {
+	return xxx_messageInfo_GetGameListInfoReq.Size(m)
+}
+func (m *GetGameListInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGameListInfoReq.DiscardUnknown(m)
 }
 
 func (m *GetGameListInfoReq) Reset()                    { *m = GetGameListInfoReq{} }
@@ -673,10 +1099,29 @@ type GetGameListInfoRsp struct {
 	GameLevelConfig []*GameLevelConfig `protobuf:"bytes,3,rep,name=game_level_config,json=gameLevelConfig" json:"game_level_config,omitempty"`
 }
 
-func (m *GetGameListInfoRsp) Reset()                    { *m = GetGameListInfoRsp{} }
-func (m *GetGameListInfoRsp) String() string            { return proto.CompactTextString(m) }
-func (*GetGameListInfoRsp) ProtoMessage()               {}
-func (*GetGameListInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{15} }
+func (m *GetGameListInfoRsp) Reset()         { *m = GetGameListInfoRsp{} }
+func (m *GetGameListInfoRsp) String() string { return proto.CompactTextString(m) }
+func (*GetGameListInfoRsp) ProtoMessage()    {}
+func (*GetGameListInfoRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_service_652c3ec62da82f59, []int{17}
+}
+func (m *GetGameListInfoRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGameListInfoRsp.Unmarshal(m, b)
+}
+func (m *GetGameListInfoRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGameListInfoRsp.Marshal(b, m, deterministic)
+}
+func (dst *GetGameListInfoRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGameListInfoRsp.Merge(dst, src)
+}
+func (m *GetGameListInfoRsp) XXX_Size() int {
+	return xxx_messageInfo_GetGameListInfoRsp.Size(m)
+}
+func (m *GetGameListInfoRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGameListInfoRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGameListInfoRsp proto.InternalMessageInfo
 
 func (m *GetGameListInfoRsp) GetErrCode() int32 {
 	if m != nil {
@@ -712,8 +1157,10 @@ func init() {
 	proto.RegisterType((*GetPlayerStateRsp)(nil), "user.GetPlayerStateRsp")
 	proto.RegisterType((*GetPlayerGameInfoReq)(nil), "user.GetPlayerGameInfoReq")
 	proto.RegisterType((*GetPlayerGameInfoRsp)(nil), "user.GetPlayerGameInfoRsp")
+	proto.RegisterType((*UpdatePlayerGateInfoReq)(nil), "user.UpdatePlayerGateInfoReq")
 	proto.RegisterType((*UpdatePlayerStateReq)(nil), "user.UpdatePlayerStateReq")
-	proto.RegisterType((*UpdatePlayerStateRsp)(nil), "user.UpdatePlayerStateRsp")
+	proto.RegisterType((*UpdatePlayerServerAddrReq)(nil), "user.UpdatePlayerServerAddrReq")
+	proto.RegisterType((*UpdatePlayerRsp)(nil), "user.UpdatePlayerRsp")
 	proto.RegisterType((*GetGameListInfoReq)(nil), "user.GetGameListInfoReq")
 	proto.RegisterType((*GetGameListInfoRsp)(nil), "user.GetGameListInfoRsp")
 	proto.RegisterEnum("user.PlayerState", PlayerState_name, PlayerState_value)
@@ -742,7 +1189,11 @@ type PlayerDataClient interface {
 	//  GetPlayerGameInfo 获取玩家游戏信息
 	GetPlayerGameInfo(ctx context.Context, in *GetPlayerGameInfoReq, opts ...grpc.CallOption) (*GetPlayerGameInfoRsp, error)
 	// UpdatePlayerState 更新玩家状态
-	UpdatePlayerState(ctx context.Context, in *UpdatePlayerStateReq, opts ...grpc.CallOption) (*UpdatePlayerStateRsp, error)
+	UpdatePlayerState(ctx context.Context, in *UpdatePlayerStateReq, opts ...grpc.CallOption) (*UpdatePlayerRsp, error)
+	// UpdatePlayerGateInfo 更新玩家网关信息
+	UpdatePlayerGateInfo(ctx context.Context, in *UpdatePlayerGateInfoReq, opts ...grpc.CallOption) (*UpdatePlayerRsp, error)
+	// UpdatePlayerServerAddr 更新玩家服务端信息
+	UpdatePlayerServerAddr(ctx context.Context, in *UpdatePlayerServerAddrReq, opts ...grpc.CallOption) (*UpdatePlayerRsp, error)
 	// GetGameListInfo 获取游戏列表
 	GetGameListInfo(ctx context.Context, in *GetGameListInfoReq, opts ...grpc.CallOption) (*GetGameListInfoRsp, error)
 }
@@ -800,9 +1251,27 @@ func (c *playerDataClient) GetPlayerGameInfo(ctx context.Context, in *GetPlayerG
 	return out, nil
 }
 
-func (c *playerDataClient) UpdatePlayerState(ctx context.Context, in *UpdatePlayerStateReq, opts ...grpc.CallOption) (*UpdatePlayerStateRsp, error) {
-	out := new(UpdatePlayerStateRsp)
-	err := grpc.Invoke(ctx, "/user.PlayerData/UpdatePlayerState", in, out, c.cc, opts...)
+func (c *playerDataClient) UpdatePlayerState(ctx context.Context, in *UpdatePlayerStateReq, opts ...grpc.CallOption) (*UpdatePlayerRsp, error) {
+	out := new(UpdatePlayerRsp)
+	err := c.cc.Invoke(ctx, "/user.PlayerData/UpdatePlayerState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *playerDataClient) UpdatePlayerGateInfo(ctx context.Context, in *UpdatePlayerGateInfoReq, opts ...grpc.CallOption) (*UpdatePlayerRsp, error) {
+	out := new(UpdatePlayerRsp)
+	err := c.cc.Invoke(ctx, "/user.PlayerData/UpdatePlayerGateInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *playerDataClient) UpdatePlayerServerAddr(ctx context.Context, in *UpdatePlayerServerAddrReq, opts ...grpc.CallOption) (*UpdatePlayerRsp, error) {
+	out := new(UpdatePlayerRsp)
+	err := c.cc.Invoke(ctx, "/user.PlayerData/UpdatePlayerServerAddr", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -832,7 +1301,11 @@ type PlayerDataServer interface {
 	//  GetPlayerGameInfo 获取玩家游戏信息
 	GetPlayerGameInfo(context.Context, *GetPlayerGameInfoReq) (*GetPlayerGameInfoRsp, error)
 	// UpdatePlayerState 更新玩家状态
-	UpdatePlayerState(context.Context, *UpdatePlayerStateReq) (*UpdatePlayerStateRsp, error)
+	UpdatePlayerState(context.Context, *UpdatePlayerStateReq) (*UpdatePlayerRsp, error)
+	// UpdatePlayerGateInfo 更新玩家网关信息
+	UpdatePlayerGateInfo(context.Context, *UpdatePlayerGateInfoReq) (*UpdatePlayerRsp, error)
+	// UpdatePlayerServerAddr 更新玩家服务端信息
+	UpdatePlayerServerAddr(context.Context, *UpdatePlayerServerAddrReq) (*UpdatePlayerRsp, error)
 	// GetGameListInfo 获取游戏列表
 	GetGameListInfo(context.Context, *GetGameListInfoReq) (*GetGameListInfoRsp, error)
 }
@@ -949,6 +1422,42 @@ func _PlayerData_UpdatePlayerState_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlayerData_UpdatePlayerGateInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlayerGateInfoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlayerDataServer).UpdatePlayerGateInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.PlayerData/UpdatePlayerGateInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlayerDataServer).UpdatePlayerGateInfo(ctx, req.(*UpdatePlayerGateInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlayerData_UpdatePlayerServerAddr_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlayerServerAddrReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlayerDataServer).UpdatePlayerServerAddr(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.PlayerData/UpdatePlayerServerAddr",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlayerDataServer).UpdatePlayerServerAddr(ctx, req.(*UpdatePlayerServerAddrReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PlayerData_GetGameListInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetGameListInfoReq)
 	if err := dec(in); err != nil {
@@ -996,6 +1505,14 @@ var _PlayerData_serviceDesc = grpc.ServiceDesc{
 			Handler:    _PlayerData_UpdatePlayerState_Handler,
 		},
 		{
+			MethodName: "UpdatePlayerGateInfo",
+			Handler:    _PlayerData_UpdatePlayerGateInfo_Handler,
+		},
+		{
+			MethodName: "UpdatePlayerServerAddr",
+			Handler:    _PlayerData_UpdatePlayerServerAddr_Handler,
+		},
+		{
 			MethodName: "GetGameListInfo",
 			Handler:    _PlayerData_GetGameListInfo_Handler,
 		},
@@ -1004,73 +1521,77 @@ var _PlayerData_serviceDesc = grpc.ServiceDesc{
 	Metadata: "service.proto",
 }
 
-func init() { proto.RegisterFile("service.proto", fileDescriptor2) }
+func init() { proto.RegisterFile("service.proto", fileDescriptor_service_652c3ec62da82f59) }
 
-var fileDescriptor2 = []byte{
-	// 1037 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x56, 0x4b, 0x6f, 0xe4, 0x44,
-	0x10, 0x66, 0x3c, 0x4f, 0xd7, 0xe4, 0x31, 0x69, 0xb2, 0xd9, 0xd9, 0x59, 0xa1, 0x0d, 0xe6, 0x40,
-	0xb4, 0x42, 0x81, 0x5d, 0x10, 0x17, 0x0e, 0x68, 0x92, 0x8d, 0x26, 0x16, 0x9b, 0x87, 0xec, 0x20,
-	0x8e, 0x56, 0xc7, 0xee, 0x9d, 0x58, 0xf8, 0x45, 0xbb, 0xf3, 0x98, 0x1b, 0x12, 0x5c, 0x90, 0xf8,
-	0x1b, 0x1c, 0xf8, 0x91, 0x48, 0xa8, 0xab, 0xdb, 0x33, 0x1e, 0x67, 0x9c, 0x44, 0x7b, 0x73, 0x7f,
-	0x5f, 0x7d, 0xd5, 0xdd, 0x55, 0xd5, 0x55, 0x86, 0xf5, 0x9c, 0xf1, 0x9b, 0xd0, 0x67, 0xfb, 0x19,
-	0x4f, 0x45, 0x4a, 0x5a, 0xd7, 0x39, 0xe3, 0x96, 0x07, 0x30, 0xa1, 0x31, 0x3b, 0x4c, 0x93, 0x0f,
-	0xe1, 0x94, 0x3c, 0x87, 0xee, 0x94, 0xc6, 0xcc, 0x0b, 0x83, 0x61, 0x63, 0xb7, 0xb1, 0xb7, 0xee,
-	0x74, 0xe4, 0xd2, 0x0e, 0xc8, 0x4b, 0x30, 0x91, 0x48, 0x68, 0xcc, 0x86, 0xc6, 0x6e, 0x63, 0xcf,
-	0x74, 0x7a, 0x12, 0x38, 0xa5, 0x31, 0x9b, 0x93, 0x62, 0x96, 0xb1, 0x61, 0x13, 0x75, 0x48, 0x5e,
-	0xcc, 0x32, 0x66, 0xfd, 0x61, 0xc0, 0xa6, 0xdc, 0xe1, 0x3d, 0xbb, 0x61, 0xd1, 0x63, 0xdb, 0xbc,
-	0x80, 0x5e, 0x24, 0xed, 0x24, 0x63, 0x20, 0xd3, 0xc5, 0xb5, 0x1d, 0x90, 0xcf, 0x00, 0x14, 0x85,
-	0x47, 0x68, 0xe2, 0x11, 0x4c, 0x44, 0xf0, 0x0c, 0xaf, 0xa0, 0x7f, 0x49, 0x73, 0xe6, 0xe5, 0x7e,
-	0xca, 0x59, 0x3e, 0x6c, 0xa1, 0x18, 0x24, 0xe4, 0x22, 0x82, 0xfa, 0xf4, 0xb6, 0xe0, 0xdb, 0xc8,
-	0x9b, 0x51, 0x7a, 0xab, 0xe9, 0x57, 0xd0, 0xbf, 0x0a, 0xa7, 0x57, 0x05, 0xdf, 0x51, 0x7a, 0x09,
-	0x2d, 0xf4, 0x71, 0x98, 0x78, 0x19, 0x4b, 0xb3, 0x88, 0x0d, 0xbb, 0x4a, 0x1f, 0x87, 0xc9, 0x39,
-	0x02, 0x48, 0xd3, 0xbb, 0x82, 0xee, 0x69, 0x9a, 0xde, 0x29, 0xda, 0xfa, 0x1e, 0x9e, 0x4d, 0x98,
-	0x38, 0x8f, 0xe8, 0x8c, 0xf1, 0x83, 0xd9, 0xd8, 0xf7, 0xd3, 0xeb, 0x44, 0x38, 0xec, 0x37, 0xa9,
-	0xa3, 0x6a, 0x55, 0x44, 0xa3, 0xe5, 0x98, 0x1a, 0xb1, 0x03, 0xeb, 0x6c, 0xa5, 0x2e, 0xcf, 0x64,
-	0xa4, 0x18, 0xe7, 0x9e, 0x9f, 0x06, 0x0c, 0x55, 0x6d, 0xa7, 0xcb, 0x38, 0x3f, 0x4c, 0x03, 0x4c,
-	0x47, 0x86, 0x82, 0x22, 0x8a, 0x2d, 0xa7, 0xa7, 0x00, 0x3b, 0xb0, 0xbe, 0x86, 0xc1, 0xdc, 0xa1,
-	0x9d, 0x7c, 0x48, 0xe5, 0x19, 0x96, 0x04, 0x8d, 0x8a, 0xe0, 0x2f, 0xa3, 0xaa, 0xf8, 0xf8, 0xdd,
-	0x25, 0x99, 0x84, 0xfe, 0xaf, 0xe5, 0x1c, 0xf6, 0x24, 0x80, 0x29, 0xdc, 0x81, 0x0e, 0xbd, 0xa1,
-	0x82, 0x72, 0xcc, 0x9e, 0xe9, 0xe8, 0x95, 0xc4, 0xa7, 0x2c, 0x09, 0x18, 0xd7, 0x59, 0xd3, 0x2b,
-	0x19, 0x3a, 0xff, 0x8a, 0x26, 0x89, 0x2a, 0x17, 0x95, 0x31, 0x53, 0x23, 0x76, 0x20, 0x33, 0x9a,
-	0xf1, 0xf4, 0x26, 0x4c, 0x7c, 0x2c, 0x34, 0x95, 0x31, 0x28, 0x20, 0x3b, 0x90, 0x55, 0xe8, 0x87,
-	0x62, 0x26, 0x49, 0x95, 0xaf, 0x8e, 0x5c, 0x2a, 0x22, 0xcc, 0x3c, 0x1a, 0x04, 0x7c, 0x68, 0xaa,
-	0x93, 0x84, 0xd9, 0x38, 0x08, 0xb8, 0xf5, 0x6f, 0x03, 0x3e, 0xfd, 0x39, 0x0b, 0xa8, 0x60, 0x4f,
-	0x0f, 0xe0, 0xf2, 0x9d, 0x8d, 0xda, 0x3b, 0x37, 0x6b, 0xee, 0xdc, 0x5a, 0xba, 0x33, 0x81, 0x16,
-	0xfa, 0x69, 0xa3, 0x35, 0x7e, 0x93, 0x6d, 0x68, 0x67, 0x57, 0x69, 0xc2, 0x30, 0x04, 0xa6, 0xa3,
-	0x16, 0xd6, 0xf1, 0x8a, 0xa3, 0x3e, 0x9c, 0xb9, 0x1d, 0xe8, 0x70, 0x96, 0x5f, 0x47, 0x02, 0x4f,
-	0xd9, 0x73, 0xf4, 0xca, 0xfa, 0x06, 0xb6, 0xe6, 0x05, 0xe0, 0x0a, 0x2a, 0xd8, 0xa3, 0x35, 0xf3,
-	0x5f, 0xe3, 0x9e, 0xe4, 0xe1, 0xad, 0xbf, 0x84, 0x76, 0x2e, 0xcd, 0x70, 0xe7, 0x8d, 0xb7, 0x5b,
-	0xfb, 0xb2, 0x37, 0xed, 0x97, 0xf5, 0x8a, 0x2f, 0x77, 0x8e, 0x66, 0x6d, 0xe7, 0x68, 0x2d, 0x77,
-	0x8e, 0x52, 0x3a, 0xdb, 0xe5, 0x74, 0xaa, 0x37, 0x2b, 0xfc, 0x2b, 0xc5, 0xa9, 0xe8, 0x99, 0x88,
-	0x20, 0x8d, 0x6d, 0x4d, 0x30, 0xc5, 0x76, 0x8b, 0x9e, 0x27, 0x58, 0x41, 0xf2, 0x34, 0x8d, 0x15,
-	0xd9, 0x53, 0xa4, 0x04, 0xb0, 0x4e, 0xde, 0xc3, 0xf6, 0xfc, 0xfa, 0xb2, 0xf7, 0x3d, 0xa9, 0x4e,
-	0x4a, 0x57, 0x33, 0xca, 0x57, 0xb3, 0xfe, 0x34, 0x56, 0xb9, 0x7b, 0x38, 0xa0, 0x75, 0xce, 0xc8,
-	0xe7, 0xb0, 0x76, 0x1b, 0x26, 0x49, 0x98, 0x4c, 0x3d, 0x2e, 0x03, 0xae, 0xa2, 0xd8, 0xd7, 0x98,
-	0x23, 0x63, 0xfc, 0x05, 0xac, 0xff, 0xa2, 0x4d, 0x2e, 0xaf, 0x39, 0xa3, 0x3a, 0x9e, 0x6b, 0x1a,
-	0x3c, 0x90, 0x98, 0x7c, 0x5d, 0x22, 0x15, 0x34, 0xd2, 0x26, 0xea, 0x65, 0x02, 0x42, 0xca, 0xe0,
-	0x2b, 0x20, 0xb2, 0x21, 0x16, 0x9b, 0xe5, 0x82, 0x33, 0x1a, 0xeb, 0x57, 0x3a, 0x88, 0xe9, 0x9d,
-	0xf6, 0xe6, 0x22, 0x2e, 0x8f, 0x25, 0xad, 0xe3, 0xeb, 0x48, 0x84, 0x8b, 0xfe, 0xda, 0x8f, 0xe9,
-	0xdd, 0x89, 0x86, 0xac, 0xdf, 0x0d, 0xd8, 0x2e, 0x57, 0xf4, 0x93, 0x4a, 0x91, 0xec, 0x83, 0x99,
-	0x46, 0x81, 0xf7, 0x48, 0x75, 0xf5, 0xd2, 0x28, 0xc0, 0x2f, 0x69, 0x9f, 0xb0, 0x5b, 0x6d, 0xdf,
-	0xac, 0xb5, 0x4f, 0xd8, 0xad, 0x5b, 0x2d, 0xc8, 0xd6, 0x52, 0xa0, 0xdf, 0x40, 0x5f, 0xce, 0x5b,
-	0xc6, 0xd5, 0x58, 0x6c, 0xa3, 0xab, 0x81, 0x72, 0xe5, 0x22, 0x21, 0xc7, 0xa3, 0x03, 0xf9, 0xfc,
-	0x5b, 0xc6, 0x54, 0x4b, 0x4a, 0x05, 0xa9, 0x0d, 0xb0, 0xae, 0xec, 0x55, 0x11, 0xf8, 0xb8, 0x47,
-	0xbd, 0x0d, 0x64, 0xc2, 0x04, 0x0e, 0xe6, 0x30, 0x17, 0xba, 0x40, 0xad, 0x7f, 0x1a, 0xf7, 0xe1,
-	0x87, 0xfd, 0xbf, 0x81, 0x3e, 0xde, 0xdf, 0xc7, 0xc9, 0x3e, 0x34, 0x76, 0x9b, 0x7b, 0xfd, 0xe2,
-	0x9a, 0x8b, 0x1f, 0x0b, 0x07, 0xa6, 0x8b, 0x9f, 0x8c, 0x31, 0x6c, 0xa1, 0x44, 0xbd, 0x57, 0x2d,
-	0x6c, 0xa2, 0xf0, 0xd9, 0x42, 0x58, 0xfa, 0x5f, 0x70, 0x36, 0xa7, 0xcb, 0xc0, 0xeb, 0x1f, 0xa0,
-	0x5f, 0x0a, 0x01, 0xe9, 0x43, 0xf7, 0xdc, 0xf5, 0xec, 0x77, 0xf6, 0xd1, 0xe0, 0x13, 0xb2, 0x09,
-	0xfd, 0x73, 0xd7, 0x3b, 0x19, 0x5f, 0x1c, 0x1e, 0xdb, 0xa7, 0x93, 0x41, 0x83, 0x6c, 0x00, 0x9c,
-	0xbb, 0xde, 0x64, 0x7c, 0x72, 0x24, 0xd7, 0xc6, 0xeb, 0xef, 0x00, 0x16, 0x09, 0x90, 0x5a, 0xf7,
-	0xc2, 0x9b, 0x8c, 0x2f, 0xa4, 0x76, 0x0d, 0x7a, 0xee, 0x85, 0xd2, 0x0e, 0x1a, 0x9a, 0x72, 0xce,
-	0xce, 0x4e, 0x06, 0xc6, 0xdb, 0xbf, 0x5b, 0x00, 0x6a, 0xcf, 0x77, 0x54, 0x50, 0x72, 0x8a, 0x81,
-	0xaa, 0x0c, 0x66, 0xf2, 0x52, 0x9f, 0x7f, 0xd5, 0xa8, 0x1f, 0xd5, 0x93, 0x79, 0x46, 0x7e, 0x84,
-	0xf5, 0xa5, 0x29, 0x4b, 0x76, 0x2a, 0xd6, 0x3a, 0x45, 0xa3, 0x95, 0x78, 0x9e, 0x91, 0x63, 0x18,
-	0x54, 0xfb, 0x3d, 0x79, 0xa1, 0x6c, 0x57, 0x8c, 0xac, 0x51, 0x1d, 0x95, 0x67, 0xe4, 0x00, 0x36,
-	0x96, 0x9b, 0x37, 0x79, 0x5e, 0xd9, 0xb3, 0x78, 0x7a, 0xa3, 0xd5, 0x44, 0x9e, 0x91, 0x9f, 0x4a,
-	0x03, 0xa0, 0x68, 0x59, 0x64, 0x54, 0xb1, 0x2e, 0xb5, 0xc6, 0x51, 0x2d, 0xa7, 0x9c, 0xdd, 0x2b,
-	0xfb, 0xc2, 0xd9, 0xaa, 0x8e, 0x30, 0xaa, 0xe5, 0xf2, 0x8c, 0x1c, 0xc1, 0x66, 0xa5, 0xc2, 0xc9,
-	0x70, 0xbe, 0x77, 0xe5, 0x3d, 0x8c, 0x6a, 0x98, 0x3c, 0xbb, 0xec, 0xe0, 0x4f, 0xf4, 0xb7, 0xff,
-	0x07, 0x00, 0x00, 0xff, 0xff, 0x27, 0x3c, 0x69, 0x31, 0x55, 0x0b, 0x00, 0x00,
+var fileDescriptor_service_652c3ec62da82f59 = []byte{
+	// 1103 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x57, 0x4b, 0x6f, 0xe3, 0x36,
+	0x10, 0xae, 0xfc, 0xf6, 0x38, 0x0f, 0x87, 0xcd, 0xc3, 0xf1, 0x62, 0x91, 0x54, 0x3d, 0x34, 0x58,
+	0x14, 0x69, 0x77, 0x5b, 0xf4, 0xd2, 0x43, 0xe1, 0x3c, 0xea, 0x08, 0xcd, 0xc3, 0x90, 0x53, 0xf4,
+	0x28, 0x30, 0x12, 0xd7, 0x11, 0xaa, 0x57, 0x29, 0xe6, 0x75, 0x6e, 0x8f, 0xfd, 0x1b, 0x45, 0x51,
+	0xa0, 0x3f, 0xae, 0x7f, 0xa0, 0xc0, 0x82, 0x43, 0xca, 0x96, 0x1c, 0x2b, 0x09, 0xf6, 0x26, 0x7e,
+	0xdf, 0x7c, 0xc3, 0xe1, 0x0c, 0x39, 0xa4, 0x60, 0x39, 0x65, 0xfc, 0xd6, 0x77, 0xd9, 0x7e, 0xc2,
+	0x63, 0x11, 0x93, 0xda, 0x4d, 0xca, 0xb8, 0xe9, 0x00, 0x0c, 0x69, 0xc8, 0x0e, 0xe3, 0xe8, 0xbd,
+	0x3f, 0x21, 0x5b, 0xd0, 0x9c, 0xd0, 0x90, 0x39, 0xbe, 0xd7, 0x33, 0x76, 0x8d, 0xbd, 0x65, 0xbb,
+	0x21, 0x87, 0x96, 0x47, 0x5e, 0x41, 0x1b, 0x89, 0x88, 0x86, 0xac, 0x57, 0xd9, 0x35, 0xf6, 0xda,
+	0x76, 0x4b, 0x02, 0xe7, 0x34, 0x64, 0x53, 0x52, 0x3c, 0x24, 0xac, 0x57, 0x45, 0x1d, 0x92, 0x97,
+	0x0f, 0x09, 0x33, 0x7f, 0xaf, 0xc0, 0xaa, 0x9c, 0xe1, 0x94, 0xdd, 0xb2, 0xe0, 0xb9, 0x69, 0xb6,
+	0xa1, 0x15, 0x48, 0x3b, 0xc9, 0x54, 0x90, 0x69, 0xe2, 0xd8, 0xf2, 0xc8, 0x6b, 0x00, 0x45, 0x61,
+	0x08, 0x55, 0x0c, 0xa1, 0x8d, 0x08, 0xc6, 0xb0, 0x03, 0x9d, 0x2b, 0x9a, 0x32, 0x27, 0x75, 0x63,
+	0xce, 0xd2, 0x5e, 0x0d, 0xc5, 0x20, 0xa1, 0x31, 0x22, 0xa8, 0x8f, 0xef, 0x32, 0xbe, 0x8e, 0x7c,
+	0x3b, 0x88, 0xef, 0x34, 0xbd, 0x03, 0x9d, 0x6b, 0x7f, 0x72, 0x9d, 0xf1, 0x0d, 0xa5, 0x97, 0xd0,
+	0x4c, 0x1f, 0xfa, 0x91, 0x93, 0xb0, 0x38, 0x09, 0x58, 0xaf, 0xa9, 0xf4, 0xa1, 0x1f, 0x8d, 0x10,
+	0x40, 0x9a, 0xde, 0x67, 0x74, 0x4b, 0xd3, 0xf4, 0x5e, 0xd1, 0xe6, 0x77, 0xb0, 0x31, 0x64, 0x62,
+	0x14, 0xd0, 0x07, 0xc6, 0x0f, 0x1e, 0x06, 0xae, 0x1b, 0xdf, 0x44, 0xc2, 0x66, 0xbf, 0x49, 0x1d,
+	0x55, 0xa3, 0x2c, 0x1b, 0x35, 0xbb, 0xad, 0x11, 0xcb, 0x33, 0x2f, 0x16, 0xea, 0xd2, 0x44, 0x66,
+	0x8a, 0x71, 0xee, 0xb8, 0xb1, 0xc7, 0x50, 0x55, 0xb7, 0x9b, 0x8c, 0xf3, 0xc3, 0xd8, 0xc3, 0x72,
+	0x24, 0x28, 0xc8, 0xb2, 0x58, 0xb3, 0x5b, 0x0a, 0xb0, 0x3c, 0xf3, 0x2b, 0xe8, 0x4e, 0x1d, 0x5a,
+	0xd1, 0xfb, 0x58, 0xc6, 0x50, 0x10, 0x18, 0x73, 0x82, 0xff, 0x8c, 0x79, 0xc5, 0xc7, 0xcf, 0x2e,
+	0xc9, 0xc8, 0x77, 0x7f, 0xcd, 0xd7, 0xb0, 0x25, 0x01, 0x2c, 0xe1, 0x26, 0x34, 0xe8, 0x2d, 0x15,
+	0x94, 0x63, 0xf5, 0xda, 0xb6, 0x1e, 0x49, 0x7c, 0xc2, 0x22, 0x8f, 0x71, 0x5d, 0x35, 0x3d, 0x92,
+	0xa9, 0x73, 0xaf, 0x69, 0x14, 0xa9, 0xed, 0xa2, 0x2a, 0xd6, 0xd6, 0x88, 0xe5, 0xc9, 0x8a, 0x26,
+	0x3c, 0xbe, 0xf5, 0x23, 0x17, 0x37, 0x9a, 0xaa, 0x18, 0x64, 0x90, 0xe5, 0xc9, 0x5d, 0xe8, 0xfa,
+	0xe2, 0x41, 0x92, 0xaa, 0x5e, 0x0d, 0x39, 0xb4, 0x3c, 0xf3, 0x1f, 0x03, 0x3e, 0xfd, 0x39, 0xf1,
+	0xa8, 0x60, 0x2f, 0xcf, 0x53, 0x71, 0x69, 0x95, 0xd2, 0xa5, 0x55, 0x4b, 0x96, 0x56, 0x2b, 0x2c,
+	0x8d, 0x40, 0x0d, 0xfd, 0xd4, 0xd1, 0x1a, 0xbf, 0xc9, 0x3a, 0xd4, 0x93, 0xeb, 0x38, 0x62, 0xb8,
+	0xd2, 0xb6, 0xad, 0x06, 0xe6, 0xc9, 0x82, 0x50, 0x9f, 0x2e, 0xd0, 0x26, 0x34, 0x38, 0x4b, 0x6f,
+	0x02, 0x81, 0x51, 0xb6, 0x6c, 0x3d, 0x32, 0xbf, 0x86, 0xb5, 0x69, 0x9d, 0xc7, 0x82, 0x0a, 0xf6,
+	0xec, 0xd6, 0xf8, 0xdf, 0x78, 0x24, 0x79, 0x7a, 0xea, 0x2f, 0xa0, 0x9e, 0x4a, 0x33, 0x9c, 0x79,
+	0xe5, 0xdd, 0xda, 0xbe, 0x6c, 0x41, 0xfb, 0x79, 0xbd, 0xe2, 0xf3, 0x0d, 0xa2, 0x5a, 0xda, 0x20,
+	0x6a, 0xc5, 0x06, 0xb1, 0x05, 0x4d, 0x3f, 0x71, 0xa8, 0xe7, 0x71, 0x9d, 0xb6, 0x86, 0x9f, 0x0c,
+	0x3c, 0x8f, 0xab, 0xa3, 0x29, 0xdc, 0x6b, 0xc5, 0xa9, 0xec, 0xb5, 0x11, 0x41, 0x1a, 0xbb, 0x97,
+	0x60, 0x8a, 0x6d, 0x66, 0xad, 0x4d, 0xb0, 0x8c, 0xe4, 0x71, 0x1c, 0x2a, 0xb2, 0xa5, 0x48, 0x09,
+	0x48, 0xd2, 0x3c, 0x85, 0xf5, 0xe9, 0xf2, 0x65, 0x8b, 0x7b, 0xd1, 0x3e, 0xc9, 0x2d, 0xad, 0x92,
+	0x5f, 0x9a, 0xf9, 0x47, 0x65, 0x91, 0xbb, 0xa7, 0x13, 0x5a, 0xe6, 0x8c, 0x7c, 0x06, 0x4b, 0x77,
+	0x7e, 0x14, 0xf9, 0xd1, 0xc4, 0xe1, 0x32, 0xe1, 0x2a, 0x8b, 0x1d, 0x8d, 0xd9, 0x32, 0xc7, 0x9f,
+	0xc3, 0xf2, 0x2f, 0xda, 0xe4, 0xea, 0x86, 0x33, 0xaa, 0xf3, 0xb9, 0xa4, 0xc1, 0x03, 0x89, 0xc9,
+	0x43, 0x24, 0x62, 0x41, 0x03, 0x6d, 0xa2, 0x0e, 0x20, 0x20, 0xa4, 0x0c, 0xbe, 0x04, 0x22, 0xfb,
+	0x5e, 0x36, 0x59, 0x2a, 0x38, 0xa3, 0xa1, 0x3e, 0x8c, 0xdd, 0x90, 0xde, 0x6b, 0x6f, 0x63, 0xc4,
+	0x65, 0x58, 0xd2, 0x3a, 0xbc, 0x09, 0x84, 0x3f, 0x6b, 0xa3, 0x9d, 0x90, 0xde, 0x9f, 0x69, 0xc8,
+	0x0c, 0x60, 0x2b, 0xbf, 0xa1, 0x87, 0x54, 0xbc, 0x38, 0xaf, 0x59, 0xf9, 0x2b, 0x85, 0xf2, 0x17,
+	0xea, 0x5b, 0x2d, 0xd6, 0xd7, 0xfc, 0xd7, 0x80, 0xf5, 0xfc, 0x74, 0x2f, 0xda, 0xf8, 0x64, 0x1f,
+	0xda, 0x71, 0xe0, 0x39, 0xcf, 0xec, 0xe5, 0x56, 0x1c, 0x78, 0xf8, 0x25, 0xed, 0x23, 0x76, 0xa7,
+	0xed, 0xab, 0xa5, 0xf6, 0x11, 0xbb, 0x1b, 0xcf, 0x6f, 0xff, 0x5a, 0x61, 0x8f, 0xfc, 0x69, 0xc0,
+	0x76, 0x21, 0x5c, 0xc6, 0x6f, 0x19, 0x97, 0x2b, 0x79, 0x36, 0xe6, 0xb7, 0xd0, 0x49, 0xd1, 0x5a,
+	0x5d, 0xd3, 0x75, 0x8c, 0xa2, 0xab, 0xa2, 0x50, 0x6e, 0xe4, 0x75, 0x6d, 0x43, 0x3a, 0xfd, 0x96,
+	0xc5, 0xd7, 0x92, 0xdc, 0xc9, 0xd1, 0x06, 0x98, 0xbd, 0x23, 0x58, 0xcd, 0x47, 0xf3, 0x91, 0x8d,
+	0x67, 0x1d, 0xc8, 0x90, 0x09, 0x7c, 0x23, 0xf8, 0xa9, 0xd0, 0xc5, 0x36, 0xff, 0x32, 0x1e, 0xc3,
+	0x4f, 0xfb, 0x7f, 0x0b, 0x1d, 0xcc, 0x9a, 0x8b, 0x8f, 0x8c, 0x5e, 0x65, 0xb7, 0xba, 0xd7, 0xc9,
+	0x56, 0x38, 0x7b, 0xe3, 0xd8, 0x30, 0x99, 0xbd, 0x77, 0x06, 0xb0, 0x86, 0x12, 0xd5, 0x53, 0xb4,
+	0xb0, 0x8a, 0xc2, 0x8d, 0x99, 0x30, 0xf7, 0x74, 0xb1, 0x57, 0x27, 0x45, 0xe0, 0xcd, 0xf7, 0xd0,
+	0xc9, 0x15, 0x91, 0x74, 0xa0, 0x39, 0x1a, 0x3b, 0xd6, 0x91, 0x75, 0xdc, 0xfd, 0x84, 0xac, 0x42,
+	0x67, 0x34, 0x76, 0xce, 0x06, 0x97, 0x87, 0x27, 0xd6, 0xf9, 0xb0, 0x6b, 0x90, 0x15, 0x80, 0xd1,
+	0xd8, 0x19, 0x0e, 0xce, 0x8e, 0xe5, 0xb8, 0xf2, 0xe6, 0x5b, 0x80, 0x59, 0xee, 0xa5, 0x76, 0x7c,
+	0xe9, 0x0c, 0x07, 0x97, 0x52, 0xbb, 0x04, 0xad, 0xf1, 0xa5, 0xd2, 0x76, 0x0d, 0x4d, 0xd9, 0x17,
+	0x17, 0x67, 0xdd, 0xca, 0xbb, 0xbf, 0xeb, 0x00, 0x6a, 0xce, 0x23, 0x2a, 0x28, 0x39, 0xc7, 0x44,
+	0xcd, 0xbd, 0x11, 0xc8, 0x2b, 0x1d, 0xff, 0xa2, 0x57, 0x47, 0xbf, 0x9c, 0x4c, 0x13, 0xf2, 0x03,
+	0x2c, 0x17, 0x2e, 0x7c, 0xb2, 0x39, 0x67, 0xad, 0x4b, 0xd4, 0x5f, 0x88, 0xa7, 0x09, 0x39, 0x81,
+	0xee, 0xfc, 0x9d, 0x44, 0xb6, 0x95, 0xed, 0x82, 0x6b, 0xb5, 0x5f, 0x46, 0xa5, 0x09, 0x39, 0x80,
+	0x95, 0xe2, 0x05, 0x43, 0xb6, 0xe6, 0xe6, 0xcc, 0x0e, 0x6c, 0x7f, 0x31, 0x91, 0x26, 0xe4, 0xa7,
+	0xdc, 0x25, 0x95, 0xb5, 0x55, 0xd2, 0x9f, 0xb3, 0xce, 0xb5, 0xef, 0x7e, 0x29, 0x97, 0x26, 0xe4,
+	0x47, 0x58, 0x7b, 0xd4, 0x2e, 0x32, 0x67, 0x8b, 0xfa, 0x48, 0x7f, 0xe3, 0x31, 0x27, 0xfd, 0x9c,
+	0x16, 0xdb, 0x4e, 0xd6, 0xe5, 0xc8, 0xeb, 0xc7, 0xe6, 0xb9, 0x0e, 0x58, 0xe6, 0x6d, 0x04, 0x9b,
+	0x8b, 0xbb, 0x02, 0xd9, 0x59, 0x10, 0x5a, 0xbe, 0x67, 0x94, 0x79, 0x3c, 0x86, 0xd5, 0xb9, 0xc3,
+	0x47, 0x7a, 0xd3, 0xb4, 0xcc, 0x1d, 0xd5, 0x7e, 0x09, 0x93, 0x26, 0x57, 0x0d, 0xfc, 0xd5, 0xf8,
+	0xe6, 0x43, 0x00, 0x00, 0x00, 0xff, 0xff, 0x38, 0x77, 0xb6, 0x7e, 0x7b, 0x0c, 0x00, 0x00,
 }
