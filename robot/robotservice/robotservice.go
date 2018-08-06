@@ -62,7 +62,7 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 		return rsp, fmt.Errorf("没有适合的机器人")
 	}
 	//获取到机器人ID,并将redis该ID的状态为匹配状态
-	if err := data.SetRobotWatch(RobotPlayerID, cache.PlayerStateField, newState, data.RedisTimeOut); err != nil {
+	if err := data.SetRobotWatch(RobotPlayerID, cache.GameState, newState, data.RedisTimeOut); err != nil {
 		return rsp, err
 	}
 	rsp.ErrCode = int32(robot.ErrCode_EC_SUCCESS)
@@ -90,7 +90,7 @@ func (r *Robotservice) SetRobotPlayerState(ctx context.Context, request *robot.S
 	}
 
 	//比较请求旧状态是否是当前状态
-	val, _ := data.GetRobotStringFiled(playerID, cache.PlayerStateField)
+	val, _ := data.GetRobotStringFiled(playerID, cache.GameState)
 	state, _ := strconv.Atoi(val)
 	if oldState != state {
 		rsp.ErrCode = int32(robot.ErrCode_EC_Args)
@@ -99,13 +99,13 @@ func (r *Robotservice) SetRobotPlayerState(ctx context.Context, request *robot.S
 
 	//修改状态和服务地址
 	serverField := map[robot.ServerType]string{
-		robot.ServerType_ST_GATE:  cache.GateAddrField,
-		robot.ServerType_ST_MATCH: cache.MatchAddrField,
-		robot.ServerType_ST_ROOM:  cache.RoomAddrField,
+		robot.ServerType_ST_GATE:  cache.GateAddr,
+		robot.ServerType_ST_MATCH: cache.MatchAddr,
+		robot.ServerType_ST_ROOM:  cache.RoomAddr,
 	}[robot.ServerType(severType)]
 	rfields := map[string]interface{}{
-		cache.PlayerStateField: fmt.Sprintf("%d", newState),
-		serverField:            serverAddr,
+		cache.GameState: fmt.Sprintf("%d", newState),
+		serverField:     serverAddr,
 	}
 	if err := data.SetRobotPlayerWatchs(playerID, rfields, data.RedisTimeOut); err != nil {
 		rsp.ErrCode = int32(robot.ErrCode_EC_FAIL)
