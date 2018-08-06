@@ -19,7 +19,7 @@ redis_list:
 
 # mysql 数据库列表
 mysql_list:
-  steve:
+  player:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
@@ -36,3 +36,6 @@ nsqlookupd_addrs:
 consul_addr: 127.0.0.1:8500
 
 node: 1
+
+# 实名认证奖励金豆数
+real_name_reward: 5000

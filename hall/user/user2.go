@@ -23,6 +23,16 @@ func HandleGetPlayerInfoReq2(playerID uint64, header *steve_proto_gaterpc.Header
 			Body:  response,
 		},
 	}
+	dbPlayer, err := data.GetPlayerFields(playerID, []string{"nickname", "name", "idCard"})
+	if err != nil {
+		response.ErrCode = proto.Uint32(uint32(common.ErrCode_EC_FAIL))
+		return
+	}
+	if dbPlayer.Name != "" && dbPlayer.Idcard != "" {
+		response.RealnameStatus = proto.Uint32(1)
+	} else {
+		response.RealnameStatus = proto.Uint32(0)
+	}
 
 	playerInfo, err := data.GetPlayerInfo(playerID)
 	if err == nil {

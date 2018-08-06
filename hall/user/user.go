@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
 	"steve/common/data/player"
+	"steve/hall/data"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
@@ -39,12 +40,23 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		},
 	}
 
+	dbPlayer, err := data.GetPlayerFields(playerID, []string{"nickname", "name", "idCard"})
+	if err != nil {
+		response.ErrCode = proto.Uint32(uint32(common.ErrCode_EC_FAIL))
+		return
+	}
+
 	response.ErrCode = proto.Uint32(0)
 	response.Coin = proto.Uint64(player.GetPlayerCoin(playerID))
-	response.NickName = proto.String(player.GetPlayerNickName(playerID))
+	response.NickName = proto.String(dbPlayer.Nickname)
 	state, gameID := getPlayerState(playerID)
 	response.PlayerState = state.Enum()
 	response.GameId = common.GameId(gameID).Enum()
+	if dbPlayer.Name != "" && dbPlayer.Idcard != "" {
+		response.RealnameStatus = proto.Uint32(1)
+	} else {
+		response.RealnameStatus = proto.Uint32(0)
+	}
 	return
 }
 

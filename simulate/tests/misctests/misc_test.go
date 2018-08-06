@@ -28,4 +28,16 @@ func Test_RealName(t *testing.T) {
 	assert.Equal(t, uint32(common.ErrCode_EC_SUCCESS), rsp.GetErrCode())
 	assert.Equal(t, uint64(5000), rsp.GetCoinReward())
 	assert.True(t, rsp.GetNewCoin() >= uint64(5000))
+
+	// 获取玩家信息时已经认证
+	getPlayerInfoRsp := hall.HallGetPlayerInfoRsp{}
+	err = player.GetClient().Request(utils.CreateMsgHead(msgid.MsgID_HALL_GET_PLAYER_INFO_REQ),
+		&hall.HallGetPlayerInfoReq{},
+		global.DefaultWaitMessageTime,
+		uint32(msgid.MsgID_HALL_GET_PLAYER_INFO_RSP),
+		&getPlayerInfoRsp,
+	)
+	assert.Nil(t, err, "获取玩家信息失败")
+	assert.Equal(t, uint32(common.ErrCode_EC_SUCCESS), getPlayerInfoRsp.GetErrCode())
+	assert.Equal(t, uint32(1), getPlayerInfoRsp.GetRealnameStatus())
 }
