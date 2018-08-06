@@ -16,4 +16,7 @@ const (
 
 	// LoginServiceName Login 服务名称
 	LoginServiceName = "login"
+
+	// 跑马灯服务名称
+	MsgServiceName = "msgserver"
 )

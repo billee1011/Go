@@ -7,6 +7,7 @@ package core
 import (
 	"steve/client_pb/msgid"
 	"steve/msgserver/msg"
+	"steve/msgserver/logic"
 )
 
 
@@ -28,7 +29,36 @@ var mapMsg  = map[msgid.MsgID] interface{} {
 	msgid.MsgID_MSGSVR_GET_HORSE_RACE_REQ:msg.ProcessGetHorseRaceReq,
 }
 
+/////////////////////////////[4.向client发送通知消息]////////////////////////////////////////////
+/*
 
+ */
+
+/////////////////////////////[5.通过nsq发布和订阅消息]////////////////////////////////////////////
+// 4.1发布消息
+/*
+exposer := structs.GetGlobalExposer()
+if err := exposer.Publisher.Publish("player_login", messageData); err != nil {
+entry.WithError(err).Errorln("发布消息失败")
+}
+*/
+// 4.2订阅消息
+/*
+	exposer := structs.GetGlobalExposer()
+	if err := exposer.Subscriber.Subscribe("player_login", "match", &playerLoginHandler{}); err != nil {
+		logrus.WithError(err).Panicln("订阅登录消息失败")
+	}
+ */
+
+/////////////////////////////[6.服务初始化配置]////////////////////////////////////////////
+// 比如从DB或文件加载配置
+func InitServer() error {
+	err := logic.GetMsgMgr().Init()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 
 
