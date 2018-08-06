@@ -16,10 +16,10 @@ func Test_GetHorseRate(t *testing.T) {
 	assert.NotNil(t, player)
 
 	player.AddExpectors(msgid.MsgID_MSGSVR_GET_HORSE_RACE_RSP)
-	player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MSGSVR_GET_HORSE_RACE_REQ), &msgserver.GetHorseRaceReq{})
+	player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MSGSVR_GET_HORSE_RACE_REQ), &msgserver.MsgSvrGetHorseRaceReq{})
 	expector := player.GetExpector(msgid.MsgID_MSGSVR_GET_HORSE_RACE_RSP)
 
-	response := msgserver.GetHorseRaceRsp{}
+	response := msgserver.MsgSvrGetHorseRaceRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &response))
 	assert.Zero(t, response.GetErrCode())
 	// assert.NotEmpty(t, response.GetNickName())

@@ -8,6 +8,9 @@ import (
 	"errors"
 	"github.com/Sirupsen/logrus"
 	"steve/external/hallclient"
+	"steve/external/gateclient"
+	"steve/client_pb/msgid"
+	"steve/client_pb/msgserver"
 )
 
 /*
@@ -148,20 +151,31 @@ func (gm *MsgMgr) runCheckHorseChange() error{
 
 	// 1分钟检测一次跑马灯状态
 	for {
+		bUpdate := false
 		for _, horse := range gm.cityList {
-			gm.checkHorseChanged(horse)
+			if gm.checkHorseChanged(horse) {
+				bUpdate = true
+			}
 		}
 		time.Sleep(time.Millisecond * 20)
 		for _, horse := range gm.provList {
-			gm.checkHorseChanged(horse)
+			if gm.checkHorseChanged(horse) {
+				bUpdate = true
+			}
 		}
 		time.Sleep(time.Millisecond * 20)
 		for _, horse := range gm.channelList {
-			gm.checkHorseChanged(horse)
+			if gm.checkHorseChanged(horse) {
+				bUpdate = true
+			}
+		}
+
+		// 如果有变化发送通知消息
+		if bUpdate {
+			gm.sendHorseRaceChangedNtf()
 		}
 		//gm.testGetHorseRace()
 		time.Sleep(time.Minute)
-
 
 	}
 
@@ -195,8 +209,12 @@ func (gm *MsgMgr) checkHorseChanged(horse *define.HorseRace) bool {
 }
 
 // 发送跑马灯变化通知
-func (gm *MsgMgr) sendHorseRaceChangedNtf(horse *define.HorseRace) error {
-
+func (gm *MsgMgr) sendHorseRaceChangedNtf() error {
+	req := &msgserver.MsgSvrHorseRaceChangeNtf{}
+	channel := int32(0)
+	req.Channel = &channel
+	logrus.Debugln("horse race status changed...")
+	gateclient.NsqBroadcastAllMsg(uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
 	return nil
 }
 
