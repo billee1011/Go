@@ -781,18 +781,17 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 	})
 	mjContext := config.Context.(*contexts.MajongDeskContext).MjContext
 	roundScore := majongSettle.roundScore
-	bigWinner := getBigWinner(roundScore)
+	bigWinnerScore := getBigWinnerScore(roundScore)
 	for _, playerID := range desk.GetPlayerIds() {
 		gameDetail := gamelog.TGameDetail{
-			Detailid:   int64(util.GenUniqueID()),
-			Sumaryid:   summaryID, //desk.GetSummaryID(),
-			Playerid:   playerID,
-			Deskid:     int64(desk.GetUid()),
-			Gameid:     desk.GetGameId(),
-			Amount:     roundScore[playerID],
-			Createtime: time.Now(),
+			Detailid: int64(util.GenUniqueID()),
+			Sumaryid: summaryID, //desk.GetSummaryID(),
+			Playerid: playerID,
+			Deskid:   int64(desk.GetUid()),
+			Gameid:   desk.GetGameId(),
+			Amount:   roundScore[playerID],
 		}
-		if playerID == bigWinner {
+		if gameDetail.Amount == bigWinnerScore {
 			gameDetail.Iswinner = 1
 		}
 		player := util.GetMajongPlayer(playerID, &mjContext)
@@ -868,14 +867,11 @@ func (majongSettle *MajongSettle) getScoreinfoWinners(desk *desk.Desk) (scoreInf
 	return
 }
 
-func getBigWinner(roundScore map[uint64]int64) uint64 {
-	var bigWinner uint64
-	var maxScore int64
-	for playerID, score := range roundScore {
+func getBigWinnerScore(roundScore map[uint64]int64) (maxScore int64) {
+	for _, score := range roundScore {
 		if score > maxScore {
 			maxScore = score
-			bigWinner = playerID
 		}
 	}
-	return bigWinner
+	return
 }
