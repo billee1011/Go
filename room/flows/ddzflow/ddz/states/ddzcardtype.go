@@ -198,7 +198,7 @@ func IsTriplesAndSingles(cards []Poker) (bool, *Poker) {
 	// 555666777888 KKKK 牌型
 	planes := GetSpecificCountCards(cards, 3)
 	if planeCount%3 == 0 && len(planes) == planeCount+planeCount/3 { //555666777KKK 全三牌型
-		DDZPointSort(planes)
+		DDZPokerSort(planes)
 		return isMinShunZi(planes[0:len(planes)-planeCount/3], 2)
 	}
 	if len(planes) != planeCount {
@@ -244,7 +244,7 @@ func isMinShunZi(cards []Poker, minLen int) (bool, *Poker) {
 		return false, nil
 	}
 
-	DDZPointSort(cards)
+	DDZPokerSort(cards)
 	for i := 0; i < len(cards)-1; i++ {
 		if cards[i+1].PointWeight-cards[i].PointWeight != 1 {
 			return false, nil
@@ -317,8 +317,8 @@ func IsSingle(cards []Poker) (bool, *Poker) {
 }
 
 func GetMaxCard(cards []Poker) *Poker {
-	DDZPokerSort(cards)
-	return &cards[len(cards)-1]
+	DDZPokerSortDesc(cards)
+	return &cards[0]
 }
 
 // GetMinCard 获取一组牌中最小的那张牌
@@ -336,6 +336,7 @@ func GetMaxSamePointCards(cards []Poker) []Poker {
 			maxSamePointCards = append(maxSamePointCards, card)
 		}
 	}
+	DDZPokerSortDesc(maxSamePointCards)
 	return maxSamePointCards
 }
 
@@ -369,12 +370,7 @@ func GetMaxSamePoint(cards []Poker) (maxCountPointWeight uint32, maxCount uint32
 	counts := make(map[uint32]uint32) //Map<PointWeight, count>
 	for _, card := range cards {
 		pointWeight := card.PointWeight
-		count, exists := counts[pointWeight]
-		if !exists {
-			counts[pointWeight] = 1
-		} else {
-			counts[pointWeight] = count + 1
-		}
+		counts[pointWeight]++
 	}
 
 	for pointWeight, count := range counts {
@@ -393,15 +389,4 @@ func IsAllSamePoint(cards []Poker) bool {
 		}
 	}
 	return true
-}
-
-// ContainsPointWeightCount cards中包含指定无花色权重点数的牌的个数
-func ContainsPointWeightCount(cards []Poker, pointWeight uint32) uint32 {
-	var count uint32 = 0
-	for _, card := range cards {
-		if card.PointWeight == pointWeight {
-			count++
-		}
-	}
-	return count
 }

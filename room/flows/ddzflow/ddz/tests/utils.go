@@ -2,9 +2,9 @@ package tests
 
 import (
 	"steve/client_pb/room"
+	"steve/entity/poker/ddz"
 	"steve/room/flows/ddzflow/ddz/ddzmachine"
 	"steve/room/flows/ddzflow/ddz/states"
-	"steve/server_pb/ddz"
 )
 
 func createMachine(stateID ddz.StateID) *ddzmachine.DDZMachine {

@@ -341,11 +341,10 @@ func GenerateSettleEvent(desks *desk.Desk, settleType majongpb.SettleType, broke
 			PlayerID:  0,
 		}*/
 
-		event := desk.NewDeskEvent(int(majongpb.EventID_event_settle_finish), fixed.NormalEvent, desks, desk.CreateEventParams(
-			desks.GetConfig().Context.(*contexts.MajongDeskContext).StateNumber,
-			eventContext,
-			0,
-		))
+		event := desk.DeskEvent{EventID: int(majongpb.EventID_event_settle_finish), EventType: fixed.NormalEvent, Desk: desks,
+			StateNumber: desks.GetConfig().Context.(*contexts.MajongDeskContext).StateNumber,
+			Context:     eventContext,
+		}
 		GetMjEventModel(desks.GetUid()).PushEvent(event)
 	}
 }

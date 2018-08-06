@@ -57,9 +57,14 @@ func Test_grpc_clien(t *testing.T) {
 		High: 50,
 		Low:  50,
 	}
+	game := &robot.GameConfig{
+		GameId: 1,
+	}
 	req := &robot.GetRobotPlayerIDReq{
+		Game:         game,
 		CoinsRange:   coinsR,
 		WinRateRange: winR,
+		NewState:     robot.RobotPlayerState_RPS_MATCHING,
 	}
 	rsq, err := client.GetRobotPlayerIDByInfo(ctx, req)
 	assert.Nil(t, err)
@@ -78,8 +83,8 @@ func Test_grpc_clien2(t *testing.T) {
 	defer cancel()
 	req := &robot.SetRobotPlayerStateReq{
 		RobotPlayerId: 2000,
-		Newstate:      robot.RobotPlayerState_RPS_MATCHING,
-		Oldstate:      robot.RobotPlayerState_RPS_IDIE,
+		NewState:      robot.RobotPlayerState_RPS_IDIE,
+		OldState:      robot.RobotPlayerState_RPS_MATCHING,
 		ServerType:    robot.ServerType_ST_MATCH,
 		ServerAddr:    "127.0.0.1:3306",
 	}

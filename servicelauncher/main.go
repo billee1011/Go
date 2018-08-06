@@ -14,8 +14,13 @@
 
 package main
 
-import "steve/servicelauncher/cmd"
+import (
+	_ "steve/servicelauncher/cmd"
+	"steve/servicelauncher/launcher"
+)
 
+// 为了兼容有些包里有init方法直接在获取exposer，把cmd的init也放到更早的init里
+// 目前的真正入口方法是cmd/root.go的init方法
 func main() {
-	cmd.Execute()
+	launcher.LoadService()
 }

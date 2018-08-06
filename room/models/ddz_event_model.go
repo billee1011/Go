@@ -53,8 +53,7 @@ func (model *DDZEventModel) Start() {
 		model.processEvents(context.Background())
 		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
 	}()
-	params := desk.CreateEventParams(nil, 0)
-	event := desk.NewDeskEvent(int(ddz.EventID_event_start_game), fixed.NormalEvent, model.GetDesk(), params)
+	event := desk.DeskEvent{EventID: int(ddz.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk()}
 	model.PushEvent(event)
 }
 
@@ -98,8 +97,7 @@ func (model *DDZEventModel) PushRequest(playerID uint64, head *steve_proto_gater
 		entry.Warningln("没有对应事件")
 		return
 	}
-	eventParams := desk.CreateEventParams(eventData, playerID)
-	event := desk.NewDeskEvent(eventID, fixed.NormalEvent, model.GetDesk(), eventParams)
+	event := desk.DeskEvent{EventID: eventID, EventType: fixed.NormalEvent, Context: eventData, PlayerID: playerID, Desk: model.GetDesk()}
 	model.PushEvent(event)
 }
 
@@ -363,12 +361,12 @@ func (model *DDZEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 
 // getEventPlayerID  获取事件玩家
 func (model *DDZEventModel) getEventPlayerID(event desk.DeskEvent) uint64 {
-	return event.Params.Params[1].(uint64)
+	return event.PlayerID
 }
 
 // getEventContext 获取事件现场
 func (model *DDZEventModel) getEventContext(event desk.DeskEvent) interface{} {
-	return event.Params.Params[0]
+	return event.Context
 }
 
 // recordTuoguanOverTimeCount 记录托管超时计数
@@ -427,8 +425,7 @@ func (model *DDZEventModel) processEvent(eventID int, eventContext interface{}) 
 		go func() {
 			timer := time.NewTimer(result.AutoEventDuration)
 			<-timer.C
-			eventParams := desk.CreateEventParams(result.AutoEventContext, 0)
-			model.PushEvent(desk.NewDeskEvent(result.AutoEventID, fixed.NormalEvent, model.GetDesk(), eventParams))
+			model.PushEvent(desk.DeskEvent{EventID: result.AutoEventID, EventType: fixed.NormalEvent, Context: result.AutoEventContext, Desk: model.GetDesk()})
 		}()
 	}
 	return model.checkGameOver(entry)
