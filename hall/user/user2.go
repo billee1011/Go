@@ -16,7 +16,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// HandleGetPlayerInfoReq2 处理获取玩家个人资料请求
+// HandleGetPlayerInfoReq 处理获取玩家个人资料请求
 func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
 	logrus.Debugln("Handle get player info req", req)
 
@@ -32,7 +32,7 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家基本个人资料
-	player, err := data.GetPlayerInfo(playerID)
+	player, err := data.GetPlayerInfo(playerID, []string{cache.NickName, cache.Avatar, cache.Gender}...)
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.NickName = proto.String(player.Nickname)
@@ -47,12 +47,11 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家游戏信息
-	pState, err := data.GetPlayerState(playerID)
+	pState, err := data.GetPlayerState(playerID, []string{cache.GameState}...)
 	if err == nil {
 		response.PlayerState = common.PlayerState(pState.State).Enum()
 		response.GameId = common.GameId(pState.GameID).Enum()
 	}
-
 	return
 }
 
@@ -100,7 +99,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	return
 }
 
-// HandleGetPlayerStateReq2 获取玩家游戏状态信息
+// HandleGetPlayerStateReq 获取玩家游戏状态信息
 func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
 	logrus.Debugln("Handle get player state req", req)
 
@@ -116,7 +115,7 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 	}
 
 	// 逻辑处理
-	pState, err := data.GetPlayerState(playerID)
+	pState, err := data.GetPlayerState(playerID, []string{cache.GameState}...)
 
 	// 返回结果
 	if err == nil {
