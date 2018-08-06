@@ -15,4 +15,9 @@ const (
 	// 目前订阅者：
 	//
 	GameSummaryRecord string = "game_summary_record"
+
+	// BroadcastMsg 通过GateWay广播消息给客户端
+	// 目前订阅者：
+	//
+	BroadcastMsg string = "broadcast_msg"
 )

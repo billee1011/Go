@@ -27,11 +27,16 @@ echo "match---------------------------------\n"
 pushd match 
 #nohup serviceloader match --config=config.yml  &
 sh ./start.sh
-popd 
+popd
+
 echo "gold---------------------------------\n"
 pushd gold 
 sh ./start.sh
 popd
 
+echo "msgserver---------------------------------\n"
+pushd msgserver
+sh ./start.sh
+popd
 ./p.sh
 

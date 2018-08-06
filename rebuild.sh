@@ -37,6 +37,10 @@ pushd gold
 sh ./build.sh
 popd
 
+pushd msgserver
+sh ./build.sh
+popd
+
 sh ./simulate/packtests.sh
 
 

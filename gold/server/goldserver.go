@@ -68,7 +68,7 @@ func (gs *GoldServer) AddGold(ctx context.Context, request *gold.AddGoldReq) (re
 	// 调用逻辑实现代码
 	item := request.GetItem()
 	after, err := logic.GetGoldMgr().AddGold(item.GetUid(), int16(item.GetGoldType()), item.GetChangeValue(),
-		item.GetSeq(), item.GetFuncId(), item.GetChannel(), item.GetTime())
+		item.GetSeq(), item.GetFuncId(), item.GetChannel(), item.GetTime(), item.GetGameId(), item.GetLevel())
 
 	// 逻辑代码返回错误
 	if err != nil {

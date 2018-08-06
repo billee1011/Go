@@ -19,9 +19,9 @@ import (
 
 
 // 处理获取跑马灯请求
-func ProcessGetHorseRaceReq(playerID uint64, header *steve_proto_gaterpc.Header, req msgserver.GetHorseRaceReq) (ret []exchanger.ResponseMsg) {
+func ProcessGetHorseRaceReq(playerID uint64, header *steve_proto_gaterpc.Header, req msgserver.MsgSvrGetHorseRaceReq) (ret []exchanger.ResponseMsg) {
 
-	response := &msgserver.GetHorseRaceRsp{
+	response := &msgserver.MsgSvrGetHorseRaceRsp{
 		ErrCode: proto.Int32(0),
 		ErrDesc: proto.String("成功"),
 	}
@@ -31,13 +31,15 @@ func ProcessGetHorseRaceReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		Body:  response,
 	}}
 
-	list, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	list, tick, sleep, err := logic.GetMsgMgr().GetHorseRace(playerID)
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
 		return nil
 	}
 	response.Content = list
+	response.Tick = &tick
+	response.Sleep = &sleep
 
 	return ret
 }

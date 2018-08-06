@@ -217,18 +217,12 @@ func TestGetPlayerInfo(t *testing.T) {
 	accID := uint64(alloc.Generate().Int64())
 
 	NewPlayerData(accID, playerID)
+	fields := []string{cache.NickName, cache.Gender, cache.Avatar, cache.ChannelID, cache.ProvinceID, cache.CityID}
 
-	player, err := GetPlayerInfo(playerID)
+	player, err := GetPlayerInfo(playerID, fields...)
 
 	assert.Nil(t, err)
-	assert.NotNil(t, player[cache.NickNameField])
-
-	// redis 中有数据
-	redisKey := cache.FmtPlayerIDKey(playerID)
-	result, err := redisPlayerCli.HMGet(redisKey, cache.NickNameField).Result()
-	assert.Nil(t, err)
-	assert.NotEmpty(t, result[0])
-	fmt.Println(result)
+	assert.NotNil(t, player.Nickname)
 }
 
 // TestGetGameInfoList 获取游戏信息
@@ -267,7 +261,7 @@ func TestUpdatePlayerInfo(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	exists, result, err := UpdatePlayerInfo(playerID, "mr_wang", "我是一个帅哥", "zh", "13456431345", 1)
+	exists, result, err := UpdatePlayerInfo(playerID, "mr_wang", "我是一个帅哥", 1)
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
 	assert.Equal(t, true, exists)
