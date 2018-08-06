@@ -3,12 +3,11 @@ package loader
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"steve/serviceloader/pprof"
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
+	"net/http"
+	"steve/serviceloader/pprof"
 	"strings"
-
 )
 
 var errNewConsulAgent = errors.New("创建 consul agent 失败")
@@ -28,11 +27,10 @@ type RegisterParams struct {
 	serverName string
 	addr       string
 	port       int
-	healthPort int 			// consul服务健康检查Port
-	groupName  string		// 服务组名
-	consulAddr string 		// consul 地址
+	healthPort int    // consul服务健康检查Port
+	groupName  string // 服务组名
+	consulAddr string // consul 地址
 	tags       []string
-
 }
 
 // RegisterServer2 注册服务
@@ -60,7 +58,7 @@ func RegisterServer2(opt *Option) {
 		port:       opt.rpcPort,
 		consulAddr: opt.consulAddr,
 		healthPort: opt.healthPort,
-		groupName: opt.groupName,
+		groupName:  opt.groupName,
 		tags:       tags,
 	})
 	pprof.Init(opt.rpcServerName, opt.pprofExposeType, opt.pprofHttpPort)
@@ -97,7 +95,7 @@ func allocServerIDNew(rp *RegisterParams) string {
 // consul对服务进行健康检查
 func statusHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "status ok!")
-	fmt.Println("check consul ok")
+	//fmt.Println("check consul ok")
 	//logrus.Debugln("check consul ok")
 }
 
@@ -112,7 +110,7 @@ func startHTTPHealth(httPort int) error {
 
 // registerToConsul 向 consul 注册服务
 
-func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, port int, serverID string, consulAddr string,healthPort int, groupName string, tags []string) error {
+func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, port int, serverID string, consulAddr string, healthPort int, groupName string, tags []string) error {
 
 	logEntry = logEntry.WithFields(logrus.Fields{
 		"server_name": serverName,
