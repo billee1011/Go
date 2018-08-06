@@ -1,7 +1,6 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
 	"steve/entity/cache"
 	"steve/entity/db"
@@ -53,18 +52,17 @@ func GetPlayerMaxwinningstream(key string) (int, error) {
 
 // UpdatePlayerGameToredis 更新玩家胜率
 func UpdatePlayerGameToredis(tpg *db.TPlayerGame) error {
-	key := cache.FmtPlayerIDKey(uint64(tpg.Playerid))
-	gameKey := cache.FmtPlayerGameInfoKey(uint32(tpg.Gameid))
+	gameKey := cache.FmtPlayerGameInfoKey(uint64(tpg.Playerid), uint32(tpg.Gameid))
 	redisCli, err := RedisCliGetter(redisName, 0)
 	if err != nil {
 		return err
 	}
-	message, err := json.Marshal(tpg)
-	if err != nil {
-		return err
-	}
-	err = redisCli.HMSet(key, map[string]interface{}{
-		gameKey: string(message),
+	err = redisCli.HMSet(gameKey, map[string]interface{}{
+		cache.WinningBurea:     tpg.Winningburea,
+		cache.WinningRate:      tpg.Winningrate,
+		cache.TotalBurea:       tpg.Totalbureau,
+		cache.MaxMultiple:      tpg.Maxmultiple,
+		cache.MaxWinningStream: tpg.Maxwinningstream,
 	}).Err()
 	return err
 }

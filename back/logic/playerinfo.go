@@ -5,6 +5,7 @@ import (
 	"math"
 	"steve/back/data"
 	"steve/entity/gamelog"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -36,8 +37,14 @@ func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 		// 更新连胜
 		playerGame.Maxwinningstream = winStream
 	}
+	if int(detailInfo.MaxTimes) > playerGame.Maxmultiple {
+		playerGame.Maxmultiple = int(detailInfo.MaxTimes)
+	}
 	// 更新胜率
 	playerGame.Winningrate = int(math.Floor((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*100 + 0.5))
+
+	// 创建时间
+	playerGame.Createtime = time.Now()
 
 	if err := data.UpdateTPlayerGame(playerGame); err != nil {
 		return err
