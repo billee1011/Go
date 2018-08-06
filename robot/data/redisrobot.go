@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"steve/structs"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -31,46 +32,18 @@ var RedisClifunc = getRobotRedis
 var errRobotRedisGain = errors.New("robot_redis 获取失败")
 var errRobotRedisOpertaion = errors.New("robot_redis 操作失败")
 
-// redis 过期时间
+// RedisTimeOut 过期时间
 var RedisTimeOut = time.Hour * 24 * 30
 
 // getRobotRedis 获取大厅服redis
 func getRobotRedis() *redis.Client {
-
-	redis, err := Exposer.RedisFactory.NewClient()
+	e := structs.GetGlobalExposer()
+	redis, err := e.RedisFactory.NewClient()
 	if err != nil {
 		logrus.WithError(err).Errorln(errRobotRedisGain)
 		return nil
 	}
 	return redis
-}
-
-//AddRobotWatch 添加机器人到redis
-func AddRobotWatch(playerID uint64, fields map[string]interface{}, duration time.Duration) error {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "SetRobotFields",
-		"playerID":  playerID,
-		"fields":    fields,
-	})
-	redisCli := RedisClifunc()
-	key := fmt.Sprintf(robotRedisKey, playerID)
-	err := redisCli.Watch(func(tx *redis.Tx) error {
-		result, err := tx.HKeys(key).Result()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		if len(result) != 0 {
-			return fmt.Errorf("key已经存在 %v", key)
-		}
-		tx.HMSet(key, fields)
-		redisCli.Expire(key, duration)
-		return nil
-	}, key)
-	if err == redis.TxFailedErr {
-		entry.WithError(err).Errorln("重试")
-		return AddRobotWatch(playerID, fields, duration)
-	}
-	return err
 }
 
 // SetRobotWatch 设置机器人属性
@@ -84,16 +57,16 @@ func SetRobotWatch(playerID uint64, fieldName string, val interface{}, duration 
 	redisCli := RedisClifunc()
 	key := fmt.Sprintf(robotRedisKey, playerID)
 	err := redisCli.Watch(func(tx *redis.Tx) error {
-		result, err := tx.HKeys(key).Result()
+		err := tx.HKeys(key).Err()
 		if err != nil && err != redis.Nil {
-			return fmt.Errorf("设置机器人属性失败 %v", err)
+			return err
 		}
-		if len(result) == 0 {
-			return fmt.Errorf("key不存在 %v", key)
-		}
-		tx.HSet(key, fieldName, val)
+		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
+			pipe.HSet(key, fieldName, val)
+			return nil
+		})
 		redisCli.Expire(key, duration)
-		return nil
+		return err
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")
@@ -154,16 +127,16 @@ func SetRobotPlayerWatchs(playerID uint64, fields map[string]interface{}, durati
 	key := fmt.Sprintf(robotRedisKey, playerID)
 
 	err := redisCli.Watch(func(tx *redis.Tx) error {
-		result, err := tx.HKeys(key).Result()
+		err := tx.HKeys(key).Err()
 		if err != nil && err != redis.Nil {
-			return fmt.Errorf("设置机器人多个属性失败 %v", err)
+			return err
 		}
-		if len(result) == 0 {
-			return fmt.Errorf("key不存在 %v", key)
-		}
-		tx.HMSet(key, fields)
+		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
+			pipe.HMSet(key, fields)
+			return nil
+		})
 		redisCli.Expire(key, duration)
-		return nil
+		return err
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")

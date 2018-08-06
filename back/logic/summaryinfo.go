@@ -5,6 +5,7 @@ import (
 	"steve/back/data"
 	"steve/entity/db"
 	"steve/entity/gamelog"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -16,10 +17,8 @@ func insertSummaryInfo(info gamelog.TGameSummary) error {
 		Gameid:       info.Gameid,
 		Levelid:      info.Levelid,
 		Gameovertime: info.Gameovertime,
-		Createtime:   info.Createtime,
+		Createtime:   time.Now(),
 		Createby:     info.Createby,
-		Updatetime:   info.Updatetime,
-		Updateby:     info.Updateby,
 	}
 	if playeridsData, err := translantPlayerids(info.Playerids); err == nil {
 		summary.Playerids = playeridsData

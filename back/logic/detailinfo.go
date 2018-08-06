@@ -4,6 +4,7 @@ import (
 	"steve/back/data"
 	"steve/entity/db"
 	"steve/entity/gamelog"
+	"time"
 )
 
 func insertDetailInfo(info gamelog.TGameDetail) error {
@@ -15,10 +16,7 @@ func insertDetailInfo(info gamelog.TGameDetail) error {
 		Gameid:     info.Gameid,
 		Amount:     info.Amount,
 		Iswinner:   info.Iswinner,
-		Createtime: info.Createtime,
-		Createby:   info.Createby,
-		Updatetime: info.Updatetime,
-		Updateby:   info.Updateby,
+		Createtime: time.Now(),
 	}
 	return data.InsertDetail(&detail)
 }

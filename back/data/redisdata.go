@@ -53,7 +53,7 @@ func GetPlayerMaxwinningstream(key string) (int, error) {
 
 // UpdatePlayerGameToredis 更新玩家胜率
 func UpdatePlayerGameToredis(tpg *db.TPlayerGame) error {
-	key := cache.FmtPlayerIDKey(uint64(tpg.Gameid))
+	key := cache.FmtPlayerIDKey(uint64(tpg.Playerid))
 	gameKey := cache.FmtPlayerGameInfoKey(uint32(tpg.Gameid))
 	redisCli, err := RedisCliGetter(redisName, 0)
 	if err != nil {
@@ -63,8 +63,8 @@ func UpdatePlayerGameToredis(tpg *db.TPlayerGame) error {
 	if err != nil {
 		return err
 	}
-	redisCli.HMSet(key, map[string]interface{}{
+	err = redisCli.HMSet(key, map[string]interface{}{
 		gameKey: string(message),
-	})
-	return nil
+	}).Err()
+	return err
 }

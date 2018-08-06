@@ -2,6 +2,8 @@ package data
 
 import (
 	"steve/entity/cache"
+	"steve/external/goldclient"
+	"steve/server_pb/gold"
 	"steve/server_pb/robot"
 
 	"github.com/Sirupsen/logrus"
@@ -12,18 +14,25 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*cache.RobotPlayer
 	robotsIDCoins := make([]*cache.RobotPlayer, 0)
 	lackRobotsID := make([]uint64, 0) // 没有存入redis的机器人
 	for _, robotPlayerID := range robotPlayerIDAll {
-		robotPlayerInfo, err := GetRobotFields(robotPlayerID, RobotPlayerCoinField, cache.PlayerStateField, RobotPlayerGameIDWinRate)
+		robotPlayerInfo, err := GetRobotFields(robotPlayerID, RobotPlayerStateField, RobotPlayerGameIDWinRate)
 		if err != nil || len(robotPlayerInfo) == 0 {
 			lackRobotsID = append(lackRobotsID, robotPlayerID)
 			continue
 		}
 		robotPlayer := &cache.RobotPlayer{}
-		robotPlayer.State = InterToUint64(robotPlayerInfo[cache.PlayerStateField]) // 玩家状态
-		if robotPlayer.State != uint64(robot.RobotPlayerState_RPS_IDIE) {          //是空闲状态
+		robotPlayer.State = InterToUint64(robotPlayerInfo[RobotPlayerStateField]) // 玩家状态
+		if robotPlayer.State != uint64(robot.RobotPlayerState_RPS_IDIE) {         //是空闲状态
 			continue
 		}
-		robotPlayer.PlayerID = robotPlayerID                                                                // 玩家ID
-		robotPlayer.Coin = InterToUint64(robotPlayerInfo[RobotPlayerCoinField])                             // 金币
+		robotPlayer.PlayerID = robotPlayerID
+		// 从金币服获取
+		gold, err := goldclient.GetGold(robotPlayerID, int16(gold.GoldType_GOLD_COIN))
+		if err != nil {
+			logrus.WithError(err).Errorf("获取金币失败 robotPlayerID(%v)", robotPlayerIDAll)
+			continue
+		}
+		// 玩家ID
+		robotPlayer.Coin = uint64(gold)                                                                     // 金币
 		robotPlayer.GameIDWinRate = JSONToGameIDWinRate(robotPlayerInfo[RobotPlayerGameIDWinRate].(string)) // 游戏对应的胜率
 		robotsIDCoins = append(robotsIDCoins, robotPlayer)
 	}
@@ -37,7 +46,7 @@ func getMysqlLeisureRobotPlayer(robotsPlayers []*cache.RobotPlayer, lackRobotsID
 	for _, playerID := range lackRobotsID {
 		robotPlayer := getMysqlRobotPropByPlayerID(playerID) // 从mysql获取 的一定是空闲的
 		// 存入redis
-		if err := AddRobotWatch(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut); err != nil {
+		if err := SetRobotPlayerWatchs(playerID, FmtRobotPlayer(robotPlayer), RedisTimeOut); err != nil {
 			failedIDErrMpa[playerID] = err
 		}
 		robotPlayer.PlayerID = playerID
@@ -68,23 +77,6 @@ func getMysqlRobotFieldValuedAll(robotMap map[int64]*cache.RobotPlayer) error {
 			}
 		}
 	}
-	// 金币
-	robotsTPCs, err := getMysqlRobotCoinAll()
-	if err != nil {
-		return err
-	}
-	for _, robot := range robotsTPCs {
-		if rp := robotMap[robot.Playerid]; rp != nil {
-			rp.Coin = uint64(robot.Coins)
-			robotMap[robot.Playerid] = rp
-		} else {
-			robotMap[robot.Playerid] = &cache.RobotPlayer{
-				PlayerID: uint64(robot.Playerid),
-				Coin:     uint64(robot.Coins),
-			}
-		}
-	}
-
 	// 昵称
 	robotsTPs, err := getMysqlRobotNicknameAll()
 	if err != nil {

@@ -82,6 +82,7 @@ func TestInsertSummary(t *testing.T) {
 
 func TestInsertDetail(t *testing.T) {
 	detail := gamelog.TGameDetail{
+		Detailid:   11111222,
 		Sumaryid:   123,
 		Playerid:   1,
 		Deskid:     1,
@@ -98,8 +99,8 @@ func TestInsertDetail(t *testing.T) {
 
 func TestUpdatePlayerGame(t *testing.T) {
 	detail := gamelog.TGameDetail{
-		Sumaryid:   123,
-		Playerid:   6,
+		Sumaryid:   1233,
+		Playerid:   7,
 		Deskid:     1,
 		Gameid:     4,
 		Amount:     -1,
