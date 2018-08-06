@@ -35,7 +35,7 @@ var errRobotRedisOpertaion = errors.New("robot_redis 操作失败")
 // RedisTimeOut 过期时间
 var RedisTimeOut = time.Hour * 24 * 30
 
-// getRobotRedis 获取大厅服redis
+// getRobotRedis 获取机器人服redis
 func getRobotRedis() *redis.Client {
 	e := structs.GetGlobalExposer()
 	redis, err := e.RedisFactory.NewClient()
@@ -49,7 +49,7 @@ func getRobotRedis() *redis.Client {
 // SetRobotWatch 设置机器人属性
 func SetRobotWatch(playerID uint64, fieldName string, val interface{}, duration time.Duration) error {
 	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "SetRobotFiled",
+		"func_name": "SetRobotWatch",
 		"playerID":  playerID,
 		"fieldName": fieldName,
 		"val":       val,
@@ -119,7 +119,7 @@ func GetRobotStringFiled(playerID uint64, fieldName string) (string, error) {
 // SetRobotPlayerWatchs 设置机器人玩家多个属性
 func SetRobotPlayerWatchs(playerID uint64, fields map[string]interface{}, duration time.Duration) error {
 	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "SetRobotPlayerFields",
+		"func_name": "SetRobotPlayerWatchs",
 		"playerID":  playerID,
 		"fields":    fields,
 	})

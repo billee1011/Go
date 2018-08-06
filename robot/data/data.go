@@ -63,6 +63,6 @@ func GetLeisureRobot() ([]*cache.RobotPlayer, error) {
 	if len(lackRobotsID) > 0 {                                           // 存在redis 中 不存在 机器人ID
 		robots = getMysqlLeisureRobotPlayer(robots, lackRobotsID) //从mysql中获取空闲的玩家,并存入redis
 	}
-	log.WithFields(logrus.Fields{"lackRobotsID": lackRobotsID}).Infoln("获取空闲机器人")
+	log.WithFields(logrus.Fields{"robots": robots, "lackRobotsID": lackRobotsID}).Infoln("获取空闲机器人")
 	return robots, nil
 }
