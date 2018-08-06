@@ -15,7 +15,7 @@ var configs = struct {
 	robotContinueRateWin  float32       // 机器人胜利时续局概率
 	robotContinueRateLoss float32       // 机器人失败时续局概率
 	sameDeskLimitTime     int64         // 同桌限制时间，单位：秒，超过这个时间，匹配时不再限制同桌
-	defaulWintRate        int8          // 玩家默认胜率，玩家游戏局数低于最低游戏局数时，采用此值
+	defaulWintRate        int32         // 玩家默认胜率，玩家游戏局数低于最低游戏局数时，采用此值
 	minGameTimes          uint32        // 最低游戏局数，玩家局数低于此值，采用此值
 	winRateCompuBase      float32       // 计算公式的基础胜率(百分比，例如：0.02表2%)
 	goldCompuBase         float32       // 计算公式的基础金币(百分比，例如：0.02表2%)
@@ -66,7 +66,7 @@ func GetSameDeskLimitTime() int64 {
 }
 
 // GetDefaultWinRate 获取玩家默认胜率
-func GetDefaultWinRate() int8 {
+func GetDefaultWinRate() int32 {
 	return configs.defaulWintRate
 }
 

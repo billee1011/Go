@@ -23,8 +23,12 @@ func IPUInt32ToString(intIP uint32) string {
 
 // IPStringToUInt32 字符串型IP转为uint32型
 func IPStringToUInt32(ipStr string) uint32 {
-	logrus.Debugln("进入函数，ipStr = ", ipStr)
 	bits := strings.Split(ipStr, ".")
+
+	if len(bits) != 4 {
+		logrus.Errorln("IPStringToUInt32() 参数错误，ipStr = ", ipStr)
+		return 0
+	}
 
 	b0, _ := strconv.Atoi(bits[0])
 	b1, _ := strconv.Atoi(bits[1])
@@ -38,7 +42,6 @@ func IPStringToUInt32(ipStr string) uint32 {
 	sum += uint32(b2) << 8
 	sum += uint32(b3)
 
-	logrus.Debugln("离开函数，sum = ", sum)
 	return sum
 }
 
@@ -58,8 +61,8 @@ func (dp *deskPlayer) String() string {
 // matchPlayer 匹配中的玩家
 type matchPlayer struct {
 	playerID uint64 // 玩家ID
-	robotLv  int    // 机器人等级，为 0 时表示非机器人
-	seat     int    // 座号
+	robotLv  int32  // 机器人等级，为 0 时表示非机器人
+	seat     int32  // 座号
 	IP       uint32 // IP地址
 	gold     int64  // 金币数
 }
@@ -146,6 +149,9 @@ func createMatchDesk(deskID uint64, gameID uint32, levelID uint32, needPlayerCou
 	}).Debugln("创建匹配牌桌")
 
 	return &matchDesk{
+		deskID:          deskID,
+		gameID:          gameID,
+		levelID:         levelID,
 		aveGold:         gold,
 		needPlayerCount: needPlayerCount,
 		players:         make([]matchPlayer, 0, needPlayerCount),

@@ -35,14 +35,18 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 	}}
 
 	// 玩家当前状态
-	curState, curGameID, curLevelID, err := hallclient.GetPlayerState(playerID)
-	if err != nil {
+	rsp, err := hallclient.GetPlayerState(playerID)
+	if err != nil || rsp == nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("从hall服获取玩家状态出错")
 
 		logEntry.Errorln("内部错误，从hall服获取玩家状态出错")
 		return
 	}
+
+	curState := rsp.GetState()
+	curGameID := rsp.GetGameId()
+	curLevelID := rsp.GetLevelId()
 
 	// 如果处于游戏状态，返回
 	if curState == user.PlayerState_PS_GAMEING {
@@ -129,14 +133,18 @@ func HandleCancelMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 	}}
 
 	// 玩家当前状态
-	curState, curGameID, curLevelID, err := hallclient.GetPlayerState(playerID)
-	if err != nil {
-		response.ErrCode = proto.Int32(int32(match.MatchError_EC_FAIL))
+	rsp, err := hallclient.GetPlayerState(playerID)
+	if err != nil || rsp == nil {
+		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("从hall服获取玩家状态出错")
 
 		logEntry.Errorln("内部错误，从hall服获取玩家状态出错")
 		return
 	}
+
+	curState := rsp.GetState()
+	curGameID := rsp.GetGameId()
+	curLevelID := rsp.GetLevelId()
 
 	// 若不是匹配状态，返回
 	if curState != user.PlayerState_PS_MATCHING {
