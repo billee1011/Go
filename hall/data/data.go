@@ -149,6 +149,7 @@ func GetPlayerGameInfo(playerID uint64, gameID uint32, fields ...string) (exist 
 	}
 
 	if len(res) == 0 {
+		exist = false
 		return
 	}
 
