@@ -158,9 +158,13 @@ func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.G
 
 	// 逻辑处理
 	fields := []string{cache.WinningRate, cache.WinningBurea, cache.TotalBurea, cache.MaxWinningStream, cache.MaxMultiple}
-	_, info, err := data.GetPlayerGameInfo(playerID, gameID, fields...)
+	exist, info, err := data.GetPlayerGameInfo(playerID, gameID, fields...)
 
 	// 返回消息
+	if !exist {
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		return
+	}
 	if err == nil {
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 		rsp.WinningRate, rsp.WinningBurea, rsp.TotalBurea = uint32(info.Winningrate), uint32(info.Winningburea), uint32(info.Totalbureau)
