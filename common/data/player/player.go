@@ -151,8 +151,8 @@ func SetPlayerCoin(playerID uint64, coin uint64) error {
 }
 
 // AddPlayerCoin 修改玩家金币数
-func AddPlayerCoin(playerID uint64, changeVal int64) {
-	_, err := goldclient.AddGold(playerID, 1, changeVal, 0, 0)
+func AddPlayerCoin(playerID uint64, changeVal int64, gameID int, level int32) {
+	_, err := goldclient.AddGold(playerID, 1, changeVal, 0, 0, int32(gameID), level)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"func_name": "Player.AddCoin",

@@ -61,7 +61,7 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	oldGold := playerdata.GetPlayerCoin(playerID)
-	playerdata.AddPlayerCoin(playerID, int64(gold)-int64(oldGold))
+	playerdata.AddPlayerCoin(playerID, int64(gold)-int64(oldGold), 0, 0)
 	respMSG(resp, fmt.Sprintf("配置玩家金币数成功,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, gold), 200)
 }
 

@@ -98,9 +98,9 @@ func (s *settleState) settle(m machine.Machine) {
 		billPlayer.Multiple = &mul
 		settleScore := settleScores[playerId]
 		if isWin {
-			playerdata.AddPlayerCoin(playerId, int64(settleScore)) //赢钱
+			playerdata.AddPlayerCoin(playerId, int64(settleScore), int(context.GetGameId()), 0) //赢钱
 		} else {
-			playerdata.AddPlayerCoin(playerId, -int64(settleScore)) //输钱
+			playerdata.AddPlayerCoin(playerId, -int64(settleScore), int(context.GetGameId()), 0) //输钱
 		}
 		billPlayer.Score = proto.Int64(int64(settleScore))
 		billPlayer.CurrentScore = proto.Int64(int64(playerdata.GetPlayerCoin(playerId)))

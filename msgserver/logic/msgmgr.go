@@ -7,6 +7,10 @@ import (
 	"steve/msgserver/data"
 	"errors"
 	"github.com/Sirupsen/logrus"
+	"steve/external/hallclient"
+	"steve/external/gateclient"
+	"steve/client_pb/msgid"
+	"steve/client_pb/msgserver"
 )
 
 /*
@@ -50,8 +54,8 @@ func (gm *MsgMgr) GetHorseRace(uid uint64) ([]string, int32, int32, error) {
 	// 2.从redis获取目前开启的跑马灯(达到开始时间和结束时间之间)。
 	// 3.按照从市ID-》省ID-》渠道ID的顺序获取跑马灯，如果获取到马上返回。
 	// 4.如果开启不使用上级配置的开关，则不向上检索.
-	channel, prov, city := gm.getUserInfo(uid)
-	if channel == 0 {
+	channel, prov, city, ok := gm.getUserInfo(uid)
+	if !ok {
 		return nil, 0, 0, errors.New("获取玩家渠道ID失败")
 	}
 
@@ -71,7 +75,7 @@ func (gm *MsgMgr) GetHorseRace(uid uint64) ([]string, int32, int32, error) {
 		}
 	}
 
-	if channel != 0 {
+	if channel >= 0 {
 		// 最后读取渠道级别的跑马灯
 		str, tick, sleep, ok := gm.getLevelHorseRace(channel, gm.channelList)
 		if ok {
@@ -96,7 +100,7 @@ func (gm *MsgMgr) getHorseRaceFromDB() error {
 	gm.provList = make(map[int64]*define.HorseRace)
 	gm.channelList = make(map[int64]*define.HorseRace)
 	for _, horse := range  gm.horseList {
-		if horse.Channel <= 0 {
+		if horse.Channel < 0 {
 			continue
 		}
 		if horse.Prov == 0 && horse.City == 0 {
@@ -147,18 +151,32 @@ func (gm *MsgMgr) runCheckHorseChange() error{
 
 	// 1分钟检测一次跑马灯状态
 	for {
+		bUpdate := false
 		for _, horse := range gm.cityList {
-			gm.checkHorseChanged(horse)
+			if gm.checkHorseChanged(horse) {
+				bUpdate = true
+			}
 		}
 		time.Sleep(time.Millisecond * 20)
 		for _, horse := range gm.provList {
-			gm.checkHorseChanged(horse)
+			if gm.checkHorseChanged(horse) {
+				bUpdate = true
+			}
 		}
 		time.Sleep(time.Millisecond * 20)
 		for _, horse := range gm.channelList {
-			gm.checkHorseChanged(horse)
+			if gm.checkHorseChanged(horse) {
+				bUpdate = true
+			}
 		}
+
+		// 如果有变化发送通知消息
+		if bUpdate {
+			gm.sendHorseRaceChangedNtf()
+		}
+		//gm.testGetHorseRace()
 		time.Sleep(time.Minute)
+
 	}
 
 	return nil
@@ -177,12 +195,12 @@ func (gm *MsgMgr) checkHorseChanged(horse *define.HorseRace) bool {
 		if gm.checkHorseBegin(hc) {
 			if gm.SetUpdateTag(hc, define.StateStart) {
 				isUpdate = true
-				break
+
 			}
 		} else {
 			if gm.SetUpdateTag(hc, define.StateStop) {
 				isUpdate = true
-				break
+
 			}
 		}
 	}
@@ -192,15 +210,28 @@ func (gm *MsgMgr) checkHorseChanged(horse *define.HorseRace) bool {
 
 // 发送跑马灯变化通知
 func (gm *MsgMgr) sendHorseRaceChangedNtf() error {
-
+	req := &msgserver.MsgSvrHorseRaceChangeNtf{}
+	channel := int32(0)
+	req.Channel = &channel
+	logrus.Debugln("horse race status changed...")
+	gateclient.NsqBroadcastAllMsg(uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
 	return nil
 }
 
 // 调用hall接口获取用户信息
 // 返回:渠道ID，省ID，城市ID
-func (gm *MsgMgr) getUserInfo(uid uint64) (int64, int64, int64) {
+func (gm *MsgMgr) getUserInfo(uid uint64) (int64, int64, int64, bool) {
 
-	return 0, 0, 0
+	//return 1, 0, 0
+	info, err := hallclient.GetPlayerInfo(uid)
+	if err != nil {
+		return 0, 0, 0, false
+	}
+	if info == nil {
+		return 0, 0, 0, false
+	}
+
+	return int64(info.ChannelId), int64(info.ProvinceId), int64(info.CityId), true
 }
 
 func (gm *MsgMgr)SetUpdateTag(hc *define.HorseContent, status int8) bool {
@@ -284,11 +315,14 @@ func (gm *MsgMgr) getLevelHorseRace(level int64, m map[int64]*define.HorseRace) 
 		if hc.CheckStatus == define.StateStart {
 			list = append(list, hc.Content)
 		}
-		//if gm.checkHorseBegin(hc) {
-		//	list = append(list, hc.Content)
-		//}
 	}
 
 	return list, horse.TickTime, horse.SleepTime, true
 }
 
+
+func (gm *MsgMgr) testGetHorseRace() {
+	gm.GetHorseRace(1001)
+	//gm.GetHorseRace(1002)
+
+}

@@ -43,7 +43,7 @@ func Test_Tuoguan_Single(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x33})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerSingle(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -67,7 +67,7 @@ func Test_Tuoguan_Pair(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x33, 0x43})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerPair(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -92,7 +92,7 @@ func Test_Tuoguan_Shunzi(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x43, 0x45, 0x46, 0x47})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerShunzi(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -120,7 +120,7 @@ func Test_Tuoguan_Shunzi1(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x43, 0x45, 0x46, 0x47})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerShunzi(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -148,7 +148,7 @@ func Test_Tuoguan_Pairs(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x13, 0x45, 0x35})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerPairs(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -177,7 +177,7 @@ func Test_Tuoguan_Triple(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x44})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerTriple(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -203,7 +203,7 @@ func Test_Tuoguan_3And1(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x15, 0x14, 0x44})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3And1(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -230,7 +230,7 @@ func Test_Tuoguan_3And2(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x15, 0x14, 0x25, 0x44})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3And2(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -258,7 +258,7 @@ func Test_Tuoguan_Triples(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x44, 0x23, 0x13})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerTriples(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -287,7 +287,7 @@ func Test_Tuoguan_3sAnd1s(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x44, 0x23, 0x13, 0x49, 0x1B})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3sAnd1s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -318,7 +318,7 @@ func Test_Tuoguan_3sAnd1s_1(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44, 0x15, 0x25, 0x35, 0x45})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3sAnd1s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -352,7 +352,7 @@ func Test_Tuoguan_3sAnd2s(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x34, 0x14, 0x43, 0x44, 0x23, 0x13, 0x17, 0x1B, 0x27, 0x2B})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3sAnd2s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -369,10 +369,10 @@ func Test_Tuoguan_3sAnd2s(t *testing.T) {
 	assert.Equal(t, int(0x19), int(outInts[3]))
 	assert.Equal(t, int(0x29), int(outInts[4]))
 	assert.Equal(t, int(0x39), int(outInts[5]))
-	assert.Equal(t, int(0x16), int(outInts[6]))
-	assert.Equal(t, int(0x26), int(outInts[7]))
-	assert.Equal(t, int(0x22), int(outInts[8]))
-	assert.Equal(t, int(0x32), int(outInts[9]))
+	assert.Equal(t, int(0x22), int(outInts[6]))
+	assert.Equal(t, int(0x32), int(outInts[7]))
+	assert.Equal(t, int(0x16), int(outInts[8]))
+	assert.Equal(t, int(0x26), int(outInts[9]))
 }
 
 // 测试托管的飞机带对子，用例1
@@ -385,7 +385,7 @@ func Test_Tuoguan_3sAnd2s_1(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x45})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3sAnd2s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -416,7 +416,7 @@ func Test_Tuoguan_3sAnd2s_2(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x14, 0x24, 0x34, 0x15, 0x25, 0x35, 0x16, 0x26, 0x36, 0x17, 0x27, 0x37, 0x47, 0x18, 0x28, 0x38, 0x48})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger3sAnd2s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -462,7 +462,7 @@ func Test_Tuoguan_4sAnd1s(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x17, 0x1C, 0x27, 0x37, 0x47, 0x19})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger4sAnd1s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -491,7 +491,7 @@ func Test_Tuoguan_4sAnd2s(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x17, 0x27, 0x37, 0x47, 0x39, 0x39, 0x33, 0x23})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger4sAnd2s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -501,15 +501,15 @@ func Test_Tuoguan_4sAnd2s(t *testing.T) {
 	// 出的牌
 	outInts := states.ToInts(outCards)
 
-	// 应该是88886666
+	// 应该是88889922
 	assert.Equal(t, int(0x18), int(outInts[0]))
 	assert.Equal(t, int(0x28), int(outInts[1]))
 	assert.Equal(t, int(0x38), int(outInts[2]))
 	assert.Equal(t, int(0x48), int(outInts[3]))
-	assert.Equal(t, int(0x16), int(outInts[4]))
-	assert.Equal(t, int(0x26), int(outInts[5]))
-	assert.Equal(t, int(0x36), int(outInts[6]))
-	assert.Equal(t, int(0x46), int(outInts[7]))
+	assert.Equal(t, int(0x19), int(outInts[4]))
+	assert.Equal(t, int(0x29), int(outInts[5]))
+	assert.Equal(t, int(0x22), int(outInts[6]))
+	assert.Equal(t, int(0x32), int(outInts[7]))
 }
 
 // 测试托管的4带2对子，用例1
@@ -522,7 +522,7 @@ func Test_Tuoguan_4sAnd2s_1(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x13, 0x23, 0x33, 0x43, 0x14, 0x24, 0x34, 0x44})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBigger4sAnd2s(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)
@@ -551,7 +551,7 @@ func Test_Tuoguan_Boom(t *testing.T) {
 	lastCards := states.ToDDZCards([]uint32{0x17, 0x27, 0x37, 0x47})
 
 	// 是否成功
-	bSuc, outCards := states.GetMinBiggerBoom(handCards, lastCards)
+	bSuc, outCards := states.GetMinBiggerCards(handCards, lastCards)
 
 	// 应该是成功的
 	assert.Equal(t, true, bSuc)

@@ -130,7 +130,7 @@ func (dp *Player) GetCoin() uint64 {
 
 // AddCoin 修改玩家金币
 func (dp *Player) AddCoin(changeVal int64) {
-	playerdata.AddPlayerCoin(dp.GetPlayerID(), changeVal)
+	playerdata.AddPlayerCoin(dp.GetPlayerID(), changeVal, dp.GetDesk().GetGameId(), 0)
 }
 
 // SetCoin 设置玩家金币， 用不到
