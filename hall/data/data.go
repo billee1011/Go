@@ -144,13 +144,11 @@ func GetPlayerGameInfo(playerID uint64, gameID uint32, fields ...string) (exist 
 	res, err := engine.QueryString(sql)
 
 	if err != nil {
-		err = fmt.Errorf("select t_player_game sql err：%v", err)
+		err = fmt.Errorf("select t_player_game sql:%s ,err：%v", sql, err)
 		return
 	}
 
 	if len(res) == 0 {
-		exist = false
-		err = fmt.Errorf("玩家不存在 gameId:%d 信息记录： %v", gameID, err)
 		return
 	}
 
