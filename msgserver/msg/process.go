@@ -23,6 +23,7 @@ import (
 func ProcessGetHorseRaceReq(playerID uint64, header *steve_proto_gaterpc.Header, req msgserver.MsgSvrGetHorseRaceReq) (ret []exchanger.ResponseMsg) {
 
 	logrus.Debugln("ProcessGetHorseRaceReq req", req)
+
 	response := &msgserver.MsgSvrGetHorseRaceRsp{
 		ErrCode: proto.Int32(0),
 		ErrDesc: proto.String("成功"),
