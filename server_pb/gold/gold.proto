@@ -31,6 +31,8 @@ message AddItem {
     string seq = 5;               // 交易序列号:[ServerName]_[Server_ID]_20180723101111_递增ID
     int64 channel = 6;            // APP渠道ID，来源ID。 比如：华为平台，小米平台，微信平台
     int64 time = 7;                // 订单提交时间(unix 时间戳)
+    int32 gameId = 8;              //  游戏ID: 0=大厅, >0:游戏ID
+    int32 level = 9;                // 游戏场次ID
 }
 
 // 添加金币请求

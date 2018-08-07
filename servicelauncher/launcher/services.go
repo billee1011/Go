@@ -30,6 +30,8 @@ func LoadService() {
 	// 	svr = roomcore.NewService()
 	case "testserver":
 		svr = testcore.NewService()
+	case "msgserver":
+		svr = msgcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
 	case "gold":

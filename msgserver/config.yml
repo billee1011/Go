@@ -15,7 +15,7 @@ rpc_server_name: msgserver
 #RPC服务组名
 #group_name: 1000,1001
 #RPC服务健康监控Port
-health_port: 16401
+health_port: 36402
 
 #consul 服务中心配置
 consul_addr: 192.168.7.108:8500
@@ -26,7 +26,7 @@ redis_passwd:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
 mysql_list:
-  steve:
+  conf:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
