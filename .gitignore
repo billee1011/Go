@@ -9,3 +9,4 @@ room/toclient.yml
 bin/
 .idea/
 *.tar.gz
+nohup.out

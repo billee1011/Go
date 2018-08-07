@@ -273,7 +273,6 @@ func (model *MjEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 	modelMgr := GetModelManager()
 	playerID := leaveInfo.playerID
 
-	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerLeave(playerID, model.needTuoguan())
 	model.setMjPlayerQuitDesk(playerID, true)
 	mjPlayer := model.getContextPlayer(playerID)
 	ctx := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext)
@@ -283,6 +282,7 @@ func (model *MjEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 		playerMgr.GetPlayer(playerID).SetDesk(nil)
 		playerMgr.UnbindPlayerRoomAddr([]uint64{playerID})
 	}
+	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerLeave(playerID, model.needTuoguan())
 	logrus.WithField("player_id", playerID).Debugln("玩家退出")
 	close(leaveInfo.finishChannel)
 }
@@ -344,8 +344,10 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 		continueModel := GetContinueModel(model.GetDesk().GetUid())
 		settler := model.GetDesk().GetConfig().Settle
 		statistics := settler.GetStatistics()
+		model.cancelTuoguanGameOver()
 		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		model.GetDesk().GetConfig().Settle.(*MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
+		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		logEntry.Infoln("游戏结束状态")
 		return true
 	}

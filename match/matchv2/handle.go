@@ -5,8 +5,10 @@ import (
 	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
-	"steve/common/data/player"
-	"steve/gutils"
+	"steve/entity/constant"
+	"steve/external/goldclient"
+	"steve/external/hallclient"
+	"steve/server_pb/gold"
 	server_pb_match "steve/server_pb/match"
 	"steve/server_pb/user"
 	"steve/structs"
@@ -20,27 +22,40 @@ import (
 
 // HandleMatchReq 匹配请求的处理(来自网关服)
 func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req match.MatchReq) (ret []exchanger.ResponseMsg) {
+	entry := logrus.WithFields(logrus.Fields{
+		"player_id": "playerID",
+	})
 
 	response := &match.MatchRsp{
 		ErrCode: proto.Int32(0),
 		ErrDesc: proto.String("成功"),
-		GameId:  req.GetGameId().Enum(),
+		GameId:  proto.Uint32(req.GetGameId()),
 	}
 	ret = []exchanger.ResponseMsg{{
 		MsgID: uint32(msgid.MsgID_MATCH_RSP),
 		Body:  response,
 	}}
 
-	states, _ := player.GetPlayerPlayStates(playerID, player.PlayStates{})
-	if states.State != int(common.PlayerState_PS_IDLE) {
+	states, _ := hallclient.GetPlayerState(playerID)
+	if states.State != user.PlayerState_PS_IDIE {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_MATCH_ALREADY_GAMEING))
-		response.GameId = gutils.GameIDServer2ClientV2(states.GameID).Enum()
+		response.GameId = proto.Uint32(uint32(states.GameId))
 		response.ErrDesc = proto.String("已经在游戏中了")
+		entry.Debugln("已经在游戏中了")
 		return
 	}
-	if player.GetPlayerCoin(playerID) == 0 {
+
+	coin, err := goldclient.GetGold(playerID, int16(gold.GoldType_GOLD_COIN))
+	if err != nil {
+		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
+		response.ErrDesc = proto.String("服务器异常")
+		entry.WithError(err).Errorln("获取金币数失败")
+		return
+	}
+	if coin == 0 {
 		response.ErrCode = proto.Int32(1)
 		response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
+		entry.Debugln("金币数为0")
 		return
 	}
 
@@ -62,7 +77,8 @@ func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 
 	// 不是取消先判断金币数
 	if !req.GetCancel() {
-		if player.GetPlayerCoin(playerID) == 0 {
+		coin, _ := goldclient.GetGold(playerID, int16(gold.GoldType_GOLD_COIN))
+		if coin == 0 {
 			response.ErrCode = proto.Int32(1)
 			response.ErrDesc = proto.String("金豆数为0，不能参加匹配")
 			return
@@ -109,7 +125,7 @@ func (plh *playerLoginHandler) HandleMessage(message *nsq.Message) error {
 
 func init() {
 	exposer := structs.GetGlobalExposer()
-	if err := exposer.Subscriber.Subscribe("player_login", "match", &playerLoginHandler{}); err != nil {
+	if err := exposer.Subscriber.Subscribe(constant.PlayerLogin, "match", &playerLoginHandler{}); err != nil {
 		logrus.WithError(err).Panicln("订阅登录消息失败")
 	}
 }

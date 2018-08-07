@@ -3,7 +3,7 @@ package exchanger
 import (
 	"context"
 	"errors"
-	"steve/common/data/player"
+	"steve/external/hallclient"
 	"steve/structs"
 	"steve/structs/proto/gate_rpc"
 
@@ -124,7 +124,7 @@ func (s *sender) aquirePlayerGate(playerID uint64) *grpc.ClientConn {
 	})
 
 	g := structs.GetGlobalExposer()
-	gateAddr := player.GetPlayerGateAddr(playerID)
+	gateAddr, _ := hallclient.GetGateAddr(playerID)
 	if gateAddr == "" {
 		entry.Debugln("玩家不在线")
 		return nil

@@ -3,8 +3,9 @@ package common
 import (
 	"fmt"
 	"net/http"
-	playerdata "steve/common/data/player"
+	"steve/external/goldclient"
 	"steve/gutils"
+	server_gold "steve/server_pb/gold"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -60,7 +61,14 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	playerdata.SetPlayerCoin(playerID, gold)
+	coin, err := goldclient.GetGold(playerID, int16(server_gold.GoldType_GOLD_COIN))
+	if err != nil {
+		respMSG(resp, fmt.Sprintf("获取玩家金币数失败,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, coin), 200)
+	}
+	coin, err = goldclient.AddGold(playerID, int16(server_gold.GoldType_GOLD_COIN), int64(int64(gold)-coin), 0, 0, 0, 0)
+	if err != nil {
+		respMSG(resp, fmt.Sprintf("配置玩家金币数失败,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, coin), 200)
+	}
 	respMSG(resp, fmt.Sprintf("配置玩家金币数成功,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, gold), 200)
 }
 

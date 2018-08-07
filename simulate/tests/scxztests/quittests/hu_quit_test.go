@@ -37,7 +37,7 @@ func TestHuQuit(t *testing.T) {
 	joinOther3Player(t, players)
 	assert.Nil(t, err)
 	assert.Equal(t, int32(0), rsp.GetErrCode())
-	assert.Equal(t, common.GameId_GAMEID_XUEZHAN, rsp.GetGameId())
+	assert.Equal(t, uint32(common.GameId_GAMEID_XUEZHAN), rsp.GetGameId())
 }
 
 func joinOther3Player(t *testing.T, players []interfaces.ClientPlayer) {
