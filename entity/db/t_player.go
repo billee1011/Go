@@ -8,6 +8,7 @@ type TPlayer struct {
 	Id        int64 `xorm:"pk autoincr BIGINT(20)"`
 	Accountid int64 `xorm:"not null BIGINT(20)"`
 	Playerid  int64 `xorm:"not null BIGINT(20)"`
+	Showuid   int   `xorm:"not null INT(11)"`
 	Type      int   `xorm:"not null default 1 comment('1.普通玩家
 2.机器人
 3.管理员') INT(11)"`

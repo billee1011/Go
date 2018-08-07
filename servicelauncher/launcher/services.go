@@ -6,15 +6,18 @@ import (
 	hallcore "steve/hall/core"
 	logincore "steve/login/core"
 	matchcore "steve/match/core"
-	testcore "steve/testserver/core"
+	msgcore "steve/msgserver/core"
 	"steve/serviceloader/loader"
 	"steve/structs/service"
+	testcore "steve/testserver/core"
 
 	"github.com/Sirupsen/logrus"
-	"steve/structs"
-	"steve/servicelauncher/cmd"
-)
 
+	"steve/servicelauncher/cmd"
+	"steve/structs"
+
+	"github.com/Sirupsen/logrus"
+)
 
 // LoadService load service appointed by name
 func LoadService() {
