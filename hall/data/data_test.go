@@ -219,7 +219,7 @@ func TestSetPlayerState(t *testing.T) {
 	NewPlayerData(accID, playerID)
 	playerState, _ := GetPlayerState(playerID, []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
 	fmt.Printf("%v", playerState)
-	result, err := UpdatePlayerState(playerID, 0, 1)
+	result, err := UpdatePlayerState(playerID, 0, 1, 0, 0)
 	playerState, _ = GetPlayerState(playerID, []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
 	fmt.Printf("%v", playerState)
 	assert.Nil(t, err)
