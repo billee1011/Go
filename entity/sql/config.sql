@@ -1,4 +1,15 @@
 
+/* 通用配置表 */
+drop table if exists `t_common_config`;
+create table if not exists `t_common_config` (
+  `id` bigint auto_increment,
+  `key` varchar(128) NOT NULL comment 'config key', 
+  `subkey` varchar(128) NOT NULL comment 'config sub key',
+  `value` text comment 'config context, json format',
+  PRIMARY KEY ( `id` ),
+  UNIQUE KEY(`key`, `subkey`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 comment '通用配置表';
+
 
 create table t_game_config
 (
@@ -36,5 +47,4 @@ create table t_game_level_config
   updateTime datetime     null,
   updateBy   varchar(64)  null
 )ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '游戏场次配置表';
-
 

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package config;
+
+// ConfigUpdate 配置更新通知
+message ConfigUpdate {
+    string key = 1;
+    string subkey = 2; 
+    string val = 3;
+}
+
+// GetConfigReq 获取配置请求
+message GetConfigReq {
+    string key = 1;
+    string subkey = 2;
+}
+
+// GetConfigRsp 获取配置应答
+message GetConfigRsp {
+    int32 err_code = 1; // 0 成功，其他失败
+    string value = 2;
+}
+
+// Config 配置服务
+service Config {
+    rpc GetConfig(GetConfigReq) returns(GetConfigRsp) {}
+}
