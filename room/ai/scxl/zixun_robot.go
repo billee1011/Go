@@ -1,7 +1,7 @@
 package scxlai
 
 import (
-	"fmt"
+	"github.com/Sirupsen/logrus"
 	"steve/common/mjoption"
 	"steve/entity/majong"
 	"steve/gutils"
@@ -104,21 +104,38 @@ assign2:
 	singles = singles2
 	goto analysis
 analysis:
-	fmt.Println(shunZis, keZis, pairs, doubleChas, singleChas, singles)
+	logrus.WithFields(logrus.Fields{"手牌": cards, "顺子": shunZis, "刻子": keZis, "对子": pairs, "双茬": doubleChas, "单茬": singleChas, "单牌": singles}).Infoln("中级AI拆牌结果")
 
 	if len(singles) == 1 {
 		h.chupai(player, &singles[0].cards[0])
 		return
 	}
 
-	var wallCards []majong.Card
-	for _, wallCard := range mjContext.WallCards {
-		wallCards = append(wallCards, *wallCard)
+	//var wallCards []majong.Card
+	//for _, wallCard := range mjContext.WallCards {
+	//	wallCards = append(wallCards, *wallCard)
+	//}
+	//
+	//remainCards := CountCard(wallCards)
+
+	var visibleCards []*majong.Card
+	visibleCards = append(visibleCards, player.HandCards...)
+	for _, player := range mjContext.Players {
+		visibleCards = append(visibleCards, player.OutCards...)
 	}
 
-	remainCards := CountCard(wallCards)
+	countMap := make(map[majong.Card]int)
+	for _, visuableCard := range visibleCards {
+		countMap[*visuableCard]++
+	}
+
+	var remainCards map[majong.Card]int
+	for k, v := range countMap {
+		remainCards[k] = 4 - v
+	}
+
 	if len(singles) > 1 {
-		min := -1
+		min := 99
 		var outCard majong.Card
 		if len(pairs) >= 1 { //有将，比较成茬机会数
 			for _, single := range singles {
@@ -143,8 +160,36 @@ analysis:
 		return
 	}
 
-	// len(singles) == 0
+	var twoCards []Split
+	for _, singleCha := range singleChas {
+		twoCards = append(twoCards, singleCha)
+	}
+	for _, doubleCha := range doubleChas {
+		twoCards = append(twoCards, doubleCha)
+	}
+	if len(pairs) > 1 { //一个对子留作将，多于一个对子看成牌机会
+		for _, pair := range pairs {
+			twoCards = append(twoCards, pair)
+		}
+	}
 
+	var chances map[Split]int
+	for _, twoCard := range twoCards {
+		chances[twoCard] = countValidCard(remainCards, getValidCard(twoCard))
+	}
+
+	var needChai Split
+	minChance := 99
+	for split, chance := range chances {
+		if chance < minChance {
+			minChance = chance
+			needChai = split
+		} else if chance == minChance && split.t > needChai.t {
+			needChai = split
+		}
+	}
+
+	h.chupai(player, &needChai.cards[0])
 	return
 }
 
