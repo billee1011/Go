@@ -77,10 +77,22 @@ func Test_SplitColorCards(t *testing.T) {
 
 	assert.Equal(t, shunZis, []Split{
 		{SHUNZI, []majong.Card{global.Card5W, global.Card6W, global.Card7W}},
-		{SHUNZI, []majong.Card{global.Card5B, global.Card6B, global.Card7B}},
 		{SHUNZI, []majong.Card{global.Card5T, global.Card6T, global.Card7T}},
+		{SHUNZI, []majong.Card{global.Card5B, global.Card6B, global.Card7B}},
 	})
 	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6W}}})
+}
+
+func Test_SplitZiCards(t *testing.T) {
+	cards := []majong.Card{global.Card5Z, global.Card5Z, global.Card5Z, global.Card6Z, global.Card6Z, global.Card6Z, global.Card6Z, global.Card7Z, global.Card7Z, global.Card7Z}
+	_, keZis, _, _, _, singles := SplitCards(cards, true)
+
+	assert.Equal(t, keZis, []Split{
+		{KEZI, []majong.Card{global.Card5Z, global.Card5Z, global.Card5Z}},
+		{KEZI, []majong.Card{global.Card7Z, global.Card7Z, global.Card7Z}},
+		{KEZI, []majong.Card{global.Card6Z, global.Card6Z, global.Card6Z}},
+	})
+	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6Z}}})
 }
 
 func randCard() int {

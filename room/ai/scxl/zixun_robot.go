@@ -106,6 +106,14 @@ assign2:
 analysis:
 	fmt.Println(shunZis, keZis, pairs, doubleChas, singleChas, singles)
 
+	if len(singles) == 1 {
+		h.chupai(player, &singles[0].cards[0])
+		return
+	}
+
+	if len(singles) > 1 {
+
+	}
 	return
 }
 
@@ -247,41 +255,56 @@ func FindAllCommonShunZi(handCards []majong.Card, duplicateCount int, shunZiLen 
 
 	gap := shunZiLen - 1
 
-	i := 0
-	j := len(matchCards) - 1
-	for {
-		if i+gap <= len(matchCards)-1 && matchCards[i+gap].Color == matchCards[i].Color && matchCards[i+gap].Point-matchCards[i].Point == int32(gap*shunZiGap) { //从1向9取
-			shunZi := matchCards[i : i+gap+1]
-			inflated := InflateAll(shunZi, duplicateCount)
-			result = append(result, inflated)
-			decreaseAll(countMap, shunZi, duplicateCount)
-			if existAll(countMap, matchCards, i, i+gap, duplicateCount) {
-				continue //重复取
-			} else {
-				i += shunZiLen
-			}
-		} else {
-			i++
+	colorCards := divideByColor(matchCards)
+	for color, cards := range colorCards {
+		if color == majong.CardColor_ColorHua || color == majong.CardColor_ColorZi && shunZiLen != 1 {
+			continue //花牌都按单牌处理，字牌没有顺子
 		}
+		i := 0
+		j := len(cards) - 1
+		for {
+			if i+gap <= len(cards)-1 && cards[i+gap].Color == cards[i].Color && cards[i+gap].Point-cards[i].Point == int32(gap*shunZiGap) { //从1向9取
+				shunZi := cards[i : i+gap+1]
+				inflated := InflateAll(shunZi, duplicateCount)
+				result = append(result, inflated)
+				decreaseAll(countMap, shunZi, duplicateCount)
+				if existAll(countMap, cards, i, i+gap, duplicateCount) {
+					continue //重复取
+				} else {
+					i += shunZiLen
+				}
+			} else {
+				i++
+			}
 
-		if j-gap >= 0 && i+gap <= j-gap && matchCards[j-gap].Color == matchCards[j].Color && matchCards[j].Point-matchCards[j-gap].Point == int32(gap*shunZiGap) { //从9向1取
-			shunZi := matchCards[j-gap : j+1]
-			inflated := InflateAll(shunZi, duplicateCount)
-			result = append(result, inflated)
-			decreaseAll(countMap, shunZi, duplicateCount)
-			if existAll(countMap, matchCards, j-gap, j, duplicateCount) {
-				continue //重复取
+			if j-gap >= 0 && i+gap <= j-gap && cards[j-gap].Color == cards[j].Color && cards[j].Point-cards[j-gap].Point == int32(gap*shunZiGap) { //从9向1取
+				shunZi := cards[j-gap : j+1]
+				inflated := InflateAll(shunZi, duplicateCount)
+				result = append(result, inflated)
+				decreaseAll(countMap, shunZi, duplicateCount)
+				if existAll(countMap, cards, j-gap, j, duplicateCount) {
+					continue //重复取
+				} else {
+					j -= shunZiLen
+				}
 			} else {
-				j -= shunZiLen
+				j--
 			}
-		} else {
-			j--
-		}
-		if i > j {
-			break
+			if i > j {
+				break
+			}
 		}
 	}
 	return
+}
+
+// 按万、条、筒、字拆分手牌
+func divideByColor(cards []majong.Card) map[majong.CardColor][]majong.Card {
+	colors := make(map[majong.CardColor][]majong.Card)
+	for _, card := range cards {
+		colors[card.Color] = append(colors[card.Color], card)
+	}
+	return colors
 }
 
 func decreaseAll(countMap map[majong.Card]int, shunZi []majong.Card, duplicateCount int) {
