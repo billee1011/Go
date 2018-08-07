@@ -5,8 +5,8 @@ package user;
 // PlayerState 玩家状态
 enum PlayerState{
     PS_IDIE = 0;     // 空闲中
-    PS_MATCHING = 1; // 匹配中
-    PS_GAMEING = 2;  // 游戏中
+    PS_GAMEING = 1;  // 游戏中
+    PS_MATCHING = 2; // 匹配中
 }
 
 // ServerType 服务类型
@@ -130,6 +130,7 @@ message UpdatePlayerStateReq{
     PlayerState old_state = 2;               // 旧状态       
     PlayerState new_state = 3;               // 新状态  
     uint32 game_id = 4;                      // 游戏ID
+    uint32 level_id = 5;                     // 场次ID
 }
 
 // UpdatePlayerServerAddrReq 更新玩家服务端地址

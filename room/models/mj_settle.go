@@ -7,6 +7,7 @@ import (
 	"steve/common/mjoption"
 	"steve/entity/gamelog"
 	majongpb "steve/entity/majong"
+	"steve/external/goldclient"
 	"steve/gutils"
 	"steve/gutils/topics"
 	"steve/room/contexts"
@@ -15,6 +16,7 @@ import (
 	"steve/room/majong/utils"
 	playerpkg "steve/room/player"
 	"steve/room/util"
+	server_gold "steve/server_pb/gold"
 	"steve/structs"
 	"time"
 
@@ -683,7 +685,7 @@ func (majongSettle *MajongSettle) makeBillDetail(pid uint64, sInfo *majongpb.Set
 func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, payScore map[uint64]int64) {
 	for _, player := range players {
 		pid := player.GetPlayerID()
-		player.AddCoin(payScore[pid])
+		goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], 0, 0, 0, 0)
 		/*
 			// 玩家当前豆子数
 			currentCoin := int64(player.GetCoin())

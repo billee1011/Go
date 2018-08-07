@@ -2,7 +2,7 @@ package router
 
 import (
 	"fmt"
-	"steve/common/data/player"
+	"steve/external/hallclient"
 	"steve/structs"
 
 	"google.golang.org/grpc"
@@ -41,7 +41,7 @@ func (ds *defaultStrategy) GetServerAddr(serverName string, playerID uint64, rou
 type roomStrategy struct{}
 
 func (rs *roomStrategy) GetServerAddr(serverName string, playerID uint64, router uint32) (string, error) {
-	addr := player.GetPlayerRoomAddr(playerID)
+	addr, _ := hallclient.GetRoomAddr(playerID)
 	if addr == "" {
 		s := defaultStrategy{}
 		return s.GetServerAddr(serverName, playerID, router)
