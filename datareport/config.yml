@@ -12,3 +12,11 @@ consul_addr: 192.168.7.108:8500
 
 report_server_ip: 192.168.8.90
 report_server_port: 5000
+
+max_channel_num: 100
+max_task_queue_size: 20000
+waring_num: 17000
+
+head_param: 3
+max_param: 12
+max_connection: 15

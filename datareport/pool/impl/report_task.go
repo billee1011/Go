@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"steve/datareport/bean"
 	"steve/datareport/conn"
+	"github.com/Sirupsen/logrus"
 )
 
 type LogReportTask struct {
@@ -26,6 +27,14 @@ func (task LogReportTask) DoTask() error {
 	}()
 
 	sendValue := task.log.ToReportFormat()
-	conn.GetConManager().GetConnection().Sender(sendValue)
+	connection := conn.GetConManager().GetConnection()
+	if connection == nil{
+		logrus.Error("not get bigdata connection log["+sendValue+"]")
+		panic("not get bigdata connection")
+	}
+	result := connection.Sender(sendValue)
+	if !result{
+		task.DoTask() //提交失败重试
+	}
 	return err
 }
