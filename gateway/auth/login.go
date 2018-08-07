@@ -6,6 +6,7 @@ import (
 	"steve/client_pb/login"
 	"steve/client_pb/msgid"
 	"steve/common/data/player"
+	"steve/entity/constant"
 	"steve/gateway/config"
 	"steve/gateway/connection"
 	"steve/gateway/gateservice"
@@ -102,7 +103,7 @@ func pubLoginMessage(playerID uint64) {
 		entry.WithError(err).Errorln("发布登录消息时消息序列化失败")
 		return
 	}
-	if err := exposer.Publisher.Publish("player_login", messageData); err != nil {
+	if err := exposer.Publisher.Publish(constant.PlayerLogin, messageData); err != nil {
 		entry.WithError(err).Errorln("发布消息失败")
 	}
 }

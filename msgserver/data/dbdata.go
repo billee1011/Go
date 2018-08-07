@@ -68,6 +68,7 @@ func parseHorseJson(horse *define.HorseRace, strJson string) bool {
 
 	horse.TickTime = jsonObject.TickTime
 	horse.SleepTime = jsonObject.SleepTime
+	horse.LastUpdateTime = jsonObject.LastUpdateTime
 
 	for _, v := range jsonObject.Horse {
 		hc := new(define.HorseContent)

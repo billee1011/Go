@@ -13,6 +13,7 @@ type TGameSumary struct {
 	Scoreinfo     string    `xorm:"comment('输赢分,顺序和ID相同') VARCHAR(256)"`
 	Winnerids     string    `xorm:"comment('赢家ID，多个赢家用|分割') VARCHAR(256)"`
 	Roundcurrency string    `xorm:"TEXT"`
+	Gameovertime  time.Time `xorm:"DATETIME"`
 	Createtime    time.Time `xorm:"DATETIME"`
 	Createby      string    `xorm:"VARCHAR(64)"`
 	Updatetime    time.Time `xorm:"DATETIME"`

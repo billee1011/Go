@@ -18,6 +18,9 @@ import (
 // idAllocObject id分配
 var idAllocObject *gutils.Node
 
+// showUID 最大展示uid
+var showUID = "max_show_uid"
+
 // redis 过期时间
 var redisTimeOut = time.Hour * 24
 
@@ -37,9 +40,6 @@ var gameconfigList = map[int16]string{
 	2: "name",
 	3: "type",
 }
-
-// showUID 最大展示uid
-var showUID = "max_show_uid"
 
 const (
 	playerRedisName          = "player"

@@ -15,7 +15,7 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*cache.RobotPlayer
 	lackRobotsID := make([]uint64, 0) // 没有存入redis的机器人
 	for _, robotPlayerID := range robotPlayerIDAll {
 		robotPlayerInfo, err := GetRobotFields(robotPlayerID, cache.GameState, RobotPlayerGameIDWinRate)
-		if err != nil || len(robotPlayerInfo) == 0 {
+		if err != nil || len(robotPlayerInfo) != 2 {
 			lackRobotsID = append(lackRobotsID, robotPlayerID)
 			continue
 		}
@@ -29,10 +29,15 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*cache.RobotPlayer
 		gold, err := goldclient.GetGold(robotPlayerID, int16(gold.GoldType_GOLD_COIN))
 		if err != nil {
 			logrus.WithError(err).Errorf("获取金币失败 robotPlayerID(%v)", robotPlayerIDAll)
+			lackRobotsID = append(lackRobotsID, robotPlayerID)
 			continue
 		}
-		// 玩家ID
-		robotPlayer.Coin = uint64(gold)                                                                     // 金币
+		robotPlayer.Coin = uint64(gold) // 金币
+		if len(robotPlayerInfo[RobotPlayerGameIDWinRate].(string)) == 0 {
+			logrus.WithError(err).Errorf("获取游戏对应的胜率失败 robotPlayerID(%v)", robotPlayerIDAll)
+			lackRobotsID = append(lackRobotsID, robotPlayerID)
+			continue
+		}
 		robotPlayer.GameIDWinRate = JSONToGameIDWinRate(robotPlayerInfo[RobotPlayerGameIDWinRate].(string)) // 游戏对应的胜率
 		robotsIDCoins = append(robotsIDCoins, robotPlayer)
 	}

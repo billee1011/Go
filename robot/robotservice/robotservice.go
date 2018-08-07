@@ -68,7 +68,7 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 		return rsp, fmt.Errorf("没有适合的机器人")
 	}
 	//获取到机器人ID,并将redis该ID的状态为匹配状态
-	if err := data.SetRobotWatch(RobotPlayerID, data.RobotPlayerStateField, newState, data.RedisTimeOut); err != nil {
+	if err := data.SetRobotWatch(RobotPlayerID, cache.GameState, newState, data.RedisTimeOut); err != nil {
 		return rsp, err
 	}
 	rsp.ErrCode = int32(robot.ErrCode_EC_SUCCESS)
