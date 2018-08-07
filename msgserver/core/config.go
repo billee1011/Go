@@ -30,19 +30,38 @@ var mapMsg  = map[msgid.MsgID] interface{} {
 }
 
 /////////////////////////////[4.向client发送通知消息]////////////////////////////////////////////
+// 4.1通过GateWay向指定player_id列表发送通知消息
 /*
+// 方法：通过GateWay向指定玩家ID的client发送通知消息
+// 参数: playerID=玩家ID, cmd=消息ID, body=消息体
+// 返回: 错误
+req := &msgserver.MsgSvrHorseRaceChangeNtf{}
+gateclient.SendPackageByPlayerID(1001, uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
 
+// 方法：通过GateWay向多个指定玩家ID的client发送通知消息
+// 参数: playerIDs=玩家ID列表, cmd=消息ID, body=消息体
+// 返回: 错误
+req := &msgserver.MsgSvrHorseRaceChangeNtf{}
+gateclient.BroadcastPackageByPlayerID([]uint64{1001}, uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
+*/
+
+// 4.2通过GateWay向Client发送广播消息
+/*
+	req := &msgserver.MsgSvrHorseRaceChangeNtf{}
+
+
+	gateclient.NsqBroadcastAllMsg(uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
  */
-
 /////////////////////////////[5.通过nsq发布和订阅消息]////////////////////////////////////////////
-// 4.1发布消息
+
+// 5.1发布消息
 /*
 exposer := structs.GetGlobalExposer()
 if err := exposer.Publisher.Publish("player_login", messageData); err != nil {
 entry.WithError(err).Errorln("发布消息失败")
 }
 */
-// 4.2订阅消息
+// 5.2订阅消息
 /*
 	exposer := structs.GetGlobalExposer()
 	if err := exposer.Subscriber.Subscribe("player_login", "match", &playerLoginHandler{}); err != nil {
