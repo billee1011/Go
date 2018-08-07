@@ -44,6 +44,7 @@ func (log *LogBean) ToReportFormat() string {
 		result = log.convertToLogRealTimeReport()
 	}
 	result += time.Now().Format("2006-01-02 15:04:05") //最后添加上报时间字段
+	result += "\n"
 	return result
 }
 
