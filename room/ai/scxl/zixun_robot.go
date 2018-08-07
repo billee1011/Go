@@ -30,40 +30,40 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 	// 正常出牌
 	colors := divideByColor(handCards)
 	for _, colorCards := range colors {
-		shunZis1 := getShunZi(colorCards)
+		shunZis1 := SplitShunZi(colorCards)
 		remain1 := RemoveSplits(colorCards, shunZis1)
-		keZis1 := getKeZi(remain1)
+		keZis1 := SplitKeZi(remain1)
 		remain1 = RemoveSplits(remain1, keZis1)
 
-		keZis2 := getKeZi(colorCards)
+		keZis2 := SplitKeZi(colorCards)
 		remain2 := RemoveSplits(colorCards, keZis2)
-		shunZis2 := getShunZi(remain2)
+		shunZis2 := SplitShunZi(remain2)
 		remain2 = RemoveSplits(remain2, shunZis2)
 
 		if len(shunZis1)+len(keZis1) == len(shunZis2)+len(keZis2) {
 			noShunZi1 := RemoveSplits(colorCards, shunZis1)
-			gang1 := getGang(noShunZi1)
+			gang1 := SplitGang(noShunZi1)
 			if len(gang1) > 0 {
 				h.gang(player, &gang1[0].cards[0])
 				return
 			}
 
 			noShunZi2 := RemoveSplits(colorCards, shunZis2)
-			gang2 := getGang(noShunZi2)
+			gang2 := SplitGang(noShunZi2)
 			if len(gang2) > 0 {
 				h.gang(player, &gang2[0].cards[0])
 				return
 			}
 		} else if len(shunZis1)+len(keZis1) > len(shunZis2)+len(keZis2) {
 			noShunZi1 := RemoveSplits(colorCards, shunZis1)
-			gang1 := getGang(noShunZi1)
+			gang1 := SplitGang(noShunZi1)
 			if len(gang1) > 0 {
 				h.gang(player, &gang1[0].cards[0])
 				return
 			}
 		} else if len(shunZis1)+len(keZis1) > len(shunZis2)+len(keZis2) {
 			noShunZi2 := RemoveSplits(colorCards, shunZis2)
-			gang2 := getGang(noShunZi2)
+			gang2 := SplitGang(noShunZi2)
 			if len(gang2) > 0 {
 				h.gang(player, &gang2[0].cards[0])
 				return
@@ -83,23 +83,23 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 func SplitCards(cards []majong.Card, shunZiFirst bool) (shunZis []Split, keZis []Split, pairs []Split, doubleChas []Split, singleChas []Split, singles []Split) {
 	remain := cards
 	if shunZiFirst {
-		shunZis = getShunZi(remain)
+		shunZis = SplitShunZi(remain)
 		remain = RemoveSplits(remain, shunZis)
-		keZis = getKeZi(remain)
+		keZis = SplitKeZi(remain)
 		remain = RemoveSplits(remain, keZis)
 	} else {
-		keZis = getKeZi(remain)
-		remain := RemoveSplits(remain, keZis)
-		shunZis = getShunZi(remain)
+		keZis = SplitKeZi(remain)
+		remain = RemoveSplits(remain, keZis)
+		shunZis = SplitShunZi(remain)
 		remain = RemoveSplits(remain, shunZis)
 	}
-	pairs = getPair(remain)
+	pairs = SplitPair(remain)
 	remain = RemoveSplits(remain, pairs)
-	doubleChas = getDoubleCha(remain)
+	doubleChas = SplitDoubleCha(remain)
 	remain = RemoveSplits(remain, doubleChas)
-	singleChas = getSingleCha(remain)
+	singleChas = SplitSingleCha(remain)
 	remain = RemoveSplits(remain, singleChas)
-	singles = getSingle(remain)
+	singles = SplitSingle(remain)
 	return
 }
 
@@ -129,65 +129,37 @@ type Split struct {
 	cards []majong.Card
 }
 
-// 相同Color的牌获取顺子
-func getShunZi(cards []majong.Card) (result []Split) {
-	return getTriple(cards, SHUNZI)
-}
-
-// 相同Color的牌获取刻子
-func getKeZi(cards []majong.Card) (result []Split) {
-	return getTriple(cards, KEZI)
-}
-
-//两边夹击获取顺子
-func getTriple(cards []majong.Card, splitType SplitType) (result []Split) {
-	if len(cards) < 3 {
-		return
-	}
-	MJCardSort(cards)
-
-	var diff int32
-	if splitType == SHUNZI {
-		diff = 1
-	} else {
-		diff = 0
-	}
-	i := 0
-	j := len(cards) - 1
-	for {
-		if i+2 <= len(cards)-1 && cards[i+2].Point-cards[i+1].Point == diff && cards[i+1].Point-cards[i].Point == diff {
-			result = append(result, Split{splitType, []majong.Card{cards[i], cards[i+1], cards[i+2]}})
-			i += 3
-		} else {
-			i++
-		}
-
-		if j-2 >= 0 && i+2 < j-2 && cards[j].Point-cards[j-1].Point == diff && cards[j-1].Point-cards[j-2].Point == diff {
-			result = append(result, Split{splitType, []majong.Card{cards[j-2], cards[j-1], cards[j]}})
-			j -= 3
-		} else {
-			j--
-		}
-		if i >= j {
-			break
-		}
+// 拆出所有顺子
+func SplitShunZi(handCards []majong.Card) (result []Split) {
+	shunZis := FindAllCards(handCards, 1, 3)
+	for _, shunZi := range shunZis {
+		result = append(result, Split{SHUNZI, shunZi})
 	}
 	return
 }
 
-func getDoubleCha(cards []majong.Card) []Split {
+// 拆出所有刻子
+func SplitKeZi(handCards []majong.Card) (result []Split) {
+	keZis := FindAllCards(handCards, 3, 1)
+	for _, keZi := range keZis {
+		result = append(result, Split{KEZI, keZi})
+	}
+	return
+}
+
+func SplitDoubleCha(cards []majong.Card) []Split {
 	doubleCha, _ := getNearShunZi(cards)
 	return doubleCha
 }
 
-func getSingleCha(cards []majong.Card) []Split {
+func SplitSingleCha(cards []majong.Card) []Split {
 	_, singleCha := getNearShunZi(cards)
 	remain := RemoveSplits(cards, singleCha)
 	singleCha = append(singleCha, getSpaceShunZi(remain)...)
 	return singleCha
 }
 
-func getSingle(cards []majong.Card) []Split {
+func SplitSingle(cards []majong.Card) []Split {
 	var result []Split
 	for _, card := range cards {
 		result = append(result, Split{t: SINGLE, cards: []majong.Card{card}})
@@ -195,59 +167,23 @@ func getSingle(cards []majong.Card) []Split {
 	return result
 }
 
-func getNearShunZi(cards []majong.Card) (doubleCha []Split, singleCha []Split) {
-	result := getDouble(cards, DOUBLE_CHA)
+func getNearShunZi(handCards []majong.Card) (doubleCha []Split, singleCha []Split) {
+	result := FindAllCards(handCards, 1, 2)
+
 	for _, split := range result {
 		if ContainsEdge(split) {
-			split.t = SINGLE_CHA
-		}
-	}
-	for _, split := range result {
-		if split.t == DOUBLE_CHA {
-			doubleCha = append(doubleCha, split)
-		}
-		if split.t == SINGLE_CHA {
-			singleCha = append(singleCha, split)
+			singleCha = append(singleCha, Split{SINGLE_CHA, split})
+		} else {
+			doubleCha = append(doubleCha, Split{DOUBLE_CHA, split})
 		}
 	}
 	return
 }
 
-func getPair(cards []majong.Card) (result []Split) {
-	return getDouble(cards, PAIR)
-}
-
-func getDouble(cards []majong.Card, splitType SplitType) (result []Split) {
-	if len(cards) < 2 {
-		return
-	}
-	MJCardSort(cards)
-
-	var diff int32
-	if splitType == DOUBLE_CHA {
-		diff = 1
-	} else {
-		diff = 0
-	}
-	i := 0
-	j := len(cards) - 1
-	for {
-		if i+1 <= len(cards)-1 && cards[i+1].Point-cards[i].Point == diff {
-			result = append(result, Split{splitType, []majong.Card{cards[i], cards[i+1]}})
-			i += 2
-		} else {
-			i++
-		}
-
-		if j-1 >= 0 && i+1 < j-1 && cards[j].Point-cards[j-1].Point == diff {
-			result = append(result, Split{splitType, []majong.Card{cards[j-1], cards[j]}})
-			j -= 2
-		} else {
-			j--
-		}
-		if i >= j {
-			break
-		}
+func SplitPair(handCards []majong.Card) (result []Split) {
+	pairs := FindAllCards(handCards, 2, 1)
+	for _, pair := range pairs {
+		result = append(result, Split{PAIR, pair})
 	}
 	return
 }
@@ -281,16 +217,86 @@ func getSpaceShunZi(cards []majong.Card) (result []Split) {
 	return
 }
 
-func getGang(cards []majong.Card) (result []Split) {
-	countMap := make(map[majong.Card]int)
-	for _, card := range cards {
-		countMap[card]++
+func SplitGang(handCards []majong.Card) (result []Split) {
+	gangs := FindAllCards(handCards, 4, 1)
+	for _, gang := range gangs {
+		result = append(result, Split{GANG, gang})
 	}
+	return
+}
 
+/**
+FindAllCards 双向夹击，找出手牌中所有顺子长度为shunZiLen，重复次数为duplicateCount的牌
+*/
+func FindAllCards(handCards []majong.Card, duplicateCount int, shunZiLen int) (result [][]majong.Card) {
+	countMap := CountCard(handCards)
+	var matchCards []majong.Card
 	for card, count := range countMap {
-		if count >= 4 {
-			result = append(result, Split{GANG, []majong.Card{card, card, card, card}})
+		if count >= duplicateCount {
+			matchCards = append(matchCards, card)
+		}
+	}
+	MJCardSort(matchCards)
+
+	gap := shunZiLen - 1
+
+	i := 0
+	j := len(matchCards) - 1
+	for {
+		if i+gap <= len(matchCards)-1 && matchCards[i+gap].Color == matchCards[i].Color && matchCards[i+gap].Point-matchCards[i].Point == int32(gap) { //从1向9取
+			shunZi := matchCards[i : i+gap+1]
+			inflated := InflateAll(shunZi, duplicateCount)
+			result = append(result, inflated)
+			decreaseAll(countMap, shunZi, duplicateCount)
+			if existAll(countMap, matchCards, i, i+gap, duplicateCount) {
+				continue //重复取
+			} else {
+				i += shunZiLen
+			}
+		} else {
+			i++
+		}
+
+		if j-gap >= 0 && i+gap < j-gap && matchCards[j-gap].Color == matchCards[j].Color && matchCards[j].Point-matchCards[j-gap].Point == int32(gap) { //从9向1取
+			shunZi := matchCards[j-gap : j+1]
+			inflated := InflateAll(shunZi, duplicateCount)
+			result = append(result, inflated)
+			decreaseAll(countMap, shunZi, duplicateCount)
+			if existAll(countMap, matchCards, j-gap, j, duplicateCount) {
+				continue //重复取
+			} else {
+				j -= shunZiLen
+			}
+		} else {
+			j--
+		}
+		if i > j {
 			break
+		}
+	}
+	return
+}
+
+func decreaseAll(countMap map[majong.Card]int, shunZi []majong.Card, duplicateCount int) {
+	for _, card := range shunZi {
+		countMap[card] -= duplicateCount
+	}
+}
+
+func existAll(countMap map[majong.Card]int, matchCards []majong.Card, start int, end int, duplicateCount int) bool {
+	for i := start; i <= end; i++ {
+		card := matchCards[i]
+		if countMap[card] < duplicateCount {
+			return false
+		}
+	}
+	return true
+}
+
+func InflateAll(cards []majong.Card, duplicateCount int) (result []majong.Card) {
+	for _, card := range cards {
+		for i := 0; i < duplicateCount; i++ {
+			result = append(result, card)
 		}
 	}
 	return
@@ -302,36 +308,4 @@ func CountCard(cards []majong.Card) map[majong.Card]int {
 		countMap[card]++
 	}
 	return countMap
-}
-
-func FindCards(cards []majong.Card, duplicateCount int, shunZiLen int) []majong.Card {
-	countMap := CountCard(cards)
-	var matchCards []majong.Card
-	for card, count := range countMap {
-		if count >= duplicateCount {
-			matchCards = append(matchCards, card)
-		}
-	}
-	MJCardSort(matchCards)
-
-	gap := shunZiLen - 1
-	for i, _ := range matchCards {
-		if i >= gap && matchCards[i].Color == matchCards[i-gap].Color && matchCards[i].Point-matchCards[i-gap].Point == int32(gap) {
-			shunZi := matchCards[i-gap : i+1]
-			var result []majong.Card
-			for _, card := range shunZi {
-				inflated := Inflate(card, duplicateCount)
-				result = append(result, inflated...)
-			}
-			return result
-		}
-	}
-	return nil
-}
-
-func Inflate(card majong.Card, duplicateCount int) (result []majong.Card) {
-	for i := 0; i < duplicateCount; i++ {
-		result = append(result, card)
-	}
-	return
 }

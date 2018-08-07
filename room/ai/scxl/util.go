@@ -25,8 +25,8 @@ func Remove(cards []majong.Card, removeCard majong.Card) []majong.Card {
 	return cards
 }
 
-func ContainsEdge(split Split) bool {
-	for _, card := range split.cards {
+func ContainsEdge(cards []majong.Card) bool {
+	for _, card := range cards {
 		if card.Point == 1 || card.Point == 9 {
 			return true
 		}
