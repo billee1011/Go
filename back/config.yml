@@ -28,10 +28,17 @@ redis_list:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
 mysql_list:
-  steve:
-    user: pipi
-    passwd: 123456
-    addr: 127.0.0.1:3306
+  player:
+    user: root
+    passwd: 12345678
+    addr: 192.168.7.108:3306
+    db: steve
+    params:
+      charset: utf8
+  log:
+    user: root
+    passwd: 12345678
+    addr: 192.168.7.108:3306
     db: steve
     params:
       charset: utf8
