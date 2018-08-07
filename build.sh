@@ -26,6 +26,15 @@ cp gold/config.yml configs/gold/config.yml
 go build -o bin/robot/robot.so -o robot/robot.so -buildmode=plugin steve/robot 
 cp robot/config.yml configs/robot/config.yml 
 
+go build -o bin/configuration/configuration.so -o configuration/configuration.so -buildmode=plugin steve/configuration 
+cp configuration/config.yml configs/configuration/config.yml 
+
+go build -o bin/configuration/configuration.so -o configuration/configuration.so -buildmode=plugin steve/configuration 
+cp configuration/config.yml configs/configuration/config.yml 
+
+go build -o bin/msgserver/msgserver.so -o msgserver/msgserver.so -buildmode=plugin steve/msgserver 
+cp msgserver/config.yml configs/msgserver/config.yml
+
 ./simulate/packtests.sh 
 
 

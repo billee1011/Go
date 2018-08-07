@@ -411,15 +411,17 @@ func (x *MsgID) UnmarshalJSON(data []byte) error {
 	*x = MsgID(value)
 	return nil
 }
-func (MsgID) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (MsgID) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_msgid_06178d91950d216c, []int{0}
+}
 
 func init() {
 	proto.RegisterEnum("msgid.MsgID", MsgID_name, MsgID_value)
 }
 
-func init() { proto.RegisterFile("msgid.proto", fileDescriptor0) }
+func init() { proto.RegisterFile("msgid.proto", fileDescriptor_msgid_06178d91950d216c) }
 
-var fileDescriptor0 = []byte{
+var fileDescriptor_msgid_06178d91950d216c = []byte{
 	// 1130 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x96, 0xdd, 0x72, 0xdc, 0x34,
 	0x14, 0xc7, 0x27, 0x8c, 0x77, 0x00, 0x95, 0x06, 0x55, 0x69, 0xbe, 0x48, 0x1b, 0x32, 0x70, 0xc7,

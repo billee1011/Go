@@ -18,8 +18,11 @@ import (
 // idAllocObject id分配
 var idAllocObject *gutils.Node
 
+// showUID 最大展示uid
+var showUID = "max_show_uid"
+
 // redis 过期时间
-var redisTimeOut = time.Hour * 24 * 30
+var redisTimeOut = time.Hour * 24
 
 // 玩家基本信息列表
 var playerInfoList = map[int32]string{
@@ -37,9 +40,6 @@ var gameconfigList = map[int16]string{
 	2: "name",
 	3: "type",
 }
-
-// redis 过期时间
-var redisTimeOut = time.Hour * 24
 
 const (
 	playerRedisName          = "player"
@@ -87,10 +87,14 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	return
 }
 
-// GetPlayerFields 获取玩家的指定字段值
-func GetPlayerFields(playerID uint64, fields []string) (*db.TPlayer, error) {
-	if dbPlayer, err := getPlayerFieldsFromRedis(playerID, fields); err == nil {
-		return dbPlayer, nil
+// GetPlayerInfo 根据玩家id获取玩家个人资料信息
+func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err error) {
+	dbPlayer, err = new(db.TPlayer), nil
+
+	// 从redis获取
+	dbPlayer, err = getPlayerFieldsFromRedis(playerID, fields)
+	if err == nil {
+		return
 	}
 
 	// 从数据库获取
@@ -732,11 +736,8 @@ func updatePlayerFieldsToRedis(playerID uint64, fields []string, dbPlayer *db.TP
 	return nil
 }
 
-// GetPlayerInfo 根据玩家id获取玩家的基本信息
-func GetPlayerInfo(playerID uint64) (info map[string]string, err error) {
-	info, err = map[string]string{}, nil
-
-	engine, err := mysqlEngineGetter(playerMysqlName)
+func updatePlayerGameFieldsToRedis(playerID uint64, gameID uint32, fields []string, dbPlayerGame *db.TPlayerGame) error {
+	redisCli, err := redisCliGetter(playerRedisName, 0)
 	if err != nil {
 		return fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
 	}
