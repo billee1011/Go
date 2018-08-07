@@ -8,7 +8,6 @@ import (
 	"steve/entity/constant"
 	"steve/external/goldclient"
 	"steve/external/hallclient"
-	"steve/gutils"
 	"steve/server_pb/gold"
 	server_pb_match "steve/server_pb/match"
 	"steve/server_pb/user"
@@ -30,7 +29,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 	response := &match.MatchRsp{
 		ErrCode: proto.Int32(0),
 		ErrDesc: proto.String("成功"),
-		GameId:  req.GetGameId().Enum(),
+		GameId:  proto.Uint32(req.GetGameId()),
 	}
 	ret = []exchanger.ResponseMsg{{
 		MsgID: uint32(msgid.MsgID_MATCH_RSP),
@@ -40,7 +39,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 	states, _ := hallclient.GetPlayerState(playerID)
 	if states.State != user.PlayerState_PS_IDIE {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_MATCH_ALREADY_GAMEING))
-		response.GameId = gutils.GameIDServer2ClientV2(int(states.GameId)).Enum()
+		response.GameId = proto.Uint32(uint32(states.GameId))
 		response.ErrDesc = proto.String("已经在游戏中了")
 		entry.Debugln("已经在游戏中了")
 		return

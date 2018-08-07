@@ -67,7 +67,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	// 默认返回消息
 	response := &hall.HallUpdatePlayerInfoRsp{
 		ErrCode: proto.Uint32(1),
-		Result:  proto.Bool(false),
+		// Result:  proto.Bool(false),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -98,7 +98,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 
 	if error == nil {
 		response.ErrCode = proto.Uint32(0)
-		response.Result = proto.Bool(true)
+		// response.Result = proto.Bool(true)
 	}
 
 	return
