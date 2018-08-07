@@ -1,3 +1,10 @@
+pushd configuration 
+serviceloader configuration --config=config.yml &
+popd 
+
+# 其他服务启动依赖配置服
+sleep 2
+
 pushd gateway 
 nohup serviceloader gateway --config=config.yml  &
 popd 
