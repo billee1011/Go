@@ -3,9 +3,12 @@ package player
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	playerdata "steve/common/data/player"
+	"steve/external/goldclient"
+	"steve/external/hallclient"
 	"steve/room/desk"
 	"steve/room/util"
+	"steve/server_pb/gold"
+	server_gold "steve/server_pb/gold"
 	"sync"
 
 	"github.com/golang/protobuf/proto"
@@ -123,25 +126,26 @@ func (dp *Player) SetTuoguan(tuoguan bool, notify bool) {
 	}
 }
 
-// GetCoin 获取玩家金币
-func (dp *Player) GetCoin() uint64 {
-	return uint64(playerdata.GetPlayerCoin(dp.GetPlayerID()))
+func (p *Player) GetCoin() uint64 {
+	coin, err := goldclient.GetGold(p.PlayerID, int16(gold.GoldType_GOLD_COIN))
+	if err != nil {
+		return 0
+	}
+	return uint64(coin)
 }
 
-// AddCoin 修改玩家金币
-func (dp *Player) AddCoin(changeVal int64) {
-	playerdata.AddPlayerCoin(dp.GetPlayerID(), changeVal, dp.GetDesk().GetGameId(), 0)
+func (p *Player) SetCoin(coin uint64) {
+	gold, err := goldclient.GetGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN))
+	if err != nil {
+		return
+	}
+	goldclient.AddGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN), int64(coin)-gold, 0, 0, 0, 0)
 }
 
-// SetCoin 设置玩家金币， 用不到
-/*
-func (dp *Player) SetCoin(coin uint64) {
-	playerdata.SetPlayerCoin(dp.PlayerID, coin)
-}*/
-
-// 判断玩家是否在线
+// IsOnline 判断玩家是否在线
 func (p *Player) IsOnline() bool {
-	return playerdata.GetPlayerGateAddr(p.PlayerID) != ""
+	online, _ := hallclient.GetGateAddr(p.PlayerID)
+	return online != ""
 }
 
 func (dp *Player) notifyTuoguan(playerID uint64, tuoguan bool) {

@@ -131,7 +131,7 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	}, nil
 
 	// 逻辑处理
-	pState, err := data.GetPlayerState(req.GetPlayerId())
+	pState, err := data.GetPlayerState(req.GetPlayerId(), []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
 
 	if err == nil {
 		rsp.GameId, rsp.LevelId = uint32(pState.GameID), uint32(pState.LevelID)
@@ -157,15 +157,18 @@ func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.G
 	}, nil
 
 	// 逻辑处理
-	fields := []string{cache.GameID, cache.WinningRate, cache.WinningBurea, cache.TotalBurea, cache.MaxWinningStream, cache.MaxMultiple}
-	exists, info, err := data.GetPlayerGameInfo(playerID, gameID, fields...)
+	fields := []string{cache.WinningRate, cache.WinningBurea, cache.TotalBurea, cache.MaxWinningStream, cache.MaxMultiple}
+	exist, info, err := data.GetPlayerGameInfo(playerID, gameID, fields...)
 
 	// 返回消息
-	if !exists {
-		rsp.ErrCode = int32(user.ErrCode_EC_EMPTY)
+	if !exist {
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		return
 	}
 	if err == nil {
-		rsp.WinningRate, rsp.ErrCode = uint32(info.Winningrate), int32(user.ErrCode_EC_SUCCESS)
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		rsp.WinningRate, rsp.WinningBurea, rsp.TotalBurea = uint32(info.Winningrate), uint32(info.Winningburea), uint32(info.Totalbureau)
+		rsp.MaxWinningStream, rsp.MaxMultiple = uint32(info.Maxwinningstream), uint32(info.Maxmultiple)
 	}
 
 	return
@@ -185,7 +188,8 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	playerID := req.GetPlayerId()
 	oldState := uint32(req.GetOldState())
 	newState := uint32(req.GetNewState())
-
+	gameID := uint32(req.GetGameId())
+	levelID := uint32(req.GetLevelId())
 	// 校验入参
 	correct := validateUserSate(oldState, newState)
 	if !correct {
@@ -194,7 +198,7 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	}
 
 	// 逻辑处理
-	result, err := data.UpdatePlayerState(playerID, oldState, newState)
+	result, err := data.UpdatePlayerState(playerID, oldState, newState, gameID, levelID)
 
 	// 返回消息
 	if result && err == nil {
@@ -377,9 +381,6 @@ func validateServerType(serverType user.ServerType, serverAddr string) bool {
 
 	if !userServerType[user.ServerType(serverType)] {
 		logrus.Warningln("server_type is incorrect, server_type:%d", serverType)
-		return false
-	}
-	if serverAddr == "" {
 		return false
 	}
 
