@@ -20,8 +20,8 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*cache.RobotPlayer
 			continue
 		}
 		robotPlayer := &cache.RobotPlayer{}
-		robotPlayer.State = InterToUint64(robotPlayerInfo[RobotPlayerStateField]) // 玩家状态
-		if robotPlayer.State != uint64(robot.RobotPlayerState_RPS_IDIE) {         //是空闲状态
+		robotPlayer.State = InterToUint64(robotPlayerInfo[cache.GameState]) // 玩家状态
+		if robotPlayer.State != uint64(robot.RobotPlayerState_RPS_IDIE) {   //是空闲状态
 			continue
 		}
 		robotPlayer.PlayerID = robotPlayerID

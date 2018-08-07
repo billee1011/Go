@@ -55,6 +55,8 @@ func (gm *MsgMgr) GetHorseRace(uid uint64) ([]string, int32, int32, error) {
 	// 3.按照从市ID-》省ID-》渠道ID的顺序获取跑马灯，如果获取到马上返回。
 	// 4.如果开启不使用上级配置的开关，则不向上检索.
 	channel, prov, city, ok := gm.getUserInfo(uid)
+	logrus.Debugf("getUserInfo: uid=%d,channel=%d,prov=%d,city=%d", uid, channel, prov, city)
+
 	if !ok {
 		return nil, 0, 0, errors.New("获取玩家渠道ID失败")
 	}

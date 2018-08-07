@@ -7,6 +7,7 @@ import (
 	"steve/client_pb/msgid"
 	"steve/simulate/global"
 	"steve/client_pb/msgserver"
+	"github.com/Sirupsen/logrus"
 )
 
 // Test_GetPlayerInfo 测试获取玩家数据
@@ -22,5 +23,7 @@ func Test_GetHorseRate(t *testing.T) {
 	response := msgserver.MsgSvrGetHorseRaceRsp{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &response))
 	assert.Zero(t, response.GetErrCode())
+
+	logrus.Infoln("GetHorseRate成功:", response)
 	// assert.NotEmpty(t, response.GetNickName())
 }

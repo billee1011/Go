@@ -40,6 +40,8 @@ const (
 	GameState = "game_state"
 	// GameID ...正在进行的游戏id
 	GameID = "game_id"
+	// LevelID ...正在进行的游戏场次id
+	LevelID = "level_id"
 	// IPAddr ... 玩家ip地址
 	IPAddr = "ip_addr"
 	// GateAddr ...网关服地址
@@ -48,6 +50,17 @@ const (
 	MatchAddr = "match_addr"
 	// RoomAddr ...房间服地址
 	RoomAddr = "room_addr"
+
+	// WinningRate ... 对应gameID：游戏胜率
+	WinningRate = "winningRate"
+	// WinningBurea ... 对应gameID：赢的局数
+	WinningBurea = "winningBurea"
+	// TotalBurea ... 对应gameID：总局数
+	TotalBurea = "totalBureau"
+	// MaxWinningStream ... 对应gameID：最大连胜
+	MaxWinningStream = "maxWinningStream"
+	// MaxMultiple ... 对应gameID：最大倍数
+	MaxMultiple = "maxMultiple"
 )
 
 // FmtAccountPlayerKey 账号所关联玩家 key
@@ -55,9 +68,19 @@ func FmtAccountPlayerKey(accountID uint64) string {
 	return fmt.Sprintf(AccountPlayerKey, accountID)
 }
 
+// FmtGameInfoConfigKey 游戏信息 key
+func FmtGameInfoConfigKey() string {
+	return "gameInfoconfig"
+}
+
 // FmtPlayerIDKey 玩家ID key
 func FmtPlayerIDKey(playerID uint64) string {
-	return fmt.Sprintf("player:%v", playerID)
+	return fmt.Sprintf("player_%v:pinfo", playerID)
+}
+
+// FmtPlayerGameInfoKey 玩家游戏信息
+func FmtPlayerGameInfoKey(playerID uint64, gameID uint32) string {
+	return fmt.Sprintf("player_%v:ginfo_%v", playerID, gameID)
 }
 
 // FmtPlayerTokenKey format player's token key

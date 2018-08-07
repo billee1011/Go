@@ -19,7 +19,7 @@ redis_list:
 
 # mysql 数据库列表
 mysql_list:
-  steve:
+  player:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
