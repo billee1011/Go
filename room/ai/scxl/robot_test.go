@@ -68,3 +68,24 @@ func Test_SplitKeZiFirst(t *testing.T) {
 	})
 	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6W}}})
 }
+
+func Test_SplitSpaceShunZi(t *testing.T) {
+	cards := []majong.Card{global.Card5W, global.Card7W}
+	_, _, _, _, singleChas, _ := SplitCards(cards, false)
+
+	assert.Equal(t, singleChas, []Split{
+		{SINGLE_CHA, []majong.Card{global.Card5W, global.Card7W}},
+	})
+}
+
+func Test_SplitColorCards(t *testing.T) {
+	cards := []majong.Card{global.Card5W, global.Card5T, global.Card5B, global.Card6W, global.Card6T, global.Card6B, global.Card6W, global.Card7W, global.Card7T, global.Card7B}
+	shunZis, _, _, _, _, singles := SplitCards(cards, false)
+
+	assert.Equal(t, shunZis, []Split{
+		{SHUNZI, []majong.Card{global.Card5W, global.Card6W, global.Card7W}},
+		{SHUNZI, []majong.Card{global.Card5B, global.Card6B, global.Card7B}},
+		{SHUNZI, []majong.Card{global.Card5T, global.Card6T, global.Card7T}},
+	})
+	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6W}}})
+}
