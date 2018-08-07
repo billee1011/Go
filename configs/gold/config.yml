@@ -38,4 +38,4 @@ mysql_list:
 #nsq 消息队列配置
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs:
-  - 192.168.7.108:4161
+  - 127.0.0.1:4161

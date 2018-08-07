@@ -10,7 +10,10 @@ import (
 	"github.com/go-xorm/xorm"
 )
 
-const dbName = "steve"
+const (
+	dbPlayer = "player"
+	dbLog    = "log"
+)
 
 // GetWinningRate 更新胜率
 func GetWinningRate() {
@@ -37,7 +40,7 @@ func GetMaxMultiple() {
 // GetTPlayerGame 获取t_player_game的信息
 func GetTPlayerGame(gameID int, playerID uint64) (*db.TPlayerGame, error) {
 	tpg := &db.TPlayerGame{}
-	engine, err := MysqlEngineGetter(dbName)
+	engine, err := MysqlEngineGetter(dbPlayer)
 	if err != nil {
 		logrus.Errorln(err)
 		return tpg, err
@@ -63,7 +66,7 @@ func GetTPlayerGame(gameID int, playerID uint64) (*db.TPlayerGame, error) {
 
 // UpdateTPlayerGame 更新t_player_game的信息
 func UpdateTPlayerGame(tpg *db.TPlayerGame) error {
-	engine, err := MysqlEngineGetter(dbName)
+	engine, err := MysqlEngineGetter(dbPlayer)
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -79,7 +82,7 @@ func UpdateTPlayerGame(tpg *db.TPlayerGame) error {
 
 // InsertTPlayerGame 初始化第一条playerGame信息
 func InsertTPlayerGame(tpg *db.TPlayerGame) error {
-	engine, err := MysqlEngineGetter(dbName)
+	engine, err := MysqlEngineGetter(dbPlayer)
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -111,7 +114,7 @@ func translationTPG(kv map[string]string, tpg *db.TPlayerGame) {
 
 // InsertSummary 向db添加Summary信息
 func InsertSummary(summary *db.TGameSumary) error {
-	engine, err := MysqlEngineGetter(dbName)
+	engine, err := MysqlEngineGetter(dbLog)
 	if err != nil {
 		logrus.Errorln(err)
 		return err
@@ -126,7 +129,7 @@ func InsertSummary(summary *db.TGameSumary) error {
 
 // InsertDetail 向db库添加detail信息
 func InsertDetail(detail *db.TGameDetail) error {
-	engine, err := MysqlEngineGetter(dbName)
+	engine, err := MysqlEngineGetter(dbLog)
 	if err != nil {
 		logrus.Errorln(err)
 		return err
