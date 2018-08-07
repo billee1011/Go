@@ -39,6 +39,10 @@ func (m *Card) GetPoint() int32 {
 	return 0
 }
 
+func (m Card) Equals(other Card) bool {
+	return m.Point == other.Point && m.Color == other.Color
+}
+
 // TingAction 听牌动作
 type TingAction struct {
 	EnableTing bool     `protobuf:"varint,1,opt,name=enable_ting,json=enableTing" json:"enable_ting,omitempty"`
