@@ -20,3 +20,5 @@ waring_num: 17000
 head_param: 3
 max_param: 12
 max_connection: 15
+
+fail_retry_num: 5

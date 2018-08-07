@@ -7,3 +7,4 @@ var LOG_TABLE_NAME_REALTIME = "log_realtime_report" //实时上报
 var HEAD_PARAM = viper.GetInt("head_param")
 var MAX_PARAM = viper.GetInt("max_param")
 var MAX_CONN_NUM = viper.GetInt("max_connection")
+var FAIL_RETRY_NUM = viper.GetInt("fail_retry_num")
