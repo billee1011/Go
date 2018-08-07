@@ -5,9 +5,10 @@ import (
 	"errors"
 	"steve/server_pb/data_report"
 	"context"
+	"steve/datareport/fixed"
 )
 
-func DataReport(logType int, province int, city int, channel int, playerId uint64, value string) (int, error) {
+func DataReport(logType  fixed.LogType, province int, city int, channel int, playerId uint64, value string) (int, error) {
 	e := structs.GetGlobalExposer()
 	conn, err := e.RPCClient.GetConnectByServerName("datareport")
 	if err != nil || conn == nil {
