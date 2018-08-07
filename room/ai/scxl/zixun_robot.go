@@ -111,8 +111,82 @@ analysis:
 		return
 	}
 
-	if len(singles) > 1 {
+	var wallCards []majong.Card
+	for _, wallCard := range mjContext.WallCards {
+		wallCards = append(wallCards, *wallCard)
+	}
 
+	remainCards := CountCard(wallCards)
+	if len(singles) > 1 {
+		min := -1
+		var outCard majong.Card
+		if len(pairs) >= 1 { //有将，比较成茬机会数
+			for _, single := range singles {
+				validCards := getValidCard(single)
+				chance := countValidCard(remainCards, validCards)
+				if chance < min {
+					min = chance
+					outCard = single.cards[0]
+				}
+			}
+
+		} else { //无将，比较成将机会数
+			for _, single := range singles {
+				chance := remainCards[single.cards[0]]
+				if chance < min {
+					min = chance
+					outCard = single.cards[0]
+				}
+			}
+		}
+		h.chupai(player, &outCard)
+		return
+	}
+
+	// len(singles) == 0
+
+	return
+}
+
+func countValidCard(remainCards map[majong.Card]int, validCards []majong.Card) int {
+	total := 0
+	for _, validCard := range validCards {
+		total += remainCards[validCard]
+	}
+	return total
+}
+
+func getValidCard(split Split) (result []majong.Card) {
+	if split.t == SINGLE { //单牌成茬有效牌
+		single := split.cards[0]
+		if single.Color == majong.CardColor_ColorHua || single.Color == majong.CardColor_ColorZi {
+			return
+		}
+		for _, addend := range []int32{-2, -1, 1, 2} {
+			if single.Point+addend >= 1 && single.Point+addend <= 9 {
+				result = append(result, majong.Card{Color: single.Color, Point: single.Point + addend})
+			}
+		}
+	}
+	if split.t == PAIR { //对子成刻有效牌
+		result = append(result, split.cards[0])
+	}
+	if split.t == DOUBLE_CHA {
+		small := split.cards[0]
+		result = append(result, majong.Card{Color: small.Color, Point: small.Point - 1})
+		result = append(result, majong.Card{Color: small.Color, Point: small.Point + 2})
+	}
+	if split.t == SINGLE_CHA {
+		small := split.cards[0]
+		if ContainsEdge(split.cards) { // 12 89
+			if small.Point == 1 {
+				result = append(result, majong.Card{Color: small.Color, Point: 3})
+			} else {
+				result = append(result, majong.Card{Color: small.Color, Point: 7})
+			}
+		} else { // 13 24 35 ... 79
+			result = append(result, majong.Card{Color: small.Color, Point: small.Point + 1})
+		}
 	}
 	return
 }
