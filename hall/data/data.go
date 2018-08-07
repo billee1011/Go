@@ -119,6 +119,8 @@ func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err
 
 // GetPlayerGameInfo 获取玩家游戏信息
 func GetPlayerGameInfo(playerID uint64, gameID uint32, fields ...string) (exist bool, dbPlayerGame *db.TPlayerGame, err error) {
+	logrus.Debugf("get player game info playerId :%d, gameID:%d, fields:%v", playerID, gameID, fields)
+
 	exist, dbPlayerGame, err = true, new(db.TPlayerGame), nil
 
 	// 从redis获取
@@ -187,7 +189,14 @@ func GetPlayerState(playerID uint64, fields ...string) (pState *PlayerState, err
 }
 
 // UpdatePlayerState 修改玩家游戏状态
-func UpdatePlayerState(playerID uint64, oldState, newState uint32) (result bool, err error) {
+func UpdatePlayerState(playerID uint64, oldState, newState, gameID, levelID uint32) (result bool, err error) {
+	enrty := logrus.WithFields(logrus.Fields{
+		"func_name": "update_player_state",
+		"playerID":  playerID,
+		"oldState":  oldState,
+		"newState":  newState,
+	})
+
 	result, err = true, nil
 	redisKey := cache.FmtPlayerIDKey(uint64(playerID))
 
@@ -202,16 +211,26 @@ func UpdatePlayerState(playerID uint64, oldState, newState uint32) (result bool,
 
 	rfields := map[string]string{
 		cache.GameState: fmt.Sprintf("%d", newState),
+		cache.GameID:    fmt.Sprintf("%d", gameID),
+		cache.LevelID:   fmt.Sprintf("%d", levelID),
 	}
 
 	if err = setPlayerStateByWatch(playerRedisName, redisKey, oldState, rfields, redisTimeOut); err != nil {
 		err = fmt.Errorf("save playerInfo  into redis fail： %v", err)
 	}
+	enrty.WithError(err).Warningln("update_player_state finish")
 	return
 }
 
 // UpdatePlayerGateInfo 修改玩家网关服信息
 func UpdatePlayerGateInfo(playerID uint64, idAddr, gateAddr string) (result bool, err error) {
+	enrty := logrus.WithFields(logrus.Fields{
+		"func_name": "update_player_gateInfo",
+		"playerID":  playerID,
+		"idAddr":    idAddr,
+		"gateAddr":  gateAddr,
+	})
+
 	result, err = true, nil
 
 	redisCli, err := redisCliGetter(playerRedisName, 0)
@@ -224,15 +243,25 @@ func UpdatePlayerGateInfo(playerID uint64, idAddr, gateAddr string) (result bool
 		cache.IPAddr:   idAddr,
 		cache.GateAddr: gateAddr,
 	}
+
 	status := redisCli.HMSet(playerKey, kv)
 	if status.Err() != nil {
 		return false, fmt.Errorf("设置失败(%v)", status.Err())
 	}
+
+	enrty.WithError(err).Warningln("update_player_gateInfo finish")
 	return
 }
 
 // UpdatePlayerServerAddr 修改玩家服务端地址
 func UpdatePlayerServerAddr(playerID uint64, serverType uint32, serverAddr string) (result bool, err error) {
+	enrty := logrus.WithFields(logrus.Fields{
+		"func_name":  "update_player_server_addr",
+		"playerID":   playerID,
+		"serverType": serverType,
+		"serverAddr": serverAddr,
+	})
+
 	result, err = true, nil
 
 	redisCli, err := redisCliGetter(playerRedisName, 0)
@@ -254,6 +283,8 @@ func UpdatePlayerServerAddr(playerID uint64, serverType uint32, serverAddr strin
 	if status.Err() != nil {
 		return false, fmt.Errorf("设置失败(%v)", status.Err())
 	}
+
+	enrty.WithError(err).Warningln("update_player_serveraddr finish")
 	return
 }
 
@@ -392,8 +423,8 @@ func InitPlayerState(playerID int64) (err error) {
 
 	rfields := map[string]string{
 		cache.GameState: fmt.Sprintf("%d", user.PlayerState_PS_IDIE),
-		cache.IPAddr:    fmt.Sprintf("%s", "127.0.0.1"),
-		cache.GateAddr:  fmt.Sprintf("%s", "127.0.0.1:36002"),
+		cache.IPAddr:    "",
+		cache.GateAddr:  "",
 	}
 
 	if err = setRedisFields(playerRedisName, redisKey, rfields, redisTimeOut); err != nil {

@@ -2,7 +2,7 @@ package match
 
 import (
 	"steve/client_pb/room"
-	"steve/common/data/player"
+	"steve/external/hallclient"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -77,7 +77,7 @@ func (m *Manager) match(gameID int, playerCount int, ch chan uint64) {
 	for {
 		select {
 		case playerID := <-ch:
-			online := player.GetPlayerGateAddr(playerID)
+			online, _ := hallclient.GetGateAddr(playerID)
 			if online == "" {
 				logEntry.Debugln("player is not online, remove the player[%d]", playerID)
 				continue

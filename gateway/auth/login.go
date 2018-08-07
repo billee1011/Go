@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"steve/client_pb/login"
 	"steve/client_pb/msgid"
-	"steve/common/data/player"
+	"steve/external/hallclient"
 	"steve/gateway/config"
 	"steve/gateway/connection"
 	"steve/gateway/gateservice"
@@ -137,7 +137,7 @@ func callLoginService(clientRequest *login.LoginAuthReq) (clientResponse *login.
 
 // checkAnother 顶号检查
 func checkAnother(playerID uint64) {
-	gateAddr := player.GetPlayerGateAddr(playerID)
+	gateAddr, _ := hallclient.GetGateAddr(playerID)
 	if gateAddr == "" {
 		return
 	}

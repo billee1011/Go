@@ -33,7 +33,7 @@ func GetRobot(gameID uint32, levelID uint32, beginRate int8, endRate int8, begin
 	rsp, err := client.GetRobotPlayerIDByInfo(context.Background(), &robot.GetRobotPlayerIDReq{
 		Game:         &robot.GameConfig{GameId: gameID, LevelId: levelID},
 		WinRateRange: &robot.WinRateRange{Low: int32(beginRate), High: int32(endRate)},
-		CoinsRange:   &robot.CoinsRange{Low: int32(beginGold), High: int32(endGold)},
+		CoinsRange:   &robot.CoinsRange{Low: int64(beginGold), High: int64(endGold)},
 	})
 
 	// 检测返回值

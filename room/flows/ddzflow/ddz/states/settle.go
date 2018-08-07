@@ -3,9 +3,10 @@ package states
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	playerdata "steve/common/data/player"
 	"steve/entity/poker/ddz"
+	"steve/external/goldclient"
 	"steve/room/flows/ddzflow/machine"
+	server_gold "steve/server_pb/gold"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -49,9 +50,12 @@ func (s *settleState) settle(m machine.Machine) {
 	maxScores := make(map[uint64]uint64)
 	for _, player := range context.GetPlayers() {
 		playerId := player.PlayerId
-		coin := playerdata.GetPlayerCoin(playerId)
+		coin, err := goldclient.GetGold(playerId, int16(server_gold.GoldType_GOLD_COIN))
+		if err != nil {
+			logrus.Errorf("settle 获取金币失败：%v", err.Error())
+		}
 		s := If(playerId == lordId, score*2, score).(uint64)
-		maxScores[playerId] = If(s > coin, coin, s).(uint64)
+		maxScores[playerId] = If(s > uint64(coin), uint64(coin), s).(uint64)
 	}
 
 	settleScores := make(map[uint64]uint64)
@@ -96,15 +100,18 @@ func (s *settleState) settle(m machine.Machine) {
 		billPlayer.Win = &isWin
 		billPlayer.Base = proto.Int32(int32(base))
 		billPlayer.Multiple = &mul
-		originCoin := playerdata.GetPlayerCoin(playerId)
 		settleScore := settleScores[playerId]
 		if isWin {
-			playerdata.SetPlayerCoin(playerId, originCoin+settleScore) //赢钱
+			goldclient.AddGold(playerId, int16(server_gold.GoldType_GOLD_COIN), int64(settleScore), 0, 0) //赢钱
 		} else {
-			playerdata.SetPlayerCoin(playerId, originCoin-settleScore) //输钱
+			goldclient.AddGold(playerId, int16(server_gold.GoldType_GOLD_COIN), int64(-settleScore), 0, 0) //输钱
 		}
 		billPlayer.Score = proto.Int64(int64(settleScore))
-		billPlayer.CurrentScore = proto.Int64(int64(playerdata.GetPlayerCoin(playerId)))
+		gold, err := goldclient.GetGold(playerId, int16(server_gold.GoldType_GOLD_COIN))
+		if err != nil {
+			logrus.Errorf("settle 获取金币失败：%v", err.Error())
+		}
+		billPlayer.CurrentScore = proto.Int64(int64(gold))
 		billPlayer.Lord = &player.Lord
 		billPlayer.OutCards = player.OutCards
 		billPlayer.HandCards = player.HandCards

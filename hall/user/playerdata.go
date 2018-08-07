@@ -188,7 +188,8 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	playerID := req.GetPlayerId()
 	oldState := uint32(req.GetOldState())
 	newState := uint32(req.GetNewState())
-
+	gameID := uint32(req.GetGameId())
+	levelID := uint32(req.GetLevelId())
 	// 校验入参
 	correct := validateUserSate(oldState, newState)
 	if !correct {
@@ -197,7 +198,7 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	}
 
 	// 逻辑处理
-	result, err := data.UpdatePlayerState(playerID, oldState, newState)
+	result, err := data.UpdatePlayerState(playerID, oldState, newState, gameID, levelID)
 
 	// 返回消息
 	if result && err == nil {
@@ -380,9 +381,6 @@ func validateServerType(serverType user.ServerType, serverAddr string) bool {
 
 	if !userServerType[user.ServerType(serverType)] {
 		logrus.Warningln("server_type is incorrect, server_type:%d", serverType)
-		return false
-	}
-	if serverAddr == "" {
 		return false
 	}
 
