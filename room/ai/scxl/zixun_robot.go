@@ -28,6 +28,17 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 		}
 	}
 
+	outCard, gang := getOutCard(handCards, mjContext)
+	if gang {
+		aiEvent = h.gang(player, &outCard)
+	} else {
+		aiEvent = h.chupai(player, &outCard)
+	}
+	logrus.WithField("outCard", outCard).WithField("gang", gang).Infoln("中级AI出牌")
+	return
+}
+
+func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majong.Card, bool) {
 	var cards []majong.Card
 	for _, handCard := range handCards {
 		cards = append(cards, *handCard)
@@ -41,23 +52,20 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 		remain := RemoveSplits(cards, shunZis1)
 		gangs := SplitGang(remain)
 		if len(gangs) > 0 {
-			h.gang(player, &gangs[0].cards[0])
-			return
+			return gangs[0].cards[0], true
 		}
 		goto assign1
 	} else if len(shunZis1)+len(keZis1) == len(shunZis2)+len(keZis2) {
 		remain1 := RemoveSplits(cards, shunZis1)
 		gangs := SplitGang(remain1)
 		if len(gangs) > 0 {
-			h.gang(player, &gangs[0].cards[0])
-			return
+			return gangs[0].cards[0], true
 		}
 
 		remain2 := RemoveSplits(cards, shunZis1)
 		gangs = SplitGang(remain2)
 		if len(gangs) > 0 {
-			h.gang(player, &gangs[0].cards[0])
-			return
+			return gangs[0].cards[0], true
 		}
 		if len(pairs1) > len(pairs2) {
 			goto assign1
@@ -82,8 +90,7 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 		remain := RemoveSplits(cards, shunZis2)
 		gangs := SplitGang(remain)
 		if len(gangs) > 0 {
-			h.gang(player, &gangs[0].cards[0])
-			return
+			return gangs[0].cards[0], true
 		}
 		goto assign2
 	}
@@ -107,8 +114,7 @@ analysis:
 	logrus.WithFields(logrus.Fields{"手牌": cards, "顺子": shunZis, "刻子": keZis, "对子": pairs, "双茬": doubleChas, "单茬": singleChas, "单牌": singles}).Infoln("中级AI拆牌结果")
 
 	if len(singles) == 1 {
-		h.chupai(player, &singles[0].cards[0])
-		return
+		return singles[0].cards[0], false
 	}
 
 	//var wallCards []majong.Card
@@ -119,7 +125,7 @@ analysis:
 	//remainCards := CountCard(wallCards)
 
 	var visibleCards []*majong.Card
-	visibleCards = append(visibleCards, player.HandCards...)
+	visibleCards = append(visibleCards, handCards...)
 	for _, player := range mjContext.Players {
 		visibleCards = append(visibleCards, player.OutCards...)
 	}
@@ -135,29 +141,8 @@ analysis:
 	}
 
 	if len(singles) > 1 {
-		min := 99
-		var outCard majong.Card
-		if len(pairs) >= 1 { //有将，比较成茬机会数
-			for _, single := range singles {
-				validCards := getValidCard(single)
-				chance := countValidCard(remainCards, validCards)
-				if chance < min {
-					min = chance
-					outCard = single.cards[0]
-				}
-			}
-
-		} else { //无将，比较成将机会数
-			for _, single := range singles {
-				chance := remainCards[single.cards[0]]
-				if chance < min {
-					min = chance
-					outCard = single.cards[0]
-				}
-			}
-		}
-		h.chupai(player, &outCard)
-		return
+		outCard := whichSingle(remainCards, singles, len(pairs) >= 1)
+		return outCard, false
 	}
 
 	var twoCards []Split
@@ -173,9 +158,9 @@ analysis:
 		}
 	}
 
-	var chances map[Split]int
+	var chances map[*Split]int
 	for _, twoCard := range twoCards {
-		chances[twoCard] = countValidCard(remainCards, getValidCard(twoCard))
+		chances[&twoCard] = countValidCard(remainCards, getValidCard(twoCard))
 	}
 
 	var needChai Split
@@ -183,14 +168,39 @@ analysis:
 	for split, chance := range chances {
 		if chance < minChance {
 			minChance = chance
-			needChai = split
+			needChai = *split
 		} else if chance == minChance && split.t > needChai.t {
-			needChai = split
+			needChai = *split
 		}
 	}
+	singles = SplitSingle(needChai.cards)
+	outCard := whichSingle(remainCards, singles, needChai.t == PAIR && len(pairs) >= 2 || needChai.t != PAIR && len(pairs) >= 1)
+	return outCard, false
+}
 
-	h.chupai(player, &needChai.cards[0])
-	return
+func whichSingle(remainCards map[majong.Card]int, singles []Split, cha bool) majong.Card {
+	min := 99
+	var outCard majong.Card
+	if cha { //有将，比较成茬机会数
+		for _, single := range singles {
+			validCards := getValidCard(single)
+			chance := countValidCard(remainCards, validCards)
+			if chance < min {
+				min = chance
+				outCard = single.cards[0]
+			}
+		}
+
+	} else { //无将，比较成将机会数
+		for _, single := range singles {
+			chance := remainCards[single.cards[0]]
+			if chance < min {
+				min = chance
+				outCard = single.cards[0]
+			}
+		}
+	}
+	return outCard
 }
 
 func countValidCard(remainCards map[majong.Card]int, validCards []majong.Card) int {

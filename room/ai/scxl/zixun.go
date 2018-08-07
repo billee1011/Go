@@ -63,9 +63,9 @@ func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majon
 	case ai.OverTimeAI, ai.SpecialOverTimeAI:
 		aiEvent = h.generateOverTime(player, mjContext)
 	case ai.TuoGuangAI:
-		aiEvent = h.generateTuoGuang(player, mjContext)
+		aiEvent = h.getMiddleAIEvent(player, mjContext)
 	case ai.RobotAI:
-		aiEvent = h.generateRobot(player, mjContext)
+		aiEvent = h.getMiddleAIEvent(player, mjContext)
 	case ai.TingAI:
 		aiEvent = h.generateTing(player, mjContext)
 	case ai.HuAI:
