@@ -15,7 +15,7 @@ import (
 
 */
 
-const dbName = "conf"
+const dbName = "config"
 
 // 从DB加载跑马灯
 func LoadHorseFromDB() (map[int64]*define.HorseRace, error) {
