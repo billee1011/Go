@@ -15,8 +15,6 @@ import (
 
 	"steve/servicelauncher/cmd"
 	"steve/structs"
-
-	"github.com/Sirupsen/logrus"
 )
 
 // LoadService load service appointed by name
