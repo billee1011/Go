@@ -68,7 +68,7 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 				if len(singleChas1) > len(singleChas2) {
 					goto assign1
 				} else if len(singleChas1) == len(singleChas2) {
-					goto assign1
+					goto assign2
 				} else {
 					goto assign2
 				}
@@ -130,15 +130,6 @@ func SplitCards(cards []majong.Card, shunZiFirst bool) (shunZis []Split, keZis [
 	remain = RemoveSplits(remain, singleChas)
 	singles = SplitSingle(remain)
 	return
-}
-
-// 按万、条、筒、字拆分手牌
-func divideByColor(cards []*majong.Card) map[majong.CardColor][]majong.Card {
-	colors := make(map[majong.CardColor][]majong.Card)
-	for _, card := range cards {
-		colors[card.Color] = append(colors[card.Color], *card)
-	}
-	return colors
 }
 
 type SplitType int

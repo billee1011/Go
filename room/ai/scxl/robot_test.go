@@ -2,18 +2,11 @@ package scxlai
 
 import (
 	"github.com/magiconair/properties/assert"
+	"math/rand"
 	"steve/entity/majong"
 	"steve/room/majong/global"
 	"testing"
 )
-
-func Test_DivideCard(t *testing.T) {
-	colors := divideByColor([]*majong.Card{&global.Card1W, &global.Card2W, &global.Card1T, &global.Card1B, &global.Card2T, &global.Card1Z})
-	assert.Equal(t, colors[majong.CardColor_ColorWan], []majong.Card{global.Card1W, global.Card2W})
-	assert.Equal(t, colors[majong.CardColor_ColorTiao], []majong.Card{global.Card1T, global.Card2T})
-	assert.Equal(t, colors[majong.CardColor_ColorTong], []majong.Card{global.Card1B})
-	assert.Equal(t, colors[majong.CardColor_ColorZi], []majong.Card{global.Card1Z})
-}
 
 func Test_GetShunZi(t *testing.T) {
 	result := SplitShunZi([]majong.Card{global.Card1W, global.Card3W, global.Card4W, global.Card5W, global.Card6W, global.Card7W, global.Card8W, global.Card9W}) // 13456789万
@@ -88,4 +81,21 @@ func Test_SplitColorCards(t *testing.T) {
 		{SHUNZI, []majong.Card{global.Card5T, global.Card6T, global.Card7T}},
 	})
 	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6W}}})
+}
+
+func randCard() int {
+	suit := rand.Intn(4) + 1
+	point := rand.Intn(9) + 1
+	return suit*10 + point
+}
+
+func Benchmark_SplitCards(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var cards []int
+		for j := 0; j < 13; j++ {
+			cards = append(cards, randCard())
+		}
+		SplitCards(global.ToMJCards(cards), true)
+		SplitCards(global.ToMJCards(cards), false)
+	}
 }
