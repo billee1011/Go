@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package datareport;
+
+// 创建桌子的请求
+message ReportRequest {
+    int32 LogType = 1;
+    int32 Province = 2;
+    int32 City = 3;
+    int32 Channel = 4;
+    uint64 PlayerId = 5;
+    string Value = 6;
+}
+
+// 创建桌子的回复
+message ReportResponse {
+    uint32 err_code = 1; // 错误码
+}
+
+service ReportService {
+    rpc Report (ReportRequest) returns (ReportResponse) {
+    }
+}
