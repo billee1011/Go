@@ -414,9 +414,11 @@ func InitPlayerData(player db.TPlayer) error {
 	if err != nil {
 		return err
 	}
-	affected, err := engine.Table(playerTableName).Insert(&player)
+	session := engine.Table(playerTableName)
+	affected, err := session.Insert(&player)
 	if err != nil || affected == 0 {
-		return fmt.Errorf("insert sql error：%v， affect=%d", err, affected)
+		sql, _ := session.LastSQL()
+		return fmt.Errorf("insert sql error：%v， affect=%d, sql=%s", err, affected, sql)
 	}
 	return nil
 }

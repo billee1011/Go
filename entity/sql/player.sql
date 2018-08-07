@@ -31,13 +31,14 @@ create table t_hall_info
 )ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家大厅信息表'; 
   
 
+drop table if exists t_player;
 create table t_player
 (
   id           bigint auto_increment
     primary key,
   accountID    bigint                 not null,
   playerID     bigint                 not null,
-  showUID     int                 not null,
+  showUID     bigint                 not null,
   type         int default '1'        not null
   comment '1.普通玩家
 2.机器人
@@ -111,6 +112,6 @@ create table t_player_currency
   `updateTime` datetime DEFAULT NULL,
   `updateBy` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1072 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏汇总信息';
+) ENGINE=InnoDB AUTO_INCREMENT=1072 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏汇总信息';
 
 

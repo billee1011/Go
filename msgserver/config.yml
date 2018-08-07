@@ -26,11 +26,11 @@ redis_passwd:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
 mysql_list:
-  conf:
+  config:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
-    db: db_conf
+    db: config
     params:
       charset: utf8
 

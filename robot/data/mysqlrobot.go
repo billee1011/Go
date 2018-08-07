@@ -14,7 +14,7 @@ import (
 
 const (
 	// MysqldbName 数据库名
-	MysqldbName             = "steve"
+	MysqldbName             = "player"
 	playerTableName         = "t_player"          // 玩家表
 	playerCurrencyTableName = "t_player_currency" // 玩家货币表
 	playerGameTableName     = "t_player_game"     // 玩家游戏表
