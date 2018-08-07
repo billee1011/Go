@@ -22,11 +22,13 @@ func DefaultRobot() *Robotservice {
 	return defaultObject
 }
 
-//GetRobotPlayerIDByInfo 根据请求信息获取机器人玩家ID
-func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robot.GetRobotPlayerIDReq) (*robot.GetRobotPlayerIDRsp, error) {
-	logrus.Debugln("GetRobotPlayerIDByInfo req", *request)
-	rsp := &robot.GetRobotPlayerIDRsp{
+//GetLeisureRobotInfoByInfo 获取空闲机器人信息
+func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *robot.GetLeisureRobotInfoReq) (*robot.GetLeisureRobotInfoRsp, error) {
+	logrus.Debugln("GetLeisureRobotInfoByInfo req", *request)
+	rsp := &robot.GetLeisureRobotInfoRsp{
 		RobotPlayerId: 0,
+		Coin:          0,
+		WinRate:       0,
 		ErrCode:       int32(robot.ErrCode_EC_FAIL),
 	}
 	gameID := request.GetGame().GetGameId()   // 游戏ID
@@ -36,7 +38,7 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 	// 检验请求是否合法
 	if !checkGetLeisureRobotArgs(coinsRange, winRateRange, newState) {
 		rsp.ErrCode = int32(robot.ErrCode_EC_Args)
-		return rsp, nil
+		return rsp, fmt.Errorf("参数错误")
 	}
 	robotsPlayers, err := data.GetLeisureRobot() // 获取机空闲的器人
 	if err != nil {
@@ -44,17 +46,21 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 		return rsp, err
 	}
 	var RobotPlayerID uint64
+	var winRate int32
+	var coin int64
 	// 符合的指定金币数和胜率的机器人
 	for _, robotPlayer := range robotsPlayers {
 		// 游戏ID对应的胜率
-		winRate, exist := robotPlayer.GameIDWinRate[uint64(gameID)]
-		if !exist || winRate > uint64(winRateRange.High) || winRate < uint64(winRateRange.Low) {
+		currWinRate, exist := robotPlayer.GameIDWinRate[uint64(gameID)]
+		if !exist || currWinRate > uint64(winRateRange.High) || currWinRate < uint64(winRateRange.Low) {
 			continue
 		}
 		// 金币
 		currCoins := int64(robotPlayer.Coin)
 		if currCoins <= coinsRange.High && currCoins >= coinsRange.Low {
 			RobotPlayerID = robotPlayer.PlayerID
+			coin = currCoins
+			winRate = int32(currWinRate)
 			break
 		}
 	}
@@ -66,7 +72,9 @@ func (r *Robotservice) GetRobotPlayerIDByInfo(ctx context.Context, request *robo
 		return rsp, err
 	}
 	rsp.ErrCode = int32(robot.ErrCode_EC_SUCCESS)
-	rsp.RobotPlayerId = RobotPlayerID
+	rsp.Coin = coin                   // 金币
+	rsp.WinRate = winRate             // 胜率
+	rsp.RobotPlayerId = RobotPlayerID // 玩家ID
 	return rsp, err
 }
 

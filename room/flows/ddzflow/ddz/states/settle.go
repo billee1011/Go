@@ -102,9 +102,9 @@ func (s *settleState) settle(m machine.Machine) {
 		billPlayer.Multiple = &mul
 		settleScore := settleScores[playerId]
 		if isWin {
-			goldclient.AddGold(playerId, int16(server_gold.GoldType_GOLD_COIN), int64(settleScore), 0, 0) //赢钱
+			goldclient.AddGold(playerId, int16(server_gold.GoldType_GOLD_COIN), int64(settleScore), 0, 0, 0, 0) //赢钱
 		} else {
-			goldclient.AddGold(playerId, int16(server_gold.GoldType_GOLD_COIN), int64(-settleScore), 0, 0) //输钱
+			goldclient.AddGold(playerId, int16(server_gold.GoldType_GOLD_COIN), int64(-settleScore), 0, 0, 0, 0) //输钱
 		}
 		billPlayer.Score = proto.Int64(int64(settleScore))
 		gold, err := goldclient.GetGold(playerId, int16(server_gold.GoldType_GOLD_COIN))

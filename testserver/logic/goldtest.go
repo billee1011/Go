@@ -15,11 +15,11 @@ func startTestGoldServer() {
 func testAddGold() {
 
 	begin := time.Now().UnixNano()
-	uid := uint64(1302)
+	uid := uint64(11)
 	v , err := goldclient.GetGold(uid, 1)
 	logrus.Infof("getGold=%d, err=%v++++++++++", v, err)
 
-	last, err := goldclient.AddGold(uid, 1, 1, 1, 100)
+	last, err := goldclient.AddGold(uid, 1, 1, 1, 100, 0, 0)
 	logrus.Debugf("uid=%d, AddGold=%d, curGold=%v, err=%v",uid, uid,  last, err)
 	v , err = goldclient.GetGold(uid, 1)
 	logrus.Infof("getGold=%d, err=%v++++++++++", v, err)
@@ -50,7 +50,7 @@ func testAddGoldBig() {
 	}
 	wg.Wait()
 
-	last, err = goldclient.AddGold(uid, 1, 1, 1, 100)
+	last, err = goldclient.AddGold(uid, 1, 1, 1, 100, 0, 0)
 	logrus.Debugf("uid=%d, AddGold=%d, curGold=%v, err=%v",uid, uid,  last, err)
 	v , err = goldclient.GetGold(uid, 1)
 	logrus.Infof("getGold=%d, err=%v++++++++++", v, err)

@@ -26,12 +26,19 @@ func InterToUint64(param interface{}) uint64 {
 //FmtRobotPlayer 格式化RobotPlayer
 func FmtRobotPlayer(robotPlayer *cache.RobotPlayer) map[string]interface{} {
 	robotPlayerMap := make(map[string]interface{})
-	robotPlayerMap[RobotPlayerNickNameField] = robotPlayer.NickName // 初始化昵称
-	robotPlayerMap[cache.GameState] = robotPlayer.State             //默认是空闲
-	robotPlayerMap[cache.Avatar] = robotPlayer.Avatar               // 头像 TODO
-	robotPlayerMap[RobotPlayerIDField] = robotPlayer.PlayerID
-	robotPlayerMap[RobotPlayerCoinField] = robotPlayer.Coin
-	robotPlayerMap[RobotPlayerGameIDWinRate] = GameIDWinRateToJSON(robotPlayer.GameIDWinRate)
+	if len(robotPlayer.NickName) > 0 {
+		robotPlayerMap[RobotPlayerNickNameField] = robotPlayer.NickName // 初始化昵称
+	}
+	if len(robotPlayer.Avatar) > 0 {
+		robotPlayerMap[RobotPlayerAvatarField] = robotPlayer.Avatar // 头像 TODO
+	}
+	if robotPlayer.PlayerID > 0 {
+		robotPlayerMap[RobotPlayerIDField] = robotPlayer.PlayerID
+	}
+	if len(robotPlayer.GameIDWinRate) > 0 {
+		robotPlayerMap[RobotPlayerGameIDWinRate] = GameIDWinRateToJSON(robotPlayer.GameIDWinRate)
+	}
+	robotPlayerMap[RobotPlayerStateField] = robotPlayer.State //默认是空闲
 	return robotPlayerMap
 }
 

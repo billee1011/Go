@@ -70,8 +70,7 @@ func (aeg *autoEventGenerator) handlePlayerAI(result *AutoEventGenerateResult, A
 			eventType = fixed.SpecialOverTimeEvent
 		}
 		for _, aiEvent := range aiResult.Events {
-			params := desk.CreateEventParams(gameContext.StateNumber, aiEvent.Context, playerID)
-			event := desk.NewDeskEvent(int(aiEvent.ID), eventType, deskObj, params)
+			event := desk.DeskEvent{EventID: int(aiEvent.ID), EventType: eventType, Context: aiEvent.Context, PlayerID: playerID, StateNumber: gameContext.StateNumber, Desk: deskObj}
 			result.Events = append(result.Events, event)
 		}
 	}
@@ -101,8 +100,7 @@ func (aeg *autoEventGenerator) handleDDZPlayerAI(result *AutoEventGenerateResult
 	// 未出错时，把产生的每一个AI事件压入结果集
 	if err == nil {
 		for _, aiEvent := range aiResult.Events {
-			params := desk.CreateEventParams(aiEvent.Context, playerID)
-			event := desk.NewDeskEvent(int(aiEvent.ID), fixed.OverTimeEvent, deskObj, params)
+			event := desk.DeskEvent{EventID: int(aiEvent.ID), EventType: fixed.OverTimeEvent, Context: aiEvent.Context, PlayerID: playerID, Desk: deskObj}
 			result.Events = append(result.Events, event)
 		}
 	}
@@ -301,6 +299,18 @@ func (aeg *autoEventGenerator) GenerateV2(params *AutoEventGenerateParams) (resu
 
 		// 未超时，则处理托管
 		result = aeg.handleDDZTuoGuan(params.Desk, AI, params.StartTime)
+		ddzContext := _gameContext.(*contexts.DDZDeskContext).DDZContext
+
+		// 超过 1s 处理机器人事件
+		if time.Now().Sub(params.StartTime) > 1*time.Second {
+			players := ddzContext.GetPlayers()
+			for _, player := range players {
+				playerID := player.GetPlayerId()
+				if lv, exist := params.RobotLv[playerID]; exist && lv != 0 {
+					aeg.handleDDZPlayerAI(&result, AI, player.GetPlayerId(), params.Desk, RobotAI, lv)
+				}
+			}
+		}
 	} else {
 		if overTime, result := aeg.handleOverTime(AI, params.StartTime, params.Desk); overTime {
 			return result

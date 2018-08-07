@@ -24,6 +24,23 @@ var showUID = "max_show_uid"
 // redis 过期时间
 var redisTimeOut = time.Hour * 24
 
+// 玩家基本信息列表
+var playerInfoList = map[int32]string{
+	1: "nickname",
+	2: "avatar",
+	3: "gender",
+	4: "name",
+	5: "phone",
+	6: "idCard",
+}
+
+// gameconfigList 游戏配置
+var gameconfigList = map[int16]string{
+	1: "gameID",
+	2: "name",
+	3: "type",
+}
+
 const (
 	playerRedisName          = "player"
 	playerMysqlName          = "player"

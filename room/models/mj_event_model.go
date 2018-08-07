@@ -49,11 +49,9 @@ func (model *MjEventModel) Start() {
 		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
 	}()
 
-	event := desk.NewDeskEvent(int(server_pb.EventID_event_start_game), fixed.NormalEvent, model.GetDesk(), desk.CreateEventParams(
-		model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).StateNumber,
-		nil,
-		0,
-	))
+	event := desk.DeskEvent{EventID: int(server_pb.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk(),
+		StateNumber: model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).StateNumber,
+	}
 	model.PushEvent(event)
 }
 
@@ -87,9 +85,7 @@ func (model *MjEventModel) pushAutoEvent(autoEvent *server_pb.AutoEvent, stateNu
 		return
 	}
 
-	event := desk.NewDeskEvent(int(autoEvent.EventId), fixed.NormalEvent, model.GetDesk(),
-		desk.CreateEventParams(stateNumber, autoEvent.EventContext, 0))
-
+	event := desk.DeskEvent{EventID: int(autoEvent.EventId), EventType: fixed.NormalEvent, Context: autoEvent.EventContext, StateNumber: stateNumber, Desk: model.GetDesk()}
 	model.PushEvent(event)
 }
 
@@ -109,10 +105,11 @@ func (model *MjEventModel) PushRequest(playerID uint64, head *steve_proto_gaterp
 		logEntry.WithError(err).Errorln("消息转事件失败")
 		return
 	}
-	event := desk.NewDeskEvent(int(server_pb.EventID(eventID)),
-		fixed.NormalEvent,
-		model.GetDesk(),
-		desk.CreateEventParams(model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).StateNumber, eventContext, playerID))
+	event := desk.DeskEvent{EventID: eventID, EventType: fixed.NormalEvent, Desk: model.GetDesk(),
+		StateNumber: model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).StateNumber,
+		Context:     eventContext,
+		PlayerID:    playerID,
+	}
 
 	model.PushEvent(event)
 }
@@ -154,8 +151,8 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 		case event := <-model.event:
 			{
 				mjContext := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext)
-				stateNumber := event.Params.Params[0].(int)
-				context := event.Params.Params[1]
+				stateNumber := event.StateNumber
+				context := event.Context
 				if needCompareStateNumber(&event) && stateNumber != mjContext.StateNumber {
 					continue
 				}
@@ -167,7 +164,7 @@ func (model *MjEventModel) processEvents(ctx context.Context) {
 			{
 				events := model.genTimerEvent()
 				for _, event := range events {
-					context := event.Params.Params[1]
+					context := event.Context
 					if model.processEvent(event.EventID, context) {
 						return
 					}
@@ -295,7 +292,7 @@ func (model *MjEventModel) recordTuoguanOverTimeCount(event desk.DeskEvent) {
 	if event.EventType != fixed.OverTimeEvent {
 		return
 	}
-	playerID := event.Params.Params[2].(uint64)
+	playerID := event.PlayerID
 	if playerID == 0 {
 		return
 	}
@@ -347,8 +344,10 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 		continueModel := GetContinueModel(model.GetDesk().GetUid())
 		settler := model.GetDesk().GetConfig().Settle
 		statistics := settler.GetStatistics()
+		model.cancelTuoguanGameOver()
 		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		model.GetDesk().GetConfig().Settle.(*MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
+		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		logEntry.Infoln("游戏结束状态")
 		return true
 	}

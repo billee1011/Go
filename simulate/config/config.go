@@ -21,8 +21,14 @@ var (
 	gatewayServerAddr = flag.String("gateway_server_addr", "127.0.0.1:36001", "网关服地址")
 	peiPaiURL         = flag.String("peipai_url", "http://127.0.0.1:36102", "配牌服务地址")
 	matchHTTPAddr     = flag.String("match_http_addr", "http://127.0.0.1:37002", "匹配服 http 地址")
+	configRPCAddr     = flag.String("config_rpc_addr", "localhost:36401", "配置服 rpc 地址")
 	dbPath            *string
 )
+
+// GetConfigRPCAddr 获取配置服 RPC 地址
+func GetConfigRPCAddr() string {
+	return *configRPCAddr
+}
 
 // GetLoginServerAddr 获取登录服地址
 func GetLoginServerAddr() string {

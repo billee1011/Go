@@ -1,24 +1,46 @@
+pushd configuration 
+serviceloader configuration --config=config.yml &
+popd 
+
+# 其他服务启动依赖配置服
+sleep 2
+
 pushd gateway 
-serviceloader gateway --config=config.yml  &
+nohup serviceloader gateway --config=config.yml  &
 popd 
 
 pushd room 
-serviceloader room --config=config.yml  &
+nohup serviceloader room --config=config.yml  &
 popd 
 
 
 pushd hall 
-serviceloader hall --config=config.yml  &
+nohup serviceloader hall --config=config.yml  &
 popd 
 
 pushd login 
-serviceloader login --config=config.yml  &
+nohup  serviceloader login --config=config.yml  &
 popd 
 
 pushd match 
-serviceloader match --config=config.yml  &
+nohup  serviceloader match --config=config.yml  &
+popd 
+
+pushd gold 
+sh ./start.sh
 popd 
 
 pushd robot 
-serviceloader robot --config=config.yml  &
-popd 
+nohup serviceloader robot --config=config.yml  &
+popd
+
+pushd gold
+nohup serviceloader gold --config=config.yml  &
+popd
+
+
+pushd msgserver
+nohup serviceloader msgserver --config=config.yml  &
+popd
+
+

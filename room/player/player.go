@@ -139,7 +139,7 @@ func (p *Player) SetCoin(coin uint64) {
 	if err != nil {
 		return
 	}
-	goldclient.AddGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN), int64(coin)-gold, 0, 0)
+	goldclient.AddGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN), int64(coin)-gold, 0, 0, 0, 0)
 }
 
 // IsOnline 判断玩家是否在线

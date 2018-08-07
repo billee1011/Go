@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
+	"steve/entity/constant"
 	"steve/external/goldclient"
 	"steve/external/hallclient"
 	"steve/gutils"
@@ -117,7 +118,7 @@ func (plh *playerLoginHandler) HandleMessage(message *nsq.Message) error {
 
 func init() {
 	exposer := structs.GetGlobalExposer()
-	if err := exposer.Subscriber.Subscribe("player_login", "match", &playerLoginHandler{}); err != nil {
+	if err := exposer.Subscriber.Subscribe(constant.PlayerLogin, "match", &playerLoginHandler{}); err != nil {
 		logrus.WithError(err).Panicln("订阅登录消息失败")
 	}
 }
