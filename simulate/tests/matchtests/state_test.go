@@ -8,6 +8,7 @@ import (
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -55,6 +56,7 @@ func Test_PlayerStates_Matching(t *testing.T) {
 	_, err = utils.ApplyJoinDesk(player, common.GameId_GAMEID_XUELIU)
 	assert.Nil(t, err)
 
+	time.Sleep(10 * time.Millisecond)
 	assertPlayerState(t, player, common.PlayerState_PS_MATCHING, common.GameId_GAMEID_XUELIU)
 	// 再次登录玩家，取消匹配
 	utils.LoginPlayer(player.GetAccountID(), "")

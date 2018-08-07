@@ -5,6 +5,7 @@ import (
 	"steve/client_pb/room"
 	majongpb "steve/entity/majong"
 	"steve/gutils"
+	"steve/room/majong/fantype"
 	"steve/room/majong/global"
 	"steve/room/majong/interfaces"
 	"steve/room/majong/interfaces/facade"
@@ -67,6 +68,8 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 	srcPlayer.OutCards = removeLastCard(logEntry, srcOutCards, card)
 
 	realPlayerID := utils.GetRealHuCardPlayer(players, srcPlayerID, mjContext)
+	huType := -1
+
 	for _, playerID := range players {
 		player := utils.GetMajongPlayer(playerID, mjContext)
 		isReal := false
@@ -76,8 +79,15 @@ func (s *HuState) doHu(flow interfaces.MajongFlow) {
 		s.addHuCard(card, player, srcPlayerID, isReal)
 		// 玩家胡状态
 		player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
+
+		if huType == -1 {
+			huCard := player.GetHuCards()[len(player.GetHuCards())-1]
+			fanTypes, _, _ := fantype.CalculateFanTypes(mjContext, playerID, player.GetHandCards(), huCard)
+			cardOptionID := int(mjContext.GetCardtypeOptionId())
+			huType = int(gutils.ServerFanType2ClientHuType(cardOptionID, fanTypes))
+		}
 	}
-	s.notifyHu(flow, realPlayerID)
+	s.notifyHu(flow, realPlayerID, huType)
 	gutils.SetNextZhuangIndex(players, srcPlayerID, mjContext)
 	return
 }
@@ -91,9 +101,12 @@ func (s *HuState) isAfterGang(mjContext *majongpb.MajongContext) bool {
 }
 
 // HuState 广播胡
-func (s *HuState) notifyHu(flow interfaces.MajongFlow, realPlayerID uint64) {
+func (s *HuState) notifyHu(flow interfaces.MajongFlow, realPlayerID uint64, rhuType int) {
 	mjContext := flow.GetMajongContext()
 	huType := room.HuType_HT_DIANPAO.Enum()
+	if rhuType != -1 {
+		huType = room.HuType(int32(rhuType)).Enum()
+	}
 	if s.isAfterGang(mjContext) {
 		huType = room.HuType_HT_GANGHOUPAO.Enum()
 	}
