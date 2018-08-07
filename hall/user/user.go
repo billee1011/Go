@@ -71,7 +71,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_HALL_UPDATE_PLAYER_INFO_REQ),
+			MsgID: uint32(msgid.MsgID_HALL_UPDATE_PLAYER_INFO_RSP),
 			Body:  response,
 		},
 	}

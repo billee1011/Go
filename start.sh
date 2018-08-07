@@ -1,3 +1,5 @@
+#!/bin/bash
+
 pushd configuration 
 serviceloader configuration --config=config.yml &
 popd 
