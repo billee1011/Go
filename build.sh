@@ -20,11 +20,20 @@ cp login/config.yml configs/login/config.yml
 go build -o bin/hall/hall.so -o hall/hall.so -buildmode=plugin steve/hall 
 cp hall/config.yml configs/hall/config.yml 
 
+go build -o bin/gold/gold.so -o gold/gold.so -buildmode=plugin steve/gold 
+cp gold/config.yml configs/gold/config.yml 
+
 go build -o bin/robot/robot.so -o robot/robot.so -buildmode=plugin steve/robot 
 cp robot/config.yml configs/robot/config.yml 
 
 go build -o bin/configuration/configuration.so -o configuration/configuration.so -buildmode=plugin steve/configuration 
 cp configuration/config.yml configs/configuration/config.yml 
+
+go build -o bin/configuration/configuration.so -o configuration/configuration.so -buildmode=plugin steve/configuration 
+cp configuration/config.yml configs/configuration/config.yml 
+
+go build -o bin/msgserver/msgserver.so -o msgserver/msgserver.so -buildmode=plugin steve/msgserver 
+cp msgserver/config.yml configs/msgserver/config.yml
 
 ./simulate/packtests.sh 
 

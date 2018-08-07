@@ -345,6 +345,7 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 		settler := model.GetDesk().GetConfig().Settle
 		statistics := settler.GetStatistics()
 		model.cancelTuoguanGameOver()
+		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		model.GetDesk().GetConfig().Settle.(*MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
 		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		logEntry.Infoln("游戏结束状态")

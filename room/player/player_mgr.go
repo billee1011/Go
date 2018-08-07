@@ -42,7 +42,7 @@ func (pm *PlayerMgr) InitDeskData(players []uint64, maxOverTime int, robotLv []i
 			player = pm.GetPlayer(playerID)
 		}
 		player.SetSeat(uint32(seat))
-		player.SetEcoin(player.GetCoin())
+		player.SetEcoin(uint64(player.GetCoin()))
 		player.SetMaxOverTime(maxOverTime)
 		player.SetRobotLv(robotLv[seat])
 		player.SetQuit(false)

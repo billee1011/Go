@@ -21,10 +21,10 @@ import (
 
 /*
 方法：添加玩家金币
-参数：uid=玩家ID, goldType=货币类型, changeValue=货币变化值,funcId=功能ID,channel=渠道ID
+参数：uid=玩家ID, goldType=货币类型, changeValue=货币变化值,funcId=功能ID,channel=渠道ID, gameId=游戏ID(0表示大厅), level=场次ID
 返回：变化后的金币值,错误信息
  */
- func AddGold(uid uint64, goldType int16, changeValue int64,  funcId int32, channel int64) (int64,error) {
+ func AddGold(uid uint64, goldType int16, changeValue int64,  funcId int32, channel int64, gameId int32, level int32) (int64,error) {
 
 	 // 得到服务连接
 	 con, err := getGoldServer(uid, goldType)
@@ -43,6 +43,8 @@ import (
 	 item.ChangeValue = changeValue
 	 item.Channel = channel
 	 item.FuncId = funcId
+	 item.GameId = gameId
+	 item.Level = level
 	 item.Seq = seq
 	 item.Time = createTm
 

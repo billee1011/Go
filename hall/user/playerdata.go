@@ -3,12 +3,10 @@ package user
 import (
 	"context"
 	"fmt"
-	"steve/common/data/player"
 	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/hall/data"
 	"steve/server_pb/user"
-	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -66,15 +64,15 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 	playerID := req.GetPlayerId()
 
 	// 逻辑处理
-	info, err := data.GetPlayerInfo(playerID)
+	fields := []string{cache.NickName, cache.Gender, cache.Avatar, cache.ChannelID, cache.ProvinceID, cache.CityID}
+	player, err := data.GetPlayerInfo(playerID, fields...)
 
 	// 返回消息
 	if err == nil {
-		rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
-		rsp.NickName, rsp.Avatar = info[cache.NickNameField], info[cache.AvatarField]
-		rsp.Name, rsp.Phone = info[cache.NameField], info[cache.PhoneField]
-		value, _ := strconv.ParseInt(info[cache.GenderField], 10, 64)
-		rsp.IpAddr, rsp.Gender = string("127.0.0.1"), uint32(value)
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		rsp.PlayerId, rsp.Gender = playerID, uint32(player.Gender)
+		rsp.NickName, rsp.Avatar = player.Nickname, player.Avatar
+		rsp.ChannelId, rsp.ProvinceId, rsp.CityId = uint32(player.Channelid), uint32(player.Provinceid), uint32(player.Cityid)
 	}
 
 	return
@@ -94,8 +92,6 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 	playerID := req.GetPlayerId()
 	nickName := req.GetNickName() // 昵称
 	avatar := req.GetAvatar()     // 头像
-	name := req.GetName()         // 姓名
-	phone := req.GetPhone()       // 电话
 	gender := req.GetGender()     // 性别
 
 	// 校验入参
@@ -106,11 +102,18 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 	}
 
 	// 逻辑处理
-	exist, result, err := data.UpdatePlayerInfo(playerID, nickName, avatar, name, phone, gender)
+	fields := []string{cache.NickName, cache.Avatar, cache.Gender}
+	dbPlayer := db.TPlayer{
+		Playerid: int64(playerID),
+		Nickname: nickName,
+		Gender:   int(gender),
+		Avatar:   avatar,
+	}
+	err = data.SetPlayerFields(playerID, fields, &dbPlayer)
 
 	// 返回消息
-	if exist {
-		rsp.Result = result
+	if err == nil {
+		rsp.Result = true
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 
@@ -128,10 +131,13 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 	}, nil
 
 	// 逻辑处理
-	state, _, err := data.GetPlayerState(req.GetPlayerId())
+	pState, err := data.GetPlayerState(req.GetPlayerId())
 
 	if err == nil {
-		rsp.State, rsp.ErrCode = user.PlayerState(state), int32(user.ErrCode_EC_SUCCESS)
+		rsp.GameId, rsp.LevelId = uint32(pState.GameID), uint32(pState.LevelID)
+		rsp.State, rsp.IpAddr = user.PlayerState(pState.State), pState.IPAddr
+		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = pState.GateAddr, pState.MatchAddr, pState.RoomAddr
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 	return
 }
@@ -151,7 +157,8 @@ func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.G
 	}, nil
 
 	// 逻辑处理
-	exists, info, err := data.GetPlayerGameInfo(playerID, gameID)
+	fields := []string{cache.GameID, cache.WinningRate, cache.WinningBurea, cache.TotalBurea, cache.MaxWinningStream, cache.MaxMultiple}
+	exists, info, err := data.GetPlayerGameInfo(playerID, gameID, fields...)
 
 	// 返回消息
 	if !exists {
@@ -165,11 +172,11 @@ func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.G
 }
 
 // UpdatePlayerState 设置玩家状态
-func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.UpdatePlayerStateReq) (rsp *user.UpdatePlayerStateRsp, err error) {
+func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.UpdatePlayerStateReq) (rsp *user.UpdatePlayerRsp, err error) {
 	logrus.Debugln("SetPlayerState req", *req)
 
 	// 默认返回消息
-	rsp, err = &user.UpdatePlayerStateRsp{
+	rsp, err = &user.UpdatePlayerRsp{
 		ErrCode: int32(user.ErrCode_EC_FAIL),
 		Result:  false,
 	}, nil
@@ -178,18 +185,80 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	playerID := req.GetPlayerId()
 	oldState := uint32(req.GetOldState())
 	newState := uint32(req.GetNewState())
-	serverType := uint32(req.GetServerType()) // 服务端类型
-	serverAddr := req.GetServerAddr()         // 服务端地址
 
 	// 校验入参
-	correct := validateSateArgs(oldState, newState, serverType, serverAddr)
+	correct := validateUserSate(oldState, newState)
 	if !correct {
 		rsp.ErrCode = int32(user.ErrCode_EC_Args)
 		return
 	}
 
 	// 逻辑处理
-	result, err := data.UpdatePlayerState(playerID, oldState, newState, serverType, serverAddr)
+	result, err := data.UpdatePlayerState(playerID, oldState, newState)
+
+	// 返回消息
+	if result && err == nil {
+		rsp.Result, rsp.ErrCode = true, int32(user.ErrCode_EC_SUCCESS)
+	}
+
+	return
+}
+
+// UpdatePlayerGateInfo 更新玩家网关信息
+func (pds *PlayerDataService) UpdatePlayerGateInfo(ctx context.Context, req *user.UpdatePlayerGateInfoReq) (rsp *user.UpdatePlayerRsp, err error) {
+	logrus.Debugln("UpdatePlayerGateInfo req", *req)
+
+	// 默认返回消息
+	rsp, err = &user.UpdatePlayerRsp{
+		ErrCode: int32(user.ErrCode_EC_FAIL),
+		Result:  false,
+	}, nil
+
+	// 请求参数
+	playerID := req.GetPlayerId() // 玩家ID
+	ipAddr := req.GetIpAddr()     // 客户端IP地址
+	gateAddr := req.GetGateAddr() // 网关服地址
+
+	// 校验
+	if gateAddr == "" {
+		rsp.ErrCode = int32(user.ErrCode_EC_Args)
+		return
+	}
+
+	// 逻辑处理
+	result, err := data.UpdatePlayerGateInfo(playerID, ipAddr, gateAddr)
+
+	// 返回消息
+	if result && err == nil {
+		rsp.Result, rsp.ErrCode = true, int32(user.ErrCode_EC_SUCCESS)
+	}
+	return
+}
+
+// UpdatePlayerServerAddr 更新玩家服务端地址
+func (pds *PlayerDataService) UpdatePlayerServerAddr(ctx context.Context, req *user.UpdatePlayerServerAddrReq) (rsp *user.UpdatePlayerRsp, err error) {
+	logrus.Debugln("UpdatePlayerGateInfo req", *req)
+
+	// 默认返回消息
+	rsp, err = &user.UpdatePlayerRsp{
+		ErrCode: int32(user.ErrCode_EC_FAIL),
+		Result:  false,
+	}, nil
+
+	// 请求参数
+	playerID := req.GetPlayerId()
+	serverType := req.GetServerType()
+	serverAddr := req.GetServerAddr()
+
+	// 校验
+	correct := validateServerType(serverType, serverAddr)
+	if !correct {
+		rsp.ErrCode = int32(user.ErrCode_EC_Args)
+		return
+	}
+
+	//逻辑处理
+	result, err := data.UpdatePlayerServerAddr(playerID, uint32(serverType), serverAddr)
 
 	// 返回消息
 	if result && err == nil {
@@ -211,10 +280,10 @@ func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.Get
 	}, nil
 
 	// 逻辑处理
-	rsp.GameConfig, rsp.GameLevelConfig, err = data.GetGameInfoList()
-
+	gameConfig, gameLevelConfig, err := data.GetGameInfoList()
 	// 返回消息
 	if err == nil {
+		rsp.GameConfig, rsp.GameLevelConfig = DBGameConfig2Server(gameConfig), DBGamelevelConfig2Sercer(gameLevelConfig)
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
 	return
@@ -227,12 +296,11 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-	// TODO: 使用正式的金币服
-	player.SetPlayerCoin(playerID, 10*10000)
 
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      int(data.AllocShowUID()),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -283,8 +351,8 @@ func validatePlayerInfoArgs() bool {
 	return true
 }
 
-// validateSateArgs 校验更新玩家状态入参
-func validateSateArgs(oldState, newState, serverType uint32, serverAddr string) bool {
+// validateUserSate 校验更新玩家状态入参
+func validateUserSate(oldState, newState uint32) bool {
 	userState := map[user.PlayerState]bool{
 		user.PlayerState_PS_IDIE:     true,
 		user.PlayerState_PS_MATCHING: true,
@@ -294,6 +362,12 @@ func validateSateArgs(oldState, newState, serverType uint32, serverAddr string) 
 		logrus.Warningln("player_state is incorrect, oldState:%d,newState:%d", oldState, newState)
 		return false
 	}
+
+	return true
+}
+
+// validateServerType 校验更新玩家服务端地址
+func validateServerType(serverType user.ServerType, serverAddr string) bool {
 
 	userServerType := map[user.ServerType]bool{
 		user.ServerType_ST_GATE:  true,
@@ -305,10 +379,9 @@ func validateSateArgs(oldState, newState, serverType uint32, serverAddr string) 
 		logrus.Warningln("server_type is incorrect, server_type:%d", serverType)
 		return false
 	}
-
-	if len(serverAddr) == 0 {
-		logrus.Warningln("server_addr is empty, server_addr:%d", serverAddr)
+	if serverAddr == "" {
 		return false
 	}
+
 	return true
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
-
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,11 +19,11 @@ var redisPlayerCli *redis.Client
 
 func init() {
 	conf := mysql.Config{
-		User:                 "root",
-		Passwd:               "123456",
+		User:                 "backuser",
+		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
-		Addr:                 "localhost:3306",
-		DBName:               "player",
+		Addr:                 "192.168.7.108:3306",
+		DBName:               "steve",
 		AllowNativePasswords: true,
 		Params:               map[string]string{"charset": "utf8"},
 	}
@@ -49,48 +48,12 @@ func init() {
 	}
 }
 
-func Test_SetGetPlayerFields(t *testing.T) {
-	alloc, err := gutils.NewNode(300)
-	assert.Nil(t, err)
-	accID := alloc.Generate().Int64()
-	playerID := uint64(AllocPlayerID())
-	nickName := fmt.Sprintf("player%d", playerID)
-	assert.Nil(t, InitPlayerData(db.TPlayer{
-		Accountid: int64(accID),
-		Playerid:  int64(playerID),
-		Nickname:  nickName,
-	}))
-	dbPlayer, err := GetPlayerFields(playerID, []string{"accountID", "playerID", "nickname"})
-	assert.Nil(t, err)
-	assert.NotNil(t, dbPlayer)
-	assert.Equal(t, accID, dbPlayer.Accountid)
-	assert.Equal(t, playerID, uint64(dbPlayer.Playerid))
-	assert.Equal(t, nickName, dbPlayer.Nickname)
-
-	dbPlayerRedis, err := getPlayerFieldsFromRedis(playerID, []string{"accountID", "playerID", "nickname"})
-	assert.Nil(t, err)
-	assert.Equal(t, accID, dbPlayerRedis.Accountid)
-	assert.Equal(t, playerID, uint64(dbPlayerRedis.Playerid))
-	assert.Equal(t, nickName, dbPlayerRedis.Nickname)
-
-	// 更新昵称
-	newNickName := "someothername"
-	assert.Nil(t, SetPlayerFields(playerID, []string{"nickname"}, &db.TPlayer{Nickname: newNickName}))
-
-	dbPlayerRedis, err = getPlayerFieldsFromRedis(playerID, []string{"nickname"})
-	assert.Nil(t, err)
-	assert.Equal(t, newNickName, dbPlayerRedis.Nickname)
-
-	dbPlayer, err = GetPlayerFields(playerID, []string{"nickname"})
-	assert.Nil(t, err)
-	assert.Equal(t, newNickName, dbPlayer.Nickname)
-}
-
 func NewPlayerData(accID uint64, playerID uint64) {
 	GetPlayerIDByAccountID(accID)
 	InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      0,
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -144,10 +107,11 @@ func TestInitPlayerData(t *testing.T) {
 	exist, _, err := GetPlayerIDByAccountID(accID)
 	assert.False(t, exist)
 	assert.Nil(t, err)
-
+	showUID := AllocShowUID()
 	err = InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
+		Showuid:      int(showUID),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -217,18 +181,21 @@ func TestGetPlayerInfo(t *testing.T) {
 	accID := uint64(alloc.Generate().Int64())
 
 	NewPlayerData(accID, playerID)
+	fields := []string{cache.NickName, cache.Gender, cache.Avatar, cache.ChannelID, cache.ProvinceID, cache.CityID}
 
-	player, err := GetPlayerInfo(playerID)
+	player, err := GetPlayerInfo(playerID, fields...)
 
 	assert.Nil(t, err)
-	assert.NotNil(t, player[cache.NickNameField])
+	assert.NotNil(t, player.Nickname)
+}
 
-	// redis 中有数据
-	redisKey := cache.FmtPlayerIDKey(playerID)
-	result, err := redisPlayerCli.HMGet(redisKey, cache.NickNameField).Result()
+// TestGetPlayerGameInfo 获取玩家游戏信息
+func TestGetPlayerGameInfo(t *testing.T) {
+	exists, playerGameInfo, err := GetPlayerGameInfo(2000, 1, []string{cache.WinningBurea, cache.WinningRate, cache.TotalBurea, cache.MaxMultiple, cache.MaxWinningStream}...)
+
+	assert.Equal(t, exists, true)
 	assert.Nil(t, err)
-	assert.NotEmpty(t, result[0])
-	fmt.Println(result)
+	assert.NotNil(t, playerGameInfo)
 }
 
 // TestGetGameInfoList 获取游戏信息
@@ -267,10 +234,43 @@ func TestUpdatePlayerInfo(t *testing.T) {
 
 	NewPlayerData(accID, playerID)
 
-	exists, result, err := UpdatePlayerInfo(playerID, "mr_wang", "我是一个帅哥", "zh", "13456431345", 1)
+	err = SetPlayerFields(playerID, []string{"nickname"}, &db.TPlayer{
+		Nickname: "mr_wang",
+	})
 	assert.Nil(t, err)
-	assert.Equal(t, true, result)
-	assert.Equal(t, true, exists)
+}
+
+func Test_SetGetPlayerFields(t *testing.T) {
+	alloc, err := gutils.NewNode(300)
+	assert.Nil(t, err)
+	accID := alloc.Generate().Int64()
+	playerID := uint64(AllocPlayerID())
+	nickName := fmt.Sprintf("player%d", playerID)
+	assert.Nil(t, InitPlayerData(db.TPlayer{
+		Accountid: int64(accID),
+		Playerid:  int64(playerID),
+		Nickname:  nickName,
+	}))
+	dbPlayer, err := GetPlayerInfo(playerID, []string{"nickname"}...)
+	assert.Nil(t, err)
+	assert.NotNil(t, dbPlayer)
+	assert.Equal(t, nickName, dbPlayer.Nickname)
+
+	dbPlayerRedis, err := getPlayerFieldsFromRedis(playerID, []string{"nickname"})
+	assert.Nil(t, err)
+	assert.Equal(t, nickName, dbPlayerRedis.Nickname)
+
+	// 更新昵称
+	newNickName := "someothername"
+	assert.Nil(t, SetPlayerFields(playerID, []string{"nickname"}, &db.TPlayer{Nickname: newNickName}))
+
+	dbPlayerRedis, err = getPlayerFieldsFromRedis(playerID, []string{"nickname"})
+	assert.Nil(t, err)
+	assert.Equal(t, newNickName, dbPlayerRedis.Nickname)
+
+	dbPlayer, err = GetPlayerInfo(playerID, []string{"nickname"}...)
+	assert.Nil(t, err)
+	assert.Equal(t, newNickName, dbPlayer.Nickname)
 }
 
 func init() {
