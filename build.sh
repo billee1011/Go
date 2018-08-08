@@ -35,6 +35,9 @@ cp configuration/config.yml configs/configuration/config.yml
 go build -o bin/msgserver/msgserver.so -o msgserver/msgserver.so -buildmode=plugin steve/msgserver 
 cp msgserver/config.yml configs/msgserver/config.yml
 
+go build -o bin/alms/alms.so -o alms/alms.so -buildmode=plugin steve/alms 
+cp alms/config.yml configs/alms/config.yml
+
 ./simulate/packtests.sh 
 
 
