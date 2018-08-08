@@ -48,3 +48,6 @@ pushd alms
 nohup serviceloader alms --config=config.yml  &
 popd
 
+pushd back
+nohup serviceloader back --config=config.yml  &
+popd

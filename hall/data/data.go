@@ -618,7 +618,7 @@ func setDBPlayerGameByField(dbPlayerGame *db.TPlayerGame, field string, val stri
 	case "gameName":
 		dbPlayerGame.Gamename = val
 	case "winningRate":
-		dbPlayerGame.Winningrate, _ = strconv.Atoi(val)
+		dbPlayerGame.Winningrate, _ = strconv.ParseFloat(val, 64)
 	case "winningBurea":
 		dbPlayerGame.Winningburea, _ = strconv.Atoi(val)
 	case "totalBureau":

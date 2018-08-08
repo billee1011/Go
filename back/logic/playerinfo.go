@@ -41,7 +41,8 @@ func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 		playerGame.Maxmultiple = int(detailInfo.MaxTimes)
 	}
 	// 更新胜率
-	playerGame.Winningrate = int(math.Floor((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*100 + 0.5))
+	// playerGame.Winningrate = int(math.Floor((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*100 + 0.5))
+	playerGame.Winningrate = math.Trunc((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*1e4+0.5) * 1e-4 * 100
 
 	// 创建时间
 	playerGame.Createtime = time.Now()
