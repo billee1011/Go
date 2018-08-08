@@ -32,11 +32,12 @@ CREATE TABLE `t_game_detail` (
   `amount` bigint(20) DEFAULT NULL,
   `isWinner` tinyint(1) DEFAULT NULL,
   `createTime` datetime DEFAULT NULL,
-  `createBy` varchar(64) DEFAULT NULL,
+  `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   `updateTime` datetime DEFAULT NULL,
-  `updateBy` varchar(64) DEFAULT NULL,
+  `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   PRIMARY KEY (`detailID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='游戏记录明细表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 
@@ -44,18 +45,20 @@ CREATE TABLE `t_game_sumary` (
   `sumaryID` bigint(20) NOT NULL,
   `deskID` bigint(20) DEFAULT NULL,
   `gameID` int(11) NOT NULL,
-  `levelID` int(11) NOT NULL COMMENT '场次ID',
-  `playerIDs` varchar(256) DEFAULT NULL COMMENT '桌子内玩家，多个玩家用|分割',
-  `scoreInfo` varchar(256) DEFAULT NULL COMMENT '输赢分,顺序和ID相同',
-  `winnerIDs` varchar(256) DEFAULT NULL COMMENT '赢家ID，多个赢家用|分割',
-  `roundCurrency` text,
+  `levelID` int(11) NOT NULL COMMENT 'ID',
+  `playerIDs` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT '|',
+  `scoreInfo` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT ',ID',
+  `winnerIDs` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT 'ID|',
+  `roundCurrency` text CHARACTER SET latin1,
   `gameoverTime` datetime DEFAULT NULL,
   `createTime` datetime DEFAULT NULL,
-  `createBy` varchar(64) DEFAULT NULL,
+  `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   `updateTime` datetime DEFAULT NULL,
-  `updateBy` varchar(64) DEFAULT NULL,
+  `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   PRIMARY KEY (`sumaryID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='游戏记录汇总表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 
 

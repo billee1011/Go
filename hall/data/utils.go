@@ -21,7 +21,7 @@ func getRedisCli(redis string, db int) (*redis.Client, error) {
 
 func getMysqlEngine(mysqlName string) (*xorm.Engine, error) {
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(playerMysqlName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(mysqlName)
 	if err != nil {
 		return nil, fmt.Errorf("获取 mysql 引擎失败：%v", err)
 	}
