@@ -140,6 +140,7 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = pState.GateAddr, pState.MatchAddr, pState.RoomAddr
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
+	logrus.Debugln("get player state rsp", rsp)
 	return
 }
 

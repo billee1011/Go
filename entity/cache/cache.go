@@ -37,6 +37,10 @@ const (
 	ProvinceID = "provinceID"
 	// CityID ...城市ID
 	CityID = "cityID"
+	// Name ...名称
+	Name = "name"
+	// IDCard ... 身份证
+	IDCard = "idCard"
 
 	// GameState ...玩家游戏状态
 	GameState = "game_state"

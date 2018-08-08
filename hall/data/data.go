@@ -65,6 +65,7 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	redisKey := cache.FmtAccountPlayerKey(accountID)
 	playerID, err = getRedisUint64Val(playerRedisName, redisKey)
 	if err == nil {
+		exist = true
 		return
 	}
 	engine, err := mysqlEngineGetter(playerMysqlName)
@@ -86,6 +87,8 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 			err = fmt.Errorf("save playerId into redis fail： %v", err)
 		}
 	}
+	logrus.Debugln("get player info accountID :%d, playerID:%d", accountID, playerID)
+
 	return
 }
 
@@ -402,7 +405,7 @@ func AllocPlayerID() uint64 {
 func AllocShowUID() int64 {
 	r, _ := redisCliGetter(playerRedisName, 0)
 	if r.Exists(showUID).Val() == 0 {
-		r.Set(showUID, 10000*10000*100, -1)
+		r.Set(showUID, 10000*10000*10, -1)
 	}
 	return r.Incr(showUID).Val()
 }
@@ -441,6 +444,7 @@ func InitPlayerState(playerID int64) (err error) {
 
 	rfields := map[string]string{
 		cache.GameState: fmt.Sprintf("%d", user.PlayerState_PS_IDIE),
+		cache.IPAddr:    "127.0.0.1",
 	}
 
 	if err = setRedisFields(playerRedisName, redisKey, rfields, redisTimeOut); err != nil {
