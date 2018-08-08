@@ -182,6 +182,15 @@ func (model *PlayerModel) GetDeskPlayers() []*playerpkg.Player {
 	return model.players
 }
 
+func (model *PlayerModel) GetDeskPlayerByID(playerID uint64) *playerpkg.Player {
+	for _, player := range model.players {
+		if player.PlayerID == playerID {
+			return player
+		}
+	}
+	return nil
+}
+
 // GetDeskPlayerIDs 获取牌桌玩家 ID 列表， 座号作为索引
 func (model *PlayerModel) GetDeskPlayerIDs() []uint64 {
 	players := model.GetDeskPlayers()
