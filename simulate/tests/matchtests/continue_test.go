@@ -92,7 +92,7 @@ func Test_ContinueDDZ(t *testing.T) {
 
 		// 发出游戏续局请求
 		player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
-			GameId: common.GameId_GAMEID_DOUDIZHU.Enum(),
+			GameId: proto.Uint32(uint32(common.GameId_GAMEID_DOUDIZHU)),
 			Cancel: proto.Bool(false), // false表开始续局
 		})
 
@@ -140,7 +140,7 @@ func Test_ContinueCancelDDZ(t *testing.T) {
 
 	// 由第一个玩家发出游戏取消续局的请求
 	players[0].GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
-		GameId: common.GameId_GAMEID_DOUDIZHU.Enum(),
+		GameId: proto.Uint32(uint32(common.GameId_GAMEID_DOUDIZHU)),
 		Cancel: proto.Bool(true), // true表取消续局
 	})
 
@@ -164,7 +164,7 @@ func Test_ContinueMajong(t *testing.T) {
 	for _, player := range players {
 		player.AddExpectors(msgid.MsgID_MATCH_CONTINUE_RSP, msgid.MsgID_ROOM_START_GAME_NTF)
 		player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
-			GameId: common.GameId_GAMEID_XUELIU.Enum(),
+			GameId: proto.Uint32(uint32(common.GameId_GAMEID_XUELIU)),
 			Cancel: proto.Bool(false),
 		})
 		expector := player.GetExpector(msgid.MsgID_MATCH_CONTINUE_RSP)
@@ -188,7 +188,7 @@ func Test_ContinueCancel(t *testing.T) {
 	}
 
 	players[0].GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
-		GameId: common.GameId_GAMEID_XUELIU.Enum(),
+		GameId: proto.Uint32(uint32(common.GameId_GAMEID_XUELIU)),
 		Cancel: proto.Bool(true),
 	})
 	for i := 1; i < len(players); i++ {

@@ -23,39 +23,42 @@ create table t_currency_record
 
 
 
-create table t_game_detail
-(
-  detailID   varchar(64) not null
-    primary key,
-  playerID   bigint      not null,
-  deskID     int         null,
-  gameID     int         null,
-  amount     int         null,
-  isWinner   tinyint(1)  null,
-  createTime datetime    null,
-  createBy   varchar(64) null,
-  updateTime datetime    null,
-  updateBy   varchar(64) null
-)ENGINE=InnoDB  DEFAULT CHARSET=utf8  comment '游戏记录明细表';
+CREATE TABLE `t_game_detail` (
+  `detailID` bigint(20) NOT NULL,
+  `sumaryID` bigint(20) NOT NULL,
+  `playerID` bigint(20) NOT NULL,
+  `deskID` bigint(20) DEFAULT NULL,
+  `gameID` int(11) DEFAULT NULL,
+  `amount` bigint(20) DEFAULT NULL,
+  `isWinner` tinyint(1) DEFAULT NULL,
+  `createTime` datetime DEFAULT NULL,
+  `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
+  `updateTime` datetime DEFAULT NULL,
+  `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
+  PRIMARY KEY (`detailID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-create table t_game_sumary
-(
-  sumaryID   bigint       not null
-    primary key,
-  deskID     bigint       null,
-  gameID     int          null,
-  levelID    int          null
-  comment '场次ID',
-  playerIDs  varchar(256) null
-  comment '桌子内玩家，多个玩家用|分割',
-  winnerIDs  varchar(256) null
-  comment '赢家ID，多个赢家用|分割',
-  createTime datetime     null,
-  createBy   varchar(64)  null,
-  updateTime datetime     null,
-  updateBy   varchar(64)  null
-)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '游戏记录汇总表';
+
+
+CREATE TABLE `t_game_sumary` (
+  `sumaryID` bigint(20) NOT NULL,
+  `deskID` bigint(20) DEFAULT NULL,
+  `gameID` int(11) NOT NULL,
+  `levelID` int(11) NOT NULL COMMENT 'ID',
+  `playerIDs` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT '|',
+  `scoreInfo` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT ',ID',
+  `winnerIDs` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT 'ID|',
+  `roundCurrency` text CHARACTER SET latin1,
+  `gameoverTime` datetime DEFAULT NULL,
+  `createTime` datetime DEFAULT NULL,
+  `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
+  `updateTime` datetime DEFAULT NULL,
+  `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
+  PRIMARY KEY (`sumaryID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 
 

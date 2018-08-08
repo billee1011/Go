@@ -143,6 +143,8 @@ func (o *observer) OnRecv(clientID uint64, header *base.Header, body []byte) {
 	}
 	logEntry = logEntry.WithField("server_name", serverName)
 
+	logEntry.Debugln("recv client msg")
+
 	if serverName == common.GateServiceName {
 		// 发往网关服的，调用本地消息处理器
 		o.callLocalHandler(clientID, playerID, header, body)

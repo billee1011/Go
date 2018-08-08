@@ -31,43 +31,33 @@ create table t_hall_info
 )ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家大厅信息表'; 
   
 
-create table t_player
-(
-  id           bigint auto_increment
-    primary key,
-  accountID    bigint                 not null,
-  playerID     bigint                 not null,
-  type         int default '1'        not null
-  comment '1.普通玩家
-2.机器人
-3.管理员',
-  channelID    int                    null
-  comment '渠道ID',
-  nickname     varchar(64)            null
-  comment '昵称',
-  gender       int default '1'        null
-  comment '性别：1.女，2.男',
-  avatar       varchar(256)           null
-  comment '头像',
-  provinceID   int                    null 
-  comment '省ID',
-  cityID       int                    null
-  comment '市ID',
-  name         varchar(64)            null,  
-  phone        varchar(11)            null,
-  idCard       varchar(20)            null,
-  isWhiteList  tinyint(1) default '0' null
-  comment '是否白名单，默认为否，白名单通常是QA',
-  zipCode      int                    null,
-  shippingAddr varchar(256)           null,
-  status       int default '1'        null
-  comment '账号状态：1.可登陆，2.冻结，默认1',
-  remark       varchar(256)           null,
-  createTime   datetime               null,
-  createBy     varchar(64)            null,
-  updateTime   datetime               null,
-  updateBy     varchar(64)            null
-)ENGINE=InnoDB  DEFAULT CHARSET=utf8  comment '玩家信息表';    
+CREATE TABLE `t_player` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `accountID` bigint(20) NOT NULL,
+  `playerID` bigint(20) NOT NULL,
+  `showUID` bigint(20) DEFAULT NULL,
+  `type` int(11) NOT NULL DEFAULT '1' COMMENT '1.普通玩家\r\n2.机器人\r\n3.管理员',
+  `channelID` int(11) DEFAULT '1' COMMENT '渠道ID',
+  `nickname` varchar(64) DEFAULT NULL COMMENT '昵称',
+  `gender` int(11) DEFAULT '1' COMMENT '性别：1.女，2.男',
+  `avatar` varchar(256) DEFAULT NULL COMMENT '头像',
+  `provinceID` int(11) DEFAULT '1' COMMENT '省ID',
+  `cityID` int(11) DEFAULT '1' COMMENT '市ID',
+  `name` varchar(64) DEFAULT NULL,
+  `phone` varchar(11) DEFAULT NULL,
+  `idCard` varchar(20) DEFAULT NULL,
+  `isWhiteList` tinyint(1) DEFAULT '0' COMMENT '是否白名单，默认为否，白名单通常是QA',
+  `zipCode` int(11) DEFAULT NULL,
+  `shippingAddr` varchar(256) DEFAULT NULL,
+  `status` int(11) DEFAULT '1' COMMENT '账号状态：1.可登陆，2.冻结，默认1',
+  `remark` varchar(256) DEFAULT NULL,
+  `createTime` datetime DEFAULT NULL,
+  `createBy` varchar(64) DEFAULT NULL,
+  `updateTime` datetime DEFAULT NULL,
+  `updateBy` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=104514 DEFAULT CHARSET=utf8 COMMENT='玩家信息表';
+  
 
 create table t_player_currency
 (
@@ -94,4 +84,23 @@ create table t_player_currency
   updateTime     datetime     null,
   updateBy       varchar(64)  null
 )ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '玩家虚拟货币表';  
+
+CREATE TABLE `t_player_game` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `playerID` bigint(20) NOT NULL,
+  `gameID` int(11) DEFAULT NULL,
+  `gameName` varchar(64) DEFAULT NULL,
+  `winningRate` int(11) DEFAULT NULL COMMENT '50% 50',
+  `winningBurea` int(11) DEFAULT NULL,
+  `totalBureau` int(11) DEFAULT NULL,
+  `maxWinningStream` int(11) DEFAULT NULL,
+  `maxMultiple` int(11) DEFAULT NULL,
+  `createTime` datetime DEFAULT NULL,
+  `createBy` varchar(64) DEFAULT NULL,
+  `updateTime` datetime DEFAULT NULL,
+  `updateBy` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=2112 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+
 

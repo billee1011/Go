@@ -64,21 +64,26 @@ func (mgr *DeskManager) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 		rsp.ErrCode = roommgr.RoomError_FAILED // 默认是失败的
 		return
 	}
+	deskID := desk.GetUid()
 
 	rsp.ErrCode = roommgr.RoomError_SUCCESS
-
 	roomPlayers := []*room.RoomPlayerInfo{}
-	deskPlayers := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayers()
+	modelMgr := GetModelManager()
+	deskPlayers := modelMgr.GetPlayerModel(deskID).GetDeskPlayers()
 	for _, player := range deskPlayers {
 		roomPlayer := TranslateToRoomPlayer(player)
 		roomPlayers = append(roomPlayers, &roomPlayer)
 	}
+
 	ntf := room.RoomDeskCreatedNtf{
 		GameId:  room.GameId(desk.GetGameId()).Enum(),
 		Players: roomPlayers,
 	}
-
-	GetModelManager().GetMessageModel(desk.GetUid()).BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
+	messageModel := modelMgr.GetMessageModel(deskID)
+	if messageModel != nil {
+		messageModel.BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
+	}
+	modelMgr.StartDeskModel(deskID)
 	return
 }
 

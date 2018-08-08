@@ -3,8 +3,9 @@ package connection
 import (
 	"context"
 	"fmt"
-	"steve/common/data/player"
+	"steve/external/hallclient"
 	"steve/gateway/config"
+	user_pb "steve/server_pb/user"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -60,8 +61,9 @@ func (c *Connection) run(ctx context.Context, finish func()) {
 
 // DetachPlayer 解除和 player 的绑定
 func (c *Connection) DetachPlayer() {
+	logrus.Debugf("DetachPlayer 解除和 player 的绑定,playerId:%v", c.playerID)
 	if c.playerID != 0 {
-		player.SetPlayerGateAddr(c.playerID, "")
+		hallclient.UpdatePlayeServerAddr(c.playerID, user_pb.ServerType_ST_GATE, "")
 		c.connMgr.setPlayerConnectionID(c.playerID, 0)
 		c.playerID = 0
 	}
@@ -98,7 +100,10 @@ func (c *Connection) AttachPlayer(playerID uint64) bool {
 	c.playerID = playerID
 	c.attachTimer.Stop()
 
-	player.SetPlayerGateAddr(playerID, c.getGatewayAddr())
+	succ, err := hallclient.UpdatePlayeServerAddr(playerID, user_pb.ServerType_ST_GATE, c.getGatewayAddr())
+	if !succ || err != nil {
+		entry.WithError(err).Errorln("更新玩家网关地址失败")
+	}
 	c.connMgr.setPlayerConnectionID(c.playerID, c.clientID)
 	entry.Infoln("绑定成功")
 	return true

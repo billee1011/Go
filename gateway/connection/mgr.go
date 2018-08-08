@@ -56,6 +56,18 @@ func (cm *ConnMgr) OnClientConnect(clientID uint64) {
 	})
 }
 
+
+// GetPlayerConnection 获取玩家的连接对象
+func (cm *ConnMgr) GetAllClientID() []uint64 {
+	list := make([]uint64, 0)
+	cm.playerConnectionMap.Range( func(key, value interface{}) bool {
+		clientID := value.(uint64)
+		list = append(list, clientID)
+		return true
+		})
+	return list
+}
+
 // GetPlayerConnection 获取玩家的连接对象
 func (cm *ConnMgr) GetPlayerConnection(playerID uint64) *Connection {
 	_clientID, ok := cm.playerConnectionMap.Load(playerID)

@@ -9,12 +9,14 @@ type TGameLevelConfig struct {
 	Gameid     int       `xorm:"INT(11)"`
 	Levelid    int       `xorm:"INT(11)"`
 	Name       string    `xorm:"VARCHAR(256)"`
+	Fee        int       `xorm:"comment('费用') INT(11)"`
 	Basescores int       `xorm:"INT(11)"`
 	Lowscores  int       `xorm:"INT(11)"`
 	Highscores int       `xorm:"INT(11)"`
 	Minpeople  int       `xorm:"INT(11)"`
 	Maxpeople  int       `xorm:"INT(11)"`
 	Status     int       `xorm:"INT(11)"`
+	Tag        int       `xorm:"comment('标签：1.热门；2.New') INT(11)"`
 	Remark     string    `xorm:"VARCHAR(256)"`
 	Createtime time.Time `xorm:"DATETIME"`
 	Createby   string    `xorm:"VARCHAR(64)"`

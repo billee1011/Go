@@ -2,8 +2,10 @@ package data
 
 import (
 	"fmt"
+	"steve/gold/define"
 	"steve/structs"
 	"strconv"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -31,7 +33,8 @@ var gCostList = map[int16]string{
 
 // 如果玩家账号不存在，向DB中加入此玩家初始金币值
 var bInitGold = true
-const dbName = "steve"
+
+const dbName = "player"
 
 // 设置货币类型列表
 func SetGoldTypeList(list, get, cost map[int16]string) {
@@ -71,7 +74,7 @@ func LoadGoldFromDB(uid uint64) (map[int16]int64, error) {
 	}
 
 	if len(res) != 1 {
-		if bInitGold && len(res) == 0  {
+		if bInitGold && len(res) == 0 {
 			return InitGoldToDB(uid)
 		}
 		return nil, fmt.Errorf("db result num != 1")
@@ -142,6 +145,30 @@ func SaveGoldToDB(uid uint64, goldType int16, goldValue int64, changeValue int64
 		logrus.Errorf("exec sql Affect err:sql=%s,err=%s", sql, err)
 		return err
 	}
+	return nil
+}
+
+func InsertGoldLog(plog *define.GoldLog) error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+
+	strCol := "tradeID, playerID,channel, currencyType, amount,beforeBalance,afterBalance, tradeTime, status, gameId, level, funcId  "
+
+	sql := fmt.Sprintf("insert into t_currency_record (%s) values('%s','%d','%d','%d','%d','%d','%d','%s',%d,%d,%d,%d);",
+		strCol, plog.TradeID, plog.PlayerID, plog.Channel, plog.CurrencyType, plog.Amount, plog.BeforeBalance, plog.AfterBalance,
+		plog.TradeTime, plog.Status, plog.GameId, plog.Level, plog.FuncId)
+	res, err := engine.Exec(sql)
+	if err != nil {
+		return err
+	}
+	if aff, err := res.RowsAffected(); aff == 0 {
+		return err
+	}
+
 	return nil
 }
 
