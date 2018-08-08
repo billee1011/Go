@@ -687,7 +687,10 @@ func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, paySco
 	for _, player := range players {
 		pid := player.GetPlayerID()
 		// 调用金币服接口扣费
-		goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], int32(constant.GFGAMESETTLE), 0, 0, 0)
+		gold, err := goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], int32(constant.GFGAMESETTLE), 0, 0, 0)
+		if gold == 0 && err == nil {
+			player.AddBrokerCount()
+		}
 		// 记录玩家单局总输赢
 		majongSettle.roundScore[pid] = majongSettle.roundScore[pid] + payScore[pid]
 	}
@@ -786,6 +789,10 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 			Deskid:   int64(desk.GetUid()),
 			Gameid:   desk.GetGameId(),
 			Amount:   roundScore[playerID],
+		}
+		deskPlayer := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayerByID(playerID)
+		if deskPlayer != nil {
+			gameDetail.BrokerCount = deskPlayer.GetBrokerCount()
 		}
 		if gameDetail.Amount == bigWinnerScore {
 			gameDetail.Iswinner = 1

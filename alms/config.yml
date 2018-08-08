@@ -1,0 +1,44 @@
+log_level: debug 
+log_dir: ./log
+log_prefix: alms
+log_stderr: true 
+
+rpc_addr: 127.0.0.1
+rpc_port: 36376
+rpc_server_name: alms
+
+# redis 
+redis_addr: 127.0.0.1:6379
+redis_passwd: 
+
+redis_list:
+  player: 
+    addr: 127.0.0.1:6379
+    passwd: 
+
+# mysql 数据库列表
+mysql_list:
+  config:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: config 
+    params:
+      charset: utf8
+  player:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: player 
+    params:
+      charset: utf8  
+      
+# nsq 
+nsqd_addr: 127.0.0.1:4150
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161
+
+# consul 
+consul_addr: 127.0.0.1:8500
+
+node: 1

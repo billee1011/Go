@@ -32,7 +32,7 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家基本个人资料
-	player, err := data.GetPlayerInfo(playerID, cache.NickName, cache.Avatar, cache.Gender, cache.Name, cache.IDCard)
+	player, err := data.GetPlayerInfo(playerID, cache.ShowUID, cache.NickName, cache.Avatar, cache.Gender, cache.Name, cache.IDCard)
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.NickName = proto.String(player.Nickname)
@@ -205,6 +205,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 		response.WinningRate = proto.Float32(float32(dbPlayerGame.Winningrate))
 		response.MaxWinningStream = proto.Uint32(uint32(dbPlayerGame.Maxwinningstream))
 		response.MaxMultiple = proto.Uint32(uint32(dbPlayerGame.Maxmultiple))
+		response.ErrCode = proto.Uint32(0)
 	}
 	logrus.Debugf("Handle get player game info rsp:%v ", response)
 
