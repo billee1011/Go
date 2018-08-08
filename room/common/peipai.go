@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"net/http"
+	"steve/common/constant"
 	"steve/external/goldclient"
 	"steve/gutils"
 	server_gold "steve/server_pb/gold"
@@ -65,7 +66,7 @@ func SetGoldHandle(resp http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		respMSG(resp, fmt.Sprintf("获取玩家金币数失败,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, coin), 200)
 	}
-	coin, err = goldclient.AddGold(playerID, int16(server_gold.GoldType_GOLD_COIN), int64(int64(gold)-coin), 0, 0, 0, 0)
+	coin, err = goldclient.AddGold(playerID, int16(server_gold.GoldType_GOLD_COIN), int64(int64(gold)-coin), int32(constant.GFGAMEPEIPAI), 0, 0, 0)
 	if err != nil {
 		respMSG(resp, fmt.Sprintf("配置玩家金币数失败,当前为:\n玩家ID[%v] -- 金币[%v]\n", playerID, coin), 200)
 	}
