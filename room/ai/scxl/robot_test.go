@@ -103,6 +103,15 @@ func Test_SplitZiCards(t *testing.T) {
 	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6Z}}})
 }
 
+func Test_SplitCards(t *testing.T) {
+	cards := []majong.Card{global.Card5W, global.Card6W, global.Card7W, global.Card7W, global.Card8W, global.Card9W, global.Card9W}
+	shunZis, _, _, _, _, _ := SplitCards(cards, true)
+	assert.Equal(t, shunZis, []Split{
+		{SHUNZI, []majong.Card{global.Card5W, global.Card6W, global.Card7W}},
+		{SHUNZI, []majong.Card{global.Card7W, global.Card8W, global.Card9W}},
+	})
+}
+
 func randCard() int {
 	suit := rand.Intn(4) + 1
 	point := rand.Intn(9) + 1

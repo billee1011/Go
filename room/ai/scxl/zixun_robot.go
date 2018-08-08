@@ -443,7 +443,7 @@ func FindAllCommonShunZi(handCards []majong.Card, duplicateCount int, shunZiLen 
 				i++
 			}
 
-			if j-gap >= 0 && i+gap <= j-gap && cards[j-gap].Color == cards[j].Color && cards[j].Point-cards[j-gap].Point == int32(gap*shunZiGap) { //从9向1取
+			if j-gap >= 0 && existAll(countMap, cards, j-gap, j, duplicateCount) && cards[j-gap].Color == cards[j].Color && cards[j].Point-cards[j-gap].Point == int32(gap*shunZiGap) { //从9向1取
 				shunZi := cards[j-gap : j+1]
 				inflated := InflateAll(shunZi, duplicateCount)
 				result = append(result, inflated)
