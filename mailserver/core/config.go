@@ -39,24 +39,23 @@ var mapMsg  = map[msgid.MsgID] interface{} {
 // 参数: playerID=玩家ID, cmd=消息ID, body=消息体
 // 返回: 错误
 req := &msgserver.MsgSvrHorseRaceChangeNtf{}
-gateclient.SendPackageByPlayerID(1001, uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
+playderId := 1001
+gateclient.SendPackageByPlayerID(playderId, uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
 
 // 方法：通过GateWay向多个指定玩家ID的client发送通知消息
 // 参数: playerIDs=玩家ID列表, cmd=消息ID, body=消息体
 // 返回: 错误
 req := &msgserver.MsgSvrHorseRaceChangeNtf{}
-gateclient.BroadcastPackageByPlayerID([]uint64{1001}, uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
+playderId := 1001
+gateclient.BroadcastPackageByPlayerID([]uint64{playderId}, uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
 */
 
 // 4.2通过GateWay向Client发送广播消息
 /*
 	req := &msgserver.MsgSvrHorseRaceChangeNtf{}
-
-
 	gateclient.NsqBroadcastAllMsg(uint32(msgid.MsgID_MSGSVR_HORSE_RACE_UPDATE_NTF), req)
  */
 /////////////////////////////[5.通过nsq发布和订阅消息]////////////////////////////////////////////
-
 // 5.1发布消息
 /*
 exposer := structs.GetGlobalExposer()
@@ -71,11 +70,10 @@ entry.WithError(err).Errorln("发布消息失败")
 		logrus.WithError(err).Panicln("订阅登录消息失败")
 	}
  */
-
 /////////////////////////////[6.服务初始化配置]////////////////////////////////////////////
 // 比如从DB或文件加载配置
 func InitServer() error {
-	err := logic.GetMsgMgr().Init()
+	err := logic.Init()
 	if err != nil {
 		return err
 	}

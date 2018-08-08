@@ -7,7 +7,7 @@ log_stderr: true
 #RPC服务地址
 rpc_addr: 192.168.8.17
 #RPC服务监听Port
-rpc_port: 36501
+rpc_port: 36521
 #RPC服务名
 rpc_server_name: mailserver
 #路由方式
@@ -15,7 +15,7 @@ rpc_server_name: mailserver
 #RPC服务组名
 #group_name: 1000,1001
 #RPC服务健康监控Port
-health_port: 36502
+health_port: 36522
 
 #consul 服务中心配置
 consul_addr: 192.168.7.108:8500
@@ -26,15 +26,15 @@ redis_passwd:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
 mysql_list:
-  config:
+  player:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
-    db: db_conf
+    db: player
     params:
       charset: utf8
 
 #nsq 消息队列配置
-nsqd_addr: 192.168.7.108:4150
-nsqlookupd_addrs:
-  - 192.168.7.108:4161
+#nsqd_addr: 192.168.7.108:4150
+#nsqlookupd_addrs:
+ # - 192.168.7.108:4161

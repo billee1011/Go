@@ -30,7 +30,7 @@ mysql_list:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
-    db: db_conf
+    db: config
     params:
       charset: utf8
 

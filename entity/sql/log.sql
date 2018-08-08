@@ -1,26 +1,20 @@
-create table t_currency_record
-(
-  tradeID       varchar(64)  not null
-    primary key,
-  playerID      bigint       not null,
-  channel       int          null,
-  currencyType  int          null
-  comment '货币类型：1.金币，2.元宝，3，房卡',
-  amount        int          null
-  comment '变化金额',
-  beforeBalance int          null
-  comment '变化前余额',
-  afterBalance  int          null
-  comment '变化后余额',
-  tradeTime     datetime     null
-  comment '交易时间',
-  status        int          null
-  comment '1.成功，2失败',
-  remark        varchar(256) null,
-  constraint t_currency_record_tradeID_uindex
-  unique (tradeID)
-)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '虚拟货币流水表';
-
+CREATE TABLE `t_currency_record` (
+  `tradeID` varchar(64) NOT NULL COMMENT '流水ID',
+  `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
+  `channel` int(11) DEFAULT NULL COMMENT '渠道ID',
+  `currencyType` int(11) DEFAULT NULL COMMENT '货币类型: 1=金币, 2=元宝（钻石）， 3=房卡',
+  `amount` int(11) DEFAULT NULL COMMENT '加减值',
+  `beforeBalance` int(11) DEFAULT NULL COMMENT '操作前金币值',
+  `afterBalance` int(11) DEFAULT NULL COMMENT '操作后金币值',
+  `tradeTime` datetime DEFAULT NULL COMMENT '创建时间',
+  `status` tinyint(1) DEFAULT NULL COMMENT '操作结果： 1=成功，0=失败',
+  `remark` varchar(256) DEFAULT NULL COMMENT '备注',
+  `gameId` bigint(20) DEFAULT NULL COMMENT '游戏ID',
+  `level` int(11) DEFAULT NULL COMMENT '场次ID',
+  `funcId` int(11) DEFAULT NULL COMMENT '行为ID或功能ID',
+  PRIMARY KEY (`tradeID`),
+  UNIQUE KEY `t_currency_record_tradeID_uindex` (`tradeID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表'
 
 
 CREATE TABLE `t_game_detail` (

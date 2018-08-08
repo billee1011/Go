@@ -33,14 +33,13 @@ func ProcessGetUnReadSumReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		Body:  response,
 	}}
 
-	_, _, _, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	sum, err := logic.GetGetUnReadSum(playerID)
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
 		logrus.Debugln("ProcessGetUnReadSumReq err:", err)
 		return nil
 	}
-	sum := int32(0)
 	response.Sum = &sum
 	logrus.Debugln("ProcessGetUnReadSumReq resp", response)
 	return ret
@@ -63,13 +62,15 @@ func ProcessGetMailListReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 		Body:  response,
 	}}
 
-	_, _, _, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	mailList, err := logic.GetMailList(playerID)
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
 		logrus.Debugln("ProcessGetMailListReq err:", err)
 		return nil
 	}
+
+	response.MailList = mailList
 
 	logrus.Debugln("ProcessGetMailListReq resp", response)
 	return ret
@@ -91,7 +92,7 @@ func ProcessGetMailDetailReq(playerID uint64, header *steve_proto_gaterpc.Header
 		Body:  response,
 	}}
 
-	_, _, _, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	detail, err := logic.GetMailDetail(playerID, req.GetMailId())
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
@@ -99,6 +100,7 @@ func ProcessGetMailDetailReq(playerID uint64, header *steve_proto_gaterpc.Header
 		return nil
 	}
 
+	response.Detail = detail
 	logrus.Debugln("ProcessGetMailDetailReq resp", response)
 	return ret
 }
@@ -119,7 +121,7 @@ func ProcessDelMailReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 		Body:  response,
 	}}
 
-	_, _, _, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	err := logic.DelMail(playerID, req.GetMailId())
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
@@ -147,13 +149,14 @@ func ProcessAwardAttachReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 		Body:  response,
 	}}
 
-	_, _, _, err := logic.GetMsgMgr().GetHorseRace(playerID)
+	info, err := logic.AwardAttach(playerID, req.GetMailId())
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
 		logrus.Debugln("ProcessAwardAttachReq err:", err)
 		return nil
 	}
+	response.AwardInfo = &info
 
 	logrus.Debugln("ProcessAwardAttachReq resp", response)
 	return ret
