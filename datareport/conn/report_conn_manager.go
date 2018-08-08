@@ -19,9 +19,17 @@ func GetConManager() *ReportConnManager{
 
 //随机获取一个链接
 func (manager *ReportConnManager) GetConnection() *ReportConn{
+	return manager.getConnection(0)
+}
+
+func (manager *ReportConnManager) getConnection(num int) *ReportConn{
+	if num >= fixed.MAX_CONN_NUM{
+		return nil
+	}
 	conn := manager.connMap[rand.Intn(fixed.MAX_CONN_NUM)]
 	if conn.failCount >= fixed.MAX_CONN_NUM {
 		//重新获取链接
+		return manager.getConnection(num+1)
 	}
 	return conn
 }

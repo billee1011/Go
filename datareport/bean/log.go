@@ -29,18 +29,18 @@ func CreateLogBean(logType int32, province int32, city int32, channel int32, pla
 //把日志对象转换到上报字符串
 func (log *LogBean) ToReportFormat() string {
 	result := ""
-	switch log.LogType {
-	case fixed.LOG_TYPE_GAME_PERSON_NUM:
+	switch int(log.LogType) {
+	case int(fixed.LOG_TYPE_GAME_PERSON_NUM):
 		result += fixed.LOG_TABLE_NAME_ONLINE + "|" + log.getHead() + "|" + log.Value + "|"
-	case fixed.LOG_TYPE_REG,
-		fixed.LOG_TYPE_ACT,
-		fixed.LOG_TYPE_GAM,
-		fixed.LOG_TYPE_GOLD_ADD,
-		fixed.LOG_TYPE_GODL_REMV,
-		fixed.LOG_TYPE_YB_ADD,
-		fixed.LOG_TYPE_YB_REMV,
-		fixed.LOG_TYPE_CARD_ADD,
-		fixed.LOG_TYPE_CARD_REMV:
+	case int(fixed.LOG_TYPE_REG),
+		int(fixed.LOG_TYPE_ACT),
+		int(fixed.LOG_TYPE_GAM),
+		int(fixed.LOG_TYPE_GOLD_ADD),
+		int(fixed.LOG_TYPE_GODL_REMV),
+		int(fixed.LOG_TYPE_YB_ADD),
+		int(fixed.LOG_TYPE_YB_REMV),
+		int(fixed.LOG_TYPE_CARD_ADD),
+		int(fixed.LOG_TYPE_CARD_REMV):
 		result = log.convertToLogRealTimeReport()
 	}
 	result += time.Now().Format("2006-01-02 15:04:05") //最后添加上报时间字段
@@ -50,7 +50,7 @@ func (log *LogBean) ToReportFormat() string {
 
 //转换实时简报表
 func (log *LogBean) convertToLogRealTimeReport() string {
-	v := fixed.LOG_TABLE_NAME_REALTIME +"|" + log.getHead() + "|" + strconv.FormatUint(log.PlayerId, 10) + "|"
+	v := fixed.LOG_TABLE_NAME_REALTIME + "|" + log.getHead() + "|" + strconv.FormatUint(log.PlayerId, 10) + "|"
 	for i := 0; i < fixed.MAX_PARAM-fixed.HEAD_PARAM; i++ {
 		if i == int(log.LogType) {
 			v += log.Value

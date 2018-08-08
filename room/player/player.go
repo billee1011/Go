@@ -8,7 +8,6 @@ import (
 	"steve/room/desk"
 	"steve/room/util"
 	"steve/server_pb/gold"
-	server_gold "steve/server_pb/gold"
 	"sync"
 
 	"github.com/golang/protobuf/proto"
@@ -132,14 +131,6 @@ func (p *Player) GetCoin() uint64 {
 		return 0
 	}
 	return uint64(coin)
-}
-
-func (p *Player) SetCoin(coin uint64) {
-	gold, err := goldclient.GetGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN))
-	if err != nil {
-		return
-	}
-	goldclient.AddGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN), int64(coin)-gold, 0, 0, 0, 0)
 }
 
 // IsOnline 判断玩家是否在线
