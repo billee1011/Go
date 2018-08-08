@@ -42,3 +42,6 @@ nohup serviceloader msgserver --config=config.yml  &
 popd
 
 
+pushd back
+nohup serviceloader back --config=config.yml  &
+popd
