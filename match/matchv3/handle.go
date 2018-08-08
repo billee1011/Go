@@ -49,19 +49,19 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 	}
 
 	// 客户端IP地址不能为空
-	rspIP := rsp.GetIpAddr()
-	if rspIP == "" {
-		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
-		response.ErrDesc = proto.String("从hall服获取玩家状态时发现IP地址为空")
+	/* 	rspIP := rsp.GetIpAddr()
+	   	if rspIP == "" {
+	   		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
+	   		response.ErrDesc = proto.String("从hall服获取玩家状态时发现IP地址为空")
 
-		logEntry.WithError(err).Errorln("内部错误，从hall服获取玩家状态时发现IP地址为空")
-		return
-	}
+	   		logEntry.WithError(err).Errorln("内部错误，从hall服获取玩家状态时发现IP地址为空")
+	   		return
+	   	} */
 
 	curState := rsp.GetState()
 	curGameID := rsp.GetGameId()
 	curLevelID := rsp.GetLevelId()
-	clintIP := IPStringToUInt32(rspIP)
+	clintIP := /* IPStringToUInt32(rspIP) */ 127010101
 
 	// 如果处于游戏状态，返回
 	if curState == user.PlayerState_PS_GAMEING {
@@ -97,7 +97,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 	// 最终判定空闲状态
 
 	// 分发该游戏，该场次的匹配请求通道
-	errString := matchMgr.dispatchMatchReq(playerID, reqGameID, reqLevelID, clintIP)
+	errString := matchMgr.dispatchMatchReq(playerID, reqGameID, reqLevelID, uint32(clintIP))
 
 	// 处理过程有错，回复客户端，且服务器自身报错
 	if errString != "" {
@@ -128,7 +128,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("通知hall服更改玩家的匹配服地址时失败")
 
-		logEntry.WithError(err).Errorln("内部错误，通知hall服设置玩家的服务器类型及地址时失败，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", reqGameID, reqLevelID, playerID)
+		logEntry.WithError(err).Errorf("内部错误，通知hall服设置玩家的服务器类型及地址时失败，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", reqGameID, reqLevelID, playerID)
 		return
 	}
 
@@ -154,7 +154,7 @@ func HandleCancelMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 	}
 
 	ret = []exchanger.ResponseMsg{{
-		MsgID: uint32(msgid.MsgID_MATCH_RSP),
+		MsgID: uint32(msgid.MsgID_CANCEL_MATCH_RSP),
 		Body:  response,
 	}}
 

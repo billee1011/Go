@@ -34,8 +34,8 @@ var configs = struct {
 	winRateCompuBase:      0.02,
 	goldCompuBase:         0.2,
 	maxCompuValidTime:     15,
-	bLimitSameIP:          true,
-	bLimitLastSameDesk:    true,
+	bLimitSameIP:          false,
+	bLimitLastSameDesk:    false,
 }
 
 // GetRobotJoinTime 获取机器人加入匹配的时间

@@ -107,6 +107,32 @@ func (m *Result) GetErrDesc() string {
 	return ""
 }
 
+// Result 通用处理结果
+type Result struct {
+	ErrCode          *ErrCode `protobuf:"varint,1,opt,name=err_code,json=errCode,enum=common.ErrCode" json:"err_code,omitempty"`
+	ErrDesc          *string  `protobuf:"bytes,2,opt,name=err_desc,json=errDesc" json:"err_desc,omitempty"`
+	XXX_unrecognized []byte   `json:"-"`
+}
+
+func (m *Result) Reset()                    { *m = Result{} }
+func (m *Result) String() string            { return proto.CompactTextString(m) }
+func (*Result) ProtoMessage()               {}
+func (*Result) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+
+func (m *Result) GetErrCode() ErrCode {
+	if m != nil && m.ErrCode != nil {
+		return *m.ErrCode
+	}
+	return ErrCode_EC_SUCCESS
+}
+
+func (m *Result) GetErrDesc() string {
+	if m != nil && m.ErrDesc != nil {
+		return *m.ErrDesc
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*Result)(nil), "common.Result")
 	proto.RegisterEnum("common.ErrCode", ErrCode_name, ErrCode_value)
@@ -114,7 +140,7 @@ func init() {
 
 func init() { proto.RegisterFile("errors.proto", fileDescriptor_errors_5fbc123f717f5eaa) }
 
-var fileDescriptor_errors_5fbc123f717f5eaa = []byte{
+var fileDescriptor1 = []byte{
 	// 242 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x34, 0xcf, 0xc1, 0x4a, 0xc3, 0x40,
 	0x10, 0x06, 0x60, 0x93, 0x43, 0xa3, 0xa3, 0xd4, 0xb0, 0x88, 0xa4, 0x82, 0x58, 0x3c, 0x95, 0x1e,

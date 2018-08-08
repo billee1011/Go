@@ -24,8 +24,10 @@ It has these top-level messages:
 	GetPlayerStateRsp
 	GetPlayerGameInfoReq
 	GetPlayerGameInfoRsp
+	UpdatePlayerGateInfoReq
 	UpdatePlayerStateReq
-	UpdatePlayerStateRsp
+	UpdatePlayerServerAddrReq
+	UpdatePlayerRsp
 	GetGameListInfoReq
 	GetGameListInfoRsp
 */

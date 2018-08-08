@@ -51,6 +51,32 @@ func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 	// 给desk的所有玩家分配座位号
 	randSeat(&desk)
 
+	// 通知玩家，匹配成功，创建桌子
+	// matchPlayer转换为deskPlayerInfo
+	deskPlayers := []*match.DeskPlayerInfo{}
+	for i := 0; i < len(desk.players); i++ {
+		pDeskPlayer := translateToDeskPlayer(&desk.players[i])
+		if pDeskPlayer == nil {
+			logEntry.Errorln("把matchPlayer转换为deskPlayerInfo失败，跳过")
+			continue
+		}
+		deskPlayers = append(deskPlayers, pDeskPlayer)
+	}
+
+	// 通知消息体
+	ntf := match.MatchSucCreateDeskNtf{
+		GameId:  &desk.gameID,
+		LevelId: &desk.levelID,
+		Players: deskPlayers,
+	}
+
+	// 广播给桌子内的所有真实玩家
+	for i := 0; i < len(desk.players); i++ {
+		if desk.players[i].robotLv == 0 {
+			gateclient.SendPackageByPlayerID(desk.players[i].playerID, uint32(msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF), &ntf)
+		}
+	}
+
 	// 该桌子所有的玩家信息
 	createPlayers := []*roommgr.DeskPlayer{}
 	for i := 0; i < len(desk.players); i++ {
@@ -81,32 +107,6 @@ func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 	}
 
 	// 成功时的处理
-
-	// 通知玩家，桌子创建成功
-	// matchPlayer转换为deskPlayerInfo
-	deskPlayers := []*match.DeskPlayerInfo{}
-	for i := 0; i < len(desk.players); i++ {
-		pDeskPlayer := translateToDeskPlayer(&desk.players[i])
-		if pDeskPlayer == nil {
-			logEntry.Errorln("把matchPlayer转换为deskPlayerInfo失败，跳过")
-			continue
-		}
-		deskPlayers = append(deskPlayers, pDeskPlayer)
-	}
-
-	// 通知消息体
-	ntf := match.MatchSucCreateDeskNtf{
-		GameId:  &desk.gameID,
-		LevelId: &desk.levelID,
-		Players: deskPlayers,
-	}
-
-	// 广播给桌子内的所有真实玩家
-	for i := 0; i < len(desk.players); i++ {
-		if desk.players[i].robotLv == 0 {
-			gateclient.SendPackageByPlayerID(desk.players[i].playerID, uint32(msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF), &ntf)
-		}
-	}
 
 	// 记录匹配成功的真实玩家同桌信息
 	for i := 0; i < len(desk.players); i++ {
@@ -143,6 +143,8 @@ func translateToDeskPlayer(player *matchPlayer) *match.DeskPlayerInfo {
 		Name:     proto.String(playerInfo.GetNickName()),
 		Coin:     &player.gold,
 		Seat:     &player.seat,
+		Gender:   proto.Uint32(playerInfo.GetGender()),
+		Avatar:   proto.String(playerInfo.GetAvatar()),
 	}
 
 	return &deskPlayer

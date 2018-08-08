@@ -15,10 +15,10 @@ func RegisterHandles(e exchanger.Exchanger) error {
 		}
 	}
 
-	register(msgid.MsgID_MATCH_REQ, matchv3.HandleMatchReq) // 匹配请求消息
-	//register(msgid.MsgID_MATCH_REQ, matchv3.HandleMatchReq) // 匹配请求消息
+	register(msgid.MsgID_MATCH_REQ, matchv3.HandleMatchReq)              // 匹配请求消息
+	register(msgid.MsgID_CANCEL_MATCH_REQ, matchv3.HandleCancelMatchReq) // 取消匹配请求消息
 
-	register(msgid.MsgID_MATCH_CONTINUE_REQ, matchv3.HandleContinueReq) // 续局请求
+	//register(msgid.MsgID_MATCH_CONTINUE_REQ, matchv3.HandleContinueReq) // 续局请求
 
 	return nil
 }

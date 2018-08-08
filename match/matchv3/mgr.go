@@ -33,20 +33,20 @@ type playerLogin struct {
 
 // gameLevelConfig 游戏场次配置数据
 type gameLevelConfig struct {
-	levelID            uint32 // 场次ID
-	levelName          string // 场次名字
-	bottomScore        uint32 // 底分
-	minGold            int64  // 金币要求下限
-	maxGold            int64  // 金币要求上限
-	minNeedPlayerCount uint32 // 允许最低人数
-	maxNeedPlayerCount uint32 // 允许最高人数
+	levelID     uint32 // 场次ID
+	levelName   string // 场次名字
+	bottomScore uint32 // 底分
+	minGold     int64  // 金币要求下限
+	maxGold     int64  // 金币要求上限
 }
 
 // gameConfig 游戏配置数据
 type gameConfig struct {
-	gameID      uint32                     // 游戏ID
-	gameName    string                     // 游戏名字
-	levelConfig map[uint32]gameLevelConfig // 所有的游戏场次
+	gameID             uint32                     // 游戏ID
+	gameName           string                     // 游戏名字
+	minNeedPlayerCount uint32                     // 允许最低人数
+	maxNeedPlayerCount uint32                     // 允许最高人数
+	levelConfig        map[uint32]gameLevelConfig // 所有的游戏场次
 }
 
 // levelGlobalInfo 单个游戏单个场次的全局信息
@@ -112,17 +112,17 @@ func (manager *matchManager) getGameNeedPlayerCount(gameID uint32, levelID uint3
 		return 0
 	}
 
-	// 得到该场次的信息
-	levelInfo, exist := gameInfo.config.levelConfig[levelID]
-	// 该场次不存在
-	if !exist {
-		logEntry.Errorln("场次ID不存在")
-		return 0
-	}
+	/* 	// 得到该场次的信息
+	   	levelInfo, exist := gameInfo.config.levelConfig[levelID]
+	   	// 该场次不存在
+	   	if !exist {
+	   		logEntry.Errorln("场次ID不存在")
+	   		return 0
+	   	} */
 
-	logEntry.Debugf("离开函数,最低满桌人数为：%v", levelInfo.minNeedPlayerCount)
+	logEntry.Debugf("离开函数,最低满桌人数为：%v", gameInfo.config.minNeedPlayerCount)
 
-	return uint8(levelInfo.minNeedPlayerCount)
+	return uint8(gameInfo.config.minNeedPlayerCount)
 }
 
 // init 初始化并运行
@@ -896,9 +896,24 @@ func (manager *matchManager) cancelMatch(globalInfo *levelGlobalInfo, reqPlayer 
 		}
 	}
 
-	// 没找到该玩家，报错
-	if !bRemovePlayer {
-		logEntry.Errorf("玩家取消匹配时找不到该玩家，游戏ID:%v，级别ID:%v", globalInfo.gameID, globalInfo.levelID)
+	// 已删除玩家，重置玩家状态
+	if bRemovePlayer {
+		// 设置为空闲状态
+		bSuc, err := hallclient.UpdatePlayerState(reqPlayer.playerID, user.PlayerState_PS_MATCHING, user.PlayerState_PS_IDIE, 0, 0)
+		if err != nil || !bSuc {
+			logEntry.WithError(err).Errorln("内部错误，通知hall服设置玩家状态为空闲状态时失败")
+			return
+		}
+
+		// 更新玩家所在的服务器类型和地址，地址置空
+		bSuc, err = hallclient.UpdatePlayeServerAddr(reqPlayer.playerID, user.ServerType_ST_MATCH, "")
+		if err != nil || !bSuc {
+			logEntry.WithError(err).Errorln("内部错误，通知hall服设置玩家的服务器类型及地址时失败")
+			return
+		}
+	} else {
+		// 没找到该玩家，报错
+		logEntry.Errorf("玩家取消匹配时在匹配桌子中找不到该玩家，游戏ID:%v，级别ID:%v", globalInfo.gameID, globalInfo.levelID)
 	}
 }
 
