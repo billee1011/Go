@@ -6,6 +6,7 @@ import (
 	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/ai"
+	"steve/room/majong/utils"
 	"strconv"
 )
 
@@ -53,77 +54,14 @@ func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majo
 		cards = append(cards, *handCard)
 	}
 
-	// 拆牌
-	var shunZis, keZis, pairs, doubleChas, singleChas, singles []Split
-	shunZis1, keZis1, pairs1, doubleChas1, singleChas1, singles1 := SplitCards(cards, true)
-	shunZis2, keZis2, pairs2, doubleChas2, singleChas2, singles2 := SplitCards(cards, false)
-	if len(shunZis1)+len(keZis1) > len(shunZis2)+len(keZis2) {
-		remain := RemoveSplits(cards, shunZis1)
-		gangs := SplitGang(remain)
-		if len(gangs) > 0 {
-			return gangs[0].cards[0], true
-		}
-		goto assign1
-	} else if len(shunZis1)+len(keZis1) == len(shunZis2)+len(keZis2) {
-		remain1 := RemoveSplits(cards, shunZis1)
-		gangs := SplitGang(remain1)
-		if len(gangs) > 0 {
-			return gangs[0].cards[0], true
-		}
-
-		remain2 := RemoveSplits(cards, shunZis1)
-		gangs = SplitGang(remain2)
-		if len(gangs) > 0 {
-			return gangs[0].cards[0], true
-		}
-		if len(pairs1) > len(pairs2) {
-			goto assign1
-		} else if len(pairs1) == len(pairs2) {
-			if len(doubleChas1) > len(doubleChas2) {
-				goto assign1
-			} else if len(doubleChas1) == len(doubleChas2) {
-				if len(singleChas1) > len(singleChas2) {
-					goto assign1
-				} else if len(singleChas1) == len(singleChas2) {
-					goto assign2
-				} else {
-					goto assign2
-				}
-			} else {
-				goto assign2
-			}
-		} else {
-			goto assign2
-		}
-	} else {
-		remain := RemoveSplits(cards, shunZis2)
-		gangs := SplitGang(remain)
-		if len(gangs) > 0 {
-			return gangs[0].cards[0], true
-		}
-		goto assign2
+	// 拆牌，比较顺子优先、刻子优先两种拆牌方式，选出最好的结果
+	_, _, pairs, doubleChas, singleChas, singles, gangs := SplitBestCards(cards)
+	if len(gangs) > 0 {
+		return gangs[0].cards[0], true //有杠就杠
 	}
-assign1:
-	shunZis = shunZis1
-	keZis = keZis1
-	pairs = pairs1
-	doubleChas = doubleChas1
-	singleChas = singleChas1
-	singles = singles1
-	goto analysis
-assign2:
-	shunZis = shunZis2
-	keZis = keZis2
-	pairs = pairs2
-	doubleChas = doubleChas2
-	singleChas = singleChas2
-	singles = singles2
-	goto analysis
-analysis:
-	logrus.WithFields(logrus.Fields{"手牌": cards, "拆牌": append(append(append(append(append(shunZis, keZis...), pairs...), doubleChas...), singleChas...), singles...)}).Debugln("中级AI拆牌结果")
 
 	if len(singles) == 1 {
-		return singles[0].cards[0], false
+		return singles[0].cards[0], false //只有一张单牌，直接出牌
 	}
 
 	//var wallCards []majong.Card
@@ -137,6 +75,10 @@ analysis:
 	visibleCards = append(visibleCards, handCards...)
 	for _, player := range mjContext.Players {
 		visibleCards = append(visibleCards, player.OutCards...)
+		visibleCards = append(visibleCards, utils.TransChiCard(player.ChiCards)...)
+		visibleCards = append(visibleCards, utils.TransPengCard(player.PengCards)...)
+		visibleCards = append(visibleCards, utils.TransGangCard(player.GangCards)...)
+		visibleCards = append(visibleCards, utils.TransHuCard(player.HuCards)...)
 	}
 
 	countMap := make(map[majong.Card]int)
@@ -161,15 +103,26 @@ analysis:
 	for _, doubleCha := range doubleChas {
 		twoCards = append(twoCards, doubleCha)
 	}
-	if len(pairs) > 1 { //一个对子留作将，多于一个对子看成牌机会
+	if len(pairs) > 1 { //只有一个对子保留作将，多于一个对子才拆对子
 		for _, pair := range pairs {
 			twoCards = append(twoCards, pair)
 		}
 	}
 
 	chances := make(map[*Split]int)
+	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	for _, twoCard := range twoCards {
-		chances[&twoCard] = countValidCard(remainCards, getValidCard(twoCard))
+		count := countValidCard(remainCards, getValidCard(twoCard))
+		if twoCard.t == PAIR {
+			chances[&twoCard] = count * (4 / 1) // 可碰，四家摸到都有可能成刻
+		}
+		if twoCard.t == DOUBLE_CHA || twoCard.t == SINGLE_CHA {
+			if xpOption.EnableChi {
+				chances[&twoCard] = count * (4 / 2) // 可吃，两家摸到都有可能成顺
+			} else {
+				chances[&twoCard] = count * (4 / 4) // 不可吃，只有自家摸到才可能成顺
+			}
+		}
 	}
 
 	var needChai Split
@@ -252,6 +205,70 @@ func getValidCard(split Split) (result []majong.Card) {
 			result = append(result, majong.Card{Color: small.Color, Point: small.Point + 1})
 		}
 	}
+	return
+}
+
+func SplitBestCards(cards []majong.Card) (shunZis []Split, keZis []Split, pairs []Split, doubleChas []Split, singleChas []Split, singles []Split, gangs []Split) {
+	shunZis1, keZis1, pairs1, doubleChas1, singleChas1, singles1 := SplitCards(cards, true)
+	shunZis2, keZis2, pairs2, doubleChas2, singleChas2, singles2 := SplitCards(cards, false)
+	if len(shunZis1)+len(keZis1) > len(shunZis2)+len(keZis2) {
+		remain := RemoveSplits(cards, shunZis1)
+		gangs = SplitGang(remain)
+		goto assign1
+	} else if len(shunZis1)+len(keZis1) == len(shunZis2)+len(keZis2) {
+		remain1 := RemoveSplits(cards, shunZis1)
+		gangs = SplitGang(remain1)
+		if len(gangs) > 0 {
+			goto assign1
+		}
+
+		remain2 := RemoveSplits(cards, shunZis1)
+		gangs = SplitGang(remain2)
+		if len(gangs) > 0 {
+			goto assign2
+		}
+		if len(pairs1) > len(pairs2) {
+			goto assign1
+		} else if len(pairs1) == len(pairs2) {
+			if len(doubleChas1) > len(doubleChas2) {
+				goto assign1
+			} else if len(doubleChas1) == len(doubleChas2) {
+				if len(singleChas1) > len(singleChas2) {
+					goto assign1
+				} else if len(singleChas1) == len(singleChas2) {
+					goto assign2
+				} else {
+					goto assign2
+				}
+			} else {
+				goto assign2
+			}
+		} else {
+			goto assign2
+		}
+	} else {
+		remain := RemoveSplits(cards, shunZis2)
+		gangs = SplitGang(remain)
+		goto assign2
+	}
+assign1:
+	shunZis = shunZis1
+	keZis = keZis1
+	pairs = pairs1
+	doubleChas = doubleChas1
+	singleChas = singleChas1
+	singles = singles1
+	goto analysis
+assign2:
+	shunZis = shunZis2
+	keZis = keZis2
+	pairs = pairs2
+	doubleChas = doubleChas2
+	singleChas = singleChas2
+	singles = singles2
+	goto analysis
+analysis:
+	logrus.WithFields(logrus.Fields{"手牌": cards, "拆牌": append(append(append(append(append(shunZis, keZis...), pairs...), doubleChas...), singleChas...), singles...)}).Debugln("中级AI拆牌结果")
 	return
 }
 
@@ -417,12 +434,11 @@ func FindAllCommonShunZi(handCards []majong.Card, duplicateCount int, shunZiLen 
 			matchCards = append(matchCards, card)
 		}
 	}
-	MJCardSort(matchCards)
-
 	gap := shunZiLen - 1
 
 	colorCards := divideByColor(matchCards)
 	for color, cards := range colorCards {
+		MJCardSort(cards)
 		if color == majong.CardColor_ColorHua || color == majong.CardColor_ColorZi && shunZiLen != 1 {
 			continue //花牌都按单牌处理，字牌没有顺子
 		}
