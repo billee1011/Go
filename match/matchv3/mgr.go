@@ -399,7 +399,7 @@ func (manager *matchManager) checkDeskSameIP(pDesk1 *matchDesk, pDesk2 *matchDes
 	for i := 0; i < len(pDesk1.players); i++ {
 		for j := 0; i < len(pDesk2.players); j++ {
 			// 都是真实玩家，存在IP相等的即返回
-			if (pDesk1.players[i].robotLv != 0) && (pDesk2.players[i].robotLv != 0) && (pDesk1.players[i].IP == pDesk2.players[j].IP) {
+			if (pDesk1.players[i].robotLv == 0) && (pDesk2.players[i].robotLv == 0) && (pDesk1.players[i].IP == pDesk2.players[j].IP) {
 				return true
 			}
 		}
@@ -423,14 +423,14 @@ func (manager *matchManager) checkPlayerSameIP(pPlayer *matchPlayer, pDesk *matc
 		return false
 	}
 
-	// 机器人，不检测
-	if pPlayer.robotLv == 0 {
+	// 自己是机器人，不检测
+	if pPlayer.robotLv != 0 {
 		return false
 	}
 
 	for i := 0; i < len(pDesk.players); i++ {
-		// 存在IP相等的即返回
-		if pPlayer.IP == pDesk.players[i].IP {
+		// 对方是真实玩家，且存在IP相等的即返回
+		if (pDesk.players[i].robotLv == 0) && (pPlayer.IP == pDesk.players[i].IP) {
 			return true
 		}
 	}
@@ -455,7 +455,7 @@ func (manager *matchManager) checkDeskLastSameDesk(pDesk1 *matchDesk, pDesk2 *ma
 
 	for i := 0; i < len(pDesk1.players); i++ {
 		// 只检测真实玩家
-		if pDesk1.players[i].robotLv != 0 {
+		if pDesk1.players[i].robotLv == 0 {
 			// 与pDesk2的某个玩家上一局有同桌即返回
 			if manager.checkPlayerLastSameDesk(&pDesk1.players[i], pDesk2, pGlobalInfo) {
 				return true
@@ -481,12 +481,12 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 		return false
 	}
 
-	// 机器人不检测
-	if pPlayer.robotLv == 0 {
+	// 自己是机器人，不检测
+	if pPlayer.robotLv != 0 {
 		return false
 	}
 
-	// 自己是否存在上一局
+	// 自己不存在上一局，不检测
 	selfDeskID, selfExist := pGlobalInfo.sucPlayers[pPlayer.playerID]
 	if !selfExist {
 		return false
@@ -504,7 +504,7 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 			// 找到该桌子
 			desk, exist := pGlobalInfo.sucDesks[deskID]
 			if exist {
-				// 接着检测成功时间，若未超过同桌限制时间，认为是上局同桌
+				// 接着检测距离上次同桌的时间间隔，若未超过同桌限制时间，认为是上局同桌
 				if tNowTime-desk.sucTime < web.GetSameDeskLimitTime() {
 					return true
 				}
@@ -807,13 +807,45 @@ func (manager *matchManager) cancelMatch(globalInfo *levelGlobalInfo, reqPlayer 
 	}
 
 	///////////////////////////////////////////////////////// 以玩家胜率为中心，向左右依次搜索，直到所有的桌子 ///////////////////////////////////////////////
-	bRemovePlayer := false
-	var index int8 = 0
-	for ; index <= 100; index++ {
-		// 该概率下所有的桌子
-		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
+	serIndexs := make([]int32, 0, 100)
 
-			desk := iter.Value.(*matchDesk)
+	// 先压入自身胜率的index
+	serIndexs = append(serIndexs, reqPlayer.winRate)
+
+	var i int32 = 0
+	var leftIndex int32 = 0
+	var rightIndex int32 = 0
+
+	for i = 1; i <= 100; i++ {
+
+		// 左侧,只压入有效的
+		leftIndex = reqPlayer.winRate - i
+		if leftIndex >= 0 {
+			serIndexs = append(serIndexs, leftIndex)
+		}
+
+		// 右侧,只压入有效的
+		rightIndex = reqPlayer.winRate + i
+		if rightIndex <= 100 {
+			serIndexs = append(serIndexs, rightIndex)
+		}
+	}
+
+	bRemovePlayer := false
+
+	var index int32 = 0
+	for i := 0; i < len(serIndexs); i++ {
+
+		index = serIndexs[i]
+
+		var next *list.Element = nil
+
+		// 该概率下所有的桌子
+		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = next {
+
+			next = iter.Next()
+
+			desk := *(iter.Value.(**matchDesk))
 
 			// 该概率下所有的玩家
 			for i := 0; i < len(desk.players); i++ {
@@ -847,7 +879,7 @@ func (manager *matchManager) cancelMatch(globalInfo *levelGlobalInfo, reqPlayer 
 					}
 				}
 
-				// 桌子2没真实玩家了，就删除桌子
+				// 没真实玩家了，就删除桌子
 				if !bExistTruePlayer {
 					globalInfo.allRateDesks[index].Remove(iter)
 					logEntry.Debugf("由于删除该玩家后，桌子里不再有真实玩家，删除桌子")
