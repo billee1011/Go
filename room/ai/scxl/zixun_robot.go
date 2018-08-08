@@ -6,6 +6,7 @@ import (
 	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/ai"
+	"strconv"
 )
 
 func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
@@ -28,13 +29,21 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 		}
 	}
 
+	logEntry := logrus.WithField("playerId", player.PalyerId)
 	outCard, gang := getOutCard(handCards, mjContext)
+	needHu := outCard == majong.Card{}
+	if needHu {
+		aiEvent = h.hu(player)
+		logEntry.Infoln("中级AI胡牌")
+		return
+	}
 	if gang {
 		aiEvent = h.gang(player, &outCard)
 	} else {
 		aiEvent = h.chupai(player, &outCard)
 	}
-	logrus.WithField("outCard", outCard).WithField("gang", gang).Infoln("中级AI出牌")
+
+	logEntry.WithField("outCard", outCard).WithField("gang", gang).Infoln("中级AI出牌")
 	return
 }
 
@@ -111,7 +120,7 @@ assign2:
 	singles = singles2
 	goto analysis
 analysis:
-	logrus.WithFields(logrus.Fields{"手牌": cards, "顺子": shunZis, "刻子": keZis, "对子": pairs, "双茬": doubleChas, "单茬": singleChas, "单牌": singles}).Infoln("中级AI拆牌结果")
+	logrus.WithFields(logrus.Fields{"手牌": cards, "拆牌": append(append(append(append(append(shunZis, keZis...), pairs...), doubleChas...), singleChas...), singles...)}).Debugln("中级AI拆牌结果")
 
 	if len(singles) == 1 {
 		return singles[0].cards[0], false
@@ -284,6 +293,34 @@ const (
 type Split struct {
 	t     SplitType
 	cards []majong.Card
+}
+
+func (s Split) String() string {
+	var str string
+	for _, card := range s.cards {
+		str = str + card.String() + ","
+	}
+	if len(str) > 0 {
+		str = str[0 : len(str)-1]
+	}
+	switch s.t {
+	case GANG:
+		return "杠(" + str + ")"
+	case KEZI:
+		return "刻子(" + str + ")"
+	case SHUNZI:
+		return "顺子(" + str + ")"
+	case PAIR:
+		return "对子(" + str + ")"
+	case DOUBLE_CHA:
+		return "双茬(" + str + ")"
+	case SINGLE_CHA:
+		return "单茬(" + str + ")"
+	case SINGLE:
+		return "单牌(" + str + ")"
+	default:
+		return strconv.Itoa(int(s.t))
+	}
 }
 
 // 拆出所有杠

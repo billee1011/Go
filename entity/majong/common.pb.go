@@ -1,5 +1,9 @@
 package majong
 
+import (
+	"strconv"
+)
+
 // CardColor 牌花色
 type CardColor int32
 
@@ -10,6 +14,23 @@ const (
 	CardColor_ColorZi   CardColor = 3
 	CardColor_ColorHua  CardColor = 4
 )
+
+func (c CardColor) String() string {
+	switch c {
+	case CardColor_ColorWan:
+		return "万"
+	case CardColor_ColorTong:
+		return "筒"
+	case CardColor_ColorTiao:
+		return "条"
+	case CardColor_ColorZi:
+		return "字"
+	case CardColor_ColorHua:
+		return "花"
+	default:
+		return strconv.Itoa(int(c))
+	}
+}
 
 // TingType 听牌类型
 type TingType int32
@@ -39,8 +60,20 @@ func (m *Card) GetPoint() int32 {
 	return 0
 }
 
-func (m Card) Equals(other Card) bool {
-	return m.Point == other.Point && m.Color == other.Color
+func (m Card) String() string {
+	if m.Color == CardColor_ColorWan {
+		return strconv.Itoa(int(m.Point)) + "万"
+	} else if m.Color == CardColor_ColorTong {
+		return strconv.Itoa(int(m.Point)) + "筒"
+	} else if m.Color == CardColor_ColorTiao {
+		return strconv.Itoa(int(m.Point)) + "条"
+	} else if m.Color == CardColor_ColorZi {
+		return strconv.Itoa(int(m.Point)) + "字"
+	} else if m.Color == CardColor_ColorHua {
+		return strconv.Itoa(int(m.Point)) + "花"
+	} else {
+		return strconv.Itoa(int(int32(m.Color)*10 + m.Point))
+	}
 }
 
 // TingAction 听牌动作
