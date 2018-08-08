@@ -44,6 +44,8 @@ var gameconfigList = map[int16]string{
 const (
 	playerRedisName          = "player"
 	playerMysqlName          = "player"
+	configRedisName          = "config"
+	configMysqlName          = "config"
 	playerTableName          = "t_player"
 	playerCurrencyTableName  = "t_player_currency"
 	playerGameTableName      = "t_player_game"
@@ -315,10 +317,6 @@ func setPlayerStateByWatch(redisName string, key string, oldState uint32, fields
 	}
 
 	err = redisCli.Watch(func(tx *redis.Tx) error {
-		err := tx.HKeys(key).Err()
-		if err != nil && err != redis.Nil {
-			return err
-		}
 		stateString := tx.HGet(key, cache.GameState).Val()
 		stateInt, _ := strconv.Atoi(stateString)
 
@@ -348,7 +346,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 	rKey := cache.FmtGameInfoConfigKey()
 
 	// 从redis获取
-	val, err := getRedisField(playerRedisName, rKey, []string{gameConfigKey, gameLevelConfigKey}...)
+	val, err := getRedisField(configRedisName, rKey, []string{gameConfigKey, gameLevelConfigKey}...)
 	if err == nil && len(val) == 2 {
 		if val[0] != nil && val[0].(string) != "" {
 			json.Unmarshal([]byte(val[0].(string)), gameConfig)
@@ -361,7 +359,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		return
 	}
 
-	engine, err := mysqlEngineGetter(playerMysqlName)
+	engine, err := mysqlEngineGetter(configMysqlName)
 	if err != nil {
 		return
 	}
@@ -373,7 +371,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		return
 	}
 
-	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,status,tag,remark"
+	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,realOnlinePeople,showOnlinePeople,status,tag,remark"
 	err = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
 
 	if err != nil {
@@ -440,8 +438,6 @@ func InitPlayerState(playerID int64) (err error) {
 
 	rfields := map[string]string{
 		cache.GameState: fmt.Sprintf("%d", user.PlayerState_PS_IDIE),
-		cache.IPAddr:    "",
-		cache.GateAddr:  "",
 	}
 
 	if err = setRedisFields(playerRedisName, redisKey, rfields, redisTimeOut); err != nil {
@@ -561,6 +557,8 @@ func setDBPlayerByField(dbPlayer *db.TPlayer, field string, val string) error {
 		dbPlayer.Accountid, _ = strconv.ParseInt(val, 10, 64)
 	case "playerID":
 		dbPlayer.Playerid, _ = strconv.ParseInt(val, 10, 64)
+	case "showUID":
+		dbPlayer.Showuid, _ = strconv.ParseInt(val, 10, 64)
 	case "type":
 		dbPlayer.Type, _ = strconv.Atoi(val)
 	case "channelID":
@@ -665,6 +663,8 @@ func getDBPlayerField(field string, dbPlayer *db.TPlayer) (interface{}, error) {
 		v = dbPlayer.Accountid
 	case "playerID":
 		v = dbPlayer.Playerid
+	case "showUID":
+		v = dbPlayer.Showuid
 	case "type":
 		v = dbPlayer.Type
 	case "channelID":

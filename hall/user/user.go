@@ -18,7 +18,7 @@ import (
 
 // HandleGetPlayerInfoReq 处理获取玩家个人资料请求
 func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugln("Handle get player info req", req)
+	logrus.Debugf("Handle get player info req:%v", req)
 
 	// 默认返回消息
 	response := &hall.HallGetPlayerInfoRsp{
@@ -32,12 +32,13 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家基本个人资料
-	player, err := data.GetPlayerInfo(playerID, []string{cache.NickName, cache.Avatar, cache.Gender}...)
+	player, err := data.GetPlayerInfo(playerID, []string{cache.ShowUID, cache.NickName, cache.Avatar, cache.Gender}...)
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.NickName = proto.String(player.Nickname)
 		response.Avator = proto.String(player.Avatar)
 		response.Gender = proto.Uint32(uint32(player.Gender))
+		response.ShowUid = proto.Uint64(uint64(player.Showuid))
 	}
 
 	// 获取玩家货币信息
@@ -51,22 +52,23 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	if err == nil {
 		response.PlayerState = common.PlayerState(pState.State).Enum()
 		response.GameId = common.GameId(pState.GameID).Enum()
+		response.ErrCode = proto.Uint32(0)
 	}
+	logrus.Debugf("Handle get player info rsp: %v", response)
 	return
 }
 
 // HandleUpdatePlayerInoReq 处理更新玩家个人资料请求
 func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallUpdatePlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugln("Handle update player info req", req)
+	logrus.Debugf("Handle update player info req: %v", req)
 
 	// 默认返回消息
 	response := &hall.HallUpdatePlayerInfoRsp{
 		ErrCode: proto.Uint32(1),
-		Result:  proto.Bool(false),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_HALL_UPDATE_PLAYER_INFO_REQ),
+			MsgID: uint32(msgid.MsgID_HALL_UPDATE_PLAYER_INFO_RSP),
 			Body:  response,
 		},
 	}
@@ -75,7 +77,8 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	dbPlayer := db.TPlayer{
 		Playerid: int64(playerID),
 	}
-	if req.Gender != nil && (req.GetGender() == 1 || req.GetGender() == 2) {
+	gender := uint32(req.GetGender())
+	if gender == 1 || gender == 2 {
 		dbPlayer.Gender = int(req.GetGender())
 	}
 
@@ -93,7 +96,10 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 
 	if error == nil {
 		response.ErrCode = proto.Uint32(0)
-		response.Result = proto.Bool(true)
+		response.NickName = proto.String(req.GetNickName())
+		response.Gender = req.GetGender().Enum()
+		response.Avator = proto.String(req.GetAvator())
+
 	}
 
 	return
@@ -101,7 +107,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 
 // HandleGetPlayerStateReq 获取玩家游戏状态信息
 func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugln("Handle get player state req", req)
+	logrus.Debugf("Handle get player state req:%v", req)
 
 	// 默认返回消息
 	response := &hall.HallGetPlayerStateRsp{
@@ -128,7 +134,7 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 
 // HandleGetGameInfoReq client-> 获取游戏信息列表请求
 func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetGameListInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugln("Handle get game info req", req)
+	logrus.Debugf("Handle get game info req:%vs", req)
 
 	// 默认返回消息
 	response := &hall.HallGetGameListInfoRsp{
@@ -136,7 +142,7 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_HALL_GET_PLAYER_INFO_RSP),
+			MsgID: uint32(msgid.MsgID_HALL_GET_GAME_INFO_RSP),
 			Body:  response,
 		},
 	}
@@ -148,7 +154,9 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 	if err == nil {
 		response.GameConfig = DBGameConfig2Client(gameInfos)
 		response.GameLevelConfig = DBGamelevelConfig2Client(gameLevelInfos)
+		response.ErrCode = proto.Uint32(0)
 	}
+	logrus.Debugf("Handle get game info rsp:%v; err:%v", response, err.Error())
 
 	return
 }

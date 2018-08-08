@@ -304,7 +304,7 @@ func createPlayer(accID uint64) (uint64, error) {
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
-		Showuid:      int(data.AllocShowUID()),
+		Showuid:      data.AllocShowUID(),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
