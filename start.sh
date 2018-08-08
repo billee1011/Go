@@ -41,4 +41,10 @@ pushd msgserver
 nohup serviceloader msgserver --config=config.yml  &
 popd
 
+# 依赖hall服
+sleep 2 
+
+pushd alms
+nohup serviceloader alms --config=config.yml  &
+popd
 
