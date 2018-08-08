@@ -23,7 +23,7 @@ var configs = struct {
 	bLimitSameIP          bool          // 是否限制重复IP
 	bLimitLastSameDesk    bool          // 是否检测上局同桌
 }{
-	robotJoinTime:         20 * time.Second,
+	robotJoinTime:         3 * time.Second,
 	continueDismissTime:   20 * time.Second,
 	continueRobotTime:     3 * time.Second,
 	robotContinueRateWin:  0.9,
