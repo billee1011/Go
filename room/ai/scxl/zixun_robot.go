@@ -135,7 +135,7 @@ analysis:
 		countMap[*visuableCard]++
 	}
 
-	var remainCards map[majong.Card]int
+	remainCards := make(map[majong.Card]int)
 	for k, v := range countMap {
 		remainCards[k] = 4 - v
 	}
@@ -158,7 +158,7 @@ analysis:
 		}
 	}
 
-	var chances map[*Split]int
+	chances := make(map[*Split]int)
 	for _, twoCard := range twoCards {
 		chances[&twoCard] = countValidCard(remainCards, getValidCard(twoCard))
 	}

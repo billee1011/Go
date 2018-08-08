@@ -74,11 +74,11 @@ func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) ai.AIEve
 }
 
 func (h *zixunStateAI) gang(player *majong.Player, card *majong.Card) ai.AIEvent {
-	eventContext := majong.ChupaiRequestEvent{
+	eventContext := majong.GangRequestEvent{
 		Head: &majong.RequestEventHead{
 			PlayerId: player.GetPalyerId(),
 		},
-		Cards: card,
+		Card: card,
 	}
 	return ai.AIEvent{
 		ID:      int32(majong.EventID_event_gang_request),

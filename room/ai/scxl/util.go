@@ -7,22 +7,31 @@ import (
 )
 
 func RemoveSplits(cards []majong.Card, splits []Split) []majong.Card {
+	var clone = Clone(cards) //克隆，避免修改原slice的底层数组，产生副作用
 	for _, split := range splits {
 		for _, card := range split.cards {
-			cards = Remove(cards, card)
+			clone = Remove(clone, card)
 		}
 	}
-	return cards
+	return clone
 }
 
 func Remove(cards []majong.Card, removeCard majong.Card) []majong.Card {
 	for i, card := range cards {
-		if card.Equals(removeCard) {
+		if card == removeCard {
 			cards = append(cards[:i], cards[i+1:]...)
 			break
 		}
 	}
 	return cards
+}
+
+func Clone(cards []majong.Card) []majong.Card {
+	var clone []majong.Card
+	for _, card := range cards {
+		clone = append(clone, card)
+	}
+	return clone
 }
 
 func ContainsEdge(cards []majong.Card) bool {

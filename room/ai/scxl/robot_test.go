@@ -62,6 +62,14 @@ func Test_SplitKeZiFirst(t *testing.T) {
 	assert.Equal(t, singles, []Split{{SINGLE, []majong.Card{global.Card6W}}})
 }
 
+func Test_SplitRemoveShunZi(t *testing.T) {
+	cards := []majong.Card{global.Card5W, global.Card5W, global.Card5W, global.Card6W, global.Card6W, global.Card6W, global.Card6W, global.Card7W, global.Card7W, global.Card7W}
+	shunZis, _, _, _, _, _ := SplitCards(cards, false)
+	remain := RemoveSplits(cards, shunZis)
+	gangs := SplitGang(remain)
+	assert.Equal(t, gangs, []Split{{GANG, []majong.Card{global.Card6W, global.Card6W, global.Card6W, global.Card6W}}})
+}
+
 func Test_SplitSpaceShunZi(t *testing.T) {
 	cards := []majong.Card{global.Card5W, global.Card7W}
 	_, _, _, _, singleChas, _ := SplitCards(cards, false)
