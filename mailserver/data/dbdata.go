@@ -57,10 +57,21 @@ func SetEmailReadTagFromDB(uid uint64, mailId uint64)  error {
 		return fmt.Errorf("connect db error")
 	}
 
-	strCol := "n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel "
+	sql := fmt.Sprintf("select n_id from t_player_mail where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
+	resQuery, err := engine.QueryString(sql)
+	if err != nil {
+		return err
+	}
+	isExist := len(resQuery)
 
-	sql := fmt.Sprintf("insert into t_player_mail (%s) values('%d','%d','%d','%d','%d');",
-		strCol, uid, mailId, 1, 0, 0)
+	sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel) values('%d','%d','%d','%d','%d');",
+		uid, mailId, 1, 0, 0)
+	if isExist > 0 {
+		// 修改记录
+		sql = fmt.Sprintf("update t_player_mail set n_isRead=1 where n_playerid='%d' and n_mailID ='%d';",
+			 uid, mailId)
+	}
+
 	res, err := engine.Exec(sql)
 	if err != nil {
 		return err
@@ -72,6 +83,56 @@ func SetEmailReadTagFromDB(uid uint64, mailId uint64)  error {
 	return nil
 }
 
+// 从DB获取指定玩家的邮件列表
+func GetTheMailFromDB(uid uint64, mailId uint64) (*define.PlayerMail, error) {
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return nil, fmt.Errorf("connect db error")
+	}
+
+	sql := fmt.Sprintf("select n_id, n_mailID, n_isRead, n_isGetAttach,n_isDel from t_player_mail where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
+	res, err := engine.QueryString(sql)
+	if err != nil {
+
+		return nil, err
+	}
+
+	for _, row := range res {
+
+		id, _ := strconv.ParseInt(row["n_id"], 10, 64)
+
+		info := new(define.PlayerMail)
+		info.Id = id
+
+		info.PlayerId = uid
+		mailId, _ := strconv.ParseInt(row["n_mailID"], 10, 64)
+		info.MailId = uint64(mailId)
+
+		isRead, _ := strconv.ParseInt(row["n_isRead"], 10, 64)
+		if isRead !=  0 {
+			info.IsRead = true
+		} else {
+			info.IsRead = false
+		}
+		isGet, _ := strconv.ParseInt(row["n_isGetAttach"], 10, 64)
+		if isGet !=  0 {
+			info.IsGetAttach = true
+		} else {
+			info.IsGetAttach = false
+		}
+		isDel, _ := strconv.ParseInt(row["n_isDel"], 10, 64)
+		if isDel !=  0 {
+			info.IsDel = true
+		} else {
+			info.IsDel = false
+		}
+
+		return info, nil
+	}
+
+	return nil, nil
+}
 // 从DB获取指定玩家的邮件列表
 func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 	exposer := structs.GetGlobalExposer()

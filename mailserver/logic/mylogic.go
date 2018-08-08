@@ -132,17 +132,20 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 		return nil, errors.New("指定邮件不存在")
 	}
 	// 从DB获取玩家的已读邮件列表
-	readList, err := data.GetUserMailFromDB(uid)
-	if err != nil {
-		return nil, errors.New("从DB获取玩家已读邮件列表失败")
-	}
-	one, ok := readList[mail.Id]
-	if ok && one.IsDel {
+	one, _ := data.GetTheMailFromDB(uid, mailId)
+
+	if one != nil && one.IsDel {
 		return nil, errors.New("邮件已被用户删除")
 	}
-	if  !ok || !one.IsRead {
+
+	if one == nil {
 		// 设置邮件=已读
 		data.SetEmailReadTagFromDB(uid, mailId)
+	} else {
+		if  !one.IsRead {
+			// 设置邮件=已读
+			data.SetEmailReadTagFromDB(uid, mailId)
+		}
 	}
 
 	detail := new(mailserver.MailDetail)
@@ -152,7 +155,6 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 	detail.Attach = &mail.Attach
 	isRead := int32(0)
 	detail.IsRead = &isRead
-
 
 	isHaveAttach := int32(0)
 	if len(mail.Attach) > 0 {
@@ -168,9 +170,13 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 
 // 标记邮件为已读请求
 func SetReadTag(uid uint64, mailId uint64) error {
-	_, ok := mailList[mailId]
+	mail, ok := mailList[mailId]
 	if !ok {
 		return errors.New("指定邮件不存在")
+	}
+
+	if mail.State != define.StateSended && mail.State != define.StateSending {
+		return errors.New("指定邮件状态错误")
 	}
 
 	// 设置邮件=已读

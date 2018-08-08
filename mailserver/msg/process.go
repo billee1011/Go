@@ -37,7 +37,7 @@ func ProcessGetUnReadSumReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
-		logrus.Debugln("ProcessGetUnReadSumReq err:", err)
+		logrus.Errorln("ProcessGetUnReadSumReq err:", err)
 		return nil
 	}
 	response.Sum = &sum
@@ -66,7 +66,7 @@ func ProcessGetMailListReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
-		logrus.Debugln("ProcessGetMailListReq err:", err)
+		logrus.Errorln("ProcessGetMailListReq err:", err)
 		return nil
 	}
 
@@ -96,7 +96,7 @@ func ProcessGetMailDetailReq(playerID uint64, header *steve_proto_gaterpc.Header
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
-		logrus.Debugln("ProcessGetMailDetailReq err:", err)
+		logrus.Errorln("ProcessGetMailDetailReq err:", err)
 		return nil
 	}
 
@@ -124,7 +124,7 @@ func ProcessSetReadTagReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
-		logrus.Debugln("ProcessSetReadTagReq err:", err)
+		logrus.Errorln("ProcessSetReadTagReq err:", err)
 		return nil
 	}
 
@@ -152,7 +152,7 @@ func ProcessDelMailReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
-		logrus.Debugln("ProcessDelMailReq err:", err)
+		logrus.Errorln("ProcessDelMailReq err:", err)
 		return nil
 	}
 
@@ -180,7 +180,7 @@ func ProcessAwardAttachReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
-		logrus.Debugln("ProcessAwardAttachReq err:", err)
+		logrus.Errorln("ProcessAwardAttachReq err:", err)
 		return nil
 	}
 	response.AwardInfo = &info
