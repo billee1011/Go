@@ -65,6 +65,7 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 	redisKey := cache.FmtAccountPlayerKey(accountID)
 	playerID, err = getRedisUint64Val(playerRedisName, redisKey)
 	if err == nil {
+		exist = true
 		return
 	}
 	engine, err := mysqlEngineGetter(playerMysqlName)
@@ -86,6 +87,8 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 			err = fmt.Errorf("save playerId into redis fail： %v", err)
 		}
 	}
+	logrus.Debugln("get player info accountID :%d, playerID:%d", accountID, playerID)
+
 	return
 }
 
@@ -362,7 +365,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		funcErr = fmt.Errorf("get mysql enginer error： %v", merr.Error())
 		return
 	}
-	strCol := "id,gameID,name,type"
+	strCol := "id,gameID,name,type,minPeople,maxPeople"
 	funcErr = engine.Table(gameconfigTableName).Select(strCol).Find(&gameConfig)
 
 	if funcErr != nil {
@@ -370,7 +373,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		return
 	}
 
-	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,realOnlinePeople,showOnlinePeople,status,tag,remark"
+	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,realOnlinePeople,showOnlinePeople,status,tag,remark"
 	funcErr = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
 
 	if funcErr != nil {
@@ -400,7 +403,7 @@ func AllocPlayerID() uint64 {
 func AllocShowUID() int64 {
 	r, _ := redisCliGetter(playerRedisName, 0)
 	if r.Exists(showUID).Val() == 0 {
-		r.Set(showUID, 10000*10000*100, -1)
+		r.Set(showUID, 10000*10000*10, -1)
 	}
 	return r.Incr(showUID).Val()
 }
@@ -439,6 +442,7 @@ func InitPlayerState(playerID int64) (err error) {
 
 	rfields := map[string]string{
 		cache.GameState: fmt.Sprintf("%d", user.PlayerState_PS_IDIE),
+		cache.IPAddr:    "127.0.0.1",
 	}
 
 	if err = setRedisFields(playerRedisName, redisKey, rfields, redisTimeOut); err != nil {
@@ -612,7 +616,7 @@ func setDBPlayerGameByField(dbPlayerGame *db.TPlayerGame, field string, val stri
 	case "gameName":
 		dbPlayerGame.Gamename = val
 	case "winningRate":
-		dbPlayerGame.Winningrate, _ = strconv.Atoi(val)
+		dbPlayerGame.Winningrate, _ = strconv.ParseFloat(val, 64)
 	case "winningBurea":
 		dbPlayerGame.Winningburea, _ = strconv.Atoi(val)
 	case "totalBureau":

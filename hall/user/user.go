@@ -32,11 +32,12 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家基本个人资料
-	player, err := data.GetPlayerInfo(playerID, cache.NickName, cache.Avatar, cache.Gender, "name", "idCard")
+	player, err := data.GetPlayerInfo(playerID, cache.ShowUID, cache.NickName, cache.Avatar, cache.Gender, cache.Name, cache.IDCard)
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.NickName = proto.String(player.Nickname)
 		response.Avator = proto.String(player.Avatar)
+		response.ShowUid = proto.Uint64(uint64(player.Showuid))
 		response.Gender = proto.Uint32(uint32(player.Gender))
 		if player.Name != "" && player.Idcard != "" {
 			response.RealnameStatus = proto.Uint32(1)
@@ -104,9 +105,9 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 		response.NickName = proto.String(req.GetNickName())
 		response.Gender = req.GetGender().Enum()
 		response.Avator = proto.String(req.GetAvator())
-		// response.Result = proto.Bool(true)
 	}
 
+	logrus.Debugf("Handle update player info rsp: %v", response)
 	return
 }
 
@@ -126,20 +127,21 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 	}
 
 	// 逻辑处理
-	pState, err := data.GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
+	fields := []string{cache.GameState, cache.GameID}
+	pState, err := data.GetPlayerState(playerID, fields...)
 
 	// 返回结果
 	if err == nil {
 		response.PlayerState = common.PlayerState(pState.State).Enum()
 		response.GameId = common.GameId(pState.GameID).Enum()
 	}
-
+	logrus.Debugf("Handle get player state rsp:%v", response)
 	return
 }
 
 // HandleGetGameInfoReq client-> 获取游戏信息列表请求
 func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetGameListInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle get game info req:%vs", req)
+	logrus.Debugf("Handle get game info req : %v", req)
 
 	// 默认返回消息
 	response := &hall.HallGetGameListInfoRsp{
@@ -163,6 +165,49 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 
 	}
 	logrus.Debugf("Handle get game info rsp:%v ", response)
+
+	return
+}
+
+// HandleGetPlayerGameInfoReq 获取玩家游戏信息
+func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerGameInfoReq) (rspMsg []exchanger.ResponseMsg) {
+	logrus.Debugf("Handle get player game info req : %v", req)
+
+	// 传入参数
+	uid := req.GetUid()
+	gameID := req.GetGameId()
+
+	// 默认返回消息
+	response := &hall.HallGetPlayerGameInfoRsp{
+		Uid:     proto.Uint64(uid),
+		GameId:  common.GameId(gameID).Enum(),
+		ErrCode: proto.Uint32(1),
+	}
+	rspMsg = []exchanger.ResponseMsg{
+		exchanger.ResponseMsg{
+			MsgID: uint32(msgid.MsgID_HALL_GET_PLAYER_GAME_INFO_RSP),
+			Body:  response,
+		},
+	}
+
+	// 逻辑处理
+	fields := []string{cache.TotalBurea, cache.WinningRate, cache.MaxWinningStream, cache.MaxMultiple}
+	exist, dbPlayerGame, err := data.GetPlayerGameInfo(uid, uint32(gameID), fields...)
+
+	// 不存在直接返回
+	if !exist {
+		return
+	}
+
+	// 返回结果
+	if err == nil {
+		response.TotalBureau = proto.Uint32(uint32(dbPlayerGame.Totalbureau))
+		response.WinningRate = proto.Float32(float32(dbPlayerGame.Winningrate))
+		response.MaxWinningStream = proto.Uint32(uint32(dbPlayerGame.Maxwinningstream))
+		response.MaxMultiple = proto.Uint32(uint32(dbPlayerGame.Maxmultiple))
+		response.ErrCode = proto.Uint32(0)
+	}
+	logrus.Debugf("Handle get player game info rsp:%v ", response)
 
 	return
 }
