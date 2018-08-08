@@ -8,37 +8,37 @@ popd
 sleep 2
 
 pushd gateway 
-serviceloader gateway --config=config.yml  &
+nohup serviceloader gateway --config=config.yml  &
 popd 
 
 pushd room 
-serviceloader room --config=config.yml  &
+nohup serviceloader room --config=config.yml  &
 popd 
 
 
 pushd hall 
-serviceloader hall --config=config.yml  &
+nohup serviceloader hall --config=config.yml  &
 popd 
 
 pushd login 
-serviceloader login --config=config.yml  &
+nohup serviceloader login --config=config.yml  &
 popd 
 
 pushd match 
-serviceloader match --config=config.yml  &
+nohup serviceloader match --config=config.yml  &
 popd 
 
 pushd robot 
-serviceloader robot --config=config.yml  &
+nohup serviceloader robot --config=config.yml  &
 popd
 
 pushd gold
-serviceloader gold --config=config.yml  &
+nohup serviceloader gold --config=config.yml  &
 popd
 
 
 pushd msgserver
-serviceloader msgserver --config=config.yml  &
+nohup serviceloader msgserver --config=config.yml  &
 popd
 
 
