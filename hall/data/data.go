@@ -367,7 +367,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		funcErr = fmt.Errorf("get mysql enginer error： %v", merr.Error())
 		return
 	}
-	strCol := "id,gameID,name,type"
+	strCol := "id,gameID,name,type,minPeople,maxPeople"
 	funcErr = engine.Table(gameconfigTableName).Select(strCol).Find(&gameConfig)
 
 	if funcErr != nil {
@@ -375,7 +375,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		return
 	}
 
-	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,realOnlinePeople,showOnlinePeople,status,tag,remark"
+	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,realOnlinePeople,showOnlinePeople,status,tag,remark"
 	funcErr = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
 
 	if funcErr != nil {

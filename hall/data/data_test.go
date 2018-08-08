@@ -23,7 +23,7 @@ func init() {
 		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
 		Addr:                 "192.168.7.108:3306",
-		DBName:               "player",
+		DBName:               "config",
 		AllowNativePasswords: true,
 		Params:               map[string]string{"charset": "utf8"},
 	}
