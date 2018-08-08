@@ -2,6 +2,7 @@ package core
 
 import (
 	"steve/client_pb/msgid"
+	"steve/hall/charge"
 	"steve/hall/user"
 	"steve/structs/exchanger"
 
@@ -18,6 +19,8 @@ func registerHandles(e exchanger.Exchanger) error {
 	panicRegister(msgid.MsgID_HALL_GET_PLAYER_INFO_REQ, user.HandleGetPlayerInfoReq)
 	panicRegister(msgid.MsgID_HALL_GET_PLAYER_STATE_REQ, user.HandleGetPlayerStateReq)
 	panicRegister(msgid.MsgID_HALL_GET_GAME_INFO_REQ, user.HandleGetGameInfoReq)
+	panicRegister(msgid.MsgID_GET_CHARGE_INFO_REQ, charge.HandleGetChargeInfoReq)
+	panicRegister(msgid.MsgID_CHARGE_REQ, charge.HandleChargeReq)
 
 	return nil
 }

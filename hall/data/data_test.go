@@ -219,7 +219,7 @@ func TestSetPlayerState(t *testing.T) {
 	NewPlayerData(accID, playerID)
 	playerState, _ := GetPlayerState(playerID, []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
 	fmt.Printf("%v", playerState)
-	result, err := UpdatePlayerState(playerID, 0, 1)
+	result, err := UpdatePlayerState(playerID, 0, 1, 0, 0)
 	playerState, _ = GetPlayerState(playerID, []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
 	fmt.Printf("%v", playerState)
 	assert.Nil(t, err)
@@ -274,6 +274,16 @@ func Test_SetGetPlayerFields(t *testing.T) {
 	dbPlayer, err = GetPlayerInfo(playerID, []string{"nickname"}...)
 	assert.Nil(t, err)
 	assert.Equal(t, newNickName, dbPlayer.Nickname)
+}
+
+func Test_SetGetTodayCharge(t *testing.T) {
+	const PLAYERID = 100
+	oldcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Nil(t, AddPlayerTodayCharge(PLAYERID, 100))
+	newcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Equal(t, oldcharge+100, newcharge)
 }
 
 func init() {
