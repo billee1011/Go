@@ -32,13 +32,17 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家基本个人资料
-	player, err := data.GetPlayerInfo(playerID, []string{cache.ShowUID, cache.NickName, cache.Avatar, cache.Gender}...)
+	player, err := data.GetPlayerInfo(playerID, cache.NickName, cache.Avatar, cache.Gender, "name", "idCard")
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.NickName = proto.String(player.Nickname)
 		response.Avator = proto.String(player.Avatar)
 		response.Gender = proto.Uint32(uint32(player.Gender))
-		response.ShowUid = proto.Uint64(uint64(player.Showuid))
+		if player.Name != "" && player.Idcard != "" {
+			response.RealnameStatus = proto.Uint32(1)
+		} else {
+			response.RealnameStatus = proto.Uint32(0)
+		}
 	}
 
 	// 获取玩家货币信息
@@ -65,6 +69,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	// 默认返回消息
 	response := &hall.HallUpdatePlayerInfoRsp{
 		ErrCode: proto.Uint32(1),
+		// Result:  proto.Bool(false),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -99,7 +104,7 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 		response.NickName = proto.String(req.GetNickName())
 		response.Gender = req.GetGender().Enum()
 		response.Avator = proto.String(req.GetAvator())
-
+		// response.Result = proto.Bool(true)
 	}
 
 	return

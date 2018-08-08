@@ -33,11 +33,11 @@ redis_list:
 
 mysql_list:
   config:
-    user: root
-    passwd: 123456
-    addr: 127.0.0.1:3306
-    db: config 
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: config
     params:
-      charset: utf8    
+      charset: utf8
 
 node: 1

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 pushd configuration 
 serviceloader configuration --config=config.yml &
 popd 
@@ -24,10 +26,6 @@ popd
 
 pushd match 
 nohup  serviceloader match --config=config.yml  &
-popd 
-
-pushd gold 
-sh ./start.sh
 popd 
 
 pushd robot 

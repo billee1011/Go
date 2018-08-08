@@ -11,7 +11,8 @@ create table if not exists `t_common_config` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 comment '通用配置表';
 
 
-create table t_game_config
+drop table if exists `t_game_config`;
+create table if not exists t_game_config
 (
   id         bigint auto_increment
     primary key,
@@ -69,4 +70,4 @@ CREATE TABLE `t_horse_race` (
   `n_horseData` text COMMENT 'json格式的跑马灯配置，具体格式参考相关说明文件',
   PRIMARY KEY (`n_id`),
   KEY `t_horse_race_n_channel_IDX` (`n_channel`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;

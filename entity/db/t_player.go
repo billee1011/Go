@@ -9,15 +9,15 @@ type TPlayer struct {
 	Accountid int64 `xorm:"not null BIGINT(20)"`
 	Playerid  int64 `xorm:"not null BIGINT(20)"`
 	Showuid   int64 `xorm:"not null BIGINT(20)"`
-	Type      int   `xorm:"not null default 1 comment('1.
-2.
-3.') INT(11)"`
-	Channelid    int       `xorm:"comment('ID') INT(11)"`
-	Nickname     string    `xorm:"VARCHAR(64)"`
-	Gender       int       `xorm:"default 1 comment('1.2.') INT(11)"`
-	Avatar       string    `xorm:"VARCHAR(256)"`
-	Provinceid   int       `xorm:"comment('ID') INT(11)"`
-	Cityid       int       `xorm:"comment('ID') INT(11)"`
+	Type      int   `xorm:"not null default 1 comment('1.普通玩家
+2.机器人
+3.管理员') INT(11)"`
+	Channelid    int       `xorm:"default 1 comment('渠道ID') INT(11)"`
+	Nickname     string    `xorm:"comment('昵称') VARCHAR(64)"`
+	Gender       int       `xorm:"default 1 comment('性别：1.女，2.男') INT(11)"`
+	Avatar       string    `xorm:"comment('头像') VARCHAR(256)"`
+	Provinceid   int       `xorm:"default 1 comment('省ID') INT(11)"`
+	Cityid       int       `xorm:"default 1 comment('市ID') INT(11)"`
 	Name         string    `xorm:"VARCHAR(64)"`
 	Phone        string    `xorm:"VARCHAR(11)"`
 	Idcard       string    `xorm:"VARCHAR(20)"`
