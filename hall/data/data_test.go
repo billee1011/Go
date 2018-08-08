@@ -23,7 +23,7 @@ func init() {
 		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
 		Addr:                 "192.168.7.108:3306",
-		DBName:               "config",
+		DBName:               "player",
 		AllowNativePasswords: true,
 		Params:               map[string]string{"charset": "utf8"},
 	}
@@ -92,6 +92,15 @@ func NewPlayerData(accID uint64, playerID uint64) {
 	})
 	InitPlayerState(int64(playerID))
 	return
+}
+
+// TestGetPlayerIDByAccountID 登录
+func TestGetPlayerIDByAccountID(t *testing.T) {
+	account := uint64(2192)
+	exist, playerID, err := GetPlayerIDByAccountID(account)
+	assert.True(t, exist)
+	assert.NotNil(t, playerID)
+	assert.Nil(t, err)
 }
 
 // TestInitPlayerData 初始化玩家
