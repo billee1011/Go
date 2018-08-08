@@ -105,6 +105,33 @@ func ProcessGetMailDetailReq(playerID uint64, header *steve_proto_gaterpc.Header
 	return ret
 }
 
+// 标记邮件为已读请求
+func ProcessSetReadTagReq(playerID uint64, header *steve_proto_gaterpc.Header, req mailserver.MailSvrSetReadTagReq) (ret []exchanger.ResponseMsg) {
+
+	logrus.Debugln("ProcessSetReadTagReq req", req)
+
+	response := &mailserver.MailSvrSetReadTagRsp{
+		ErrCode: proto.Int32(0),
+		ErrDesc: proto.String("成功"),
+	}
+	//
+	ret = []exchanger.ResponseMsg{{
+		MsgID: uint32(msgid.MsgID_MAILSVR_SET_READ_TAG_RSP),
+		Body:  response,
+	}}
+
+	err := logic.SetReadTag(playerID, req.GetMailId())
+	if err != nil {
+		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
+		response.ErrDesc = proto.String("失败")
+		logrus.Debugln("ProcessSetReadTagReq err:", err)
+		return nil
+	}
+
+	logrus.Debugln("ProcessSetReadTagReq resp", response)
+	return ret
+}
+
 
 // 删除邮件请求
 func ProcessDelMailReq(playerID uint64, header *steve_proto_gaterpc.Header, req mailserver.MailSvrDelMailReq) (ret []exchanger.ResponseMsg) {

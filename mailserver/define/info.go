@@ -42,6 +42,7 @@ type PlayerMail struct {
 	MailId      uint64 // 邮件ID
 	IsRead      bool   // 是否已读
 	IsGetAttach bool   // 是否已领取附件
+	IsDel		bool   // 是否被玩家删除
 }
 
 type MailInfo struct {

@@ -29,6 +29,7 @@ var mapMsg  = map[msgid.MsgID] interface{} {
 	msgid.MsgID_MAILSVR_GET_MAIL_LIST_REQ:msg.ProcessGetMailListReq,
 	msgid.MsgID_MAILSVR_GET_MAIL_DETAIL_REQ:msg.ProcessGetMailDetailReq,
 	msgid.MsgID_MAILSVR_DEL_MAIL_REQ:msg.ProcessDelMailReq,
+	msgid.MsgID_MAILSVR_SET_READ_TAG_REQ:msg.ProcessSetReadTagReq,
 	msgid.MsgID_MAILSVR_AWARD_ATTACH_REQ:msg.ProcessAwardAttachReq,
 }
 

@@ -47,6 +47,31 @@ CREATE TABLE `t_player_mail` (
 
 const dbName = "player"
 
+
+// 设置邮件为已读
+func SetEmailReadTagFromDB(uid uint64, mailId uint64)  error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+
+	strCol := "n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel "
+
+	sql := fmt.Sprintf("insert into t_player_mail (%s) values('%d','%d','%d','%d','%d');",
+		strCol, uid, mailId, 1, 0, 0)
+	res, err := engine.Exec(sql)
+	if err != nil {
+		return err
+	}
+	if aff, err := res.RowsAffected(); aff == 0 {
+		return err
+	}
+
+	return nil
+}
+
 // 从DB获取指定玩家的邮件列表
 func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 	exposer := structs.GetGlobalExposer()
@@ -55,7 +80,7 @@ func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 		return nil, fmt.Errorf("connect db error")
 	}
 
-	sql := fmt.Sprintf("select n_id, n_mailID, n_isRead, n_isGetAttach from t_player_mail where n_playerid='%d' ;", uid)
+	sql := fmt.Sprintf("select n_id, n_mailID, n_isRead, n_isGetAttach,n_isDel from t_player_mail where n_playerid='%d' ;", uid)
 	res, err := engine.QueryString(sql)
 	if err != nil {
 
@@ -88,6 +113,12 @@ func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 		} else {
 			info.IsGetAttach = false
 		}
+		isDel, _ := strconv.ParseInt(row["n_isDel"], 10, 64)
+		if isDel !=  0 {
+			info.IsDel = true
+		} else {
+			info.IsDel = false
+		}
 
 		list[info.MailId] = info
 	}
@@ -96,7 +127,7 @@ func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 }
 
 // 从DB加载邮件列表
-func LoadMailListFromDB() (map[int64]*define.MailInfo, error) {
+func LoadMailListFromDB() (map[uint64]*define.MailInfo, error) {
 
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
@@ -110,7 +141,7 @@ func LoadMailListFromDB() (map[int64]*define.MailInfo, error) {
 
 		return nil, err
 	}
-	list := make(map[int64]*define.MailInfo)
+	list := make(map[uint64]*define.MailInfo)
 	for _, row := range res {
 
 		id, _ := strconv.ParseInt(row["n_id"], 10, 64)
@@ -141,7 +172,7 @@ func LoadMailListFromDB() (map[int64]*define.MailInfo, error) {
 		if info.AttachGoods == nil {
 			logrus.Errorf("parseAttachGoods error: mailid=%d, tilte=%s", id, info.Title)
 		}
-		list[id] = info
+		list[info.Id] = info
 	}
 
 	return list, nil
