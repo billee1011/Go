@@ -303,7 +303,7 @@ func createPlayer(accID uint64) (uint64, error) {
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
-		Showuid:      int(data.AllocShowUID()),
+		Showuid:      int64(data.AllocShowUID()),
 		Type:         1,
 		Channelid:    0,                                 // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
@@ -387,4 +387,49 @@ func validateServerType(serverType user.ServerType, serverAddr string) bool {
 	}
 
 	return true
+}
+
+// GetPlayerProps 获取玩家道具
+func (pds *PlayerDataService) GetPlayerProps(ctx context.Context, req *user.GetPlayerPropsReq) (rsp *user.GetPlayerPropsRsp, err error) {
+	props, err := data.GetPlayerAllProps(req.GetPlayerID())
+	if err != nil {
+		return
+	}
+	rsp.Props = PropServer2Client(props)
+	return
+}
+
+// GetPlayerSomeProps 获取玩家道具
+func (pds *PlayerDataService) GetPlayerSomeProps(ctx context.Context, req *user.GetPlayerPropsReq) (rsp *user.GetPlayerPropsRsp, err error) {
+	props, err := data.GetPlayerSomeProps(req.GetPlayerID(), req.GetPropIDs())
+	if err != nil {
+		return
+	}
+	rsp.Props = PropServer2Client(props)
+	return
+}
+
+// GetPropConfig 获取道具配置
+func (pds *PlayerDataService) GetPropConfig(ctx context.Context, req *user.GetPropConfigReq) (rsp *user.GetPropConfigRsp, err error) {
+	propConfig, err := data.GetPropsConfig()
+	if err != nil {
+		return
+	}
+	rsp.PropAttrs = PropConfigServer2Client(propConfig)
+	return
+}
+
+// GetSomePropConfig 获取某些道具配置
+func (pds *PlayerDataService) GetSomePropConfig(ctx context.Context, req *user.GetPropConfigReq) (rsp *user.GetPropConfigRsp, err error) {
+	propConfig, err := data.GetSomePropsConfig(req.GetPropIDs())
+	if err != nil {
+		return
+	}
+	rsp.PropAttrs = PropConfigServer2Client(propConfig)
+	return
+}
+
+// AddPlayerProp 增减玩家道具
+func (pds *PlayerDataService) AddPlayerProp(ctx context.Context, req *user.AddPlayerPropReq) (rsp *user.AddPlayerPropRsp, err error) {
+	return
 }

@@ -3,7 +3,9 @@ package data
 import (
 	"fmt"
 	"steve/entity/db"
+	"steve/entity/prop"
 	"steve/structs"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -115,5 +117,52 @@ func generateDbPlayerGame(playerID uint64, gameID uint32, info map[string]string
 			return nil, err
 		}
 	}
+	return
+}
+
+func generateDbPlayerProp(playerID uint64, propID int32, info map[string]string, fields ...string) (prop prop.Prop, err error) {
+	for _, field := range fields {
+		v, ok := info[field]
+		if !ok {
+			return prop, fmt.Errorf("错误的数据类型。field=%s val=%v", field, info)
+		}
+		if err = parsePropByField(&prop, field, v); err != nil {
+			return prop, err
+		}
+	}
+	return
+}
+
+func parsePropByField(prop *prop.Prop, field string, val string) (err error) {
+	switch field {
+	case "propID":
+		temp, _ := strconv.ParseInt(val, 10, 64)
+		prop.PropID = int32(temp)
+	case "count":
+		prop.Count, _ = strconv.ParseInt(val, 10, 64)
+	case "createTime":
+	case "createBy":
+	case "updateTime":
+	case "updateBy":
+		return nil
+	default:
+		return fmt.Errorf("未处理的字段:%s", field)
+	}
+	return nil
+}
+
+func getDBPlayerPropField(field string, prop *prop.Prop) (val interface{}, err error) {
+	switch field {
+	case "propID":
+		val = prop.PropID
+	case "count":
+		val = prop.Count
+	case "playerID", "createTime", "createBy", "updateTime", "updateBy":
+		val = nil
+	default:
+		val = nil
+		err = fmt.Errorf("未处理字段：%s", field)
+	}
+
 	return
 }

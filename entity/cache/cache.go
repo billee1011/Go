@@ -87,3 +87,8 @@ func FmtPlayerGameInfoKey(playerID uint64, gameID uint32) string {
 func FmtPlayerTokenKey(playerID uint64) string {
 	return fmt.Sprintf(playerTokenKeyFmt, playerID)
 }
+
+// FmtPlayerPropKey 玩家道具 key
+func FmtPlayerPropKey(playerID uint64, propID int32) string {
+	return fmt.Sprintf("player:%v prop_%v", playerID, propID)
+}

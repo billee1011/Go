@@ -111,6 +111,14 @@ create table t_player_currency
   `updateTime` datetime DEFAULT NULL,
   `updateBy` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1072 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏汇总信息';
+) ENGINE=InnoDB AUTO_INCREMENT=1072 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏汇总信息';
 
-
+CREATE TABLE `t_player_props` (
+  `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
+  `propID` bigint(20) NOT NULL COMMENT '道具ID',
+  `count` bigint(20) NOT NULL COMMENT '道具数量',
+  `createTime` datetime DEFAULT NULL COMMENT '创建时间',
+  `createBy` varchar(100) DEFAULT NULL COMMENT '创建人',
+  `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
+  `updateBy` varchar(100) DEFAULT NULL COMMENT '更新人'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8  COMMENT='玩家道具信息';
