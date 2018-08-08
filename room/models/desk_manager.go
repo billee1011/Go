@@ -12,6 +12,8 @@ import (
 	"sync/atomic"
 
 	"github.com/Sirupsen/logrus"
+	"steve/entity/cache"
+	"steve/common/data/redis"
 )
 
 type DeskManager struct {
@@ -84,6 +86,10 @@ func (mgr *DeskManager) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 		messageModel.BroadCastDeskMessage(nil, msgid.MsgID_ROOM_DESK_CREATED_NTF, &ntf, true)
 	}
 	modelMgr.StartDeskModel(deskID)
+
+	reportKey :=cache.FmtGameReportKey(int(req.GetGameId()),/**/0) //临时0
+	redisCli := redis.GetRedisClient()
+	redisCli.IncrBy(reportKey,int64(length))
 	return
 }
 

@@ -22,6 +22,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/external/datareportclient"
+	fixed2 "steve/datareport/fixed"
 )
 
 // MajongCoin   key:playerID value:score
@@ -484,6 +486,9 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.DeskConfig) {
 	majongSettle.roundSettle(desk, config)
 	majongSettle.gameLog(desk, config)
+	for _,pID := range desk.GetPlayerIds(){
+		datareportclient.DataReport(fixed2.LOG_TYPE_GAM,0,0,0,pID,"1")
+	}
 }
 
 func (majongSettle *MajongSettle) roundSettle(desk *desk.Desk, config *desk.DeskConfig) {

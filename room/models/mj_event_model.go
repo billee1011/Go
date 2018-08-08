@@ -46,7 +46,7 @@ func (model *MjEventModel) Start() {
 
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
+		GetModelManager().StopDeskModel(model.GetDesk())
 	}()
 
 	event := desk.DeskEvent{EventID: int(server_pb.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk(),

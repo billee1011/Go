@@ -87,3 +87,7 @@ func FmtPlayerGameInfoKey(playerID uint64, gameID uint32) string {
 func FmtPlayerTokenKey(playerID uint64) string {
 	return fmt.Sprintf(playerTokenKeyFmt, playerID)
 }
+
+func FmtGameReportKey(gameId int,level int) string {
+	return fmt.Sprintf("gamereport:%v-%v",gameId,level)
+}

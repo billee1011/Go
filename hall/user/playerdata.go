@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"steve/external/datareportclient"
+	"steve/datareport/fixed"
 )
 
 // PlayerDataService 实现 user.PlayerServer
@@ -47,6 +49,8 @@ func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.
 
 	// 返回消息
 	rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
+
+	datareportclient.DataReport(fixed.LOG_TYPE_REG,0,0,0,playerID,"1")
 
 	return
 }
