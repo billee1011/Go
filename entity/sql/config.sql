@@ -29,25 +29,34 @@ create table if not exists t_game_config
 
 
 
-create table t_game_level_config
-(
-  id         bigint auto_increment
-    primary key,
-  gameID     int          null,
-  levelID    int          null,
-  name       varchar(256) null,
-  baseScores int          null,
-  lowScores  int          null,
-  highScores int          null,
-  minPeople  int          null,
-  maxPeople int           null,
-  status     int          null,
-  remark     varchar(256) null,
-  createTime datetime     null,
-  createBy   varchar(64)  null,
-  updateTime datetime     null,
-  updateBy   varchar(64)  null
-)ENGINE=InnoDB  DEFAULT CHARSET=utf8 comment '游戏场次配置表';
+
+-- ----------------------------
+-- Table structure for t_game_level_config
+-- ----------------------------
+DROP TABLE IF EXISTS `t_game_level_config`;  
+CREATE TABLE `t_game_level_config`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT, 
+  `gameID` int(11) NULL DEFAULT NULL,
+  `levelID` int(11) NULL DEFAULT NULL,
+  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `fee` int(11) NULL DEFAULT NULL COMMENT '费用',
+  `baseScores` int(11) NULL DEFAULT NULL,
+  `lowScores` int(11) NULL DEFAULT NULL,
+  `highScores` int(11) NULL DEFAULT NULL,
+  `minPeople` int(11) NULL DEFAULT NULL,
+  `maxPeople` int(11) NULL DEFAULT NULL,
+  `realOnlinePeople` int(11) NULL DEFAULT NULL COMMENT '实时在线人数', 
+  `showOnlinePeople` int(11) NULL DEFAULT NULL COMMENT '显示在线人数',
+  `status` int(11) NULL DEFAULT NULL,
+  `tag` int(11) NULL DEFAULT NULL COMMENT '标签：1.热门；2.New',
+  `isAlms` int(11) NULL DEFAULT NULL COMMENT '是否为救济金场，0：关闭，1：开启',
+  `remark` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `createTime` datetime(0) NULL DEFAULT NULL,
+  `createBy` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `updateTime` datetime(0) NULL DEFAULT NULL,
+  `updateBy` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '游戏场次配置表' ROW_FORMAT = Dynamic;
 
 
 

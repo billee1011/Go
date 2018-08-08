@@ -100,7 +100,6 @@ func SetRobotPlayerState(playerID uint64, oldState, newState, serverType uint32,
 
 func getRobotServer() (*grpc.ClientConn, error) {
 	e := structs.GetGlobalExposer()
-	// 对uid进行一致性hash路由策略.
 	con, err := e.RPCClient.GetConnectByServerName(common.RobotServiceName)
 	if err != nil || con == nil {
 		return nil, errors.New("no connection")

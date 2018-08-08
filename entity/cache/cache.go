@@ -29,12 +29,18 @@ const (
 	Avatar = "avatar"
 	// Gender  ...性别
 	Gender = "gender"
+	// ShowUID ...显示ID
+	ShowUID = "showUID"
 	// ChannelID ...渠道ID
 	ChannelID = "channelID"
 	// ProvinceID ...省份ID
 	ProvinceID = "provinceID"
 	// CityID ...城市ID
 	CityID = "cityID"
+	// Name ...名称
+	Name = "name"
+	// IDCard ... 身份证
+	IDCard = "idCard"
 
 	// GameState ...玩家游戏状态
 	GameState = "game_state"

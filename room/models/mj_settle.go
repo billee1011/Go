@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/constant"
 	"steve/common/mjoption"
 	"steve/entity/gamelog"
 	majongpb "steve/entity/majong"
@@ -685,18 +686,11 @@ func (majongSettle *MajongSettle) makeBillDetail(pid uint64, sInfo *majongpb.Set
 func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, payScore map[uint64]int64) {
 	for _, player := range players {
 		pid := player.GetPlayerID()
-		gold, err := goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], 0, 0, 0, 0)
+		// 调用金币服接口扣费
+		gold, err := goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], int32(constant.GFGAMESETTLE), 0, 0, 0)
 		if gold == 0 && err == nil {
 			player.AddBrokerCount()
 		}
-		/*
-			// 玩家当前豆子数
-			currentCoin := int64(player.GetCoin())
-			// 扣费后豆子数
-			realCoin := uint64(currentCoin + payScore[pid])
-			// 设置玩家豆子数
-			player.SetCoin(realCoin)
-		*/
 		// 记录玩家单局总输赢
 		majongSettle.roundScore[pid] = majongSettle.roundScore[pid] + payScore[pid]
 	}
