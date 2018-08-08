@@ -685,7 +685,10 @@ func (majongSettle *MajongSettle) makeBillDetail(pid uint64, sInfo *majongpb.Set
 func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, payScore map[uint64]int64) {
 	for _, player := range players {
 		pid := player.GetPlayerID()
-		goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], 0, 0, 0, 0)
+		gold, err := goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], 0, 0, 0, 0)
+		if gold == 0 && err == nil {
+			player.AddBrokerCount()
+		}
 		/*
 			// 玩家当前豆子数
 			currentCoin := int64(player.GetCoin())
@@ -792,6 +795,10 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 			Deskid:   int64(desk.GetUid()),
 			Gameid:   desk.GetGameId(),
 			Amount:   roundScore[playerID],
+		}
+		deskPlayer := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayerByID(playerID)
+		if deskPlayer != nil {
+			gameDetail.BrokerCount = deskPlayer.GetBrokerCount()
 		}
 		if gameDetail.Amount == bigWinnerScore {
 			gameDetail.Iswinner = 1

@@ -31,12 +31,14 @@ CREATE TABLE `t_game_detail` (
   `gameID` int(11) DEFAULT NULL,
   `amount` bigint(20) DEFAULT NULL,
   `isWinner` tinyint(1) DEFAULT NULL,
+  `brokerCount` int(11) DEFAULT NULL,
   `createTime` datetime DEFAULT NULL,
   `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   `updateTime` datetime DEFAULT NULL,
   `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   PRIMARY KEY (`detailID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 

@@ -23,6 +23,7 @@ type Player struct {
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
 	robotLv     int    // 机器人等级
+	brokerCount int    // 破产次数
 	desk        *desk.Desk
 
 	mu sync.RWMutex
@@ -152,4 +153,18 @@ func (dp *Player) notifyTuoguan(playerID uint64, tuoguan bool) {
 	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
+}
+
+// AddBrokerCount 增加破产次数
+func (dp *Player) AddBrokerCount() {
+	dp.mu.Lock()
+	dp.brokerCount++
+	dp.mu.Unlock()
+}
+
+// GetBrokerCount 获取破产次数
+func (dp *Player) GetBrokerCount() int {
+	dp.mu.RLock()
+	defer dp.mu.RUnlock()
+	return dp.brokerCount
 }
