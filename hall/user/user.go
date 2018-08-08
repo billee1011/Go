@@ -32,7 +32,7 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 
 	// 获取玩家基本个人资料
-	player, err := data.GetPlayerInfo(playerID, cache.NickName, cache.Avatar, cache.Gender, "name", "idCard")
+	player, err := data.GetPlayerInfo(playerID, cache.NickName, cache.Avatar, cache.Gender, cache.Name, cache.IDCard)
 	if err == nil {
 		response.ErrCode = proto.Uint32(0)
 		response.NickName = proto.String(player.Nickname)
@@ -104,9 +104,9 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 		response.NickName = proto.String(req.GetNickName())
 		response.Gender = req.GetGender().Enum()
 		response.Avator = proto.String(req.GetAvator())
-		// response.Result = proto.Bool(true)
 	}
 
+	logrus.Debugf("Handle update player info rsp: %v", response)
 	return
 }
 
@@ -133,7 +133,7 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 		response.PlayerState = common.PlayerState(pState.State).Enum()
 		response.GameId = common.GameId(pState.GameID).Enum()
 	}
-
+	logrus.Debugf("Handle get player state rsp:%v", response)
 	return
 }
 

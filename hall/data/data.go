@@ -402,7 +402,7 @@ func AllocPlayerID() uint64 {
 func AllocShowUID() int64 {
 	r, _ := redisCliGetter(playerRedisName, 0)
 	if r.Exists(showUID).Val() == 0 {
-		r.Set(showUID, 10000*10000*100, -1)
+		r.Set(showUID, 10000*10000*10, -1)
 	}
 	return r.Incr(showUID).Val()
 }
