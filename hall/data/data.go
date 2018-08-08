@@ -337,8 +337,8 @@ func setPlayerStateByWatch(redisName string, key string, oldState uint32, fields
 }
 
 // GetGameInfoList 获取游戏配置信息
-func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGameLevelConfig, err error) {
-	gameConfig, gamelevelConfig, err = make([]*db.TGameConfig, 0), make([]*db.TGameLevelConfig, 0), nil
+func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGameLevelConfig, funcErr error) {
+	gameConfig, gamelevelConfig, funcErr = make([]*db.TGameConfig, 0), make([]*db.TGameLevelConfig, 0), nil
 
 	gameConfigKey := "gameconfig"
 	gameLevelConfigKey := "gamelevelconfig"
@@ -346,8 +346,8 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 	rKey := cache.FmtGameInfoConfigKey()
 
 	// 从redis获取
-	val, err := getRedisField(configRedisName, rKey, []string{gameConfigKey, gameLevelConfigKey}...)
-	if err == nil && len(val) == 2 {
+	val, rerr := getRedisField(configRedisName, rKey, []string{gameConfigKey, gameLevelConfigKey}...)
+	if rerr == nil && len(val) == 2 {
 		if val[0] != nil && val[0].(string) != "" {
 			json.Unmarshal([]byte(val[0].(string)), gameConfig)
 		}
@@ -359,23 +359,24 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		return
 	}
 
-	engine, err := mysqlEngineGetter(configMysqlName)
-	if err != nil {
+	engine, merr := mysqlEngineGetter(configMysqlName)
+	if merr != nil {
+		funcErr = fmt.Errorf("get mysql enginer error： %v", merr.Error())
 		return
 	}
 	strCol := "id,gameID,name,type"
-	err = engine.Table(gameconfigTableName).Select(strCol).Find(&gameConfig)
+	funcErr = engine.Table(gameconfigTableName).Select(strCol).Find(&gameConfig)
 
-	if err != nil {
-		err = fmt.Errorf("select sql error： %v", err)
+	if funcErr != nil {
+		funcErr = fmt.Errorf("select sql error： %v", funcErr.Error())
 		return
 	}
 
 	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,realOnlinePeople,showOnlinePeople,status,tag,remark"
-	err = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
+	funcErr = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
 
-	if err != nil {
-		err = fmt.Errorf("select sql error： %v", err)
+	if funcErr != nil {
+		funcErr = fmt.Errorf("select sql error： %v", funcErr.Error())
 		return
 	}
 
@@ -386,8 +387,8 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		gameConfigKey:      string(gameConfigData),
 		gameLevelConfigKey: string(gameLevelConfigData),
 	}
-	if err = setRedisFields(playerRedisName, rKey, rFields, redisTimeOut); err != nil {
-		err = fmt.Errorf("save game_config  into redis fail： %v", err)
+	if funcErr = setRedisFields(playerRedisName, rKey, rFields, redisTimeOut); funcErr != nil {
+		funcErr = fmt.Errorf("save game_config  into redis fail： %v", funcErr.Error())
 	}
 	return
 }

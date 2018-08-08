@@ -160,8 +160,9 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 		response.GameConfig = DBGameConfig2Client(gameInfos)
 		response.GameLevelConfig = DBGamelevelConfig2Client(gameLevelInfos)
 		response.ErrCode = proto.Uint32(0)
+
 	}
-	logrus.Debugf("Handle get game info rsp:%v; err:%v", response, err.Error())
+	logrus.Debugf("Handle get game info rsp:%v ", response)
 
 	return
 }

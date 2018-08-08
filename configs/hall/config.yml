@@ -32,8 +32,8 @@ mysql_list:
     addr: 192.168.7.108:3306
     db: config   
     params:
-      charset: utf8       
-
+      charset: utf8
+         
 # nsq 
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs: 
