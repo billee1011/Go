@@ -2,10 +2,11 @@ package data
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"steve/gold/define"
 	"steve/structs"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 /*
@@ -33,7 +34,7 @@ var gCostList = map[int16]string{
 // 如果玩家账号不存在，向DB中加入此玩家初始金币值
 var bInitGold = true
 
-const dbName = "steve"
+const dbName = "player"
 
 // 设置货币类型列表
 func SetGoldTypeList(list, get, cost map[int16]string) {

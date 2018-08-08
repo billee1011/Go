@@ -5,6 +5,7 @@ type Desk struct {
 	gameID    int
 	config    *DeskConfig
 	playerIds []uint64
+	level     int32
 	// Context   context.Context
 	// Cancel    context.CancelFunc // 取消事件处理
 }
@@ -33,4 +34,8 @@ func (desk *Desk) GetGameId() int {
 
 func (desk *Desk) GetConfig() *DeskConfig {
 	return desk.config
+}
+
+func (desk *Desk) GetLevel() int32 {
+	return desk.level
 }

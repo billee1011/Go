@@ -29,6 +29,8 @@ const (
 	Avatar = "avatar"
 	// Gender  ...性别
 	Gender = "gender"
+	// ShowUID ...显示ID
+	ShowUID = "showUID"
 	// ChannelID ...渠道ID
 	ChannelID = "channelID"
 	// ProvinceID ...省份ID
