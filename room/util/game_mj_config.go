@@ -14,7 +14,7 @@ func init() {
 	viper.SetDefault(fixed.MaxFapaiCartoonTime, 10*1000)
 	viper.SetDefault(fixed.MaxHuansanzhangCartoonTime, 10*1000)
 	viper.SetDefault(fixed.TingStateTimeOut, 1)
-	viper.SetDefault(fixed.HuStateTimeOut, 3)
+	viper.SetDefault(fixed.HuStateTimeOut, 1)
 	viper.SetDefault(fixed.MaxFapaiCartoonTime, 6*1000)
 	viper.SetDefault(fixed.MaxHuansanzhangCartoonTime, 4*1000)
 }
