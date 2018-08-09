@@ -12,6 +12,7 @@ It has these top-level messages:
 	GeographicalLocation
 	GameConfig
 	GameLevelConfig
+	Result
 */
 package common
 

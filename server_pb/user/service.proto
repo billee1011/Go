@@ -117,6 +117,7 @@ message GetPlayerGameInfoRsp{
     uint32 max_multiple = 7;       // 最大获胜倍数 
 }
 
+
 // UpdatePlayerGateInfoReq 更新玩家网关信息
 message UpdatePlayerGateInfoReq{
     uint64 player_id = 1;                    // 玩家ID  

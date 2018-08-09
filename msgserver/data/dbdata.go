@@ -6,6 +6,7 @@ import (
 	"steve/msgserver/define"
 	"steve/structs"
 	"strconv"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -56,6 +57,8 @@ func LoadHorseFromDB() (map[int64]*define.HorseRace, error) {
 		list[id] = horse
 	}
 	logrus.Debugf("LoadHorseFromDB win:sum=%d", len(list))
+
+	logrus.Debugf("LoadHorseFromDB win: sum=%d\n", len(list))
 
 	return list, nil
 }
