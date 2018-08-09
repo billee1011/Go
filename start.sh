@@ -22,7 +22,9 @@ popd
 
 pushd login 
 nohup serviceloader login --config=config.yml  &
-popd 
+popd
+
+sleep 3
 
 pushd match 
 nohup serviceloader match --config=config.yml  &
