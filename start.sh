@@ -26,9 +26,6 @@ popd
 
 sleep 3
 
-pushd match 
-nohup serviceloader match --config=config.yml  &
-popd 
 
 pushd robot 
 nohup serviceloader robot --config=config.yml  &
@@ -49,6 +46,10 @@ sleep 2
 pushd alms
 nohup serviceloader alms --config=config.yml  &
 popd
+
+pushd match 
+nohup  serviceloader match --config=config.yml  &
+popd 
 
 pushd back
 nohup serviceloader back --config=config.yml  &
