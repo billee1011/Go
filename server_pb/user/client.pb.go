@@ -30,14 +30,6 @@ It has these top-level messages:
 	UpdatePlayerRsp
 	GetGameListInfoReq
 	GetGameListInfoRsp
-	GetPlayerPropsReq
-	Prop
-	GetPlayerPropsRsp
-	GetPropConfigReq
-	PropAttr
-	GetPropConfigRsp
-	AddPlayerPropReq
-	AddPlayerPropRsp
 */
 package user
 

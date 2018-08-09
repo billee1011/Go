@@ -158,52 +158,6 @@ message GetGameListInfoRsp{
     repeated GameLevelConfig game_level_config = 3;         // 游戏场次信息
 }
 
-// GetPlayerPropsReq 获取玩家道具请求
-message GetPlayerPropsReq {
-    uint64 playerID =1;
-    repeated int32 propIDs =2; // 道具IDs
-}
-
-message Prop{
-    int32 propID = 1; // 道具ID
-    int64 count =2; // 道具数量 
-}
-
-// GetPlayerPropsRsp 获取玩家道具应答
-message GetPlayerPropsRsp{
-    repeated Prop props =1; // 玩家道具
-}
-
-// GetPropConfigReq 获取道具配置请求
-message GetPropConfigReq{
-    repeated int32 propIDs = 1; // 道具IDs
-}
-
-// PropAttr 道具属性
-message PropAttr{
-	int32    PropID   = 1; // 道具ID
-	string PropName = 2; // 道具名称
-	int32  Type     = 3; // 道具类型
-	int32 TypeID   = 4 ; // 类型ID
-	int32  Value    = 5; // 操作值
-	int32  Limit    = 6; // 使用限制
-}
-
-// GetPropConfigRsp 获取道具配置应答
-message GetPropConfigRsp{
-    repeated PropAttr propAttrs =1; // 道具配置
-}
-
-// AddPlayerPropReq 增减玩家道具请求
-message AddPlayerPropReq{
-    repeated Prop props = 1; // 要增减的道具
-}
-
-// AddPlayerPropRsp 增减玩家道具应答
-message AddPlayerPropRsp{
-    int32 err_code = 1; // 错误信息
-}
-
 // PlayerData 玩家数据服务
 service PlayerData {
     // GetPlayerByAccount 根据账号获取玩家
@@ -224,14 +178,4 @@ service PlayerData {
     rpc UpdatePlayerServerAddr(UpdatePlayerServerAddrReq) returns (UpdatePlayerRsp) ;
     // GetGameListInfo 获取游戏列表
     rpc GetGameListInfo(GetGameListInfoReq) returns (GetGameListInfoRsp);
-    // GetPlayerProps 获取玩家道具
-    rpc GetPlayerProps(GetPlayerPropsReq) returns (GetPlayerPropsRsp);
-    // GetPlayerSomeProps 获取玩家道具
-    rpc GetPlayerSomeProps(GetPlayerPropsReq) returns (GetPlayerPropsRsp);
-    // GetPropConfig 获取道具配置
-    rpc GetPropConfig(GetPropConfigReq) returns (GetPropConfigRsp);
-    // GetSomePropConfig 获取某些道具配置
-    rpc GetSomePropConfig(GetPropConfigReq) returns (GetPropConfigRsp);
-    // AddPlayerProp 增减玩家道具
-    rpc AddPlayerProp(AddPlayerPropReq) returns (AddPlayerPropRsp);
 }

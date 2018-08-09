@@ -2,9 +2,7 @@ package user
 
 import (
 	"steve/client_pb/common"
-	"steve/entity/constant"
 	"steve/entity/db"
-	"steve/entity/prop"
 	"steve/server_pb/user"
 
 	"github.com/golang/protobuf/proto"
@@ -78,29 +76,4 @@ func DBGamelevelConfig2Client(dbGameConfigs []*db.TGameLevelConfig) []*common.Ga
 		cGameLevelConfigs = append(cGameLevelConfigs, cGameLevelConfig)
 	}
 	return cGameLevelConfigs
-}
-
-// PropServer2Client 道具信息转换
-func PropServer2Client(props []prop.Prop) []*user.Prop {
-	uProps := make([]*user.Prop, len(props))
-	for index, prop := range props {
-		uProps[index] = &user.Prop{prop.PropID, prop.Count}
-	}
-	return uProps
-}
-
-// PropConfigServer2Client 道具配置转换
-func PropConfigServer2Client(propConfig []constant.PropAttr) []*user.PropAttr {
-	uPropConfig := make([]*user.PropAttr, len(propConfig))
-	for index, config := range propConfig {
-		uPropConfig[index] = &user.PropAttr{
-			config.PropID,
-			config.PropName,
-			config.Type,
-			config.TypeID,
-			config.Value,
-			config.Limit,
-		}
-	}
-	return uPropConfig
 }
