@@ -6,6 +6,7 @@ import (
 	"steve/msgserver/define"
 	"steve/structs"
 	"strconv"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -24,14 +25,14 @@ func LoadHorseFromDB() (map[int64]*define.HorseRace, error) {
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
 	if err != nil {
-		logrus.Errorf("LoadHorseFromDB error1: %v", err)
+		logrus.Errorf("LoadHorseFromDB err1:%v", err)
 		return nil, fmt.Errorf("connect db error")
 	}
 
 	sql := fmt.Sprintf("select n_id, n_channel, n_prov, n_city, n_bUse, n_bUseParent, n_horseData from t_horse_race ;")
 	res, err := engine.QueryString(sql)
 	if err != nil {
-		logrus.Errorf("LoadHorseFromDB error2: %v", err)
+		logrus.Errorf("LoadHorseFromDB err2:%v", err)
 		return nil, err
 	}
 	list := make(map[int64]*define.HorseRace)
@@ -54,9 +55,10 @@ func LoadHorseFromDB() (map[int64]*define.HorseRace, error) {
 		horse.IsUseParent = int8(isUseParent)
 		parseHorseJson(horse, row["n_horseData"])
 		list[id] = horse
+		logrus.Debugf("LoadHorseFromDB add one: %v", *horse)
 	}
+	logrus.Debugf("LoadHorseFromDB win:sum=%d", len(list))
 
-	logrus.Debugf("LoadHorseFromDB win: sum=%d\n", len(list))
 
 	return list, nil
 }
@@ -88,7 +90,10 @@ func parseHorseJson(horse *define.HorseRace, strJson string) bool {
 			hc.WeekDate[t] = true
 		}
 		horse.Content = append(horse.Content, hc)
+		logrus.Debugf("LoadHorseFromDB add content: %v", *hc)
 	}
+
+
 
 	return true
 }
