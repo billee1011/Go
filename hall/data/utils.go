@@ -54,10 +54,13 @@ func getRedisField(redisName string, key string, field ...string) ([]interface{}
 		return nil, err
 	}
 	result, err := redisCli.HMGet(key, field...).Result()
-	if err == nil {
-		return result, nil
+	if err != nil {
+		if err == redis.Nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("redis 命令执行失败: %v", err)
 	}
-	return nil, fmt.Errorf("redis 命令执行失败: %v", err)
+	return result, nil
 }
 
 func setRedisVal(redisName string, key string, val interface{}, duration time.Duration) error {
