@@ -6,6 +6,7 @@ import (
 	"steve/client_pb/common"
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
+	"steve/common/data/prop"
 	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/external/goldclient"
@@ -206,9 +207,10 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 
 	// 默认返回消息
 	response := &hall.HallGetPlayerGameInfoRsp{
-		Uid:     proto.Uint64(uid),
-		GameId:  common.GameId(gameID).Enum(),
-		ErrCode: proto.Uint32(1),
+		Uid:          proto.Uint64(uid),
+		GameId:       common.GameId(gameID).Enum(),
+		UserProperty: make([]*common.Property, 0),
+		ErrCode:      proto.Uint32(1),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -226,9 +228,10 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 		return
 	}
 
+	// 出错直接返回
 	if err != nil {
 		logrus.Debugf("Handle get player game info rsp:(%v),err:(%v) ", response, err.Error())
-
+		return
 	}
 
 	response.TotalBureau = proto.Uint32(uint32(dbPlayerGame.Totalbureau))
@@ -243,6 +246,38 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	}
 
 	// 获取玩家道具
+	props, err := prop.GetPlayerAllProps(uid)
+	if err != nil {
+		logrus.Debugf("Handle get player game info uid:(%d)获取玩家道具失败 err:(%v)", uid, err.Error())
+		return
+	}
 
+	propIds := make([]int32, 0)
+	propCount := make(map[int32]int64, len(props))
+	for _, prop := range props {
+		if prop.Count > 0 {
+			propIds = append(propIds, prop.PropID)
+		}
+		propCount[prop.PropID] = prop.Count
+	}
+
+	// 获取道具属性
+	propConfigs, err := prop.GetSomePropsConfig(propIds)
+
+	if err != nil {
+		logrus.Debugf("Handle get player game info uid:(%d)获取玩家道具属性失败 err:(%v)", uid, err.Error())
+		return
+	}
+
+	userProperty := new(common.Property)
+	for _, propConfig := range propConfigs {
+		propID := uint32(propConfig.PropID)
+		userProperty.PropId = proto.Uint32(propID)
+		userProperty.PropName = proto.String(propConfig.PropName)
+		userProperty.PropType = common.PropType(propConfig.Type).Enum()
+		userProperty.PropCost = proto.Uint32(uint32(propConfig.Value))
+		userProperty.PropCount = proto.Uint32(uint32(propID))
+		response.UserProperty = append(response.UserProperty, userProperty)
+	}
 	return
 }
