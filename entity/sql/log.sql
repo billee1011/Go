@@ -14,7 +14,7 @@ CREATE TABLE `t_currency_record` (
   `funcId` int(11) DEFAULT NULL COMMENT '行为ID或功能ID',
   PRIMARY KEY (`tradeID`),
   UNIQUE KEY `t_currency_record_tradeID_uindex` (`tradeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表';
 
 
 
@@ -26,12 +26,14 @@ CREATE TABLE `t_game_detail` (
   `gameID` int(11) DEFAULT NULL,
   `amount` bigint(20) DEFAULT NULL,
   `isWinner` tinyint(1) DEFAULT NULL,
+  `brokerCount` int(11) DEFAULT NULL,
   `createTime` datetime DEFAULT NULL,
   `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   `updateTime` datetime DEFAULT NULL,
   `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL,
   PRIMARY KEY (`detailID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 

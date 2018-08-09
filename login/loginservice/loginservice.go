@@ -14,6 +14,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
+	"steve/external/datareportclient"
+	"steve/datareport/fixed"
 )
 
 // tokenSetter for test mock
@@ -93,6 +95,9 @@ func (ls *LoginService) Login(ctx context.Context, request *login.LoginRequest) 
 	response.ErrCode = uint32(common.ErrCode_EC_SUCCESS)
 	response.PlayerId = playerID
 	response.Token = generateToken(playerID)
+
+	datareportclient.DataReport(fixed.LOG_TYPE_ACT,0,0,0,playerID,"1")
+
 	return
 }
 

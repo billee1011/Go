@@ -6,6 +6,7 @@ import (
 	"steve/server_pb/data_report"
 	"steve/structs/service"
 	reportservice "steve/datareport/service"
+	"time"
 )
 
 type dataReport struct {
@@ -34,5 +35,13 @@ func (d *dataReport) Init(e *structs.Exposer, param ...string) error{
 }
 
 func (d *dataReport) Start() error{
+	startTimeReport()
 	return nil
+}
+
+
+
+func startTimeReport(){
+	go reportservice.RunTimeReport(func(){
+	},5 * time.Minute)
 }

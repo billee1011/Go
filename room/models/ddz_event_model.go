@@ -20,6 +20,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"steve/external/datareportclient"
+	fixed2 "steve/datareport/fixed"
 )
 
 // DDZEventModel 斗地主事件 model
@@ -51,7 +53,7 @@ func (model *DDZEventModel) Start() {
 
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
+		GetModelManager().StopDeskModel(model.GetDesk())
 	}()
 	event := desk.DeskEvent{EventID: int(ddz.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk()}
 	model.PushEvent(event)
@@ -447,6 +449,9 @@ func (model *DDZEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 			} else {
 				statistics[player.GetPlayerId()] = -1
 			}
+		}
+		for _,pID := range model.GetDesk().GetPlayerIds(){
+			datareportclient.DataReport(fixed2.LOG_TYPE_GAM,0,0,0,pID,"1")
 		}
 		continueModel.ContinueDesk(false, 0, statistics)
 		return true

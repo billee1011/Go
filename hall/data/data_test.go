@@ -23,7 +23,7 @@ func init() {
 		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
 		Addr:                 "192.168.7.108:3306",
-		DBName:               "player",
+		DBName:               "config",
 		AllowNativePasswords: true,
 		Params:               map[string]string{"charset": "utf8"},
 	}
@@ -283,6 +283,16 @@ func Test_SetGetPlayerFields(t *testing.T) {
 	dbPlayer, err = GetPlayerInfo(playerID, []string{"nickname"}...)
 	assert.Nil(t, err)
 	assert.Equal(t, newNickName, dbPlayer.Nickname)
+}
+
+func Test_SetGetTodayCharge(t *testing.T) {
+	const PLAYERID = 100
+	oldcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Nil(t, AddPlayerTodayCharge(PLAYERID, 100))
+	newcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Equal(t, oldcharge+100, newcharge)
 }
 
 func init() {

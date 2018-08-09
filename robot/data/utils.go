@@ -2,7 +2,6 @@ package data
 
 import (
 	"encoding/json"
-	"steve/entity/cache"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -24,14 +23,8 @@ func InterToUint64(param interface{}) uint64 {
 }
 
 //FmtRobotPlayer 格式化RobotPlayer
-func FmtRobotPlayer(robotPlayer *cache.RobotPlayer) map[string]interface{} {
+func FmtRobotPlayer(robotPlayer *RobotPlayer) map[string]interface{} {
 	robotPlayerMap := make(map[string]interface{})
-	if len(robotPlayer.NickName) > 0 {
-		robotPlayerMap[RobotPlayerNickNameField] = robotPlayer.NickName // 初始化昵称
-	}
-	if len(robotPlayer.Avatar) > 0 {
-		robotPlayerMap[RobotPlayerAvatarField] = robotPlayer.Avatar // 头像 TODO
-	}
 	if robotPlayer.PlayerID > 0 {
 		robotPlayerMap[RobotPlayerIDField] = robotPlayer.PlayerID
 	}

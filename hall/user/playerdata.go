@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"steve/external/datareportclient"
+	"steve/datareport/fixed"
 )
 
 // PlayerDataService 实现 user.PlayerServer
@@ -48,6 +50,8 @@ func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.
 
 	// 返回消息
 	rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
+
+	datareportclient.DataReport(fixed.LOG_TYPE_REG,0,0,0,playerID,"1")
 
 	return
 }
@@ -302,14 +306,14 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-
+	showUID := data.AllocShowUID()
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
-		Showuid:      data.AllocShowUID(),
+		Showuid:      showUID,
 		Type:         1,
-		Channelid:    0,                                 // TODO ，渠道 ID
-		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
+		Channelid:    0,                                // TODO ，渠道 ID
+		Nickname:     fmt.Sprintf("player%d", showUID), // TODO,昵称
 		Gender:       1,
 		Avatar:       getRandomAvator(), // TODO , 头像
 		Provinceid:   0,                 // TODO， 省ID

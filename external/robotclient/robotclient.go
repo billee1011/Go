@@ -29,7 +29,11 @@ type LeisureRobotReqInfo struct {
 
 // GetLeisureRobotInfoByInfo 获取空闲机器人
 // param:   LeisureRobotReqInfo
-// return:  机器人玩家ID,游戏ID,金豆数
+// 返回:
+// uint64:	机器人玩家ID
+// int64:	机器人金豆数
+// int32:	机器人胜率
+// error:	错误信息
 func GetLeisureRobotInfoByInfo(leisureRobotReqInfo LeisureRobotReqInfo) (uint64, int64, int32, error) {
 	// 得到服务连接
 	con, err := getRobotServer()
@@ -100,7 +104,6 @@ func SetRobotPlayerState(playerID uint64, oldState, newState, serverType uint32,
 
 func getRobotServer() (*grpc.ClientConn, error) {
 	e := structs.GetGlobalExposer()
-	// 对uid进行一致性hash路由策略.
 	con, err := e.RPCClient.GetConnectByServerName(common.RobotServiceName)
 	if err != nil || con == nil {
 		return nil, errors.New("no connection")
