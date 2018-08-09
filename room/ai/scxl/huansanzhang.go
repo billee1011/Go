@@ -38,7 +38,7 @@ func (h *huansanzhangStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (
 			return
 		}
 		for _, playerID := range crPlayerIDs {
-			if playerID == player.GetPalyerId() { // 当前玩家已经发送过
+			if playerID == player.GetPlayerId() { // 当前玩家已经发送过
 				return
 			}
 		}
@@ -57,7 +57,7 @@ func (h *huansanzhangStateAI) getHszCards(player *majong.Player) (hszCards []*ma
 	}
 	player.HuansanzhangCards = gutils.GetRecommedHuanSanZhang(player.GetHandCards())
 	hszCards = player.GetHuansanzhangCards()
-	logrus.WithFields(logrus.Fields{"player_id": player.GetPalyerId(), "hszCards": gutils.FmtMajongpbCards(hszCards)}).Infoln("服务器推荐换三张")
+	logrus.WithFields(logrus.Fields{"player_id": player.GetPlayerId(), "hszCards": gutils.FmtMajongpbCards(hszCards)}).Infoln("服务器推荐换三张")
 	return hszCards
 }
 
@@ -67,7 +67,7 @@ func (h *huansanzhangStateAI) huansanzhang(player *majong.Player) *ai.AIEvent {
 
 	eventContext := &majong.HuansanzhangRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 		Cards: hszCards,
 		Sure:  true,

@@ -57,7 +57,7 @@ func (s *QiangganghuState) removeSrcCard(card *majongpb.Card, srcPlayer *majongp
 		logrus.WithFields(logrus.Fields{
 			"func_name":      "QiangganghuState.removeSrcCard",
 			"hand_cards":     srcPlayer.GetHandCards(),
-			"gang_player_id": srcPlayer.GetPalyerId(),
+			"gang_player_id": srcPlayer.GetPlayerId(),
 		}).Errorln("移除杠者的杠牌失败")
 	}
 }

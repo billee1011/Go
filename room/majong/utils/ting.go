@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"steve/room/majong/global"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/global"
 )
 
 // GetTingCardNum 获取听牌数量
@@ -19,7 +19,7 @@ func GetTingCardNum(mjContext *majongpb.MajongContext, playerID uint64, leftCard
 func GetAnCardAndNum(mjContext *majongpb.MajongContext, playerID uint64, lenCard int) map[int]uint32 {
 	c2nMap := make(map[int]uint32, len(global.GetOriginCards(mjContext))-lenCard)
 	for _, player := range mjContext.GetPlayers() {
-		if player.GetPalyerId() == playerID {
+		if player.GetPlayerId() == playerID {
 			continue
 		}
 		for _, card := range player.GetHandCards() {

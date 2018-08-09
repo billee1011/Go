@@ -2,9 +2,9 @@ package majong
 
 import (
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/room/majong/interfaces"
 	"steve/room/majong/utils"
-	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -202,7 +202,7 @@ func (huSettle *HuSettle) divideScore(gangScore, winSum int64, params *interface
 	}
 	if surplusTotal != 0 {
 		startIndex, _ := utils.GetPlayerIDIndex(dianPaoPlayer, params.AllPlayers)
-		firstPlayerID := utils.GetPalyerCloseFromTarget(startIndex, params.AllPlayers, params.HuPlayers)
+		firstPlayerID := utils.GetPlayerCloseFromTarget(startIndex, params.AllPlayers, params.HuPlayers)
 		if firstPlayerID != 0 {
 			callTransferS.Scores[firstPlayerID] = callTransferS.Scores[firstPlayerID] + surplusTotal
 			callTransferS.Scores[dianPaoPlayer] = callTransferS.Scores[dianPaoPlayer] - surplusTotal
@@ -218,8 +218,8 @@ func (huSettle *HuSettle) canHuSettle(playerID uint64, givePlayers, hasHuPlayers
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerHuSettle
 	}
-	for _, hasHupalyer := range hasHuPlayers {
-		if hasHupalyer != playerID {
+	for _, hasHuplayer := range hasHuPlayers {
+		if hasHuplayer != playerID {
 			continue
 		}
 		for _, quitPlayer := range quitPlayers {
