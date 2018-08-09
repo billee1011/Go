@@ -26,7 +26,7 @@ func TestDingQueState_WeiWangCheng(t *testing.T) {
 	mjContext.Players = mjContext.Players[0:0]
 	for i := 0; i < 4; i++ {
 		mjContext.Players = append(mjContext.Players, &majongpb.Player{
-			PalyerId:  uint64(i),
+			PlayerId:  uint64(i),
 			HandCards: []*majongpb.Card{&Card1W, &Card1T, &Card1W, &Card1W},
 		})
 	}
@@ -72,7 +72,7 @@ func TestDingQueState_WangCheng_ZiXun(t *testing.T) {
 	mjContext.Players = mjContext.Players[0:0]
 	for i := 0; i < 4; i++ {
 		mjContext.Players = append(mjContext.Players, &majongpb.Player{
-			PalyerId:  uint64(i),
+			PlayerId:  uint64(i),
 			HandCards: []*majongpb.Card{&Card1W, &Card1T, &Card1W, &Card1W},
 		})
 	}
@@ -80,7 +80,7 @@ func TestDingQueState_WangCheng_ZiXun(t *testing.T) {
 	for i := 0; i < len(mjContext.Players); i++ {
 		// 序列化消息
 		dingqueEvent := &majongpb.DingqueRequestEvent{
-			Head:  &majongpb.RequestEventHead{PlayerId: mjContext.Players[i].PalyerId},
+			Head:  &majongpb.RequestEventHead{PlayerId: mjContext.Players[i].PlayerId},
 			Color: majongpb.CardColor_ColorTong,
 		}
 		flow.EXPECT().GetMajongContext().Return(&mjContext).AnyTimes()

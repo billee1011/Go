@@ -23,7 +23,7 @@ func Test_MopaiState_mopai(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:     1,
+					PlayerId:     1,
 					HandCards:    []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W},
 					DingqueColor: majongpb.CardColor_ColorTiao,
 				},
@@ -55,7 +55,7 @@ func Test_MopaiState_mopai1(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:     1,
+					PlayerId:     1,
 					HandCards:    []*majongpb.Card{&Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W},
 					DingqueColor: majongpb.CardColor_ColorTiao,
 					PengCards: []*majongpb.PengCard{
@@ -93,7 +93,7 @@ func Test_MopaiState_mopai2(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:     1,
+					PlayerId:     1,
 					HandCards:    []*majongpb.Card{&Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W},
 					DingqueColor: majongpb.CardColor_ColorTiao,
 					PengCards: []*majongpb.PengCard{

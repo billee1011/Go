@@ -12,7 +12,7 @@ func checkRenHu(tc *typeCalculator) bool {
 		zjPlayer := mjContext.Players[mjContext.ZhuangjiaIndex]
 		currPlayer := tc.getPlayer()
 		// 不是庄家
-		if zjPlayer.GetPalyerId() != currPlayer.GetPalyerId() {
+		if zjPlayer.GetPlayerId() != currPlayer.GetPlayerId() {
 			if zjPlayer.GetZixunCount() == 1 && tc.getPlayer().GetZixunCount() == 0 {
 				return true
 			}

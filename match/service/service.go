@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"steve/match/matchv2"
+	"steve/match/matchv3"
 	"steve/server_pb/match"
 )
 
@@ -12,5 +12,5 @@ type MatchService struct {
 
 // AddContinueDesk 添加续局牌桌
 func (ms *MatchService) AddContinueDesk(ctx context.Context, request *match.AddContinueDeskReq) (response *match.AddContinueDeskRsp, err error) {
-	return matchv2.AddContinueDesk(request), nil
+	return matchv3.AddContinueDesk(request), nil
 }

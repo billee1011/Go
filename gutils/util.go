@@ -276,7 +276,7 @@ func CardsGroupSvr2Client(cardsGroups []*majongpb.CardsGroup) (cardsGroupList []
 //FmtPlayerInfo 打印玩家信息
 func FmtPlayerInfo(player *majongpb.Player) logrus.Fields {
 	fields := logrus.Fields{
-		"玩家ID":      player.GetPalyerId(),
+		"玩家ID":      player.GetPlayerId(),
 		"手牌":        FmtMajongpbCards(player.HandCards),
 		"问询下可以有的操作": player.PossibleActions,
 		"杠过的牌":      FmtGangCards(player.GangCards),

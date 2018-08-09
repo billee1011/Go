@@ -123,9 +123,9 @@ func (aeg *autoEventGenerator) handleOverTime(AI CommonAI, stateTime time.Time, 
 	players := mjContext.GetPlayers()
 	for _, player := range players {
 		if gutils.IsTing(player) || gutils.IsHu(player) {
-			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), deskObj, SpecialOverTimeAI, 0)
+			aeg.handlePlayerAI(&result, AI, player.GetPlayerId(), deskObj, SpecialOverTimeAI, 0)
 		} else {
-			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), deskObj, OverTimeAI, 0)
+			aeg.handlePlayerAI(&result, AI, player.GetPlayerId(), deskObj, OverTimeAI, 0)
 		}
 	}
 	finish = len(result.Events) > 0
@@ -149,7 +149,7 @@ func (aeg *autoEventGenerator) handleHuStateAuto(AI CommonAI, stateTime time.Tim
 	players := mjContext.GetPlayers()
 	for _, player := range players {
 		if gutils.IsHu(player) {
-			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), deskObj, HuAI, 0)
+			aeg.handlePlayerAI(&result, AI, player.GetPlayerId(), deskObj, HuAI, 0)
 		}
 	}
 	finish = len(result.Events) > 0
@@ -171,7 +171,7 @@ func (aeg *autoEventGenerator) handleTingStateAuto(AI CommonAI, stateTime time.T
 	players := mjContext.GetPlayers()
 	for _, player := range players {
 		if gutils.IsTing(player) {
-			aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), deskObj, TingAI, 0)
+			aeg.handlePlayerAI(&result, AI, player.GetPlayerId(), deskObj, TingAI, 0)
 		}
 	}
 	finish = len(result.Events) > 0
@@ -328,9 +328,9 @@ func (aeg *autoEventGenerator) GenerateV2(params *AutoEventGenerateParams) (resu
 		if time.Now().Sub(params.StartTime) > 1*time.Second {
 			players := mjContext.GetPlayers()
 			for _, player := range players {
-				playerID := player.GetPalyerId()
+				playerID := player.GetPlayerId()
 				if lv, exist := params.RobotLv[playerID]; exist && lv != 0 {
-					aeg.handlePlayerAI(&result, AI, player.GetPalyerId(), params.Desk, RobotAI, lv)
+					aeg.handlePlayerAI(&result, AI, player.GetPlayerId(), params.Desk, RobotAI, lv)
 				}
 			}
 		}

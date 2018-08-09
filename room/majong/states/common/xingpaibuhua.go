@@ -70,7 +70,7 @@ func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.
 			BuCards:     make([]uint32, buCardNum),
 			OutHuaCards: utils.ServerCards2Uint32(huaCards),
 		}
-		if player.GetPalyerId() == curPlayerID {
+		if player.GetPlayerId() == curPlayerID {
 			buCard := mjContext.WallCards[0:buCardNum]
 			info.BuCards = utils.ServerCards2Uint32(buCard)
 			player.HandCards = append(player.HandCards, buCard...)
@@ -83,7 +83,7 @@ func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.
 					logrus.WithFields(logrus.Fields{
 						"func_name":       "XingPaiBuhuaState.getHuaCards",
 						"hand_cards":      player.HandCards,
-						"buhua_player_id": player.GetPalyerId(),
+						"buhua_player_id": player.GetPlayerId(),
 					}).Errorln("移除补花者的花牌失败")
 				}
 			}
@@ -97,11 +97,11 @@ func (s *XingPaiBuhuaState) ntf(flow interfaces.MajongFlow, players []*majongpb.
 		}
 		logrus.WithFields(logrus.Fields{
 			"buhua_player":  curPlayerID,
-			"ntf_to_player": player.GetPalyerId(),
+			"ntf_to_player": player.GetPlayerId(),
 			"hua_cards":     info.GetOutHuaCards(),
 			"bu_cards":      info.GetBuCards(),
 		}).Info("补花通知")
-		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
+		flow.PushMessages([]uint64{player.GetPlayerId()}, toClientMessage)
 	}
 }
 

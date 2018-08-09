@@ -172,7 +172,7 @@ func (model *PlayerModel) playerQuitEnterDeskNtf(player *playerpkg.Player, qeTyp
 
 func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value bool) {
 	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MajongDeskContext).MjContext.Players {
-		if p.GetPalyerId() == player.GetPlayerID() {
+		if p.GetPlayerId() == player.GetPlayerID() {
 			p.IsQuit = value
 		}
 	}

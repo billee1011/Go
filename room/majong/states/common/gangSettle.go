@@ -65,7 +65,7 @@ func (s *GangSettleState) doGangSettle(flow interfaces.MajongFlow) {
 
 	param := interfaces.GangSettleParams{
 		SettleOptionID: int(mjContext.GetSettleOptionId()),
-		GangPlayer:     player.GetPalyerId(),
+		GangPlayer:     player.GetPlayerId(),
 		SrcPlayer:      gangCard.GetSrcPlayer(),
 		AllPlayers:     utils.GetAllPlayers(mjContext),
 		HasHuPlayers:   utils.GetHuPlayers(mjContext, []uint64{}),

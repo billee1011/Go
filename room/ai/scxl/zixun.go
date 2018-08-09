@@ -104,9 +104,8 @@ func (h *zixunStateAI) generateTuoGuang(player *majong.Player, mjContext *majong
 }
 
 func (h *zixunStateAI) generateRobot(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	// 生成机器人AI事件
-	// 一直无状态，所以只会出摸到的牌
-	return h.getNormalZiXunAIEvent(player, mjContext)
+	// 中级AI
+	return h.getMiddleAIEvent(player, mjContext)
 }
 
 func (h *zixunStateAI) generateTing(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
