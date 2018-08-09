@@ -159,9 +159,10 @@ func getPlayerPropFieldsFromDB(playerID uint64, propID int32, fields []string) (
 		return
 	}
 
-	if len(res) == 0 {
-		exist = false
-		return
+	if len(res) == 0 { // 数据库里面没有也需要更新到redis，避免重复查询db
+		prop.PropID = propID
+		prop.Count = 0
+		goto update
 	}
 
 	if len(res) != 1 {
@@ -174,6 +175,7 @@ func getPlayerPropFieldsFromDB(playerID uint64, propID int32, fields []string) (
 		err = fmt.Errorf("generate dbPlayerGame 失败(%v)", err.Error())
 	}
 
+update:
 	// 更新redis
 	if err = updatePlayerPropFieldsToRedis(playerID, propID, fields, &prop); err != nil {
 		err = fmt.Errorf("更新 redis 失败(%v)", err.Error())
