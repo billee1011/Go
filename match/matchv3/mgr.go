@@ -239,9 +239,11 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 
 		// 新游戏配置信息
 		newGameConf := gameConfig{
-			gameID:      pGameConf.GetGameId(),
-			gameName:    pGameConf.GetGameName(),
-			levelConfig: map[uint32]gameLevelConfig{},
+			gameID:             pGameConf.GetGameId(),
+			gameName:           pGameConf.GetGameName(),
+			minNeedPlayerCount: pGameConf.GetMinPeople(),
+			maxNeedPlayerCount: pGameConf.GetMaxPeople(),
+			levelConfig:        map[uint32]gameLevelConfig{},
 		}
 
 		// 加入该游戏
@@ -272,13 +274,11 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 
 		// 新场次配置信息
 		newLevelConf := gameLevelConfig{
-			levelID:            pLevelConf.GetLevelId(),
-			levelName:          pLevelConf.GetLevelName(),
-			bottomScore:        pLevelConf.GetBaseScores(),
-			minGold:            int64(pLevelConf.GetLowScores()),
-			maxGold:            int64(pLevelConf.GetHighScores()),
-			minNeedPlayerCount: pLevelConf.GetMinPeople(),
-			maxNeedPlayerCount: pLevelConf.GetMaxPeople(),
+			levelID:     pLevelConf.GetLevelId(),
+			levelName:   pLevelConf.GetLevelName(),
+			bottomScore: pLevelConf.GetBaseScores(),
+			minGold:     int64(pLevelConf.GetLowScores()),
+			maxGold:     int64(pLevelConf.GetHighScores()),
 		}
 
 		// 加入该场次
@@ -646,9 +646,15 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindIter == nil) || (pFindIter != nil && desk.createTime < pFindIter.Value.(*matchDesk).createTime) {
+			if pFindIter == nil {
 				pFindIter = iter
 				pFindIndex = i
+			} else {
+				pFindDesk := *(pFindIter.Value.(**matchDesk))
+				if desk.createTime < pFindDesk.createTime {
+					pFindIter = iter
+					pFindIndex = i
+				}
 			}
 		}
 	}
@@ -1033,12 +1039,12 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 
 	// 金币范围检测
 	if playerGold < levelConfig.minGold {
-		logrus.Errorln("玩家金币数小于游戏场次金币要求最小值，最小值：%v", levelConfig.minGold)
+		logrus.Errorln("玩家金币数小于游戏场次金币要求最小值，最小值：%v，玩家金币:%v", levelConfig.minGold, playerGold)
 		return fmt.Sprintf("玩家金币数小于游戏场次金币要求最小值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
 	if playerGold > levelConfig.maxGold {
-		logrus.Errorf("玩家金币数大于游戏场次金币要求最大值，最大值：%v", levelConfig.maxGold)
+		logrus.Errorf("玩家金币数大于游戏场次金币要求最大值，最大值：%v，玩家金币:%v", levelConfig.maxGold, playerGold)
 		return fmt.Sprintf("玩家金币数大于游戏场次金币要求最大值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
