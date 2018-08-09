@@ -41,9 +41,10 @@ func getMysqAlmsConfigData() (*db.TAlmsConfig, error) {
 		return nil, err
 	}
 	almsConfigs := []*db.TAlmsConfig{}
-	err = engine.Table(almsConfigTableName).Select("almsCountDonw,depositCountDonw,getNorm,getTimes,getNumber,version").Find(&almsConfigs)
-	if err != nil {
-		return nil, err
+	session := engine.Table(almsConfigTableName).Select("almsCountDonw,depositCountDonw,getNorm,getTimes,getNumber,version")
+	if err := session.Find(&almsConfigs); err != nil {
+		sql, _ := session.LastSQL()
+		return nil, fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)
 	}
 	if len(almsConfigs) == 0 {
 		return nil, fmt.Errorf("获取不到救济金配置")
@@ -60,12 +61,14 @@ func updataMysqAlmsConfigVersion(version int) error {
 	ac := &db.TAlmsConfig{
 		Version: version,
 	}
-	num, err := engine.Table(almsConfigTableName).Select("version").Update(ac)
+	session := engine.Table(almsConfigTableName).Select("version")
+	num, err := session.Update(ac)
 	if err != nil {
-		return err
+		sql, _ := session.LastSQL()
+		return fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)
 	}
 	if num == 0 {
-		return fmt.Errorf("更新救济金配置版本号失败 : %v", version)
+		return fmt.Errorf("更新救济金配置版本号失败 version:(%v)", version)
 	}
 	return nil
 }
@@ -76,17 +79,21 @@ func getMysqAlmsConfigVersion() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	ac := &db.TAlmsConfig{}
-	exist, err := engine.Table(almsConfigTableName).Select("version").Get(ac)
+	var version int
+	session := engine.Table(almsConfigTableName).Select("version")
+	exist, err := session.Get(&version)
 	if err != nil {
-		return 0, err
+		sql, _ := session.LastSQL()
+		return 0, fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)
 	}
 	if !exist { // 表数据不存在插入新的
-		ac.Version = 1
-		_, err := engine.Table(almsConfigTableName).Insert(ac)
+		ac := db.TAlmsConfig{
+			Version: version,
+		}
+		_, err := engine.Table(almsConfigTableName).Insert(&ac)
 		return 1, err
 	}
-	return ac.Version, nil
+	return version, nil
 }
 
 // 获取游戏场次配置数据
@@ -96,9 +103,10 @@ func getMysqlGameLevelConfigData() ([]*db.TGameLevelConfig, error) {
 		return nil, err
 	}
 	glcs := []*db.TGameLevelConfig{}
-	err = engine.Table(gameLevelConfigTableName).Select("gameID,levelID,isAlms").Find(&glcs)
-	if err != nil {
-		return nil, err
+	session := engine.Table(gameLevelConfigTableName).Select("gameID,levelID,isAlms")
+	if err := session.Find(&glcs); err != nil {
+		sql, _ := session.LastSQL()
+		return nil, fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)
 	}
 	return glcs, nil
 }
@@ -109,17 +117,20 @@ func getMysqlPlayerGotTimesByPlayerID(playerID uint64) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	hi := &db.THallInfo{}
-	exist, err := engine.Table(hallInfoTableName).Select("almsGotTimes").Where(fmt.Sprintf("playerID=%v", playerID)).Get(hi)
+	var almsGotTimes int
+	session := engine.Table(hallInfoTableName).Select("almsGotTimes").Where(fmt.Sprintf("playerID=%v", playerID))
+	exist, err := session.Get(&almsGotTimes)
 	if err != nil {
-		return 0, err
+		sql, _ := session.LastSQL()
+		return 0, fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)
 	}
 	if !exist { // 不存在插入新的
+		hi := &db.THallInfo{}
 		hi.Playerid = int64(playerID)
 		_, err := engine.Table(hallInfoTableName).Insert(hi)
 		return 0, err
 	}
-	return hi.Almsgottimes, nil
+	return almsGotTimes, nil
 }
 
 // 更改玩家救济金已领取次数
@@ -131,9 +142,11 @@ func updateMysqlPlayerGotTimesByPlayerID(playerID uint64, gotTimes int) error {
 	hi := &db.THallInfo{
 		Almsgottimes: gotTimes,
 	}
-	num, err := engine.Table(hallInfoTableName).Select("almsGotTimes").Where(fmt.Sprintf("playerID=%v", playerID)).Update(hi)
+	session := engine.Table(hallInfoTableName).Select("almsGotTimes").Where(fmt.Sprintf("playerID=%v", playerID))
+	num, err := session.Update(hi)
 	if err != nil {
-		return err
+		sql, _ := session.LastSQL()
+		return fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)
 	}
 	if num == 0 {
 		return fmt.Errorf("修改玩家救济金已领取次数失败 : %v - %v", playerID, gotTimes)

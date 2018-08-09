@@ -62,11 +62,15 @@ func HandleGetAlmsReq(playerID uint64, header *steve_proto_gaterpc.Header, req c
 		currLevelID := gameLevel.LevelID
 		if gameID == currGameID && levelID == currLevelID {
 			flag = gameLevel.IsOpen == 0 // 是否时关闭的
+			entry.WithFields(logrus.Fields{
+				"currGameID":  currGameID,
+				"currLevelID": currLevelID,
+				"flag":        flag,
+			}).Debugln("救济金的场次")
 			break
 		}
 	}
 	if flag {
-		entry.WithError(err).Errorf(" gameID(%v) - levelID(%v) 救济金未开启 currGameLevels(%v)", gameID, levelID, gameLevels)
 		response.Result = proto.Bool(false)
 		return
 	}
@@ -123,5 +127,10 @@ func HandleGetAlmsReq(playerID uint64, header *steve_proto_gaterpc.Header, req c
 	}
 	response.PlayerAlmsTimes = proto.Int32(int32(ac.PlayerGotTimes + 1))
 	response.ChangeGold = proto.Int64(changeGold)
+	entry.WithFields(logrus.Fields{
+		"playerID": playerID,
+		"oldGold":  playerGold,
+		"newGold":  changeGold,
+	}).Infoln("申请救济成功")
 	return
 }
