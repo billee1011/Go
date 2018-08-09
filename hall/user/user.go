@@ -224,7 +224,8 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	exist, dbPlayerGame, err := data.GetPlayerGameInfo(uid, uint32(gameID), fields...)
 
 	// 不存在直接返回
-	if !exist {
+	if !exist && playerID == uid {
+		response.ErrCode = proto.Uint32(0)
 		return
 	}
 
