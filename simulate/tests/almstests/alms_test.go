@@ -33,9 +33,9 @@ func Test_Apply_Alms(t *testing.T) {
 
 	player.AddExpectors(msgid.MsgID_ALMS_GET_GOLD_RSP)
 	client := player.GetClient()
-	aat := alms.AlmsApplyType_AAT_LOGIN
+	aat := alms.AlmsApplyType_AAT_SELECTIONS
 	req := &alms.AlmsGetGoldReq{}
-	gameID, levelID, totalGold, version := common.GameId_GAMEID_XUELIU, int32(1), int64(100000000000), int32(2)
+	gameID, levelID, totalGold, version := common.GameId_GAMEID_XUELIU, int32(1), int64(101), int32(1)
 	req.AlmsApplyType = &aat
 	req.GameId = &gameID
 	req.LevelId = &levelID

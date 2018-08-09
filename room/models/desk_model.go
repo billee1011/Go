@@ -19,4 +19,6 @@ type DeskModel interface {
 type DeskEventModel interface {
 	DeskModel
 	PushRequest(playerID uint64, head *steve_proto_gaterpc.Header, bodyData []byte)
+	// 开始处理事件
+	StartProcessEvents()
 }

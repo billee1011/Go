@@ -20,12 +20,16 @@ message CreateDeskRequest {
     uint32 level_id = 2;    // 级别ID
     uint64 desk_id  = 3;    // 桌子ID
     repeated DeskPlayer players = 4; // 桌子内的玩家信息
+    uint64 min_coin = 5;    // 金豆准入下限
+    uint64 max_coin = 6;    // 金豆准入上限
+    uint64 base_coin = 7;   // 底分
 }
 
 // 创建桌子的回复
 message CreateDeskResponse {
     RoomError err_code = 1; // 错误码
 }
+
 
 service RoomMgr {
     rpc CreateDesk(CreateDeskRequest) returns (CreateDeskResponse) {}

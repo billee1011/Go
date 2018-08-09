@@ -19,11 +19,11 @@ nsqlookupd_addrs:
 consul_addr: 127.0.0.1:8500
 
 rpc_addr: 127.0.0.1
-rpc_port: 36401
-health_port: 36402
+rpc_port: 36801
+health_port: 36802
 rpc_server_name: configuration
 
-http_addr: 0.0.0.0:36403
+http_addr: 0.0.0.0:36803
 
 redis_list:
   player: 

@@ -94,10 +94,13 @@ func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 
 	// 调用room服的创建桌子
 	rsp, err := roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
-		GameId:  desk.gameID,
-		LevelId: desk.levelID,
-		DeskId:  desk.deskID,
-		Players: createPlayers,
+		GameId:   desk.gameID,
+		LevelId:  desk.levelID,
+		DeskId:   desk.deskID,
+		Players:  createPlayers,
+		MinCoin:  0,
+		MaxCoin:  0,
+		BaseCoin: 0,
 	})
 
 	// 不成功时，报错，应该重新调用或者重新匹配

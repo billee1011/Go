@@ -11,6 +11,9 @@ type DeskConfig struct {
 	Settle    DeskSettler
 	PlayerIds []uint64
 	Num       int
+	MinScore  uint64 // 金豆准入下线
+	MaxScore  uint64 // 金豆准入上限
+	BaseScore uint64 // 底分
 }
 
 //默认自带的

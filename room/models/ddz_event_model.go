@@ -18,10 +18,11 @@ import (
 	"sync"
 	"time"
 
+	fixed2 "steve/datareport/fixed"
+	"steve/external/datareportclient"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"steve/external/datareportclient"
-	fixed2 "steve/datareport/fixed"
 )
 
 // DDZEventModel 斗地主事件 model
@@ -51,9 +52,28 @@ func (model *DDZEventModel) Active() {}
 func (model *DDZEventModel) Start() {
 	model.event = make(chan desk.DeskEvent, 16)
 
+	model.StartProcessEvents()
+}
+
+// StartProcessEvents 开始处理事件
+func (model *DDZEventModel) StartProcessEvents() {
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk())
+
+		gameContext := model.GetGameContext().(*context2.DDZDeskContext)
+		ddzContext := gameContext.DDZContext
+		players := ddzContext.GetPlayers()
+		statistics := make(map[uint64]int64, len(players))
+
+		for _, player := range players {
+			if player.GetWin() {
+				statistics[player.GetPlayerId()] = 1
+			} else {
+				statistics[player.GetPlayerId()] = -1
+			}
+		}
+		continueModel := GetContinueModel(model.GetDesk().GetUid())
+		continueModel.ContinueDesk(false, 0, statistics)
 	}()
 	event := desk.DeskEvent{EventID: int(ddz.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk()}
 	model.PushEvent(event)
@@ -439,21 +459,9 @@ func (model *DDZEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	ddzContext := gameContext.DDZContext
 
 	if ddzContext.GetCurState() == ddz.StateID_state_over {
-		continueModel := GetContinueModel(model.GetDesk().GetUid())
-		players := ddzContext.GetPlayers()
-		statistics := make(map[uint64]int64, len(players))
-
-		for _, player := range players {
-			if player.GetWin() {
-				statistics[player.GetPlayerId()] = 1
-			} else {
-				statistics[player.GetPlayerId()] = -1
-			}
+		for _, pID := range model.GetDesk().GetPlayerIds() {
+			datareportclient.DataReport(fixed2.LOG_TYPE_GAM, 0, 0, 0, pID, "1")
 		}
-		for _,pID := range model.GetDesk().GetPlayerIds(){
-			datareportclient.DataReport(fixed2.LOG_TYPE_GAM,0,0,0,pID,"1")
-		}
-		continueModel.ContinueDesk(false, 0, statistics)
 		return true
 	}
 	return false

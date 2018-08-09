@@ -1,6 +1,8 @@
 package user
 
 import (
+	"bytes"
+	"io/ioutil"
 	"steve/client_pb/common"
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
@@ -14,11 +16,13 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 // HandleGetPlayerInfoReq 处理获取玩家个人资料请求
 func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle get player info req:%v", req)
+	logrus.Debugf("Handle get player info req:(%v)", req)
 
 	// 默认返回消息
 	response := &hall.HallGetPlayerInfoRsp{
@@ -59,18 +63,17 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		response.GameId = common.GameId(pState.GameID).Enum()
 		response.ErrCode = proto.Uint32(0)
 	}
-	logrus.Debugf("Handle get player info rsp: %v", response)
+	logrus.Debugf("Handle get player info rsp: (%v)", response)
 	return
 }
 
 // HandleUpdatePlayerInoReq 处理更新玩家个人资料请求
 func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallUpdatePlayerInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle update player info req: %v", req)
+	logrus.Debugf("Handle update player info req: (%v)", req)
 
 	// 默认返回消息
 	response := &hall.HallUpdatePlayerInfoRsp{
 		ErrCode: proto.Uint32(1),
-		// Result:  proto.Bool(false),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -80,24 +83,31 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	}
 
 	// 参数校验
+	fields := []string{}
 	dbPlayer := db.TPlayer{
 		Playerid: int64(playerID),
 	}
 	gender := uint32(req.GetGender())
 	if gender == 1 || gender == 2 {
 		dbPlayer.Gender = int(req.GetGender())
+		fields = append(fields, cache.Gender)
 	}
 
 	if req.NickName != nil && req.GetNickName() != "" {
+		if !validateNickName(req.GetNickName()) {
+			response.ErrCode = proto.Uint32(1)
+			return
+		}
 		dbPlayer.Nickname = req.GetNickName()
+		fields = append(fields, cache.NickName)
 	}
+
 	if req.Avator != nil && req.GetAvator() != "" {
 		dbPlayer.Avatar = req.GetAvator()
-
+		fields = append(fields, cache.Avatar)
 	}
 
 	// 逻辑处理
-	fields := []string{cache.NickName, cache.Avatar, cache.Gender}
 	error := data.SetPlayerFields(playerID, fields, &dbPlayer)
 
 	if error == nil {
@@ -107,13 +117,30 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 		response.Avator = proto.String(req.GetAvator())
 	}
 
-	logrus.Debugf("Handle update player info rsp: %v", response)
+	logrus.Debugf("Handle update player info rsp: (%v)", response)
 	return
+}
+
+// validateNickName 校验昵称
+func validateNickName(nickName string) bool {
+	if len(nickName) <= 16 {
+		return true
+	}
+	data, err := ioutil.ReadAll(transform.NewReader(bytes.NewReader([]byte(nickName)), simplifiedchinese.GBK.NewEncoder()))
+	if err != nil {
+		logrus.Debugf("validateNickName utf8 transfer gbk err: (%v)", err.Error())
+		return false
+	}
+	count := len(data)
+	if count > 16 {
+		return false
+	}
+	return true
 }
 
 // HandleGetPlayerStateReq 获取玩家游戏状态信息
 func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerStateReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle get player state req:%v", req)
+	logrus.Debugf("Handle get player state req: (%v)", req)
 
 	// 默认返回消息
 	response := &hall.HallGetPlayerStateRsp{
@@ -135,13 +162,13 @@ func HandleGetPlayerStateReq(playerID uint64, header *steve_proto_gaterpc.Header
 		response.PlayerState = common.PlayerState(pState.State).Enum()
 		response.GameId = common.GameId(pState.GameID).Enum()
 	}
-	logrus.Debugf("Handle get player state rsp:%v", response)
+	logrus.Debugf("Handle get player state rsp: (%v)", response)
 	return
 }
 
 // HandleGetGameInfoReq client-> 获取游戏信息列表请求
 func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetGameListInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle get game info req : %v", req)
+	logrus.Debugf("Handle get game info req : (%v)", req)
 
 	// 默认返回消息
 	response := &hall.HallGetGameListInfoRsp{
@@ -171,7 +198,7 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 
 // HandleGetPlayerGameInfoReq 获取玩家游戏信息
 func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerGameInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle get player game info req : %v", req)
+	logrus.Debugf("Handle get player game info req : (%v)", req)
 
 	// 传入参数
 	uid := req.GetUid()
@@ -207,7 +234,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 		response.MaxMultiple = proto.Uint32(uint32(dbPlayerGame.Maxmultiple))
 		response.ErrCode = proto.Uint32(0)
 	}
-	logrus.Debugf("Handle get player game info rsp:%v ", response)
+	logrus.Debugf("Handle get player game info rsp: (%v)", response)
 
 	return
 }

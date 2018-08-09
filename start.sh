@@ -1,53 +1,31 @@
 #!/bin/bash
 
-pushd configuration 
-serviceloader configuration --config=config.yml &
-popd 
 
-# 其他服务启动依赖配置服
-sleep 5
+function startserver() {
+    path=$1
+    name=$2
+    cname=$3
+    pushd $path 
+    serviceloader $name --config=config.yml &
+    x=`consul catalog services | grep $cname | wc -l`
+    while [[ $x -eq 0 ]]; do
+        echo 等待 $name 启动完成$x
 
-pushd gateway 
-nohup serviceloader gateway --config=config.yml  &
-popd 
-
-pushd room 
-nohup serviceloader room --config=config.yml  &
-popd 
-
-
-pushd hall 
-nohup serviceloader hall --config=config.yml  &
-popd 
-
-pushd login 
-nohup serviceloader login --config=config.yml  &
-popd 
-
-pushd match 
-nohup serviceloader match --config=config.yml  &
-popd 
-
-pushd robot 
-nohup serviceloader robot --config=config.yml  &
-popd
-
-pushd gold
-nohup serviceloader gold --config=config.yml  &
-popd
-
-
-pushd msgserver
-nohup serviceloader msgserver --config=config.yml  &
-popd
-
-# 依赖hall服
-sleep 2 
-
-pushd alms
-nohup serviceloader alms --config=config.yml  &
-popd
-
-pushd back
-nohup serviceloader back --config=config.yml  &
-popd
+        sleep 1
+        x=`consul catalog services | grep $cname | wc -l` 
+    done 
+    sleep 1
+    echo $name 启动完成$x
+    popd 
+}
+startserver configuration configuration configuration
+startserver gateway gateway gate
+startserver room room room
+startserver hall hall hall
+startserver login login login
+startserver robot robot robot
+startserver gold gold gold
+startserver msgserver msgserver msgserver
+startserver alms alms alms
+startserver match match match
+startserver back back back
