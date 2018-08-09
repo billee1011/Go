@@ -38,6 +38,7 @@ var bInitGold = true
 
 const dbName = "player"
 
+const dbLogName = "log"
 // 设置货币类型列表
 func SetGoldTypeList(list, get, cost map[int16]string) {
 	mapID2Name = list
@@ -188,7 +189,7 @@ func InsertGoldLog(plog *define.GoldLog) error {
 	upGoldLog(plog)
 
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbLogName)
 	if err != nil {
 		return fmt.Errorf("connect db error")
 	}
