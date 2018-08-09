@@ -467,7 +467,7 @@ func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *De
 
 		// 两者不等，则报错
 		if cardCount != expectedCount {
-			return fmt.Errorf("playerCardCount 卡牌数量不对，玩家手牌数量:%v，期待数量:%v,牌：%v", cardCount, getexpectedCount)
+			return fmt.Errorf("playerCardCount 卡牌数量不对，玩家手牌数量:%v，期待数量:%v", cardCount, expectedCount)
 		}
 	}
 	return nil
