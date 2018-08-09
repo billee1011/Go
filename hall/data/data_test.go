@@ -285,6 +285,16 @@ func Test_SetGetPlayerFields(t *testing.T) {
 	assert.Equal(t, newNickName, dbPlayer.Nickname)
 }
 
+func Test_SetGetTodayCharge(t *testing.T) {
+	const PLAYERID = 100
+	oldcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Nil(t, AddPlayerTodayCharge(PLAYERID, 100))
+	newcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Equal(t, oldcharge+100, newcharge)
+}
+
 func init() {
 	viper.SetDefault("node", 200)
 }

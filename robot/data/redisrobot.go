@@ -12,19 +12,6 @@ import (
 
 const (
 	robotRedisKey = "Robot:%v"
-
-	//玩家ID字段名
-	robotPlayerIDField string = "playerID"
-	//玩家金币数字段名
-	robotPlayerCoinField string = "coin"
-	//玩家状态字段名
-	robotPlayerStateField string = "state"
-	//玩家游戏 ID 字段名
-	robotPlayerGameIDField string = "game_id"
-	//玩家昵称字段
-	robotPlayerNickNameField string = "nick_name"
-	//玩家头像字段
-	robotPlayerHeadImageField string = "head_image"
 )
 
 //RedisClifunc 获取redisClien
