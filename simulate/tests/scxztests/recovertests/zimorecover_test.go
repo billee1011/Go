@@ -2,6 +2,7 @@ package recovertests
 
 import (
 	"steve/client_pb/common"
+	"steve/client_pb/match"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -82,7 +83,7 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	assert.Nil(t, err)
 	err = utils.ApplyJoinDeskPlayers(newPlayers, common.GameId_GAMEID_XUELIU)
 	assert.Nil(t, err)
-	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_CREATED_NTF]
-	ntf1 := room.RoomDeskCreatedNtf{}
+	expector, _ = zimoPlayer.Expectors[msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF]
+	ntf1 := match.MatchSucCreateDeskNtf{}
 	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf1))
 }

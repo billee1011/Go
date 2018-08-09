@@ -40,8 +40,10 @@ func ApplyJoinDesk(player interfaces.ClientPlayer, gameID common.GameId) (*match
 		"user_id":   player.GetID(),
 	})
 	req := match.MatchReq{
-		GameId: proto.Uint32(uint32(gameID)),
+		GameId:  proto.Uint32(uint32(gameID)),
+		LevelId: proto.Uint32(1),
 	}
+
 	rsp := match.MatchRsp{}
 
 	client := player.GetClient()
@@ -61,7 +63,10 @@ func ApplyJoinDeskPlayers(players []interfaces.ClientPlayer, gameID common.GameI
 	req := match.MatchReq{
 		GameId: proto.Uint32(uint32(gameID)),
 	}
-	rsp := match.MatchRsp{}
+	rsp := match.MatchRsp{
+		GameId:  proto.Uint32(uint32(gameID)),
+		LevelId: proto.Uint32(1),
+	}
 	for _, player := range players {
 		client := player.GetClient()
 		err := client.Request(createMsgHead(msgid.MsgID_MATCH_REQ), &req, global.DefaultWaitMessageTime, uint32(msgid.MsgID_MATCH_RSP), &rsp)
