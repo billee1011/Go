@@ -36,9 +36,10 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
     }'
 );
 
-INSERT `t_common_config`(`key`, `subkey`, `value`) values (
-    `prop`, `interactive`,
-    `{
+INSERT `t_common_config`(`key`, `subkey`, `value`) values ( 
+    'prop', 
+    'interactive',
+    '{
         "props":[
         {
             "propID": 1,
@@ -81,5 +82,5 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
             "attrLimit":500000,
         }
     ]
-    }`
+    }'
 );
