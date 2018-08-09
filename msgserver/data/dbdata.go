@@ -55,10 +55,10 @@ func LoadHorseFromDB() (map[int64]*define.HorseRace, error) {
 		horse.IsUseParent = int8(isUseParent)
 		parseHorseJson(horse, row["n_horseData"])
 		list[id] = horse
+		logrus.Debugf("LoadHorseFromDB add one: %v", *horse)
 	}
 	logrus.Debugf("LoadHorseFromDB win:sum=%d", len(list))
 
-	logrus.Debugf("LoadHorseFromDB win: sum=%d\n", len(list))
 
 	return list, nil
 }

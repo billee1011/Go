@@ -45,7 +45,10 @@ func (gm *MsgMgr) Init() error {
 	gm.channelList = make(map[int64]*define.HorseRace)
 	_, err := gm.getHorseRaceFromDB()
 	if err != nil {
-		return err
+		logrus.Errorf("getHorseRaceFromDB first err:%v", err)
+		//return err
+	} else {
+		logrus.Debugf("getHorseRaceFromDB first win...")
 	}
 	// 启动跑马灯是否开始检测协程
 	go gm.runCheckHorseChange()
