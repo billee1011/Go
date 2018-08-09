@@ -36,7 +36,7 @@ func (log *LogBean) ToReportFormat() string {
 		int(fixed.LOG_TYPE_ACT),
 		int(fixed.LOG_TYPE_GAM),
 		int(fixed.LOG_TYPE_GOLD_ADD),
-		int(fixed.LOG_TYPE_GODL_REMV),
+		int(fixed.LOG_TYPE_GOLD_REMV),
 		int(fixed.LOG_TYPE_YB_ADD),
 		int(fixed.LOG_TYPE_YB_REMV),
 		int(fixed.LOG_TYPE_CARD_ADD),
