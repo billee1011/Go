@@ -22,7 +22,7 @@ func TestZixunState_angang(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:  1,
+					PlayerId:  1,
 					HandCards: []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 				},
 			},
@@ -66,7 +66,7 @@ func TestZixunState_zimo(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:        1,
+					PlayerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
@@ -127,7 +127,7 @@ func TestZixunState_bugang(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:        1,
+					PlayerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
@@ -193,7 +193,7 @@ func TestZixunState_chupai(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:        1,
+					PlayerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					PossibleActions: []majongpb.Action{majongpb.Action_action_gang, majongpb.Action_action_hu},
 					DingqueColor:    majongpb.CardColor_ColorTiao,

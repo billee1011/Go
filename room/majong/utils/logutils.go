@@ -37,7 +37,7 @@ func WithMajongPlayer(logEntry *logrus.Entry, mjContext *server_majongpb.MajongC
 	playerIDs := []uint64{}
 
 	for _, player := range players {
-		playerIDs = append(playerIDs, player.GetPalyerId())
+		playerIDs = append(playerIDs, player.GetPlayerId())
 	}
 	logEntry = logEntry.WithField("player_id_list", playerIDs)
 	return logEntry

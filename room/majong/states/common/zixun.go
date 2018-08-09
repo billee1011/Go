@@ -124,7 +124,7 @@ func (s *ZiXunState) chupai(flow interfaces.MajongFlow, message *majongpb.Chupai
 		return majongpb.StateID_state_chupai, nil
 	}
 	logEntry := logrus.WithFields(logrus.Fields{
-		"player":   activePlayer.GetPalyerId(),
+		"player":   activePlayer.GetPlayerId(),
 		"reqCard":  card,
 		"hanCards": gutils.FmtMajongpbCards(activePlayer.GetHandCards()),
 	})
@@ -203,7 +203,7 @@ func (s *ZiXunState) canBuGang(flow interfaces.MajongFlow, message *majongpb.Gan
 		return false, fmt.Errorf("墙牌为0时，不予补杠")
 	}
 	//判断是否轮到当前玩家操作
-	if activePlayer.PalyerId != message.GetHead().GetPlayerId() {
+	if activePlayer.PlayerId != message.GetHead().GetPlayerId() {
 		return false, fmt.Errorf("当前玩家不允许操作")
 	}
 	bugangCard := message.GetCard()
@@ -270,7 +270,7 @@ func (s *ZiXunState) hasQiangGangHu(flow interfaces.MajongFlow) bool {
 	var hasQGanghu bool
 	for _, player := range utils.GetCanXpPlayers(ctx.GetPlayers(), ctx) {
 		player.PossibleActions = []majongpb.Action{}
-		if player.GetPalyerId() != ctx.GetLastGangPlayer() {
+		if player.GetPlayerId() != ctx.GetLastGangPlayer() {
 			if gutils.CheckHasDingQueCard(flow.GetMajongContext(), player) {
 				continue
 			}
@@ -419,11 +419,11 @@ func (s *ZiXunState) checkFanType(record *majongpb.ZiXunRecord, context *majongp
 // getHuCard 获取胡牌
 func (s *ZiXunState) getHuCard(mjContext *majongpb.MajongContext, player *majongpb.Player) (card *majongpb.Card) {
 	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
-	if player.GetZixunCount() == 1 && player.GetPalyerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId() {
+	if player.GetZixunCount() == 1 && player.GetPlayerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPlayerId() {
 		xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 		switch xpOption.TianhuCardType {
 		case mjoption.MostTingsCard:
-			_, card = utils.CalcTianHuCardNum(mjContext, player.GetPalyerId())
+			_, card = utils.CalcTianHuCardNum(mjContext, player.GetPlayerId())
 		case mjoption.RightCard:
 			card = player.HandCards[len(player.GetHandCards())-1]
 		case mjoption.MoCard:
@@ -448,10 +448,10 @@ func (s *ZiXunState) recordZixunMsg(record *majongpb.ZiXunRecord, ntf *room.Room
 func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongContext) (room.HuType, majongpb.HuType) {
 	huPlayer := utils.GetMajongPlayer(huPlayerID, mjContext)
 	if len(huPlayer.PengCards) == 0 && len(huPlayer.GangCards) == 0 && len(huPlayer.HuCards) == 0 {
-		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+		if huPlayer.ZixunCount == 1 && huPlayerID == mjContext.Players[mjContext.ZhuangjiaIndex].GetPlayerId() {
 			return room.HuType_HT_TIANHU, majongpb.HuType_hu_tianhu
 		}
-		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() {
+		if huPlayer.MopaiCount == 1 && huPlayerID != mjContext.Players[mjContext.ZhuangjiaIndex].GetPlayerId() {
 			return room.HuType_HT_DIHU, majongpb.HuType_hu_dihu
 		}
 	}
@@ -550,7 +550,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 			hCard, _ := utils.IntToCard(int32(tt))
 			ctc := bus.GetFanTypeCalculator()
 			types, gen, hua := ctc.Calculate(interfaces.FantypeParams{
-				PlayerID:  player.GetPalyerId(),
+				PlayerID:  player.GetPlayerId(),
 				MjContext: context,
 				HandCard:  newHand,
 				PengCard:  s.getPengCards(player.GetPengCards()),

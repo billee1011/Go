@@ -87,7 +87,7 @@ func (f *FapaiState) fapaiToPlayer(flow interfaces.MajongFlow, p *majongpb.Playe
 	wallCards := majongContext.GetWallCards()
 	if count > len(wallCards) {
 		logrus.WithError(errCardsNotEnough).WithFields(logrus.Fields{
-			"player_id":       p.GetPalyerId(),
+			"player_id":       p.GetPlayerId(),
 			"count":           count,
 			"wallcards_count": len(wallCards),
 		})
@@ -119,7 +119,7 @@ func (f *FapaiState) fapai(flow interfaces.MajongFlow) {
 			f.fapaiToPlayers(flow, zjIndex, playerCount)
 		}
 	}
-	majongContext.LastMopaiPlayer = zjPlayer.GetPalyerId()
+	majongContext.LastMopaiPlayer = zjPlayer.GetPlayerId()
 	zjHandCards := zjPlayer.GetHandCards()
 	majongContext.LastMopaiCard = zjHandCards[len(zjHandCards)-1]
 }
@@ -140,7 +140,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 
 	for _, player := range mjContext.Players {
 		playerCardCount = append(playerCardCount, &room.PlayerCardCount{
-			PlayerId:  proto.Uint64(player.GetPalyerId()),
+			PlayerId:  proto.Uint64(player.GetPlayerId()),
 			CardCount: proto.Uint32(uint32(len(player.GetHandCards()))),
 		})
 	}
@@ -150,7 +150,7 @@ func (f *FapaiState) notifyPlayer(flow interfaces.MajongFlow) {
 			Cards:            utils.ServerCards2Uint32(player.GetHandCards()),
 			PlayerCardCounts: playerCardCount,
 		}
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+		flow.PushMessages([]uint64{player.GetPlayerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_FAPAI_NTF),
 			Msg:   msg,
 		})

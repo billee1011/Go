@@ -35,10 +35,10 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext interf
 		context.LastHuPlayers = context.LastHuPlayers[:0]
 		for _, player := range utils.GetCanXpPlayers(players, context) { // 能正常行牌的玩家才进行查动作
 			s.clearWenxunInfo(player)
-			if context.GetLastChupaiPlayer() == player.GetPalyerId() {
+			if context.GetLastChupaiPlayer() == player.GetPlayerId() {
 				continue
 			}
-			logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
+			logrus.WithFields(logrus.Fields{"playerID": player.GetPlayerId(),
 				"xpStates": player.GetXpState()}).Info("出牌：每个玩家的状态")
 			need := s.checkActions(flow, player, card)
 			if need {
@@ -53,9 +53,9 @@ func (s *ChupaiState) ProcessEvent(eventID majongpb.EventID, eventContext interf
 			return majongpb.StateID_state_chupaiwenxun, nil
 		}
 		player := utils.GetNextXpPlayerByID(context.GetLastChupaiPlayer(), context.GetPlayers(), context)
-		logrus.WithFields(logrus.Fields{"playerID": player.GetPalyerId(),
+		logrus.WithFields(logrus.Fields{"playerID": player.GetPlayerId(),
 			"xpStates": player.GetXpState()}).Info("出牌：下一个摸牌玩家的状态")
-		context.MopaiPlayer = player.GetPalyerId()
+		context.MopaiPlayer = player.GetPlayerId()
 		context.MopaiType = majongpb.MopaiType_MT_NORMAL
 		return majongpb.StateID_state_mopai, nil
 	}
@@ -72,7 +72,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 	}
 	canDianPao := s.checkDianPao(context, player, card)
 	if canDianPao {
-		context.LastHuPlayers = append(context.LastHuPlayers, player.GetPalyerId())
+		context.LastHuPlayers = append(context.LastHuPlayers, player.GetPlayerId())
 		player.PossibleActions = append(player.PossibleActions, majongpb.Action_action_hu)
 	}
 	canPeng := s.checkPeng(context, player, card)
@@ -94,7 +94,7 @@ func (s *ChupaiState) checkActions(flow interfaces.MajongFlow, player *majongpb.
 	}
 	logrus.WithFields(logrus.Fields{
 		"func_name":   "checkActions",
-		"player":      player.GetPalyerId(),
+		"player":      player.GetPlayerId(),
 		"check_card":  card,
 		"canPeng":     canPeng,
 		"canMingGang": canMingGang,
@@ -143,7 +143,7 @@ func (s *ChupaiState) checkPeng(context *majongpb.MajongContext, player *majongp
 	}
 	logrus.WithFields(logrus.Fields{
 		"func_name":    "checkPeng",
-		"check_player": player.GetPalyerId(),
+		"check_player": player.GetPlayerId(),
 		"check_card":   card,
 		"hand_cards":   player.GetHandCards(),
 		"count":        num,
@@ -170,7 +170,7 @@ func (s *ChupaiState) checkDianPao(context *majongpb.MajongContext, player *majo
 func (s *ChupaiState) checkChi(context *majongpb.MajongContext, player *majongpb.Player, card *majongpb.Card) []uint32 {
 	//判断当前玩家是否可以进行吃的出牌问询，二人麻将只能下家吃牌
 	chicards := make([]uint32, 0)
-	if utils.GetNextXpPlayerByID(context.GetLastChupaiPlayer(), context.GetPlayers(), context).GetPalyerId() != player.GetPalyerId() {
+	if utils.GetNextXpPlayerByID(context.GetLastChupaiPlayer(), context.GetPlayers(), context).GetPlayerId() != player.GetPlayerId() {
 		return chicards
 	}
 	if gutils.IsHu(player) || gutils.IsTing(player) {
@@ -222,7 +222,7 @@ func (s *ChupaiState) chupai(flow interfaces.MajongFlow) {
 	activePlayer.HandCards, _ = utils.RemoveCards(activePlayer.HandCards, card, 1)
 	activePlayer.OutCards = append(activePlayer.OutCards, card)
 	ntf := room.RoomChupaiNtf{
-		Player: proto.Uint64(activePlayer.GetPalyerId()),
+		Player: proto.Uint64(activePlayer.GetPlayerId()),
 		Card:   proto.Uint32(utils.ServerCard2Uint32(card)),
 		TingAction: &room.TingAction{
 			EnableTing: proto.Bool(gutils.IsTing(activePlayer)),
