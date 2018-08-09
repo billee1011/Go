@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"steve/client_pb/common"
+	"steve/client_pb/match"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -225,9 +226,9 @@ func createPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfaces.
 		msgid.MsgID_ROOM_MOPAI_NTF, msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF,
 		msgid.MsgID_ROOM_TINGINFO_NTF, msgid.MsgID_ROOM_INSTANT_SETTLE, msgid.MsgID_ROOM_ROUND_SETTLE, msgid.MsgID_ROOM_DESK_DISMISS_NTF,
 		msgid.MsgID_ROOM_CHAT_NTF, msgid.MsgID_ROOM_RESUME_GAME_RSP, msgid.MsgID_ROOM_DESK_QUIT_RSP,
-		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
+		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
 		msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP,
-		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_ROOM_DESK_CREATED_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
+		msgid.MsgID_ROOM_GAMEOVER_NTF, msgid.MsgID_ROOM_CHANGE_PLAYERS_RSP, msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF, msgid.MsgID_ROOM_DESK_QUIT_ENTER_NTF,
 		msgid.MsgID_ROOM_HUANSANZHANG_NTF,
 		msgid.MsgID_ROOM_DINGQUE_NTF,
 	}
@@ -336,7 +337,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]
 	for _, player := range players {
 
 		// 期望收到桌子创建的通知
-		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF)
 
 		// 申请加入牌桌
 		if _, err := ApplyJoinDesk(player, gameID); err != nil {
@@ -347,7 +348,7 @@ func joinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[int]
 	}
 
 	// 等待接收桌子创建消息
-	ntf := room.RoomDeskCreatedNtf{}
+	ntf := match.MatchSucCreateDeskNtf{}
 	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return nil, err
 	}
@@ -378,7 +379,7 @@ func DDZjoinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[i
 	for _, player := range players {
 
 		// 期望收到桌子创建的通知
-		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_ROOM_DESK_CREATED_NTF)
+		e, _ := player.GetClient().ExpectMessage(msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF)
 		expectors = append(expectors, e)
 
 		// 申请加入牌桌
@@ -388,7 +389,7 @@ func DDZjoinDesk(players []interfaces.ClientPlayer, gameID common.GameId) (map[i
 	}
 
 	// 等待接收桌子创建消息
-	ntf := room.RoomDeskCreatedNtf{}
+	ntf := match.MatchSucCreateDeskNtf{}
 	if err := expectors[0].Recv(global.DefaultWaitMessageTime, &ntf); err != nil {
 		return nil, fmt.Errorf("没有收到创建房间通知: %v", err)
 	}
@@ -466,7 +467,7 @@ func checkPlayerCardCount(playerCardCounts []*room.PlayerCardCount, deskData *De
 
 		// 两者不等，则报错
 		if cardCount != expectedCount {
-			return fmt.Errorf("playerCardCount 卡牌数量不对")
+			return fmt.Errorf("playerCardCount 卡牌数量不对，玩家手牌数量:%v，期待数量:%v", cardCount, expectedCount)
 		}
 	}
 	return nil

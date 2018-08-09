@@ -9,6 +9,8 @@ const (
 
 	// playerTokenKeyFmt
 	playerTokenKeyFmt = "playertoken:%d"
+
+	playerChargeKeyFmt = "playercharge:%d"
 )
 
 // Player 字段
@@ -57,6 +59,11 @@ const (
 	MaxWinningStream = "maxWinningStream"
 	// MaxMultiple ... 对应gameID：最大倍数
 	MaxMultiple = "maxMultiple"
+
+	// TodayChargeKey 今日充值数量
+	TodayChargeKey = "today_charge_count"
+	// TodayChargeTime 最近充值时间
+	LastChargeTime = "today_charge_time"
 )
 
 // FmtAccountPlayerKey 账号所关联玩家 key
@@ -82,4 +89,13 @@ func FmtPlayerGameInfoKey(playerID uint64, gameID uint32) string {
 // FmtPlayerTokenKey format player's token key
 func FmtPlayerTokenKey(playerID uint64) string {
 	return fmt.Sprintf(playerTokenKeyFmt, playerID)
+}
+
+func FmtGameReportKey(gameId int,level int) string {
+	return fmt.Sprintf("gamereport:%v-%v",gameId,level)
+}
+
+// FmtPlayerChargeKey fomat player's charge key
+func FmtPlayerChargeKey(playerID uint64) string {
+	return fmt.Sprintf(playerChargeKeyFmt, playerID)
 }
