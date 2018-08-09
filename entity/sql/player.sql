@@ -21,7 +21,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Table structure for t_currency_record
 -- ----------------------------
 DROP TABLE IF EXISTS `t_currency_record`;
-CREATE TABLE `t_currency_record` (
+CREATE TABLE `t_currency_record` ( 
   `tradeID` varchar(64) NOT NULL COMMENT '流水ID',
   `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
   `channel` int(11) DEFAULT NULL COMMENT '渠道ID',
