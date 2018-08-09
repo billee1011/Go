@@ -34,7 +34,13 @@ mysql_list:
     db: player
     params:
       charset: utf8
-
+  log:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: log
+    params:
+      charset: utf8
 #nsq 消息队列配置
 nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs:
