@@ -2,6 +2,8 @@ package scxlai
 
 import (
 	"fmt"
+	"math/rand"
+	"sort"
 	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/ai"
@@ -43,7 +45,13 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (
 		}
 	case ai.TingAI:
 		return
-	case ai.RobotAI, ai.OverTimeAI, ai.TuoGuangAI, ai.SpecialOverTimeAI:
+	case ai.RobotAI, ai.TuoGuangAI:
+		{
+			if event := h.askMiddleAI(player, *mjContext.LastOutCard); event != nil {
+				result.Events = append(result.Events, *event)
+			}
+		}
+	case ai.OverTimeAI, ai.SpecialOverTimeAI:
 		{
 			if event := h.chupaiWenxun(player); event != nil {
 				result.Events = append(result.Events, *event)
@@ -52,6 +60,79 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (
 	}
 
 	return
+}
+
+func (h *chupaiWenxunStateAI) askMiddleAI(player *majong.Player, lastOutCard majong.Card) *ai.AIEvent {
+	var (
+		event ai.AIEvent
+	)
+	actions := player.GetPossibleActions()
+	sort.Sort(sort.Reverse(majong.ActionSlice(actions))) //按优先级从高到低排列
+
+	for _, action := range actions {
+		switch action {
+		case majong.Action_action_hu:
+			event.Context = &majong.HuRequestEvent{
+				Head: &majong.RequestEventHead{
+					PlayerId: player.GetPalyerId(),
+				},
+			}
+			event.ID = int32(majong.EventID_event_hu_request)
+			return &event
+		case majong.Action_action_gang:
+			_, keZis, _, _, _, _, _ := SplitBestCards(NonPointer(player.HandCards))
+			if len(keZis) > 0 && Contains(keZis, lastOutCard) {
+				event.Context = &majong.GangRequestEvent{
+					Head: &majong.RequestEventHead{
+						PlayerId: player.GetPalyerId(),
+					},
+					Card: &lastOutCard,
+				}
+				event.ID = int32(majong.EventID_event_gang_request)
+				return &event
+			}
+		case majong.Action_action_peng:
+			_, _, pairs, _, _, _, _ := SplitBestCards(NonPointer(player.HandCards))
+			if len(pairs) > 0 && Contains(pairs, lastOutCard) {
+				r := rand.Intn(100)
+				if len(pairs) >= 2 && r < 90 || len(pairs) == 1 && r < 10 { //多于1对时，碰牌概率90%；等于1对时，碰牌概率10%
+					event.Context = &majong.PengRequestEvent{
+						Head: &majong.RequestEventHead{
+							PlayerId: player.GetPalyerId(),
+						},
+					}
+					event.ID = int32(majong.EventID_event_peng_request)
+					return &event
+				}
+			}
+		case majong.Action_action_chi:
+			_, _, _, doubleChas, singleChas, _, _ := SplitBestCards(NonPointer(player.HandCards))
+			if len(singleChas)+len(doubleChas) > 0 {
+				for _, cha := range append(singleChas, doubleChas...) { //优先处理单茬
+					validCards := getValidCard(cha)
+					if ContainsCard(validCards, lastOutCard) {
+						event.Context = &majong.ChiRequestEvent{
+							Head: &majong.RequestEventHead{
+								PlayerId: player.GetPalyerId(),
+							},
+							Cards: []*majong.Card{&cha.cards[0], &cha.cards[1], &lastOutCard},
+						}
+						event.ID = int32(majong.EventID_event_chi_request)
+						return &event
+					}
+				}
+			}
+		default:
+			event.Context = &majong.QiRequestEvent{
+				Head: &majong.RequestEventHead{
+					PlayerId: player.GetPalyerId(),
+				},
+			}
+			event.ID = int32(majong.EventID_event_qi_request)
+		}
+	}
+
+	return &event
 }
 
 func (h *chupaiWenxunStateAI) containAction(player *majong.Player, action majong.Action) bool {

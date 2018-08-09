@@ -49,13 +49,8 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 }
 
 func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majong.Card, bool) {
-	var cards []majong.Card
-	for _, handCard := range handCards {
-		cards = append(cards, *handCard)
-	}
-
 	// 拆牌，比较顺子优先、刻子优先两种拆牌方式，选出最好的结果
-	_, _, pairs, doubleChas, singleChas, singles, gangs := SplitBestCards(cards)
+	_, _, pairs, doubleChas, singleChas, singles, gangs := SplitBestCards(NonPointer(handCards))
 	if len(gangs) > 0 {
 		return gangs[0].cards[0], true //有杠就杠
 	}
@@ -81,10 +76,7 @@ func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majo
 		visibleCards = append(visibleCards, utils.TransHuCard(player.HuCards)...)
 	}
 
-	countMap := make(map[majong.Card]int)
-	for _, visuableCard := range visibleCards {
-		countMap[*visuableCard]++
-	}
+	countMap := CountCard(NonPointer(visibleCards))
 
 	remainCards := make(map[majong.Card]int)
 	for k, v := range countMap {

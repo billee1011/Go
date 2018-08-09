@@ -45,13 +45,28 @@ func ContainsEdge(cards []majong.Card) bool {
 
 func Contains(splits []Split, inCard majong.Card) bool {
 	for _, split := range splits {
-		for _, card := range split.cards {
-			if card == inCard {
-				return true
-			}
+		if ContainsCard(split.cards, inCard) {
+			return true
 		}
 	}
 	return false
+}
+
+func ContainsCard(cards []majong.Card, inCard majong.Card) bool {
+	for _, card := range cards {
+		if card == inCard {
+			return true
+		}
+	}
+	return false
+}
+
+func NonPointer(cards []*majong.Card) []majong.Card {
+	var result []majong.Card
+	for _, card := range cards {
+		result = append(result, *card)
+	}
+	return result
 }
 
 type MJCardSlice []majong.Card
