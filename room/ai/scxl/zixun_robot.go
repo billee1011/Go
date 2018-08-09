@@ -445,30 +445,22 @@ func FindAllCommonShunZi(handCards []majong.Card, duplicateCount int, shunZiLen 
 		i := 0
 		j := len(cards) - 1
 		for {
-			if i+gap <= len(cards)-1 && cards[i+gap].Color == cards[i].Color && cards[i+gap].Point-cards[i].Point == int32(gap*shunZiGap) { //从1向9取
+			if i+gap <= len(cards)-1 && cards[i+gap].Point-cards[i].Point == int32(gap*shunZiGap) && existAll(countMap, cards, i, i+gap, duplicateCount) { //从1向9取
 				shunZi := cards[i : i+gap+1]
 				inflated := InflateAll(shunZi, duplicateCount)
 				result = append(result, inflated)
 				decreaseAll(countMap, shunZi, duplicateCount)
-				if existAll(countMap, cards, i, i+gap, duplicateCount) {
-					continue //重复取
-				} else {
-					i += shunZiLen
-				}
+				continue //重复取
 			} else {
 				i++
 			}
 
-			if j-gap >= 0 && existAll(countMap, cards, j-gap, j, duplicateCount) && cards[j-gap].Color == cards[j].Color && cards[j].Point-cards[j-gap].Point == int32(gap*shunZiGap) { //从9向1取
+			if j-gap >= 0 && cards[j].Point-cards[j-gap].Point == int32(gap*shunZiGap) && existAll(countMap, cards, j-gap, j, duplicateCount) { //从9向1取
 				shunZi := cards[j-gap : j+1]
 				inflated := InflateAll(shunZi, duplicateCount)
 				result = append(result, inflated)
 				decreaseAll(countMap, shunZi, duplicateCount)
-				if existAll(countMap, cards, j-gap, j, duplicateCount) {
-					continue //重复取
-				} else {
-					j -= shunZiLen
-				}
+				continue //重复取
 			} else {
 				j--
 			}

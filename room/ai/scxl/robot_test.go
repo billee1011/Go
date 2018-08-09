@@ -114,6 +114,25 @@ func Test_SplitCards(t *testing.T) {
 	})
 }
 
+func Test_SplitCards1(t *testing.T) {
+	shunZis, _, _, _, _, _, _ := SplitBestCards([]majong.Card{global.Card4W, global.Card5W, global.Card5W, global.Card6W, global.Card6W, global.Card7W, global.Card7W, global.Card8W, global.Card9W}) // 455667789
+	assert.Equal(t, shunZis, []Split{
+		{SHUNZI, []majong.Card{global.Card4W, global.Card5W, global.Card6W}},
+		{SHUNZI, []majong.Card{global.Card7W, global.Card8W, global.Card9W}},
+		{SHUNZI, []majong.Card{global.Card5W, global.Card6W, global.Card7W}},
+	})
+}
+
+func Test_SplitCards2(t *testing.T) {
+	shunZis, _, _, _, _, _, _ := SplitBestCards([]majong.Card{global.Card1W, global.Card1W, global.Card2W, global.Card2W, global.Card3W, global.Card3W, global.Card4W, global.Card4W, global.Card5W, global.Card5W, global.Card6W, global.Card6W}) // 112233445566
+	assert.Equal(t, shunZis, []Split{
+		{SHUNZI, []majong.Card{global.Card1W, global.Card2W, global.Card3W}},
+		{SHUNZI, []majong.Card{global.Card1W, global.Card2W, global.Card3W}},
+		{SHUNZI, []majong.Card{global.Card4W, global.Card5W, global.Card6W}},
+		{SHUNZI, []majong.Card{global.Card4W, global.Card5W, global.Card6W}},
+	})
+}
+
 func Test_ValidCard(t *testing.T) {
 	//单牌
 	single := getValidCard(Split{SINGLE, []majong.Card{global.Card1W}})
@@ -148,7 +167,6 @@ func Benchmark_SplitCards(b *testing.B) {
 		for j := 0; j < 13; j++ {
 			cards = append(cards, randCard())
 		}
-		SplitCards(global.ToMJCards(cards), true)
-		SplitCards(global.ToMJCards(cards), false)
+		SplitBestCards(global.ToMJCards(cards))
 	}
 }
