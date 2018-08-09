@@ -111,11 +111,6 @@ func (model *ContinueModel) checkDismiss() {
 	modelMgr.StopDeskModel(model.GetDesk())
 }
 
-// getMincoin 获取准入金币数
-func (model *ContinueModel) getMinCoin() uint64 {
-	return 0 // TODO
-}
-
 // handleCancelRequest 处理取消续局请求
 func (model *ContinueModel) handleCancelRequest(requestInfo *continueRequestInfo) {
 	modelMgr := GetModelManager()
@@ -157,7 +152,8 @@ func (model *ContinueModel) handlePlayerContinueRequest(requestInfo *continueReq
 		entry.WithError(err).Errorln("获取玩家金币数失败")
 		return
 	}
-	if uint64(playerCoin) < model.getMinCoin() {
+	desk := model.GetDesk()
+	if uint64(playerCoin) < desk.GetConfig().MinScore {
 		response.ErrDesc = proto.String("金豆不足")
 		return
 	}
@@ -166,7 +162,7 @@ func (model *ContinueModel) handlePlayerContinueRequest(requestInfo *continueReq
 
 	model.readyPlayers = append(model.readyPlayers, playerID)
 
-	playerModel := GetModelManager().GetPlayerModel(model.GetDesk().GetUid())
+	playerModel := GetModelManager().GetPlayerModel(desk.GetUid())
 
 	allplayer := playerModel.GetDeskPlayerIDs()
 	for _, _playerID := range allplayer {

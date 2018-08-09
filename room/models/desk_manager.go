@@ -115,26 +115,33 @@ func createDeskContext(gameID int, players []uint64, zhuang int, fixzhuang bool)
 	}
 }
 
-func createDeskConfig(gameID int, players []uint64) (deskpkg.DeskConfig, error) {
+func (mgr *DeskManager) createDeskConfig(gameID int, players []uint64, req *roommgr.CreateDeskRequest) (deskpkg.DeskConfig, error) {
 	context, err := createDeskContext(gameID, players, 0, false)
 	if err != nil {
 		return deskpkg.DeskConfig{}, fmt.Errorf("创建牌桌现场失败：%v", err)
 	}
 
+	var config deskpkg.DeskConfig
+
 	switch gameID {
 	case GameId_GAMEID_DOUDIZHU:
-		return deskpkg.NewDDZMDeskCreateConfig(context, len(players)), nil
+		config = deskpkg.NewDDZMDeskCreateConfig(context, len(players))
 	default:
-		return deskpkg.NewMjDeskCreateConfig(context, NewMajongSettle(), len(players)), nil
+		config = deskpkg.NewMjDeskCreateConfig(context, NewMajongSettle(), len(players))
 	}
+	config.MinScore = req.GetMinCoin()
+	config.MaxScore = req.GetMaxCoin()
+	config.BaseScore = req.GetBaseCoin()
+	return config, nil
 }
 
 // CreateDeskObj 创建桌子并初始化所有model
 func (mgr *DeskManager) CreateDeskObj(deskID uint64, length int, players []uint64, gameID int, levelID int, robotLvs []int, req *roommgr.CreateDeskRequest) (*deskpkg.Desk, error) {
-	config, err := createDeskConfig(gameID, players)
+	config, err := mgr.createDeskConfig(gameID, players, req)
 	if err != nil {
 		return nil, fmt.Errorf("create desk config failed:%v", err)
 	}
+
 	config.PlayerIds = players
 	desk := deskpkg.NewDesk(deskID, gameID, players, &config)
 
