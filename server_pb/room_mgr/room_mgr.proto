@@ -16,10 +16,10 @@ message DeskPlayer {
 
 // 创建桌子的请求
 message CreateDeskRequest {
-    uint32 game_id = 1;
-    repeated DeskPlayer players = 2;
-    bool fix_banker = 3;    // 是否固定庄家位置
-    uint32 banker_seat = 4; // 庄家位置
+    uint32 game_id  = 1;    // 游戏ID
+    uint32 level_id = 2;    // 级别ID
+    uint64 desk_id  = 3;    // 桌子ID
+    repeated DeskPlayer players = 4; // 桌子内的玩家信息
 }
 
 // 创建桌子的回复

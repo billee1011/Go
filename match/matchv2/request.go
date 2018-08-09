@@ -52,10 +52,8 @@ func requestCreateDesk(desk *desk) {
 
 	roomMgrClient := roommgr.NewRoomMgrClient(rs)
 	_, err = roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
-		Players:    createPlayers,
-		GameId:     uint32(desk.gameID),
-		FixBanker:  desk.fixBanker,
-		BankerSeat: uint32(desk.bankerSeat),
+		Players: createPlayers,
+		GameId:  uint32(desk.gameID),
 	})
 
 	if err != nil {

@@ -346,7 +346,7 @@ func (m *mgr) handleRobotTick() {
 	}
 	for _, deskID := range deskIDs {
 		desk := m.desks[deskID]
-		if !desk.isContinue && time.Now().Sub(desk.createTime) >= web.GetRobotJoinTime() {
+		if !desk.isContinue && time.Now().Sub(desk.createTime) >= web.GetRobotJoinTime()*time.Second {
 			m.fillRobots(desk)
 		}
 	}
