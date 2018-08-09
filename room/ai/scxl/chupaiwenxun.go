@@ -45,13 +45,13 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (
 		}
 	case ai.TingAI:
 		return
-	case ai.RobotAI, ai.TuoGuangAI:
+	case ai.RobotAI:
 		{
 			if event := h.askMiddleAI(player, *mjContext.LastOutCard); event != nil {
 				result.Events = append(result.Events, *event)
 			}
 		}
-	case ai.OverTimeAI, ai.SpecialOverTimeAI:
+	case ai.OverTimeAI, ai.SpecialOverTimeAI, ai.TuoGuangAI:
 		{
 			if event := h.chupaiWenxun(player); event != nil {
 				result.Events = append(result.Events, *event)
