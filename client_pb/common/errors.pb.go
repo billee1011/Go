@@ -56,56 +56,7 @@ func (x *ErrCode) UnmarshalJSON(data []byte) error {
 	*x = ErrCode(value)
 	return nil
 }
-func (ErrCode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_errors_5fbc123f717f5eaa, []int{0}
-}
-
-// Result 通用处理结果
-type Result struct {
-	ErrCode              *ErrCode `protobuf:"varint,1,opt,name=err_code,json=errCode,enum=common.ErrCode" json:"err_code,omitempty"`
-	ErrDesc              *string  `protobuf:"bytes,2,opt,name=err_desc,json=errDesc" json:"err_desc,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Result) Reset()         { *m = Result{} }
-func (m *Result) String() string { return proto.CompactTextString(m) }
-func (*Result) ProtoMessage()    {}
-func (*Result) Descriptor() ([]byte, []int) {
-	return fileDescriptor_errors_5fbc123f717f5eaa, []int{0}
-}
-func (m *Result) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Result.Unmarshal(m, b)
-}
-func (m *Result) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Result.Marshal(b, m, deterministic)
-}
-func (dst *Result) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Result.Merge(dst, src)
-}
-func (m *Result) XXX_Size() int {
-	return xxx_messageInfo_Result.Size(m)
-}
-func (m *Result) XXX_DiscardUnknown() {
-	xxx_messageInfo_Result.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Result proto.InternalMessageInfo
-
-func (m *Result) GetErrCode() ErrCode {
-	if m != nil && m.ErrCode != nil {
-		return *m.ErrCode
-	}
-	return ErrCode_EC_SUCCESS
-}
-
-func (m *Result) GetErrDesc() string {
-	if m != nil && m.ErrDesc != nil {
-		return *m.ErrDesc
-	}
-	return ""
-}
+func (ErrCode) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 // Result 通用处理结果
 type Result struct {
@@ -138,7 +89,7 @@ func init() {
 	proto.RegisterEnum("common.ErrCode", ErrCode_name, ErrCode_value)
 }
 
-func init() { proto.RegisterFile("errors.proto", fileDescriptor_errors_5fbc123f717f5eaa) }
+func init() { proto.RegisterFile("errors.proto", fileDescriptor1) }
 
 var fileDescriptor1 = []byte{
 	// 242 bytes of a gzipped FileDescriptorProto
