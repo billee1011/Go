@@ -21,7 +21,7 @@ func Test_OfflineMatch(t *testing.T) {
 	utils.ApplyJoinDesk(player1, common.GameId_GAMEID_XUELIU)
 	assert.Nil(t, err)
 	player1.GetClient().Stop()
-	time.Sleep(time.Millisecond * 200) // 等200毫秒，确保连接断开
+	time.Sleep(time.Millisecond * 500) // 等200毫秒，确保连接断开
 
 	params := global.NewCommonStartGameParams()
 	deskData, err := utils.StartGame(params)
