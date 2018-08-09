@@ -185,6 +185,52 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 	return
 }
 
+// GetPlayerState 获取游戏状态,游戏id,ip地址
+func GetPlayerState(playerID uint64, fields ...string) (pState *PlayerState, err error) {
+	enrty := logrus.WithFields(logrus.Fields{
+		"func_name": GetPlayerState,
+		"playerID":  playerID,
+	})
+
+	pState, err = getPlayerStateFromRedis(playerID, fields...)
+
+	if err != nil {
+		enrty.WithError(err).Warningln("get player state from redis fail")
+		return pState, err
+	}
+	return
+}
+
+// getPlayerStateFromRedis 从redis查找玩家状态信息
+func getPlayerStateFromRedis(playerID uint64, fields ...string) (*PlayerState, error) {
+
+	redisCli, err := redisCliGetter(playerRedisName, 0)
+	if err != nil {
+		return nil, fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
+	}
+	playerKey := cache.FmtPlayerIDKey(playerID)
+	cmd := redisCli.HMGet(playerKey, fields...)
+	if cmd.Err() != nil {
+		return nil, fmt.Errorf("执行 redis 命令失败(%s)", cmd.Err().Error())
+	}
+	result, err := cmd.Result()
+	if err != nil {
+		return nil, fmt.Errorf("获取 redis 结果失败(%s) fields=(%v)", err.Error(), fields)
+	}
+	var playerState PlayerState
+	for index, field := range fields {
+		v, ok := result[index].(string)
+		if !ok {
+			continue
+		}
+		if err = setPlayerStateByField(&playerState, field, v); err != nil {
+			return nil, err
+		}
+	}
+	redisCli.Expire(playerKey, redisTimeOut)
+	return &playerState, nil
+}
+
 func getPlayerFieldsFromRedis(playerID uint64, fields []string) (*db.TPlayer, error) {
 	redisCli, err := redisCliGetter(playerRedisName, 0)
 	if err != nil {
