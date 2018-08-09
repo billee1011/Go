@@ -1,18 +1,27 @@
 package prop
 
 const (
-	invalidPropType = int32(0)
-	gold            = int32(1)
-	prop            = int32(2)
+	// InvalidPropType 非法道具值
+	InvalidPropType = int32(0)
+	// Gold 货币
+	Gold = int32(1)
+	// Props 道具
+	Props = int32(2)
 )
 
 const (
-	invalidProp = int32(0)
-	rose        = int32(1)
-	beer        = int32(2)
-	bomb        = int32(3)
-	grabChicken = int32(4)
-	eggGun      = int32(5)
+	// InvalidProp 非法值
+	InvalidProp = int32(0)
+	// Rose 玫瑰花
+	Rose = int32(1)
+	// Beer 啤酒
+	Beer = int32(2)
+	// Bomb 炸弹
+	Bomb = int32(3)
+	// GrabChicken 抓鸡
+	GrabChicken = int32(4)
+	// EggGun 鸡蛋机枪
+	EggGun = int32(5)
 )
 
 // Prop 道具
