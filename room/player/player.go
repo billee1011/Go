@@ -8,7 +8,6 @@ import (
 	"steve/room/desk"
 	"steve/room/util"
 	"steve/server_pb/gold"
-	server_gold "steve/server_pb/gold"
 	"sync"
 
 	"github.com/golang/protobuf/proto"
@@ -23,6 +22,7 @@ type Player struct {
 	maxOverTime int    // 最大超时次数
 	tuoguan     bool   // 是否在托管中
 	robotLv     int    // 机器人等级
+	brokerCount int    // 破产次数
 	desk        *desk.Desk
 
 	mu sync.RWMutex
@@ -134,14 +134,6 @@ func (p *Player) GetCoin() uint64 {
 	return uint64(coin)
 }
 
-func (p *Player) SetCoin(coin uint64) {
-	gold, err := goldclient.GetGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN))
-	if err != nil {
-		return
-	}
-	goldclient.AddGold(p.PlayerID, int16(server_gold.GoldType_GOLD_COIN), int64(coin)-gold, 0, 0, 0, 0)
-}
-
 // IsOnline 判断玩家是否在线
 func (p *Player) IsOnline() bool {
 	online, _ := hallclient.GetGateAddr(p.PlayerID)
@@ -152,4 +144,18 @@ func (dp *Player) notifyTuoguan(playerID uint64, tuoguan bool) {
 	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
+}
+
+// AddBrokerCount 增加破产次数
+func (dp *Player) AddBrokerCount() {
+	dp.mu.Lock()
+	dp.brokerCount++
+	dp.mu.Unlock()
+}
+
+// GetBrokerCount 获取破产次数
+func (dp *Player) GetBrokerCount() int {
+	dp.mu.RLock()
+	defer dp.mu.RUnlock()
+	return dp.brokerCount
 }

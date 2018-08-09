@@ -13,9 +13,11 @@ func DBGameConfig2Client(dbGameConfigs []*db.TGameConfig) []*common.GameConfig {
 	cGameConfigs := make([]*common.GameConfig, 0)
 	for _, dbGameConfig := range dbGameConfigs {
 		cGameConfig := &common.GameConfig{
-			GameId:   proto.Uint32(uint32(dbGameConfig.Gameid)),
-			GameName: proto.String(dbGameConfig.Name),
-			GameType: proto.Uint32(uint32(dbGameConfig.Type)),
+			GameId:    proto.Uint32(uint32(dbGameConfig.Gameid)),
+			GameName:  proto.String(dbGameConfig.Name),
+			GameType:  proto.Uint32(uint32(dbGameConfig.Type)),
+			MinPeople: proto.Uint32(uint32(dbGameConfig.Minpeople)),
+			MaxPeople: proto.Uint32(uint32(dbGameConfig.Maxpeople)),
 		}
 
 		cGameConfigs = append(cGameConfigs, cGameConfig)
@@ -29,9 +31,11 @@ func DBGameConfig2Server(dbGameConfigs []*db.TGameConfig) (gameInfos []*user.Gam
 	gameInfos = make([]*user.GameConfig, 0)
 	for _, dbGameConfig := range dbGameConfigs {
 		gameInfo := &user.GameConfig{
-			GameId:   uint32(dbGameConfig.Gameid),
-			GameName: dbGameConfig.Name,
-			GameType: uint32(dbGameConfig.Type),
+			GameId:    uint32(dbGameConfig.Gameid),
+			GameName:  dbGameConfig.Name,
+			GameType:  uint32(dbGameConfig.Type),
+			MinPeople: uint32(dbGameConfig.Minpeople),
+			MaxPeople: uint32(dbGameConfig.Maxpeople),
 		}
 
 		gameInfos = append(gameInfos, gameInfo)
@@ -50,8 +54,6 @@ func DBGamelevelConfig2Sercer(dbGameConfigs []*db.TGameLevelConfig) (gamelevelCo
 			BaseScores: uint32(dbGameConfig.Basescores),
 			LowScores:  uint32(dbGameConfig.Lowscores),
 			HighScores: uint32(dbGameConfig.Highscores),
-			MinPeople:  uint32(dbGameConfig.Minpeople),
-			MaxPeople:  uint32(dbGameConfig.Maxpeople),
 		}
 
 		gamelevelConfigs = append(gamelevelConfigs, gamelevelConfig)
@@ -70,8 +72,8 @@ func DBGamelevelConfig2Client(dbGameConfigs []*db.TGameLevelConfig) []*common.Ga
 			BaseScores: proto.Uint32(uint32(dbGameConfig.Basescores)),
 			LowScores:  proto.Uint32(uint32(dbGameConfig.Lowscores)),
 			HighScors:  proto.Uint32(uint32(dbGameConfig.Highscores)),
-			MinPeople:  proto.Uint32(uint32(dbGameConfig.Minpeople)),
-			MaxPeople:  proto.Uint32(uint32(dbGameConfig.Maxpeople)),
+			ShowPeople: proto.Uint32(uint32(dbGameConfig.Showonlinepeople)),
+			RealPeople: proto.Uint32(uint32(dbGameConfig.Realonlinepeople)),
 		}
 		cGameLevelConfigs = append(cGameLevelConfigs, cGameLevelConfig)
 	}

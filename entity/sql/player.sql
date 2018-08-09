@@ -87,20 +87,21 @@ create table t_player_currency
 
 CREATE TABLE `t_player_game` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `playerID` bigint(20) NOT NULL,
-  `gameID` int(11) DEFAULT NULL,
-  `gameName` varchar(64) DEFAULT NULL,
-  `winningRate` int(11) DEFAULT NULL COMMENT '50% 50',
-  `winningBurea` int(11) DEFAULT NULL,
-  `totalBureau` int(11) DEFAULT NULL,
-  `maxWinningStream` int(11) DEFAULT NULL,
-  `maxMultiple` int(11) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `createBy` varchar(64) DEFAULT NULL,
-  `updateTime` datetime DEFAULT NULL,
-  `updateBy` varchar(64) DEFAULT NULL,
+  `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
+  `gameID` int(11) DEFAULT NULL COMMENT '游戏ID',
+  `gameName` varchar(64) DEFAULT NULL COMMENT '游戏名称',
+  `winningRate` double DEFAULT NULL COMMENT '胜率，百分比表示，50%，只记录 50，精确到个位数',
+  `winningBurea` int(11) DEFAULT NULL COMMENT '胜利局数',
+  `totalBureau` int(11) DEFAULT NULL COMMENT '总局数',
+  `maxWinningStream` int(11) DEFAULT NULL COMMENT '最高连胜',
+  `maxMultiple` int(11) DEFAULT NULL COMMENT '最大倍数',
+  `createTime` datetime DEFAULT NULL COMMENT '创建时间',
+  `createBy` varchar(64) DEFAULT NULL COMMENT '创建人',
+  `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
+  `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2112 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=100010 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏信息表';
+
 
 
 

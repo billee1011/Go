@@ -1,0 +1,43 @@
+
+#### service loader configs
+# log 
+log_level: debug 
+log_dir: ./log
+log_prefix: configuration 
+log_stderr: true 
+
+# redis 
+redis_addr: 127.0.0.1:6379
+redis_passwd: 
+
+# nsq 
+nsqd_addr: 127.0.0.1:4150
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161
+
+# consul 
+consul_addr: 127.0.0.1:8500
+
+rpc_addr: 127.0.0.1
+rpc_port: 36401
+health_port: 36402
+rpc_server_name: configuration
+
+http_addr: 0.0.0.0:36403
+
+redis_list:
+  player: 
+    addr: 127.0.0.1:6379
+    passwd: 
+
+
+mysql_list:
+  config:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: config
+    params:
+      charset: utf8
+
+node: 1
