@@ -70,6 +70,8 @@ func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 		Players: deskPlayers,
 	}
 
+	logEntry.Debugf("匹配成功，发给客户端的消息:%v", ntf)
+
 	// 广播给桌子内的所有真实玩家
 	for i := 0; i < len(desk.players); i++ {
 		if desk.players[i].robotLv == 0 {
@@ -92,13 +94,17 @@ func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 
 	roomMgrClient := roommgr.NewRoomMgrClient(rs)
 
-	// 调用room服的创建桌子
-	rsp, err := roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
+	req := &roommgr.CreateDeskRequest{
 		GameId:  desk.gameID,
 		LevelId: desk.levelID,
 		DeskId:  desk.deskID,
 		Players: createPlayers,
-	})
+	}
+
+	logEntry.Debugf("匹配成功，发给room服的消息:%v", req)
+
+	// 调用room服的创建桌子
+	rsp, err := roomMgrClient.CreateDesk(context.Background(), req)
 
 	// 不成功时，报错，应该重新调用或者重新匹配
 	if err != nil || rsp.GetErrCode() != roommgr.RoomError_SUCCESS {
