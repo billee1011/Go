@@ -2,16 +2,6 @@ package cache
 
 import "fmt"
 
-// RobotPlayer 机器人玩家
-type RobotPlayer struct {
-	PlayerID      uint64            `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
-	NickName      string            `protobuf:"bytes,2,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	Avatar        string            `protobuf:"bytes,3,opt,name=avatar" json:"avatar,omitempty"`
-	Coin          uint64            `protobuf:"varint,4,opt,name=coin" json:"coin,omitempty"`
-	State         uint64            `protobuf:"varint,5,opt,name=state" json:"state,omitempty"`
-	GameIDWinRate map[uint64]uint64 `protobuf:"bytes,6,rep,name=game_id_win_rate,json=gameIdWinRate" json:"game_id_win_rate,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-}
-
 // key formats
 const (
 	// AccountPlayerKey 账号关联的玩家
@@ -19,6 +9,8 @@ const (
 
 	// playerTokenKeyFmt
 	playerTokenKeyFmt = "playertoken:%d"
+
+	playerChargeKeyFmt = "playercharge:%d"
 )
 
 // Player 字段
@@ -29,12 +21,18 @@ const (
 	Avatar = "avatar"
 	// Gender  ...性别
 	Gender = "gender"
+	// ShowUID ...显示ID
+	ShowUID = "showUID"
 	// ChannelID ...渠道ID
 	ChannelID = "channelID"
 	// ProvinceID ...省份ID
 	ProvinceID = "provinceID"
 	// CityID ...城市ID
 	CityID = "cityID"
+	// Name ...名称
+	Name = "name"
+	// IDCard ... 身份证
+	IDCard = "idCard"
 
 	// GameState ...玩家游戏状态
 	GameState = "game_state"
@@ -61,6 +59,11 @@ const (
 	MaxWinningStream = "maxWinningStream"
 	// MaxMultiple ... 对应gameID：最大倍数
 	MaxMultiple = "maxMultiple"
+
+	// TodayChargeKey 今日充值数量
+	TodayChargeKey = "today_charge_count"
+	// TodayChargeTime 最近充值时间
+	LastChargeTime = "today_charge_time"
 )
 
 // FmtAccountPlayerKey 账号所关联玩家 key
@@ -80,7 +83,7 @@ func FmtPlayerIDKey(playerID uint64) string {
 
 // FmtPlayerGameInfoKey 玩家游戏信息
 func FmtPlayerGameInfoKey(playerID uint64, gameID uint32) string {
-	return fmt.Sprintf("playerv:%v ginfo_%v", playerID, gameID)
+	return fmt.Sprintf("player:%v gameId:%v", playerID, gameID)
 }
 
 // FmtPlayerTokenKey format player's token key
@@ -91,4 +94,13 @@ func FmtPlayerTokenKey(playerID uint64) string {
 // FmtPlayerPropKey 玩家道具 key
 func FmtPlayerPropKey(playerID uint64, propID int32) string {
 	return fmt.Sprintf("player:%v prop_%v", playerID, propID)
+}
+
+// FmtPlayerChargeKey fomat player's charge key
+func FmtPlayerChargeKey(playerID uint64) string {
+	return fmt.Sprintf(playerChargeKeyFmt, playerID)
+}
+
+func FmtGameReportKey(gameId int, level int) string {
+	return fmt.Sprintf("gamereport:%v-%v", gameId, level)
 }

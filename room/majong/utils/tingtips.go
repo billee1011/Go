@@ -4,9 +4,9 @@ import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/common/mjoption"
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/room/majong/interfaces"
-	majongpb "steve/entity/majong"
 
 	"steve/room/majong/bus"
 
@@ -26,7 +26,7 @@ func calcHuTimes(card *majongpb.Card, player *majongpb.Player, mjContext *majong
 	}
 
 	params := interfaces.FantypeParams{
-		PlayerID:  player.GetPalyerId(),
+		PlayerID:  player.GetPlayerId(),
 		MjContext: mjContext,
 		HandCard:  player.GetHandCards(),
 		PengCard:  pengCards,

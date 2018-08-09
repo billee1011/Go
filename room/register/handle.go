@@ -3,8 +3,9 @@ package registers
 import (
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	playerdata "steve/common/data/player"
 	propclient "steve/common/data/prop"
+	"steve/entity/constant"
+	"steve/external/goldclient"
 	"steve/gutils"
 	modelmanager "steve/room/models"
 	player2 "steve/room/player"
@@ -169,9 +170,9 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 			return
 		}
 
-		coin := playerdata.GetPlayerCoin(playerID)
+		coin, err := goldclient.GetGold(playerID, constant.GOLD_COIN)
 		if coin > propConfig.Limit {
-			playerdata.AddPlayerCoin(playerID, propConfig.Value, desk.GetGameId(), desk.GetLevel())
+			goldclient.AddGold(playerID, constant.GOLD_COIN, propConfig.Value, 0, 0, int32(desk.GetGameId()), desk.GetLevel())
 		} else {
 			return
 		}

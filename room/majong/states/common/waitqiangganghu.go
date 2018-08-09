@@ -39,7 +39,7 @@ func (s *WaitQiangganghuState) OnEntry(flow interfaces.MajongFlow) {
 	card := mjContext.GetGangCard()
 
 	for _, player := range mjContext.GetPlayers() {
-		playerID := player.GetPalyerId()
+		playerID := player.GetPlayerId()
 		player.HasSelected = false
 		flow.PushMessages([]uint64{playerID}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_WAIT_QIANGGANGHU_NTF),
@@ -126,7 +126,7 @@ func (s *WaitQiangganghuState) makeDecision(flow interfaces.MajongFlow) (newStat
 			return majongpb.StateID_state_waitqiangganghu, nil
 		}
 		if player.SelectedAction == majongpb.Action_action_hu {
-			huPlayers = append(huPlayers, player.GetPalyerId())
+			huPlayers = append(huPlayers, player.GetPlayerId())
 		}
 	}
 	if len(huPlayers) == 0 {

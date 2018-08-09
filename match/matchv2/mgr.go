@@ -1,13 +1,13 @@
 package matchv2
 
 import (
-	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
-	"steve/common/data/player"
+	"steve/external/hallclient"
 	"steve/gutils"
 	"steve/match/web"
+	"steve/server_pb/user"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -137,7 +137,7 @@ func (m *mgr) addLoginData(playerID uint64) {
 
 // run 执行匹配流程
 func (m *mgr) run() {
-	robotTick := time.NewTicker(time.Second * 1)
+	robotTick := time.NewTicker(time.Second * 5)
 	continueTick := time.NewTicker(time.Second * 1)
 	for {
 		select {
@@ -187,10 +187,8 @@ func (m *mgr) onPlayerLogin(playerID uint64) {
 	desk.removePlayer(playerID)
 	delete(m.playerDesk, playerID)
 	// 更新状态为空闲状态
-	player.SetPlayerPlayStates(playerID, player.PlayStates{
-		State:  int(common.PlayerState_PS_IDLE),
-		GameID: int(desk.gameID),
-	})
+	hallclient.UpdatePlayerState(playerID, user.PlayerState_PS_MATCHING, user.PlayerState_PS_IDIE, uint32(desk.gameID), 0)
+
 	entry.Debugln("玩家重新登录，移出匹配")
 	if len(desk.players) == 0 {
 		delete(m.desks, deskID)
@@ -271,10 +269,10 @@ func (m *mgr) acceptApplyPlayer(gameID int, playerID uint64) {
 
 // addDeskPlayer2Desk 将玩家添加到牌桌
 func (m *mgr) addDeskPlayer2Desk(deskPlayer *deskPlayer, desk *desk) {
-	player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
-		State:  int(common.PlayerState_PS_MATCHING),
-		GameID: int(desk.gameID),
-	})
+	// 修改玩家状态
+	hallclient.UpdatePlayerState(deskPlayer.playerID, user.PlayerState_PS_IDIE,
+		user.PlayerState_PS_MATCHING, uint32(desk.gameID), 0)
+
 	desk.players = append(desk.players, *deskPlayer)
 	m.playerDesk[deskPlayer.playerID] = desk.deskID
 	m.removeOfflines(desk)
@@ -310,7 +308,8 @@ func (m *mgr) removeOfflines(desk *desk) {
 			newPlayers = append(newPlayers, deskPlayer)
 			continue
 		}
-		online := (player.GetPlayerGateAddr(deskPlayer.playerID) != "")
+		gateAddr, _ := hallclient.GetGateAddr(deskPlayer.playerID)
+		online := (gateAddr != "")
 		if online {
 			newPlayers = append(newPlayers, deskPlayer)
 		} else {
@@ -323,9 +322,7 @@ func (m *mgr) removeOfflines(desk *desk) {
 func (m *mgr) detachPlayer(playerID uint64) {
 	delete(m.playerDesk, playerID)
 	// 更新状态为空闲状态
-	player.SetPlayerPlayStates(playerID, player.PlayStates{
-		State: int(common.PlayerState_PS_IDLE),
-	})
+	hallclient.UpdatePlayerState(playerID, user.PlayerState_PS_MATCHING, user.PlayerState_PS_IDIE, 0, 0)
 }
 
 // onDeskFinish 牌桌匹配完成
@@ -349,7 +346,7 @@ func (m *mgr) handleRobotTick() {
 	}
 	for _, deskID := range deskIDs {
 		desk := m.desks[deskID]
-		if !desk.isContinue && time.Now().Sub(desk.createTime) >= web.GetRobotJoinTime() {
+		if !desk.isContinue && time.Now().Sub(desk.createTime) >= web.GetRobotJoinTime()*time.Second {
 			m.fillRobots(desk)
 		}
 	}

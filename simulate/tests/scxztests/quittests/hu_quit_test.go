@@ -4,7 +4,6 @@ import (
 	"steve/client_pb/common"
 	"steve/client_pb/room"
 	"steve/simulate/global"
-	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
 	"time"
@@ -22,8 +21,6 @@ func TestHuQuit(t *testing.T) {
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
-	players, err := utils.CreateAndLoginUsersNum(3)
-	assert.Nil(t, err)
 	//庄家等待自询状态,可以天胡
 	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	//庄家选择天胡,并且退出游戏
@@ -33,19 +30,9 @@ func TestHuQuit(t *testing.T) {
 	//此时离开的玩家可以加入新的队列,等待新的游戏
 	time.Sleep(time.Second * 1)
 	p := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
-	rsp, err := utils.ApplyJoinDesk(p.Player, common.GameId_GAMEID_XUEZHAN)
-	joinOther3Player(t, players)
+	state, _, err := utils.GetPlayerState(p.Player)
 	assert.Nil(t, err)
-	assert.Equal(t, int32(0), rsp.GetErrCode())
-	assert.Equal(t, common.GameId_GAMEID_XUEZHAN, rsp.GetGameId())
-}
-
-func joinOther3Player(t *testing.T, players []interfaces.ClientPlayer) {
-	for _, player := range players {
-		rsp, err := utils.ApplyJoinDesk(player, common.GameId_GAMEID_XUEZHAN)
-		assert.Nil(t, err)
-		assert.Equal(t, int32(0), rsp.GetErrCode())
-	}
+	assert.Equal(t, common.PlayerState_PS_IDLE, state)
 }
 
 // TestHuQuitRecover 玩家没有胡牌,没有认输,退出游戏后提示游戏进行中,需要进行恢复对局

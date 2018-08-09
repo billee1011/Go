@@ -309,7 +309,7 @@ func resortWinnerPlayers(losePlayer uint64, winPlayers []uint64, contextPlayer [
 	resortPlayers := make([]uint64, 0)
 	for i := 0; i < len(contextPlayer); i++ {
 		index := (loseIndex + i) % len(contextPlayer)
-		resortPlayers = append(resortPlayers, contextPlayer[index].GetPalyerId())
+		resortPlayers = append(resortPlayers, contextPlayer[index].GetPlayerId())
 	}
 	resortWinnerPlayers := make([]uint64, 0)
 	for _, resortPID := range resortPlayers {

@@ -1,8 +1,8 @@
 package fantype
 
 import (
-	"steve/room/majong/global"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/global"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ func Test_ZiYiSe(t *testing.T) {
 		},
 		playerID: 1,
 		player: &majongpb.Player{
-			PalyerId:  1,
+			PlayerId:  1,
 			GangCards: make([]*majongpb.GangCard, 0),
 			PengCards: make([]*majongpb.PengCard, 0),
 			ChiCards:  make([]*majongpb.ChiCard, 0),
