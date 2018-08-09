@@ -3,6 +3,7 @@ package prop
 import (
 	"fmt"
 	"steve/entity/cache"
+	"steve/entity/db"
 	"steve/entity/prop"
 	"steve/structs"
 	"strconv"
@@ -23,6 +24,7 @@ const (
 	playerGameTableName      = "t_player_game"
 	gameconfigTableName      = "t_game_config"
 	gamelevelconfigTableName = "t_game_level_config"
+	playerPropsTableName     = "t_player_props"
 )
 
 func getRedisCli(redis string, db int) (*redis.Client, error) {
@@ -208,6 +210,86 @@ func updatePlayerPropFieldsToRedis(playerID uint64, propID int32, fields []strin
 	return nil
 }
 
+// updatePropCountToRedis 更新redis中玩家道具的个数
+// param  playerID:玩家ID  propID : 道具ID  oldCount : 当前道具个数  newCount ： 要更新成的个数
+func updatePropCountToRedis(playerID uint64, propID int32, oldCount, newCount uint32) error {
+	redisCli, err := redisCliGetter(playerRedisName, 0)
+	if err != nil {
+		return fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
+	}
+
+	playerPropKey := cache.FmtPlayerPropKey(playerID, propID)
+
+	kv := map[string]interface{}{
+		"propID": propID,
+		"count":  newCount,
+	}
+
+	err = redisCli.Watch(func(tx *redis.Tx) error {
+		countStr := tx.HGet(playerPropKey, "count").Val()
+		currentCount, _ := strconv.Atoi(countStr)
+
+		if uint32(currentCount) != oldCount {
+			err = fmt.Errorf("更新玩家playerID:(%d) 道具propID:(%d)出错，道具当前个数为:(%d),不为:(%d)", playerID, propID, currentCount, oldCount)
+			return err
+		}
+		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
+			pipe.HMSet(playerPropKey, kv)
+			return nil
+		})
+		return err
+	}, playerPropKey)
+
+	if err == nil {
+		redisCli.Expire(playerPropKey, redisTimeOut)
+	}
+	return err
+}
+
+// updatePropCountToMysql 更新Mysql中玩家道具的个数
+// param  playerID:玩家ID  propID : 道具ID  oldCount : 当前道具个数  newCount ： 要更新成的个数
+func updatePropCountToMysql(playerID uint64, propID int32, oldCount, newCount uint32) error {
+	// 从数据库获取
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return err
+	}
+	fields := []string{"count"}
+
+	sql := fmt.Sprintf("select count from t_player_props  where playerID='%d' and propID='%d';", playerID, propID)
+	res, err := engine.QueryString(sql)
+
+	if err != nil {
+		err = fmt.Errorf("select t_player_props sql:%s ,err：%v", sql, err)
+		return err
+	}
+
+	if len(res) != 1 {
+		err = fmt.Errorf("玩家(%d)存在多条 propID:%d 信息记录： %v", playerID, propID, err)
+		return err
+	}
+
+	sqlCount, err := strconv.Atoi(res[0][fields[0]])
+	if err != nil {
+		return err
+	}
+
+	if uint32(sqlCount) != oldCount {
+		err = fmt.Errorf("msqyl中玩家(%d) 道具propID:(%d) 个数为:(%d),与 redis中道具个数:(%d)不一致 ", playerID, propID, sqlCount, oldCount)
+		return err
+	}
+
+	dbProp := db.TPlayerProps{
+		Count: int64(newCount),
+	}
+
+	_, err = engine.Table(playerPropsTableName).Where("playerID = ? and propID = ?", playerID, propID).Cols(fields...).Update(dbProp)
+	if err != nil {
+		return fmt.Errorf("更新失败 (%v)", err.Error())
+	}
+	return nil
+}
+
 func generateDbPlayerProp(playerID uint64, propID int32, info map[string]string, fields ...string) (prop prop.Prop, err error) {
 	for _, field := range fields {
 		v, ok := info[field]
@@ -257,5 +339,38 @@ func getDBPlayerPropField(field string, prop *prop.Prop) (val interface{}, err e
 
 // AddPlayerProp 增减一个玩家的一种道具，count是数量；count正值代表增，负值代表减
 func AddPlayerProp(playerID uint64, propID int32, count int32) (err error) {
+
+	// 从redis中获取玩家道具
+	props, perr := GetPlayerSomeProps(playerID, []int32{propID})
+	if perr != nil {
+		err = fmt.Errorf("增减玩家道具propId:(%d)失败，err:(%v)", propID, perr.Error())
+		return
+	}
+	if len(props) != 0 {
+		err = fmt.Errorf("增减玩家道具propId:(%d)获取的道具存在多个", propID)
+		return
+	}
+
+	// 道具余量
+	oldCount := props[0].Count
+	// 道具结算
+	newCount := int32(oldCount) + count
+
+	if count < 0 && newCount < 0 {
+		err = fmt.Errorf("删减玩家道具propId:(%d),减少:(%d)个出错，道具的剩余个人为:(%d)", propID, count, newCount)
+		return
+	}
+
+	// 更新道具个数到redis
+	rerr := updatePropCountToRedis(playerID, propID, uint32(oldCount), uint32(newCount))
+	if rerr != nil {
+		err = fmt.Errorf("更新玩家道具propId:(%d)到redis失败，err:(%v)", propID, rerr.Error())
+	}
+
+	// 更新道具个数到mysql
+	merr := updatePropCountToMysql(playerID, propID, uint32(oldCount), uint32(newCount))
+	if merr != nil {
+		err = fmt.Errorf("更新玩家道具propId:(%d)到mysql失败，err:(%v)", propID, merr.Error())
+	}
 	return
 }
