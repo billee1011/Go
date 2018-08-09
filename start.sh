@@ -5,7 +5,7 @@ serviceloader configuration --config=config.yml &
 popd 
 
 # 其他服务启动依赖配置服
-sleep 2
+sleep 5
 
 pushd gateway 
 nohup serviceloader gateway --config=config.yml  &
@@ -41,4 +41,13 @@ pushd msgserver
 nohup serviceloader msgserver --config=config.yml  &
 popd
 
+# 依赖hall服
+sleep 2 
 
+pushd alms
+nohup serviceloader alms --config=config.yml  &
+popd
+
+pushd back
+nohup serviceloader back --config=config.yml  &
+popd

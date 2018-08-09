@@ -1,0 +1,34 @@
+#日志配置
+log_level: debug
+log_dir: ./log
+log_prefix: back
+log_stderr: true 
+
+
+redis_list:
+  back:
+#redis 配置
+    addr: 127.0.0.1:6379
+    passwd:
+
+# mysql 数据库列表, db用户名和密码中不能带@符号
+mysql_list:
+  player:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: player
+    params:
+      charset: utf8
+  log:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: log
+    params:
+      charset: utf8
+
+# nsq 
+nsqd_addr: 127.0.0.1:4150
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161

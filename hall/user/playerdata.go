@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/hall/data"
@@ -10,6 +11,8 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"steve/external/datareportclient"
+	"steve/datareport/fixed"
 )
 
 // PlayerDataService 实现 user.PlayerServer
@@ -47,6 +50,8 @@ func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.
 
 	// 返回消息
 	rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
+
+	datareportclient.DataReport(fixed.LOG_TYPE_REG,0,0,0,playerID,"1")
 
 	return
 }
@@ -139,6 +144,7 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = pState.GateAddr, pState.MatchAddr, pState.RoomAddr
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
+	logrus.Debugln("get player state rsp", rsp)
 	return
 }
 
@@ -300,21 +306,21 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-
+	showUID := data.AllocShowUID()
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
-		Showuid:      int(data.AllocShowUID()),
+		Showuid:      showUID,
 		Type:         1,
-		Channelid:    0,                                 // TODO ，渠道 ID
-		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
+		Channelid:    0,                                // TODO ，渠道 ID
+		Nickname:     fmt.Sprintf("player%d", showUID), // TODO,昵称
 		Gender:       1,
-		Avatar:       "", // TODO , 头像
-		Provinceid:   0,  // TODO， 省ID
-		Cityid:       0,  // TODO 市ID
-		Name:         "", // TODO: 真实姓名
-		Phone:        "", // TODO: 电话
-		Idcard:       "", // TODO 身份证
+		Avatar:       getRandomAvator(), // TODO , 头像
+		Provinceid:   0,                 // TODO， 省ID
+		Cityid:       0,                 // TODO 市ID
+		Name:         "",                // TODO: 真实姓名
+		Phone:        "",                // TODO: 电话
+		Idcard:       "",                // TODO 身份证
 		Iswhitelist:  0,
 		Zipcode:      0,
 		Shippingaddr: "",
@@ -348,6 +354,11 @@ func createPlayer(accID uint64) (uint64, error) {
 		return playerID, fmt.Errorf("初始化玩家(%d)状态失败: %v", playerID, err)
 	}
 	return playerID, nil
+}
+
+func getRandomAvator() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return fmt.Sprintf("%d", r.Intn(2)+1)
 }
 
 // validatePlayerInfoArgs 校验更新玩家个人资料入参
