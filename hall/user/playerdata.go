@@ -10,9 +10,10 @@ import (
 	"steve/server_pb/user"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"steve/external/datareportclient"
 	"steve/datareport/fixed"
+	"steve/external/datareportclient"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // PlayerDataService 实现 user.PlayerServer
@@ -51,7 +52,7 @@ func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.
 	// 返回消息
 	rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
 
-	datareportclient.DataReport(fixed.LOG_TYPE_REG,0,0,0,playerID,"1")
+	datareportclient.DataReport(fixed.LOG_TYPE_REG, 0, 0, 0, playerID, "1")
 
 	return
 }
@@ -314,7 +315,7 @@ func createPlayer(accID uint64) (uint64, error) {
 		Type:         1,
 		Channelid:    0,                                // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", showUID), // TODO,昵称
-		Gender:       1,
+		Gender:       2,
 		Avatar:       getRandomAvator(), // TODO , 头像
 		Provinceid:   0,                 // TODO， 省ID
 		Cityid:       0,                 // TODO 市ID

@@ -1,6 +1,8 @@
 package user
 
 import (
+	"bytes"
+	"io/ioutil"
 	"steve/client_pb/common"
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
@@ -14,6 +16,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 // HandleGetPlayerInfoReq 处理获取玩家个人资料请求
@@ -70,7 +74,6 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	// 默认返回消息
 	response := &hall.HallUpdatePlayerInfoRsp{
 		ErrCode: proto.Uint32(1),
-		// Result:  proto.Bool(false),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -80,24 +83,31 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 	}
 
 	// 参数校验
+	fields := []string{}
 	dbPlayer := db.TPlayer{
 		Playerid: int64(playerID),
 	}
 	gender := uint32(req.GetGender())
 	if gender == 1 || gender == 2 {
 		dbPlayer.Gender = int(req.GetGender())
+		fields = append(fields, cache.Gender)
 	}
 
 	if req.NickName != nil && req.GetNickName() != "" {
+		if !validateNickName(req.GetNickName()) {
+			response.ErrCode = proto.Uint32(1)
+			return
+		}
 		dbPlayer.Nickname = req.GetNickName()
+		fields = append(fields, cache.NickName)
 	}
+
 	if req.Avator != nil && req.GetAvator() != "" {
 		dbPlayer.Avatar = req.GetAvator()
-
+		fields = append(fields, cache.Avatar)
 	}
 
 	// 逻辑处理
-	fields := []string{cache.NickName, cache.Avatar, cache.Gender}
 	error := data.SetPlayerFields(playerID, fields, &dbPlayer)
 
 	if error == nil {
@@ -109,6 +119,23 @@ func HandleUpdatePlayerInoReq(playerID uint64, header *steve_proto_gaterpc.Heade
 
 	logrus.Debugf("Handle update player info rsp: (%v)", response)
 	return
+}
+
+// validateNickName 校验昵称
+func validateNickName(nickName string) bool {
+	if len(nickName) <= 16 {
+		return true
+	}
+	data, err := ioutil.ReadAll(transform.NewReader(bytes.NewReader([]byte(nickName)), simplifiedchinese.GBK.NewEncoder()))
+	if err != nil {
+		logrus.Debugf("validateNickName utf8 transfer gbk err: (%v)", err.Error())
+		return false
+	}
+	count := len(data)
+	if count > 16 {
+		return false
+	}
+	return true
 }
 
 // HandleGetPlayerStateReq 获取玩家游戏状态信息
