@@ -14,7 +14,7 @@ CREATE TABLE `t_currency_record` (
   `funcId` int(11) DEFAULT NULL COMMENT '行为ID或功能ID',
   PRIMARY KEY (`tradeID`),
   UNIQUE KEY `t_currency_record_tradeID_uindex` (`tradeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表';
 
 
 
