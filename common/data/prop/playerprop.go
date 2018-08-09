@@ -58,25 +58,20 @@ func GetPlayerAllProps(playerID uint64) (props []prop.Prop, err error) {
 	}
 
 	// 获取玩家的道具
-	var propIDs = make([]int32, len(propConfig))
+	props = make([]prop.Prop, len(propConfig))
 	for index, attr := range propConfig {
-		propIDs[index] = attr.PropID
-	}
-
-	props, err = GetPlayerSomeProps(playerID, propIDs)
-	if err != nil {
-		return
+		props[index], _ = GetPlayerOneProp(playerID, attr.PropID)
 	}
 
 	return
 }
 
-// GetPlayerSomeProps 获取玩家的某些道具
-func GetPlayerSomeProps(playerID uint64, propIDs []int32) (props []prop.Prop, err error) {
+// GetPlayerOneProp 获取玩家的某些道具
+func GetPlayerOneProp(playerID uint64, propID int32) (prop prop.Prop, err error) {
 
 	// 获取玩家的道具
 	fields := []string{"propID", "count"}
-	props, err = getPlayerProps(playerID, propIDs, fields...)
+	prop, err = getPlayerProps(playerID, propID, fields...)
 	if err != nil {
 		return
 	}
@@ -85,27 +80,19 @@ func GetPlayerSomeProps(playerID uint64, propIDs []int32) (props []prop.Prop, er
 }
 
 // getPlayerProps 获取玩家的道具,获取单个或多个道具，通过fields参数区分
-func getPlayerProps(playerID uint64, propIDs []int32, fields ...string) (props []prop.Prop, err error) {
-	var prop prop.Prop
-	var err1 error
-
-	for _, propID := range propIDs {
-		// 从 redis 获取
-		prop, err1 = getPlayerPropFieldsFromRedis(playerID, propID, fields)
-		if err1 == nil {
-			props = append(props, prop)
-			break
-		}
-		// 从 DB 获取
-		exist, prop, err1 := getPlayerPropFieldsFromDB(playerID, propID, fields)
-		if exist && err1 == nil {
-			props = append(props, prop)
-			break
-		} else {
-			err = fmt.Errorf("获取道具(%v)失败,exist:%v", propID, exist)
-		}
+func getPlayerProps(playerID uint64, propID int32, fields ...string) (prop prop.Prop, err error) {
+	// 从 redis 获取
+	prop, err = getPlayerPropFieldsFromRedis(playerID, propID, fields)
+	if err == nil {
+		return
 	}
-
+	// 从 DB 获取
+	prop, err = getPlayerPropFieldsFromDB(playerID, propID, fields)
+	if err == nil {
+		return
+	} else {
+		err = fmt.Errorf("获取道具(%v)失败", propID)
+	}
 	return
 }
 
@@ -139,7 +126,7 @@ func getPlayerPropFieldsFromRedis(playerID uint64, propID int32, fields []string
 	return
 }
 
-func getPlayerPropFieldsFromDB(playerID uint64, propID int32, fields []string) (exist bool, prop prop.Prop, err error) {
+func getPlayerPropFieldsFromDB(playerID uint64, propID int32, fields []string) (prop prop.Prop, err error) {
 	// 从数据库获取
 	engine, err := mysqlEngineGetter(playerMysqlName)
 	if err != nil {
@@ -341,18 +328,14 @@ func getDBPlayerPropField(field string, prop *prop.Prop) (val interface{}, err e
 func AddPlayerProp(playerID uint64, propID int32, count int32) (err error) {
 
 	// 从redis中获取玩家道具
-	props, perr := GetPlayerSomeProps(playerID, []int32{propID})
+	prop, perr := GetPlayerOneProp(playerID, propID)
 	if perr != nil {
 		err = fmt.Errorf("增减玩家道具propId:(%d)失败，err:(%v)", propID, perr.Error())
 		return
 	}
-	if len(props) != 0 {
-		err = fmt.Errorf("增减玩家道具propId:(%d)获取的道具存在多个", propID)
-		return
-	}
 
 	// 道具余量
-	oldCount := props[0].Count
+	oldCount := prop.Count
 	// 道具结算
 	newCount := int32(oldCount) + count
 

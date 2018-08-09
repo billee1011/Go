@@ -1,8 +1,8 @@
 package common
 
 import (
-	"steve/room/majong/interfaces"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/interfaces"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -21,19 +21,19 @@ func TestChupaiState_chupaiwenxun(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:        1,
+					PlayerId:        1,
 					HandCards:       []*majongpb.Card{&Card1W, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
 					PossibleActions: []majongpb.Action{},
 				},
 				&majongpb.Player{
-					PalyerId:        2,
+					PlayerId:        2,
 					HandCards:       []*majongpb.Card{&Card1T, &Card1T, &Card1B, &Card1B, &Card2B, &Card2B, &Card2B, &Card2B, &Card3B, &Card3B, &Card3B, &Card3B, &Card4B},
 					DingqueColor:    majongpb.CardColor_ColorTong,
 					PossibleActions: []majongpb.Action{},
 				},
 				&majongpb.Player{
-					PalyerId:        3,
+					PlayerId:        3,
 					HandCards:       []*majongpb.Card{&Card2T, &Card3T, &Card5T, &Card5T, &Card5T, &Card6T, &Card6T, &Card6T, &Card7T, &Card7T, &Card7T, &Card8T, &Card8T},
 					DingqueColor:    majongpb.CardColor_ColorWan,
 					PossibleActions: []majongpb.Action{},
@@ -81,19 +81,19 @@ func TestChupaiState_mopai(t *testing.T) {
 			GameId: 1,
 			Players: []*majongpb.Player{
 				&majongpb.Player{
-					PalyerId:        1,
+					PlayerId:        1,
 					HandCards:       []*majongpb.Card{&Card1T, &Card1W, &Card1W, &Card2W, &Card2W, &Card2W, &Card2W, &Card3W, &Card3W, &Card3W, &Card3W, &Card4W, &Card4W},
 					DingqueColor:    majongpb.CardColor_ColorTiao,
 					PossibleActions: []majongpb.Action{},
 				},
 				&majongpb.Player{
-					PalyerId:        2,
+					PlayerId:        2,
 					HandCards:       []*majongpb.Card{&Card1T, &Card1T, &Card1B, &Card1B, &Card2B, &Card2B, &Card2B, &Card2B, &Card3B, &Card3B, &Card3B, &Card3B, &Card4B},
 					DingqueColor:    majongpb.CardColor_ColorTong,
 					PossibleActions: []majongpb.Action{},
 				},
 				&majongpb.Player{
-					PalyerId:        3,
+					PlayerId:        3,
 					HandCards:       []*majongpb.Card{&Card2T, &Card3T, &Card5T, &Card5T, &Card5T, &Card6T, &Card6T, &Card6T, &Card7T, &Card7T, &Card7T, &Card8T, &Card8T},
 					DingqueColor:    majongpb.CardColor_ColorWan,
 					PossibleActions: []majongpb.Action{},

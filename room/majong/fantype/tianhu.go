@@ -10,7 +10,7 @@ func checkTianHu(tc *typeCalculator) bool {
 		currPlayer := tc.getPlayer()
 		// 当前玩家是庄家
 		mjContext := tc.mjContext
-		if mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() == currPlayer.GetPalyerId() {
+		if mjContext.Players[mjContext.ZhuangjiaIndex].GetPlayerId() == currPlayer.GetPlayerId() {
 			if currPlayer.GetZixunCount() == 1 {
 				return true
 			}

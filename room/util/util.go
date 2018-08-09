@@ -1,9 +1,9 @@
 package util
 
 import (
-	majongpb "steve/entity/majong"
-	"steve/client_pb/room"
 	"github.com/golang/protobuf/proto"
+	"steve/client_pb/room"
+	majongpb "steve/entity/majong"
 )
 
 // CanTingCardInfoSvr2Client 玩家停牌信息转换，server_pb-->client_pb
@@ -142,24 +142,24 @@ func ServerColor2ClientColor(color majongpb.CardColor) room.CardColor {
 	return room.CardColor(-1)
 }
 
-
 func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
 	for _, player := range mjContext.GetPlayers() {
-		if player.GetPalyerId() == playerID {
+		if player.GetPlayerId() == playerID {
 			return player
 		}
 	}
 	return nil
 }
+
 //合并任意个数组
-func MergeStringArray(strings[][]string) []string{
-	return mergeStringArray(nil,0,0,0,strings)
+func MergeStringArray(strings [][]string) []string {
+	return mergeStringArray(nil, 0, 0, 0, strings)
 }
 
 /**
-	递归合并数组，调用时result传入nil,lastIndex,maxIndex,rIndex=0
- */
-func mergeStringArray(result []string, maxIndex int, lastIndex int, rIndex int, strings[][]string) []string {
+递归合并数组，调用时result传入nil,lastIndex,maxIndex,rIndex=0
+*/
+func mergeStringArray(result []string, maxIndex int, lastIndex int, rIndex int, strings [][]string) []string {
 	if result == nil {
 		for _, v := range strings {
 			maxIndex += len(v)
@@ -167,14 +167,14 @@ func mergeStringArray(result []string, maxIndex int, lastIndex int, rIndex int, 
 		result = make([]string, maxIndex)
 	}
 
-	if maxIndex == rIndex{
+	if maxIndex == rIndex {
 		return result
 	}
 
 	for _, v := range strings[lastIndex] {
 		result[rIndex] = v
-		rIndex ++
+		rIndex++
 	}
 	lastIndex++
-	return mergeStringArray(result,maxIndex,lastIndex,rIndex,strings)
+	return mergeStringArray(result, maxIndex, lastIndex, rIndex, strings)
 }

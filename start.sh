@@ -5,7 +5,7 @@ serviceloader configuration --config=config.yml &
 popd 
 
 # 其他服务启动依赖配置服
-sleep 2
+sleep 5
 
 pushd gateway 
 nohup serviceloader gateway --config=config.yml  &
@@ -21,11 +21,13 @@ nohup serviceloader hall --config=config.yml  &
 popd 
 
 pushd login 
-nohup  serviceloader login --config=config.yml  &
-popd 
+nohup serviceloader login --config=config.yml  &
+popd
+
+sleep 3
 
 pushd match 
-nohup  serviceloader match --config=config.yml  &
+nohup serviceloader match --config=config.yml  &
 popd 
 
 pushd robot 

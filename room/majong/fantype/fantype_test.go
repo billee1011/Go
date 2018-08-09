@@ -1800,7 +1800,7 @@ func TestZimo(t *testing.T) {
 
 func calculate(params CardCalcParams) ([]int, int, int) {
 	player := &majongpb.Player{
-		PalyerId:  1,
+		PlayerId:  1,
 		HandCards: params.HandCard,
 		PengCards: params.PengCard,
 		GangCards: params.GangCard,
@@ -1811,7 +1811,7 @@ func calculate(params CardCalcParams) ([]int, int, int) {
 		HuaCards:      params.HuaCards,
 	}
 	player0 := &majongpb.Player{
-		PalyerId:   0,
+		PlayerId:   0,
 		ZixunCount: 1,
 	}
 	mjContext := &majongpb.MajongContext{

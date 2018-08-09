@@ -28,7 +28,7 @@ func (f *fapaiStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 	}
 	player := gutils.GetMajongPlayer(params.PlayerID, mjContext)
 	for _, playerID := range crPlayerIDs {
-		if playerID == player.GetPalyerId() { // 当前玩家已经发送过
+		if playerID == player.GetPlayerId() { // 当前玩家已经发送过
 			return
 		}
 	}
@@ -43,9 +43,9 @@ func (f *fapaiStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 func CartoonFinsh(player *majong.Player, cartoonType int32) *ai.AIEvent {
 	event := majong.CartoonFinishRequestEvent{
 		CartoonType: cartoonType,
-		PlayerId:    player.GetPalyerId(),
+		PlayerId:    player.GetPlayerId(),
 	}
-	logrus.WithFields(logrus.Fields{"func_name": "ai.CartoonFinsh", "player_id": player.GetPalyerId(), "cartoonType": cartoonType}).Errorln("机器人发送动画完成请求事件")
+	logrus.WithFields(logrus.Fields{"func_name": "ai.CartoonFinsh", "player_id": player.GetPlayerId(), "cartoonType": cartoonType}).Errorln("机器人发送动画完成请求事件")
 	return &ai.AIEvent{
 		ID:      int32(majong.EventID_event_cartoon_finish_request),
 		Context: &event,

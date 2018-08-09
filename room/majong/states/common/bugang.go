@@ -91,8 +91,8 @@ func (s *BuGangState) doBugang(flow interfaces.MajongFlow) {
 func (s *BuGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb.Card, player *majongpb.Player) {
 	intCard := uint32(utils.ServerCard2Number(card))
 	body := room.RoomGangNtf{
-		ToPlayerId:   proto.Uint64(player.GetPalyerId()),
-		FromPlayerId: proto.Uint64(player.GetPalyerId()),
+		ToPlayerId:   proto.Uint64(player.GetPlayerId()),
+		FromPlayerId: proto.Uint64(player.GetPlayerId()),
 		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_BuGang.Enum(),
 	}

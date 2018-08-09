@@ -2,8 +2,8 @@ package utils
 
 import (
 	"errors"
-	"steve/gutils"
 	majongpb "steve/entity/majong"
+	"steve/gutils"
 )
 
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家
@@ -24,7 +24,7 @@ func ExistPossibleAction(player *majongpb.Player, action majongpb.Action) bool {
 // GetPlayerIndex 获取玩家索引
 func GetPlayerIndex(playerID uint64, players []*majongpb.Player) (int, error) {
 	for index, player := range players {
-		if player.GetPalyerId() == playerID {
+		if player.GetPlayerId() == playerID {
 			return index, nil
 		}
 	}
@@ -41,8 +41,8 @@ func GetPlayerIDIndex(playerID uint64, players []uint64) (int, error) {
 	return 0, errors.New("not exists")
 }
 
-// GetPalyerCloseFromTarget 从targets获取离玩家index最近的玩家id
-func GetPalyerCloseFromTarget(index int, allPlayer, targets []uint64) uint64 {
+// GetPlayerCloseFromTarget 从targets获取离玩家index最近的玩家id
+func GetPlayerCloseFromTarget(index int, allPlayer, targets []uint64) uint64 {
 	for i := 0; i <= len(allPlayer); i++ {
 		nextIndex := (index + i) % len(allPlayer)
 		for _, target := range targets {
@@ -110,7 +110,7 @@ func GetCardsGroup(player *majongpb.Player, huCard *majongpb.Card) []*majongpb.C
 		}
 		card := gutils.ServerCard2Number(gangCard.Card)
 		cardsGroup := &majongpb.CardsGroup{
-			Pid:   player.PalyerId,
+			Pid:   player.PlayerId,
 			Type:  groupType,
 			Cards: []uint32{card, card, card, card},
 		}
@@ -142,7 +142,7 @@ func GetCardsGroup(player *majongpb.Player, huCard *majongpb.Card) []*majongpb.C
 func GetAllPlayers(mjContext *majongpb.MajongContext) (allPlayers []uint64) {
 	allPlayers = make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		allPlayers = append(allPlayers, player.GetPlayerId())
 	}
 	return
 }
@@ -155,19 +155,19 @@ func GetHuPlayers(mjContext *majongpb.MajongContext, removeHuPlayers []uint64) (
 		remove[removeHuPlayer] = true
 	}
 	for _, player := range mjContext.Players {
-		if player.XpState == majongpb.XingPaiState_hu && !remove[player.PalyerId] {
-			huPlayers = append(huPlayers, player.GetPalyerId())
+		if player.XpState == majongpb.XingPaiState_hu && !remove[player.PlayerId] {
+			huPlayers = append(huPlayers, player.GetPlayerId())
 		}
 	}
 	return
 }
 
 // GetQuitPlayers 退出玩家
-func GetQuitPlayers(mjContext *majongpb.MajongContext) (quitPalyers []uint64) {
-	quitPalyers = make([]uint64, 0)
+func GetQuitPlayers(mjContext *majongpb.MajongContext) (quitPlayers []uint64) {
+	quitPlayers = make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		if player.IsQuit {
-			quitPalyers = append(quitPalyers, player.GetPalyerId())
+			quitPlayers = append(quitPlayers, player.GetPlayerId())
 		}
 	}
 	return
@@ -178,7 +178,7 @@ func GetGiveupPlayers(mjContext *majongpb.MajongContext) (giveupPlayers []uint64
 	giveupPlayers = make([]uint64, 0)
 	for _, player := range mjContext.Players {
 		if player.XpState == majongpb.XingPaiState_give_up {
-			giveupPlayers = append(giveupPlayers, player.GetPalyerId())
+			giveupPlayers = append(giveupPlayers, player.GetPlayerId())
 		}
 	}
 	return

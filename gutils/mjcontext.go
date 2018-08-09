@@ -85,7 +85,7 @@ const (
 // GetMajongPlayer 从 MajongContext 中根据玩家 ID 获取玩家
 func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majongpb.Player {
 	for _, player := range mjContext.GetPlayers() {
-		if player.GetPalyerId() == playerID {
+		if player.GetPlayerId() == playerID {
 			return player
 		}
 	}
@@ -95,7 +95,7 @@ func GetMajongPlayer(playerID uint64, mjContext *majongpb.MajongContext) *majong
 // GetPlayerIndex 获取玩家索引
 func GetPlayerIndex(playerID uint64, players []*majongpb.Player) int {
 	for index, player := range players {
-		if player.GetPalyerId() == playerID {
+		if player.GetPlayerId() == playerID {
 			return index
 		}
 	}
@@ -105,7 +105,7 @@ func GetPlayerIndex(playerID uint64, players []*majongpb.Player) int {
 // GetPlayerAndIndex 获取玩家索引
 func GetPlayerAndIndex(playerID uint64, players []*majongpb.Player) (int, *majongpb.Player) {
 	for index, player := range players {
-		if player.GetPalyerId() == playerID {
+		if player.GetPlayerId() == playerID {
 			return index, player
 		}
 	}

@@ -36,7 +36,7 @@ func (m *GameConfig) Reset()         { *m = GameConfig{} }
 func (m *GameConfig) String() string { return proto.CompactTextString(m) }
 func (*GameConfig) ProtoMessage()    {}
 func (*GameConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{0}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{0}
 }
 func (m *GameConfig) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GameConfig.Unmarshal(m, b)
@@ -83,7 +83,7 @@ func (m *GameWinRate) Reset()         { *m = GameWinRate{} }
 func (m *GameWinRate) String() string { return proto.CompactTextString(m) }
 func (*GameWinRate) ProtoMessage()    {}
 func (*GameWinRate) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{1}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{1}
 }
 func (m *GameWinRate) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GameWinRate.Unmarshal(m, b)
@@ -133,7 +133,7 @@ func (m *RobotPlayerInfo) Reset()         { *m = RobotPlayerInfo{} }
 func (m *RobotPlayerInfo) String() string { return proto.CompactTextString(m) }
 func (*RobotPlayerInfo) ProtoMessage()    {}
 func (*RobotPlayerInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{2}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{2}
 }
 func (m *RobotPlayerInfo) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RobotPlayerInfo.Unmarshal(m, b)
@@ -201,7 +201,7 @@ func (m *WinRateRange) Reset()         { *m = WinRateRange{} }
 func (m *WinRateRange) String() string { return proto.CompactTextString(m) }
 func (*WinRateRange) ProtoMessage()    {}
 func (*WinRateRange) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{3}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{3}
 }
 func (m *WinRateRange) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WinRateRange.Unmarshal(m, b)
@@ -248,7 +248,7 @@ func (m *CoinsRange) Reset()         { *m = CoinsRange{} }
 func (m *CoinsRange) String() string { return proto.CompactTextString(m) }
 func (*CoinsRange) ProtoMessage()    {}
 func (*CoinsRange) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{4}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{4}
 }
 func (m *CoinsRange) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CoinsRange.Unmarshal(m, b)
@@ -297,7 +297,7 @@ func (m *GetLeisureRobotInfoReq) Reset()         { *m = GetLeisureRobotInfoReq{}
 func (m *GetLeisureRobotInfoReq) String() string { return proto.CompactTextString(m) }
 func (*GetLeisureRobotInfoReq) ProtoMessage()    {}
 func (*GetLeisureRobotInfoReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{5}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{5}
 }
 func (m *GetLeisureRobotInfoReq) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetLeisureRobotInfoReq.Unmarshal(m, b)
@@ -360,7 +360,7 @@ func (m *GetLeisureRobotInfoRsp) Reset()         { *m = GetLeisureRobotInfoRsp{}
 func (m *GetLeisureRobotInfoRsp) String() string { return proto.CompactTextString(m) }
 func (*GetLeisureRobotInfoRsp) ProtoMessage()    {}
 func (*GetLeisureRobotInfoRsp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{6}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{6}
 }
 func (m *GetLeisureRobotInfoRsp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetLeisureRobotInfoRsp.Unmarshal(m, b)
@@ -424,7 +424,7 @@ func (m *SetRobotPlayerStateReq) Reset()         { *m = SetRobotPlayerStateReq{}
 func (m *SetRobotPlayerStateReq) String() string { return proto.CompactTextString(m) }
 func (*SetRobotPlayerStateReq) ProtoMessage()    {}
 func (*SetRobotPlayerStateReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{7}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{7}
 }
 func (m *SetRobotPlayerStateReq) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SetRobotPlayerStateReq.Unmarshal(m, b)
@@ -492,7 +492,7 @@ func (m *SetRobotPlayerStateRsp) Reset()         { *m = SetRobotPlayerStateRsp{}
 func (m *SetRobotPlayerStateRsp) String() string { return proto.CompactTextString(m) }
 func (*SetRobotPlayerStateRsp) ProtoMessage()    {}
 func (*SetRobotPlayerStateRsp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_robot_d95685496104e965, []int{8}
+	return fileDescriptor_robot_6099ef98b5f2674e, []int{8}
 }
 func (m *SetRobotPlayerStateRsp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SetRobotPlayerStateRsp.Unmarshal(m, b)
@@ -643,9 +643,9 @@ var _RobotService_serviceDesc = grpc.ServiceDesc{
 	Metadata: "robot.proto",
 }
 
-func init() { proto.RegisterFile("robot.proto", fileDescriptor_robot_d95685496104e965) }
+func init() { proto.RegisterFile("robot.proto", fileDescriptor_robot_6099ef98b5f2674e) }
 
-var fileDescriptor_robot_d95685496104e965 = []byte{
+var fileDescriptor_robot_6099ef98b5f2674e = []byte{
 	// 583 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0x4f, 0x6f, 0xd3, 0x4e,
 	0x10, 0xfd, 0x39, 0x8e, 0x9b, 0x64, 0xdc, 0x3f, 0x3f, 0xb6, 0x52, 0xff, 0x04, 0x21, 0x22, 0x4b,

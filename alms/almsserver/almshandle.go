@@ -1,4 +1,4 @@
-package server
+package almsserver
 
 import (
 	"steve/alms/data"
@@ -50,25 +50,9 @@ func HandleGetAlmsReq(playerID uint64, header *steve_proto_gaterpc.Header, req c
 			AlmsGetNumber:    proto.Int64(ac.GetNumber),               // 领取数量
 			AlmsCountDonw:    proto.Int32(int32(ac.AlmsCountDonw)),    //救济倒计时
 			DepositCountDonw: proto.Int32(int32(ac.DepositCountDonw)), //救济倒计时
-			GameLeveIsOpen:   dataToClentPbGameLeveIsOpen(ac.GemeLeveIsOpentAlms),
+			GameLeveIsOpen:   dataToClentPbGameLeveIsOpen(ac.GameLeveConfigs),
 		}
 		response.NewAlmsConfig = newAlmsConfig
-	}
-	//根据游戏ID和场ID，判断该场是否可以有救济金
-	flag := true
-	gameLevels := ac.GemeLeveIsOpentAlms
-	for _, gameLevel := range gameLevels {
-		currGameID := gameLevel.GameID
-		currLevelID := gameLevel.LevelID
-		if gameID == currGameID && levelID == currLevelID {
-			flag = gameLevel.IsOpen == 0 // 是否时关闭的
-			break
-		}
-	}
-	if flag {
-		entry.WithError(err).Errorf(" gameID(%v) - levelID(%v) 救济金未开启 currGameLevels(%v)", gameID, levelID, gameLevels)
-		response.Result = proto.Bool(false)
-		return
 	}
 	//是否还有领取次数
 	if ac.PlayerGotTimes >= 3 {
@@ -101,6 +85,31 @@ func HandleGetAlmsReq(playerID uint64, header *steve_proto_gaterpc.Header, req c
 		return
 	} // 选场和游戏结束时
 	if almsGetType == client_alms.AlmsApplyType_AAT_SELECTIONS || almsGetType == client_alms.AlmsApplyType_AAT_GAME_OVER {
+		//根据游戏ID和场ID，判断该场是否可以有救济金
+		flag := true
+		gameLevels := ac.GameLeveConfigs
+		for _, gameLevel := range gameLevels {
+			currGameID := gameLevel.GameID
+			currLevelID := gameLevel.LevelID
+			if gameID == currGameID && levelID == currLevelID {
+				currLowScores := gameLevel.LowScores
+				if totalGold == gameLevel.LowScores { // 所需金币与所选场的下限金币不同
+					flag = gameLevel.IsOpen == 0 // 是否时关闭的
+				}
+				entry.WithFields(logrus.Fields{
+					"currGameID":    currGameID,
+					"currLevelID":   currLevelID,
+					"currLowScores": currLowScores,
+					"flag":          flag,
+				}).Debugln("救济金的场次")
+				break
+			}
+		}
+		if flag {
+			response.Result = proto.Bool(false)
+			return
+		}
+		// 判断游戏和选场状态所需的金币是否足够
 		if totalGold > (playerGold + ac.GetNumber) {
 			entry.Errorf("救济金数量不够 totalGold(%v) playerGold(%v) GetNumber(%v) ", totalGold, playerGold, ac.GetNumber)
 			response.Result = proto.Bool(false)
@@ -123,5 +132,10 @@ func HandleGetAlmsReq(playerID uint64, header *steve_proto_gaterpc.Header, req c
 	}
 	response.PlayerAlmsTimes = proto.Int32(int32(ac.PlayerGotTimes + 1))
 	response.ChangeGold = proto.Int64(changeGold)
+	entry.WithFields(logrus.Fields{
+		"playerID": playerID,
+		"oldGold":  playerGold,
+		"newGold":  changeGold,
+	}).Infoln("申请救济成功")
 	return
 }

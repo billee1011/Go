@@ -28,6 +28,6 @@ type PropAttr struct {
 	PropName string `json:" PropName "` // 道具名称
 	Type     int32  `json:" Type "`     // 属性类型：货币、道具
 	TypeID   int32  `json:" TypeID "`   // 属性ID:金币、钻石、房卡 | 道具ID
-	Value    int32  `json:" Value "`    // 属性值：操作数量
-	Limit    int32  `json:" Limit "`    // 使用限制
+	Value    int64  `json:" Value "`    // 属性值：操作数量
+	Limit    int64  `json:" Limit "`    // 使用限制
 }
