@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"fmt"
+	"steve/client_pb/common"
+	"steve/client_pb/hall"
 	msgid "steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
@@ -85,4 +88,20 @@ func CheckZixunNotify(t *testing.T, deskData *DeskData, seat int) {
 	zxMessageExpector := xjPlayer.Expectors[msgid.MsgID_ROOM_ZIXUN_NTF]
 	zxNtf := &room.RoomZixunNtf{}
 	assert.Nil(t, zxMessageExpector.Recv(2*time.Second, zxNtf))
+}
+
+// GetPlayerState 获取玩家游戏状态
+func GetPlayerState(player interfaces.ClientPlayer) (common.PlayerState, common.GameId, error) {
+	client := player.GetClient()
+
+	player.AddExpectors(msgid.MsgID_HALL_GET_PLAYER_STATE_RSP)
+	response := hall.HallGetPlayerStateRsp{}
+	if _, err := client.SendPackage(createMsgHead(msgid.MsgID_HALL_GET_PLAYER_STATE_REQ), &hall.HallGetPlayerStateReq{}); err != nil {
+		return common.PlayerState_PS_IDLE, common.GameId(0), fmt.Errorf("请求获取状态失败:%v", err.Error())
+	}
+	expector := player.GetExpector(msgid.MsgID_HALL_GET_PLAYER_STATE_RSP)
+	if err := expector.Recv(global.DefaultWaitMessageTime, &response); err != nil {
+		return common.PlayerState_PS_IDLE, common.GameId(0), fmt.Errorf("收取状态回复失败:%v", err.Error())
+	}
+	return response.GetPlayerState(), response.GetGameId(), nil
 }

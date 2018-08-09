@@ -65,19 +65,25 @@ func (pm *PlayerMgr) UnbindPlayerRoomAddr(players []uint64) {
 }
 
 // 绑定玩家所在 room 服
-func (pm *PlayerMgr) BindPlayerRoomAddr(players []uint64, gameID int) {
+func (pm *PlayerMgr) BindPlayerRoomAddr(players []uint64, gameID int, levelID int) {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "deskFactory.bindPlayerRoomAddr",
 		"players":   players,
+		"gameID":    gameID,
+		"levelID":   levelID,
 	})
 	roomIP := viper.GetString("rpc_addr")
 	roomPort := viper.GetInt("rpc_port")
 	roomAddr := fmt.Sprintf("%s:%d", roomIP, roomPort)
 	for _, playerID := range players {
-		result, err := hallclient.UpdatePlayerState(playerID, user_pb.PlayerState_PS_MATCHING, user_pb.PlayerState_PS_GAMEING, uint32(gameID), 0)
+
+		// 更新玩家状态(从匹配状态改为游戏状态)
+		result, err := hallclient.UpdatePlayerState(playerID, user_pb.PlayerState_PS_MATCHING, user_pb.PlayerState_PS_GAMEING, uint32(gameID), uint32(levelID))
 		if !result || err != nil {
 			entry.WithError(err).Errorln("设置玩家游戏状态失败")
 		}
+
+		// 更新玩家所在的服务器类型和地址
 		result, err = hallclient.UpdatePlayeServerAddr(playerID, user_pb.ServerType_ST_ROOM, roomAddr)
 		if !result || err != nil {
 			entry.WithError(err).Errorln("设置玩家room服地址失败")
