@@ -32,7 +32,7 @@ func HandleGetChargeInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_GET_CHARGE_INFO_REQ),
+			MsgID: uint32(msgid.MsgID_GET_CHARGE_INFO_RSP),
 			Body:  response,
 		},
 	}
@@ -93,7 +93,7 @@ func HandleChargeReq(playerID uint64, header *steve_proto_gaterpc.Header, req ha
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
-			MsgID: uint32(msgid.MsgID_GET_CHARGE_INFO_REQ),
+			MsgID: uint32(msgid.MsgID_CHARGE_RSP),
 			Body:  response,
 		},
 	}
@@ -109,7 +109,12 @@ func HandleChargeReq(playerID uint64, header *steve_proto_gaterpc.Header, req ha
 		return
 	}
 	// TODO: verify
-	addCoin(item, playerID, response, entry)
+	succ, entry := addCoin(item, playerID, response, entry)
+	if !succ {
+		return
+	}
+	result.ErrCode = common.ErrCode_EC_SUCCESS.Enum()
+	result.ErrDesc = proto.String("")
 	return
 }
 
@@ -123,7 +128,7 @@ func getChargeItem(dbPlayer *db.TPlayer, req *hall.ChargeReq, response *hall.Cha
 	}
 	var item *Item
 	for _, it := range items {
-		if item.ID == req.GetItemId() {
+		if it.ID == req.GetItemId() {
 			item = &it
 			break
 		}

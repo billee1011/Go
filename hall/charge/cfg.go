@@ -6,6 +6,8 @@ import (
 	"steve/entity/constant"
 	"steve/external/configclient"
 	"sync"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // configGetter get config
@@ -107,4 +109,13 @@ func getItemList(city int, platform int) ([]Item, error) {
 		}
 	}
 	return items, nil
+}
+
+func init() {
+	if err := loadItemList(); err != nil {
+		logrus.Panicln(err)
+	}
+	if err := loadMaxCharge(); err != nil {
+		logrus.Panicln(err)
+	}
 }
