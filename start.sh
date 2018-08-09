@@ -21,11 +21,11 @@ nohup serviceloader hall --config=config.yml  &
 popd 
 
 pushd login 
-nohup  serviceloader login --config=config.yml  &
+nohup serviceloader login --config=config.yml  &
 popd 
 
 pushd match 
-nohup  serviceloader match --config=config.yml  &
+nohup serviceloader match --config=config.yml  &
 popd 
 
 pushd robot 

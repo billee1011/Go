@@ -496,6 +496,15 @@ func GetPlayCardCheckTing(handCards []*majongpb.Card, laizi map[Card]bool) map[C
 	return result
 }
 
+// TransChiCard 吃牌转Card
+func TransChiCard(chiCards []*majongpb.ChiCard) []*majongpb.Card {
+	cards := make([]*majongpb.Card, 0)
+	for _, chiCard := range chiCards {
+		cards = append(cards, chiCard.Card)
+	}
+	return cards
+}
+
 // TransPengCard 碰牌转Card
 func TransPengCard(pengCards []*majongpb.PengCard) []*majongpb.Card {
 	cards := make([]*majongpb.Card, 0)
@@ -510,6 +519,15 @@ func TransGangCard(gangCards []*majongpb.GangCard) []*majongpb.Card {
 	cards := make([]*majongpb.Card, 0)
 	for _, gangCard := range gangCards {
 		cards = append(cards, gangCard.Card)
+	}
+	return cards
+}
+
+// TransHuCard 胡牌转Card
+func TransHuCard(huCards []*majongpb.HuCard) []*majongpb.Card {
+	cards := make([]*majongpb.Card, 0)
+	for _, huCard := range huCards {
+		cards = append(cards, huCard.Card)
 	}
 	return cards
 }

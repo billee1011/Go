@@ -186,6 +186,18 @@ func getMjCard(v int) *majongpb.Card {
 	return &majongpb.Card{}
 }
 
+func ToMJCards(vs []int) []majongpb.Card {
+	var result []majongpb.Card
+	for _, v := range vs {
+		result = append(result, ToMJCard(v))
+	}
+	return result
+}
+
+func ToMJCard(v int) majongpb.Card {
+	return *getMjCard(v)
+}
+
 // GetOriginCards 获取gameID游戏的所有牌
 func GetOriginCards(mjContext *majongpb.MajongContext) []*majongpb.Card {
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
