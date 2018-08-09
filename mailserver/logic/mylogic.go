@@ -102,7 +102,7 @@ func GetMailList(uid uint64) ([]*mailserver.MailTitle, error) {
 
 		isRead := int32(0)
 		one, ok := readList[mail.Id]
-		if  !ok || !one.IsRead {
+		if !ok || !one.IsRead {
 
 		} else {
 			isRead = 1
@@ -113,7 +113,7 @@ func GetMailList(uid uint64) ([]*mailserver.MailTitle, error) {
 		if len(mail.Attach) > 0 {
 			isHaveAttach = 1
 		}
-		if one != nil  && one.IsGetAttach {
+		if one != nil && one.IsGetAttach {
 			isHaveAttach = 2
 		}
 		title.IsHaveAttach = &isHaveAttach
@@ -131,6 +131,9 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 	if !ok {
 		return nil, errors.New("指定邮件不存在")
 	}
+	if mail.State != define.StateSended && mail.State != define.StateSending {
+		return nil, errors.New("指定邮件状态错误")
+	}
 	// 从DB获取玩家的已读邮件列表
 	one, _ := data.GetTheMailFromDB(uid, mailId)
 
@@ -140,11 +143,11 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 
 	if one == nil {
 		// 设置邮件=已读
-		data.SetEmailReadTagFromDB(uid, mailId)
+		data.SetEmailReadTagFromDB(uid, mailId, true)
 	} else {
-		if  !one.IsRead {
+		if !one.IsRead {
 			// 设置邮件=已读
-			data.SetEmailReadTagFromDB(uid, mailId)
+			data.SetEmailReadTagFromDB(uid, mailId, false)
 		}
 	}
 
@@ -152,7 +155,16 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 	detail.MailId = &mail.Id
 	detail.MailTitle = &mail.Title
 	detail.Content = &mail.Detail
-	detail.Attach = &mail.Attach
+
+	t := mailserver.GoodsType_GOODSTYPE_PROPS
+
+	for _, ach := range  mail.AttachGoods {
+		newGoods := new(mailserver.Goods)
+		newGoods.GoodsType = &t
+		newGoods.GoodsId = &ach.GoodsId
+		newGoods.GoodsNum = &ach.GoodsNum
+	}
+
 	isRead := int32(0)
 	detail.IsRead = &isRead
 
@@ -160,7 +172,7 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 	if len(mail.Attach) > 0 {
 		isHaveAttach = 1
 	}
-	if one != nil  && one.IsGetAttach {
+	if one != nil && one.IsGetAttach {
 		isHaveAttach = 2
 	}
 	detail.IsHaveAttach = &isHaveAttach
@@ -179,8 +191,22 @@ func SetReadTag(uid uint64, mailId uint64) error {
 		return errors.New("指定邮件状态错误")
 	}
 
-	// 设置邮件=已读
-	data.SetEmailReadTagFromDB(uid, mailId)
+	// 从DB获取玩家的已读邮件列表
+	one, _ := data.GetTheMailFromDB(uid, mailId)
+
+	if one != nil && one.IsDel {
+		return errors.New("邮件已被用户删除")
+	}
+
+	if one == nil {
+		// 设置邮件=已读
+		data.SetEmailReadTagFromDB(uid, mailId, true)
+	} else {
+		if !one.IsRead {
+			// 设置邮件=已读
+			data.SetEmailReadTagFromDB(uid, mailId, false)
+		}
+	}
 
 	return nil
 }
@@ -188,11 +214,35 @@ func SetReadTag(uid uint64, mailId uint64) error {
 // 删除邮件
 func DelMail(uid uint64, mailId uint64) error {
 
-	return nil
+	// 从DB获取玩家的已读邮件列表
+	one, _ := data.GetTheMailFromDB(uid, mailId)
+	if one != nil && one.IsDel {
+		return errors.New("邮件已被用户删除")
+	}
+
+	if one == nil {
+		// 设置邮件=已读
+		return data.DelEmailFromDB(uid, mailId, true)
+	}
+	return data.DelEmailFromDB(uid, mailId, false)
+
 }
 
 // 领取附件奖励请求
-func AwardAttach(uid uint64, mail uint64) (string, error) {
+func AwardAttach(uid uint64, mailId uint64) (string, error) {
+
+	// 从DB获取玩家的已读邮件列表
+	one, _ := data.GetTheMailFromDB(uid, mailId)
+	if one != nil && one.IsDel {
+		return "", errors.New("邮件已被用户删除")
+	}
+
+	if one == nil {
+		// 设置邮件=已读
+		return "", errors.New("邮件不存在")
+	}
+
+	// 发放附件奖励
 
 	return "", nil
 }

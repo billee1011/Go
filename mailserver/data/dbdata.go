@@ -48,8 +48,37 @@ CREATE TABLE `t_player_mail` (
 const dbName = "player"
 
 
+// 删除邮件
+func DelEmailFromDB(uid uint64, mailId uint64, bInsert bool)  error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+	sql := ""
+
+	if bInsert {
+		sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel) values('%d','%d','%d','%d','%d');",
+			uid, mailId, 0, 0, 1)
+	} else {
+		sql = fmt.Sprintf("update  t_player_mail set n_isDel=1  where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
+	}
+	res, err := engine.Exec(sql)
+	if err != nil {
+		return err
+	}
+	if aff, _ := res.RowsAffected(); aff == 0 {
+		logrus.Errorf("DelEmailFromDB no record err:uid=%d,mailId=%d", uid, mailId)
+		return nil
+	}
+
+	return nil
+}
+
+
 // 设置邮件为已读
-func SetEmailReadTagFromDB(uid uint64, mailId uint64)  error {
+func SetEmailReadTagFromDB(uid uint64, mailId uint64, bInsert bool)  error {
 
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
@@ -57,19 +86,16 @@ func SetEmailReadTagFromDB(uid uint64, mailId uint64)  error {
 		return fmt.Errorf("connect db error")
 	}
 
-	sql := fmt.Sprintf("select n_id from t_player_mail where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
-	resQuery, err := engine.QueryString(sql)
-	if err != nil {
-		return err
-	}
-	isExist := len(resQuery)
+	sql := ""
 
-	sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel) values('%d','%d','%d','%d','%d');",
-		uid, mailId, 1, 0, 0)
-	if isExist > 0 {
+	if !bInsert {
 		// 修改记录
 		sql = fmt.Sprintf("update t_player_mail set n_isRead=1 where n_playerid='%d' and n_mailID ='%d';",
 			 uid, mailId)
+	} else {
+		// 插入记录
+		sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel) values('%d','%d','%d','%d','%d');",
+			uid, mailId, 1, 0, 0)
 	}
 
 	res, err := engine.Exec(sql)
@@ -94,7 +120,6 @@ func GetTheMailFromDB(uid uint64, mailId uint64) (*define.PlayerMail, error) {
 	sql := fmt.Sprintf("select n_id, n_mailID, n_isRead, n_isGetAttach,n_isDel from t_player_mail where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
 	res, err := engine.QueryString(sql)
 	if err != nil {
-
 		return nil, err
 	}
 

@@ -7,13 +7,14 @@ package goods
 
  // 物品类型
  const (
+	 GoodType_Prop = 0							// 道具物品
 	GoodType_Gold = 1								// 货币物品
-	GoodType_Prop = 2								// 道具物品
+
  )
 
 // 物品定义
 type Goods struct {
 	GoodsType    int16  `json:"goodsType"`  		// 物品类型: 1=货币, 2=道具
-	GoodsId		int64  `json:"goodsId"`  			// 物品ID
-	GoodsNum  	int64  `json:"goodsNum"` 			// 物品数量
+	GoodsId		int32  `json:"goodsId"`  			// 物品ID
+	GoodsNum  	int32  `json:"goodsNum"` 			// 物品数量
 }
