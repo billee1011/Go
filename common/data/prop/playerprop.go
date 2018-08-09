@@ -252,3 +252,8 @@ func getDBPlayerPropField(field string, prop *prop.Prop) (val interface{}, err e
 
 	return
 }
+
+// AddPlayerProp 增减一个玩家的一种道具，count是数量；count正值代表增，负值代表减
+func AddPlayerProp(playerID uint64, propID int32, count int32) (err error) {
+	return
+}
