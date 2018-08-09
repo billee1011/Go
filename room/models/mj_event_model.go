@@ -44,15 +44,27 @@ func (model *MjEventModel) Active() {}
 func (model *MjEventModel) Start() {
 	model.event = make(chan desk.DeskEvent, 16)
 
+	model.StartProcessEvents()
+}
+
+// StartProcessEvents 开始处理事件
+func (model *MjEventModel) StartProcessEvents() {
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk())
+
+		mjContext := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).MjContext
+		settler := model.GetDesk().GetConfig().Settle
+		statistics := settler.GetStatistics()
+		continueModel := GetContinueModel(model.GetDesk().GetUid())
+		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 	}()
 
 	event := desk.DeskEvent{EventID: int(server_pb.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk(),
 		StateNumber: model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).StateNumber,
 	}
 	model.PushEvent(event)
+
+	logrus.Debugln("eventmodel启动成功")
 }
 
 // Stop 停止
@@ -341,13 +353,8 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	mjContext := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).MjContext
 	// 游戏结束
 	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
-		continueModel := GetContinueModel(model.GetDesk().GetUid())
-		settler := model.GetDesk().GetConfig().Settle
-		statistics := settler.GetStatistics()
 		model.cancelTuoguanGameOver()
-		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		model.GetDesk().GetConfig().Settle.(*MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
-		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		logEntry.Infoln("游戏结束状态")
 		return true
 	}

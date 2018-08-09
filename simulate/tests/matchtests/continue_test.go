@@ -83,7 +83,7 @@ func Test_ContinueDDZ(t *testing.T) {
 	})
 
 	players := startDDZAndFinishGame(t)
-	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保match服已经接收到room服的续局牌桌的请求
+	time.Sleep(50 * time.Millisecond) // 等待 10ms 确保match服已经接收到room服的续局牌桌的请求
 
 	for _, player := range players {
 
@@ -131,7 +131,7 @@ func Test_ContinueCancelDDZ(t *testing.T) {
 	})
 
 	players := startDDZAndFinishGame(t)
-	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保match服已经接收到room服的续局牌桌的请求
+	time.Sleep(50 * time.Millisecond) // 等待 10ms 确保match服已经接收到room服的续局牌桌的请求
 
 	// 准备：续局牌桌解散的期望
 	for i := 1; i < len(players); i++ {
@@ -160,7 +160,7 @@ func Test_ContinueCancelDDZ(t *testing.T) {
 // 4 个玩家均会收到房间创建通知，且每个玩家座位号不变
 func Test_ContinueMajong(t *testing.T) {
 	players := startAndFinishGame(t)
-	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保匹配服已经接收到续局牌桌
+	time.Sleep(50 * time.Millisecond) // 等待 10ms 确保匹配服已经接收到续局牌桌
 	for _, player := range players {
 		player.AddExpectors(msgid.MsgID_MATCH_CONTINUE_RSP, msgid.MsgID_ROOM_START_GAME_NTF)
 		player.GetClient().SendPackage(utils.CreateMsgHead(msgid.MsgID_MATCH_CONTINUE_REQ), &match.MatchDeskContinueReq{
@@ -168,7 +168,9 @@ func Test_ContinueMajong(t *testing.T) {
 			Cancel: proto.Bool(false),
 		})
 		expector := player.GetExpector(msgid.MsgID_MATCH_CONTINUE_RSP)
-		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, nil))
+		continueResponse := match.MatchDeskContinueRsp{}
+		assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &continueResponse))
+		assert.Zero(t, continueResponse.GetErrCode(), continueResponse.GetErrDesc())
 	}
 	// 所有玩家收到游戏开始通知
 	for _, player := range players {
@@ -181,7 +183,7 @@ func Test_ContinueMajong(t *testing.T) {
 // Test_ContinueCancel 测试取消续局
 func Test_ContinueCancel(t *testing.T) {
 	players := startAndFinishGame(t)
-	time.Sleep(10 * time.Millisecond) // 等待 10ms 确保匹配服已经接收到续局牌桌
+	time.Sleep(50 * time.Millisecond) // 等待 10ms 确保匹配服已经接收到续局牌桌
 
 	for i := 1; i < len(players); i++ {
 		players[i].AddExpectors(msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF)
