@@ -454,7 +454,7 @@ func (m *ZiXunRecord) GetHuFanType() *HuFanType {
 
 // Player 玩家数据
 type Player struct {
-	PalyerId          uint64            `protobuf:"varint,1,opt,name=palyer_id,json=palyerId" json:"palyer_id,omitempty"`
+	PlayerId          uint64            `protobuf:"varint,1,opt,name=player_id,json=playerId" json:"player_id,omitempty"`
 	HandCards         []*Card           `protobuf:"bytes,2,rep,name=hand_cards,json=handCards" json:"hand_cards,omitempty"`
 	OutCards          []*Card           `protobuf:"bytes,3,rep,name=out_cards,json=outCards" json:"out_cards,omitempty"`
 	ChiCards          []*ChiCard        `protobuf:"bytes,4,rep,name=chi_cards,json=chiCards" json:"chi_cards,omitempty"`
@@ -485,9 +485,9 @@ type Player struct {
 	Properties        map[string][]byte `protobuf:"bytes,256,rep,name=properties" json:"properties,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
-func (m *Player) GetPalyerId() uint64 {
+func (m *Player) GetPlayerId() uint64 {
 	if m != nil {
-		return m.PalyerId
+		return m.PlayerId
 	}
 	return 0
 }

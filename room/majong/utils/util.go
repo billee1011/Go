@@ -16,7 +16,7 @@ var cardAll = []Card{11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26,
 //GetPlayerByID 根据玩家id获取玩家
 func GetPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 	for _, player := range players {
-		if player.PalyerId == id {
+		if player.PlayerId == id {
 			return player
 		}
 	}
@@ -26,7 +26,7 @@ func GetPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 //GetNextPlayerByID 根据玩家id获取下个玩家
 func GetNextPlayerByID(players []*majongpb.Player, id uint64) *majongpb.Player {
 	for k, player := range players {
-		if player.PalyerId == id {
+		if player.PlayerId == id {
 			index := (k + 1) % len(players)
 			return players[index]
 		}
@@ -350,7 +350,7 @@ func GetTingPlayerIDAndMultiple(mjContext *majongpb.MajongContext, players []*ma
 			return nil, err
 		}
 		if isTing {
-			tingPlayers[players[i].GetPalyerId()] = multiple
+			tingPlayers[players[i].GetPlayerId()] = multiple
 		}
 	}
 	return tingPlayers, nil
@@ -421,12 +421,12 @@ func GetFirstHuPlayerByID(playerAll, winPlayers []*majongpb.Player, loserPlayerI
 	for nextPlayer != nil {
 		// 判断赢家里面是否有输家的下家
 		for i := 0; i < len(winPlayers); i++ {
-			if winPlayers[i].PalyerId == nextPlayer.PalyerId {
+			if winPlayers[i].PlayerId == nextPlayer.PlayerId {
 				return winPlayers[i]
 			}
 		}
 		// 获取输家的下家的下家
-		nextPlayer = GetNextPlayerByID(playerAll, nextPlayer.PalyerId)
+		nextPlayer = GetNextPlayerByID(playerAll, nextPlayer.PlayerId)
 	}
 	return nil
 }

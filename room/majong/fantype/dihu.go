@@ -11,7 +11,7 @@ func checkDiHu(tc *typeCalculator) bool {
 		currPlayer := tc.getPlayer()
 		// 当前玩家不是庄家
 		mjContext := tc.mjContext
-		if mjContext.Players[mjContext.ZhuangjiaIndex].GetPalyerId() != currPlayer.GetPalyerId() {
+		if mjContext.Players[mjContext.ZhuangjiaIndex].GetPlayerId() != currPlayer.GetPlayerId() {
 			if currPlayer.GetZixunCount() == 1 && len(currPlayer.GetGangCards())+len(currPlayer.GetHuCards()) == 0 {
 				return true
 			}

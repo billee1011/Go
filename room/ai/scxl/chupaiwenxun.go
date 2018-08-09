@@ -74,7 +74,7 @@ func (h *chupaiWenxunStateAI) askMiddleAI(player *majong.Player, lastOutCard maj
 		case majong.Action_action_hu:
 			event.Context = &majong.HuRequestEvent{
 				Head: &majong.RequestEventHead{
-					PlayerId: player.GetPalyerId(),
+					PlayerId: player.GetPlayerId(),
 				},
 			}
 			event.ID = int32(majong.EventID_event_hu_request)
@@ -84,7 +84,7 @@ func (h *chupaiWenxunStateAI) askMiddleAI(player *majong.Player, lastOutCard maj
 			if len(keZis) > 0 && Contains(keZis, lastOutCard) {
 				event.Context = &majong.GangRequestEvent{
 					Head: &majong.RequestEventHead{
-						PlayerId: player.GetPalyerId(),
+						PlayerId: player.GetPlayerId(),
 					},
 					Card: &lastOutCard,
 				}
@@ -98,7 +98,7 @@ func (h *chupaiWenxunStateAI) askMiddleAI(player *majong.Player, lastOutCard maj
 				if len(pairs) >= 2 && r < 90 || len(pairs) == 1 && r < 10 { //多于1对时，碰牌概率90%；等于1对时，碰牌概率10%
 					event.Context = &majong.PengRequestEvent{
 						Head: &majong.RequestEventHead{
-							PlayerId: player.GetPalyerId(),
+							PlayerId: player.GetPlayerId(),
 						},
 					}
 					event.ID = int32(majong.EventID_event_peng_request)
@@ -113,7 +113,7 @@ func (h *chupaiWenxunStateAI) askMiddleAI(player *majong.Player, lastOutCard maj
 					if ContainsCard(validCards, lastOutCard) {
 						event.Context = &majong.ChiRequestEvent{
 							Head: &majong.RequestEventHead{
-								PlayerId: player.GetPalyerId(),
+								PlayerId: player.GetPlayerId(),
 							},
 							Cards: []*majong.Card{&cha.cards[0], &cha.cards[1], &lastOutCard},
 						}
@@ -125,7 +125,7 @@ func (h *chupaiWenxunStateAI) askMiddleAI(player *majong.Player, lastOutCard maj
 		default:
 			event.Context = &majong.QiRequestEvent{
 				Head: &majong.RequestEventHead{
-					PlayerId: player.GetPalyerId(),
+					PlayerId: player.GetPlayerId(),
 				},
 			}
 			event.ID = int32(majong.EventID_event_qi_request)
@@ -168,14 +168,14 @@ func (h *chupaiWenxunStateAI) chupaiWenxun(player *majong.Player) *ai.AIEvent {
 	case majong.Action_action_hu:
 		event.Context = &majong.HuRequestEvent{
 			Head: &majong.RequestEventHead{
-				PlayerId: player.GetPalyerId(),
+				PlayerId: player.GetPlayerId(),
 			},
 		}
 		event.ID = int32(majong.EventID_event_hu_request)
 	default:
 		event.Context = &majong.QiRequestEvent{
 			Head: &majong.RequestEventHead{
-				PlayerId: player.GetPalyerId(),
+				PlayerId: player.GetPlayerId(),
 			},
 		}
 		event.ID = int32(majong.EventID_event_qi_request)

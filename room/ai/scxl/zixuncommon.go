@@ -63,7 +63,7 @@ func (h *zixunStateAI) getNormalZiXunHuStateAIEvent(player *majong.Player, mjCon
 func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) ai.AIEvent {
 	eventContext := majong.ChupaiRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 		Cards: card,
 	}
@@ -76,7 +76,7 @@ func (h *zixunStateAI) chupai(player *majong.Player, card *majong.Card) ai.AIEve
 func (h *zixunStateAI) gang(player *majong.Player, card *majong.Card) ai.AIEvent {
 	eventContext := majong.GangRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 		Card: card,
 	}
@@ -89,7 +89,7 @@ func (h *zixunStateAI) gang(player *majong.Player, card *majong.Card) ai.AIEvent
 func (h *zixunStateAI) hu(player *majong.Player) ai.AIEvent {
 	eventContext := majong.HuRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 	}
 	return ai.AIEvent{

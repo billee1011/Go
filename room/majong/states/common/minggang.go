@@ -90,7 +90,7 @@ func (s *MingGangState) doMinggang(flow interfaces.MajongFlow) {
 func (s *MingGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb.Card, player *majongpb.Player, srcPlayerID uint64) {
 	intCard := uint32(utils.ServerCard2Number(card))
 	body := room.RoomGangNtf{
-		ToPlayerId:   proto.Uint64(player.GetPalyerId()),
+		ToPlayerId:   proto.Uint64(player.GetPlayerId()),
 		FromPlayerId: proto.Uint64(srcPlayerID),
 		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_MingGang.Enum(),

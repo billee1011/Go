@@ -30,7 +30,7 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 		}
 	}
 
-	logEntry := logrus.WithField("playerId", player.PalyerId)
+	logEntry := logrus.WithField("playerId", player.PlayerId)
 	outCard, gang := getOutCard(handCards, mjContext)
 	needHu := outCard == majong.Card{}
 	if needHu {

@@ -2,8 +2,8 @@ package facade
 
 import (
 	msgid "steve/client_pb/msgid"
-	"steve/room/majong/interfaces"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/interfaces"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -14,7 +14,7 @@ func BroadcaseMessage(flow interfaces.MajongFlow, msgID msgid.MsgID, msg proto.M
 	players := []uint64{}
 
 	for _, player := range mjContext.GetPlayers() {
-		players = append(players, player.GetPalyerId())
+		players = append(players, player.GetPlayerId())
 	}
 	flow.PushMessages(players, interfaces.ToClientMessage{
 		MsgID: int(msgID),

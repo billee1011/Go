@@ -232,7 +232,7 @@ func (model *MjEventModel) recoverGameForPlayer(playerID uint64) {
 func (model *MjEventModel) getContextPlayer(playerID uint64) *server_pb.Player {
 	mjDeskContext := model.GetGameContext().(*context2.MajongDeskContext)
 	for _, contextPlayer := range mjDeskContext.MjContext.GetPlayers() {
-		if contextPlayer.GetPalyerId() == playerID {
+		if contextPlayer.GetPlayerId() == playerID {
 			return contextPlayer
 		}
 	}

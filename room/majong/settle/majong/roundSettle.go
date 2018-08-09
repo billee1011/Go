@@ -2,8 +2,8 @@ package majong
 
 import (
 	"steve/common/mjoption"
-	"steve/room/majong/interfaces"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/interfaces"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -210,8 +210,8 @@ func (roundSettle *RoundSettle) canRoundSettle(playerID uint64, givePlayers, has
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerRoundSettle
 	}
-	for _, hasHupalyer := range hasHuPlayers {
-		if hasHupalyer != playerID {
+	for _, hasHuplayer := range hasHuPlayers {
+		if hasHuplayer != playerID {
 			continue
 		}
 		for _, quitPlayer := range quitPlayers {
