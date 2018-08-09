@@ -46,7 +46,7 @@ func (model *MjEventModel) Start() {
 
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
+		GetModelManager().StopDeskModel(model.GetDesk())
 	}()
 
 	event := desk.DeskEvent{EventID: int(server_pb.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk(),
@@ -232,7 +232,7 @@ func (model *MjEventModel) recoverGameForPlayer(playerID uint64) {
 func (model *MjEventModel) getContextPlayer(playerID uint64) *server_pb.Player {
 	mjDeskContext := model.GetGameContext().(*context2.MajongDeskContext)
 	for _, contextPlayer := range mjDeskContext.MjContext.GetPlayers() {
-		if contextPlayer.GetPalyerId() == playerID {
+		if contextPlayer.GetPlayerId() == playerID {
 			return contextPlayer
 		}
 	}

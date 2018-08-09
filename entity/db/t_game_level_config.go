@@ -13,8 +13,6 @@ type TGameLevelConfig struct {
 	Basescores       int       `xorm:"INT(11)"`
 	Lowscores        int       `xorm:"INT(11)"`
 	Highscores       int       `xorm:"INT(11)"`
-	Minpeople        int       `xorm:"INT(11)"`
-	Maxpeople        int       `xorm:"INT(11)"`
 	Realonlinepeople int       `xorm:"comment('实时在线人数') INT(11)"`
 	Showonlinepeople int       `xorm:"comment('显示在线人数') INT(11)"`
 	Status           int       `xorm:"INT(11)"`

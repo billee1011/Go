@@ -23,6 +23,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	fixed2 "steve/datareport/fixed"
+	"steve/external/datareportclient"
 )
 
 // MajongCoin   key:playerID value:score
@@ -209,7 +211,7 @@ func (majongSettle *MajongSettle) divideScore(dianPaoPlayer uint64, huPlayers []
 	allPlayers := make([]uint64, 0)
 
 	for _, player := range mjContext.GetPlayers() {
-		allPlayers = append(allPlayers, player.GetPalyerId())
+		allPlayers = append(allPlayers, player.GetPlayerId())
 	}
 	for _, huPlayerID := range huPlayers {
 		callDiverScore[huPlayerID] = equallyTotal
@@ -217,7 +219,7 @@ func (majongSettle *MajongSettle) divideScore(dianPaoPlayer uint64, huPlayers []
 	}
 	if surplusTotal != 0 {
 		startIndex, _ := utils.GetPlayerIDIndex(dianPaoPlayer, allPlayers)
-		firstPlayerID := utils.GetPalyerCloseFromTarget(startIndex, allPlayers, huPlayers)
+		firstPlayerID := utils.GetPlayerCloseFromTarget(startIndex, allPlayers, huPlayers)
 		if firstPlayerID != 0 {
 			callDiverScore[firstPlayerID] = callDiverScore[firstPlayerID] + surplusTotal
 			callDiverScore[dianPaoPlayer] = callDiverScore[dianPaoPlayer] - surplusTotal
@@ -295,7 +297,7 @@ func (majongSettle *MajongSettle) calcTaxbetCoin(losePlayer uint64, winPlayers [
 				resortPlayers := make([]uint64, 0)
 				for i := 0; i < len(contextPlayer); i++ {
 					index := (loseIndex + i) % len(contextPlayer)
-					resortPlayers = append(resortPlayers, contextPlayer[index].GetPalyerId())
+					resortPlayers = append(resortPlayers, contextPlayer[index].GetPlayerId())
 				}
 				resortHuPlayers := make([]uint64, 0)
 				for _, resortPID := range resortPlayers {
@@ -456,7 +458,7 @@ func getGiveupPlayers(dPlayers []*playerpkg.Player, mjContext *majongpb.MajongCo
 	giveupPlayers := make(map[uint64]bool, 0)
 	for _, cPlayer := range mjContext.Players {
 		if cPlayer.GetXpState() == 2 {
-			giveupPlayers[cPlayer.GetPalyerId()] = true
+			giveupPlayers[cPlayer.GetPlayerId()] = true
 		}
 	}
 	return giveupPlayers
@@ -468,7 +470,7 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 	for _, contextPlayer := range mjContext.GetPlayers() {
 		huCard := contextPlayer.GetHuCards()
 		if len(huCard) != 0 {
-			huPids[contextPlayer.GetPalyerId()] = true
+			huPids[contextPlayer.GetPlayerId()] = true
 		}
 	}
 	huQuitPids := make(map[uint64]bool, 0)
@@ -485,6 +487,9 @@ func (majongSettle *MajongSettle) getHuQuitPlayers(dPlayers []*playerpkg.Player,
 func (majongSettle *MajongSettle) RoundSettle(desk *desk.Desk, config *desk.DeskConfig) {
 	majongSettle.roundSettle(desk, config)
 	majongSettle.gameLog(desk, config)
+	for _, pID := range desk.GetPlayerIds() {
+		datareportclient.DataReport(fixed2.LOG_TYPE_GAM, 0, 0, 0, pID, "1")
+	}
 }
 
 func (majongSettle *MajongSettle) roundSettle(desk *desk.Desk, config *desk.DeskConfig) {
@@ -570,7 +575,7 @@ func makeFanType(fanTypes []int64, cardOption *mjoption.CardTypeOption) (fan []*
 func (majongSettle *MajongSettle) makeBillPlayerInfo(currentPid uint64, cardValue int32, fans []*room.Fan, context majongpb.MajongContext) []*room.BillPlayerInfo {
 	billPlayerInfos := make([]*room.BillPlayerInfo, 0)
 	for _, player := range context.Players {
-		playerID := player.GetPalyerId()
+		playerID := player.GetPlayerId()
 		roomPlayer := playerpkg.GetPlayerMgr().GetPlayer(playerID)
 
 		coin := int64(roomPlayer.GetCoin())
@@ -687,7 +692,10 @@ func (majongSettle *MajongSettle) chargeCoin(players []*playerpkg.Player, paySco
 	for _, player := range players {
 		pid := player.GetPlayerID()
 		// 调用金币服接口扣费
-		goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], int32(constant.GFGAMESETTLE), 0, 0, 0)
+		gold, err := goldclient.AddGold(pid, int16(server_gold.GoldType_GOLD_COIN), payScore[pid], int32(constant.GFGAMESETTLE), 0, 0, 0)
+		if gold == 0 && err == nil {
+			player.AddBrokerCount()
+		}
 		// 记录玩家单局总输赢
 		majongSettle.roundScore[pid] = majongSettle.roundScore[pid] + payScore[pid]
 	}
@@ -786,6 +794,10 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 			Deskid:   int64(desk.GetUid()),
 			Gameid:   desk.GetGameId(),
 			Amount:   roundScore[playerID],
+		}
+		deskPlayer := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayerByID(playerID)
+		if deskPlayer != nil {
+			gameDetail.BrokerCount = deskPlayer.GetBrokerCount()
 		}
 		if gameDetail.Amount == bigWinnerScore {
 			gameDetail.Iswinner = 1

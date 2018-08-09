@@ -10,6 +10,9 @@ import (
 	"steve/server_pb/user"
 	"time"
 
+	"steve/datareport/fixed"
+	"steve/external/datareportclient"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -20,7 +23,7 @@ var _ user.PlayerDataServer = new(PlayerDataService)
 
 // GetPlayerByAccount 根据账号获取玩家 ID
 func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.GetPlayerByAccountReq) (rsp *user.GetPlayerByAccountRsp, err error) {
-	logrus.Debugln("GetPlayerByAccount req", *req)
+	logrus.Debugf("GetPlayerByAccount req: (%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.GetPlayerByAccountRsp{
@@ -49,12 +52,14 @@ func (pds *PlayerDataService) GetPlayerByAccount(ctx context.Context, req *user.
 	// 返回消息
 	rsp.PlayerId, rsp.ErrCode = playerID, int32(user.ErrCode_EC_SUCCESS)
 
+	datareportclient.DataReport(fixed.LOG_TYPE_REG, 0, 0, 0, playerID, "1")
+
 	return
 }
 
 // GetPlayerInfo 获取玩家基本信息
 func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPlayerInfoReq) (rsp *user.GetPlayerInfoRsp, err error) {
-	logrus.Debugln("GetPlayerInfo req", *req)
+	logrus.Debugf("GetPlayerInfo req : (%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.GetPlayerInfoRsp{
@@ -81,7 +86,7 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 
 // UpdatePlayerInfo 设置玩家信息
 func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.UpdatePlayerInfoReq) (rsp *user.UpdatePlayerInfoRsp, err error) {
-	logrus.Debugln("SetPlayerInfo req", *req)
+	logrus.Debugf("SetPlayerInfo req: (%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.UpdatePlayerInfoRsp{
@@ -123,7 +128,7 @@ func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.Up
 
 // GetPlayerState 获取玩家状态
 func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetPlayerStateReq) (rsp *user.GetPlayerStateRsp, err error) {
-	logrus.Debugln("GetPlayerState req", *req)
+	logrus.Debugf("GetPlayerState req: (%v)", *req)
 
 	// 默认返回
 	rsp, err = &user.GetPlayerStateRsp{
@@ -140,12 +145,13 @@ func (pds *PlayerDataService) GetPlayerState(ctx context.Context, req *user.GetP
 		rsp.GateAddr, rsp.MatchAddr, rsp.RoomAddr = pState.GateAddr, pState.MatchAddr, pState.RoomAddr
 		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
 	}
+	logrus.Debugln("get player state rsp", rsp)
 	return
 }
 
 // GetPlayerGameInfo 获取玩家游戏信息
 func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.GetPlayerGameInfoReq) (rsp *user.GetPlayerGameInfoRsp, err error) {
-	logrus.Debugln("GetPlayerState req", *req)
+	logrus.Debugf("GetPlayerState req :(%v)", *req)
 
 	// 请求参数
 	playerID := req.GetPlayerId()
@@ -177,7 +183,7 @@ func (pds *PlayerDataService) GetPlayerGameInfo(ctx context.Context, req *user.G
 
 // UpdatePlayerState 设置玩家状态
 func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.UpdatePlayerStateReq) (rsp *user.UpdatePlayerRsp, err error) {
-	logrus.Debugln("SetPlayerState req", *req)
+	logrus.Debugf("UpdatePlayerState req :(%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.UpdatePlayerRsp{
@@ -211,7 +217,7 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 
 // UpdatePlayerGateInfo 更新玩家网关信息
 func (pds *PlayerDataService) UpdatePlayerGateInfo(ctx context.Context, req *user.UpdatePlayerGateInfoReq) (rsp *user.UpdatePlayerRsp, err error) {
-	logrus.Debugln("UpdatePlayerGateInfo req", *req)
+	logrus.Debugf("UpdatePlayerGateInfo req :(%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.UpdatePlayerRsp{
@@ -242,7 +248,7 @@ func (pds *PlayerDataService) UpdatePlayerGateInfo(ctx context.Context, req *use
 
 // UpdatePlayerServerAddr 更新玩家服务端地址
 func (pds *PlayerDataService) UpdatePlayerServerAddr(ctx context.Context, req *user.UpdatePlayerServerAddrReq) (rsp *user.UpdatePlayerRsp, err error) {
-	logrus.Debugln("UpdatePlayerGateInfo req", *req)
+	logrus.Debugf("UpdatePlayerGateInfo req :(%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.UpdatePlayerRsp{
@@ -275,7 +281,7 @@ func (pds *PlayerDataService) UpdatePlayerServerAddr(ctx context.Context, req *u
 
 // GetGameListInfo 获取玩家游戏列表信息
 func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.GetGameListInfoReq) (rsp *user.GetGameListInfoRsp, err error) {
-	logrus.Debugln("GetGameListInfo req", *req)
+	logrus.Debugf("GetGameListInfo req :(%v)", *req)
 
 	// 默认返回消息
 	rsp, err = &user.GetGameListInfoRsp{
@@ -301,15 +307,15 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-
+	showUID := data.AllocShowUID()
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),
-		Showuid:      data.AllocShowUID(),
+		Showuid:      showUID,
 		Type:         1,
-		Channelid:    0,                                 // TODO ，渠道 ID
-		Nickname:     fmt.Sprintf("player%d", playerID), // TODO,昵称
-		Gender:       1,
+		Channelid:    0,                                // TODO ，渠道 ID
+		Nickname:     fmt.Sprintf("player%d", showUID), // TODO,昵称
+		Gender:       2,
 		Avatar:       getRandomAvator(), // TODO , 头像
 		Provinceid:   0,                 // TODO， 省ID
 		Cityid:       0,                 // TODO 市ID

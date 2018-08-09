@@ -94,6 +94,15 @@ func NewPlayerData(accID uint64, playerID uint64) {
 	return
 }
 
+// TestGetPlayerIDByAccountID 登录
+func TestGetPlayerIDByAccountID(t *testing.T) {
+	account := uint64(2192)
+	exist, playerID, err := GetPlayerIDByAccountID(account)
+	assert.True(t, exist)
+	assert.NotNil(t, playerID)
+	assert.Nil(t, err)
+}
+
 // TestInitPlayerData 初始化玩家
 func TestInitPlayerData(t *testing.T) {
 	viper.SetDefault("node", 200)
@@ -218,11 +227,10 @@ func TestSetPlayerState(t *testing.T) {
 	accID := uint64(alloc.Generate().Int64())
 
 	NewPlayerData(accID, playerID)
-	playerState, _ := GetPlayerState(playerID, []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
+	playerState, _ := GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
 	fmt.Printf("%v", playerState)
 	result, err := UpdatePlayerState(playerID, 0, 1, 0, 0)
-	playerState, _ = GetPlayerState(playerID, []string{cache.GameID, cache.LevelID, cache.GameState, cache.IPAddr, cache.GateAddr, cache.MatchAddr, cache.RoomAddr}...)
-	fmt.Printf("%v", playerState)
+	playerState, _ = GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
 }
@@ -275,6 +283,16 @@ func Test_SetGetPlayerFields(t *testing.T) {
 	dbPlayer, err = GetPlayerInfo(playerID, []string{"nickname"}...)
 	assert.Nil(t, err)
 	assert.Equal(t, newNickName, dbPlayer.Nickname)
+}
+
+func Test_SetGetTodayCharge(t *testing.T) {
+	const PLAYERID = 100
+	oldcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Nil(t, AddPlayerTodayCharge(PLAYERID, 100))
+	newcharge, err := GetPlayerTodayCharge(PLAYERID)
+	assert.Nil(t, err)
+	assert.Equal(t, oldcharge+100, newcharge)
 }
 
 func init() {

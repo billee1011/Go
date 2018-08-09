@@ -172,7 +172,7 @@ func (model *PlayerModel) playerQuitEnterDeskNtf(player *playerpkg.Player, qeTyp
 
 func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value bool) {
 	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MajongDeskContext).MjContext.Players {
-		if p.GetPalyerId() == player.GetPlayerID() {
+		if p.GetPlayerId() == player.GetPlayerID() {
 			p.IsQuit = value
 		}
 	}
@@ -180,6 +180,15 @@ func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value b
 
 func (model *PlayerModel) GetDeskPlayers() []*playerpkg.Player {
 	return model.players
+}
+
+func (model *PlayerModel) GetDeskPlayerByID(playerID uint64) *playerpkg.Player {
+	for _, player := range model.players {
+		if player.PlayerID == playerID {
+			return player
+		}
+	}
+	return nil
 }
 
 // GetDeskPlayerIDs 获取牌桌玩家 ID 列表， 座号作为索引

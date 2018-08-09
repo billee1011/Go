@@ -1,27 +1,27 @@
 package utils
 
 import (
+	majongpb "steve/entity/majong"
 	"steve/gutils"
 	"steve/room/majong/interfaces"
-	majongpb "steve/entity/majong"
 
 	"github.com/Sirupsen/logrus"
 )
 
 //GetNextXpPlayerByID 获取下一个行牌玩家
-func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, mjContext *majongpb.MajongContext) (nextPalyer *majongpb.Player) {
+func GetNextXpPlayerByID(srcPlayerID uint64, players []*majongpb.Player, mjContext *majongpb.MajongContext) (nextPlayer *majongpb.Player) {
 	curPlayerID, i := srcPlayerID, 0
 	for i < len(mjContext.Players) {
-		nextPalyer = GetNextPlayerByID(players, curPlayerID)
+		nextPlayer = GetNextPlayerByID(players, curPlayerID)
 		// 当前下个玩家可以继续，退出循环
-		if gutils.IsPlayerContinue(nextPalyer.GetXpState(), mjContext) {
+		if gutils.IsPlayerContinue(nextPlayer.GetXpState(), mjContext) {
 			break
 		}
-		curPlayerID = nextPalyer.GetPalyerId()
+		curPlayerID = nextPlayer.GetPlayerId()
 	}
-	logrus.WithFields(logrus.Fields{"playerID": nextPalyer.GetPalyerId(),
-		"playerStatus": nextPalyer.GetXpState()}).Info("获取下个正常状态的玩家")
-	return nextPalyer
+	logrus.WithFields(logrus.Fields{"playerID": nextPlayer.GetPlayerId(),
+		"playerStatus": nextPlayer.GetXpState()}).Info("获取下个正常状态的玩家")
+	return nextPlayer
 }
 
 //GetCanXpPlayers 获取能行牌玩家数组
@@ -30,7 +30,7 @@ func GetCanXpPlayers(players []*majongpb.Player, mjContext *majongpb.MajongConte
 	for _, player := range players {
 		// 不是正常行牌的玩家，不能检查胡，碰，杠，摸牌。。。
 		if !gutils.IsPlayerContinue(player.GetXpState(), mjContext) {
-			logrus.WithFields(logrus.Fields{"PlayerIDs": player.GetPalyerId(), "PlayerState": player.GetXpState()}).Info("不正常玩家")
+			logrus.WithFields(logrus.Fields{"PlayerIDs": player.GetPlayerId(), "PlayerState": player.GetXpState()}).Info("不正常玩家")
 			continue
 		}
 		newPlalyers = append(newPlalyers, player)
@@ -84,11 +84,11 @@ func GetRealHuCardPlayer(huPlayers []uint64, lostPlayer uint64, mjContext *majon
 	nextPlayerID := lostPlayer
 	for i := 0; i < len(mjContext.GetPlayers()); i++ {
 		p := GetNextXpPlayerByID(nextPlayerID, mjContext.GetPlayers(), mjContext)
-		if Contains(huPlayers, p.GetPalyerId()) {
-			isRealPlayerID = p.GetPalyerId()
+		if Contains(huPlayers, p.GetPlayerId()) {
+			isRealPlayerID = p.GetPlayerId()
 			break
 		}
-		nextPlayerID = p.GetPalyerId()
+		nextPlayerID = p.GetPlayerId()
 	}
 	logrus.WithFields(logrus.Fields{
 		"RealHucardPlayer": isRealPlayerID,

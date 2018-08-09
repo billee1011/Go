@@ -1,8 +1,8 @@
 package common
 
 import (
-	"steve/room/majong/interfaces"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/interfaces"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -13,7 +13,7 @@ func initPlayers(mjContext *majongpb.MajongContext) {
 	mjContext.Players = mjContext.Players[0:0]
 	for i := 0; i < 4; i++ {
 		mjContext.Players = append(mjContext.Players, &majongpb.Player{
-			PalyerId:  uint64(i),
+			PlayerId:  uint64(i),
 			HandCards: []*majongpb.Card{},
 		})
 	}

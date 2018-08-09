@@ -6,4 +6,5 @@ type TPlayerMail struct {
 	NMailid      int64 `xorm:"not null comment('邮件ID') unique(t_player_mail_UN) BIGINT(20)"`
 	NIsread      int   `xorm:"comment('是否已读: 0=未读, 1=已读 ') INT(11)"`
 	NIsgetattach int   `xorm:"comment('是否已领取附件: 0=未领, 1=已领') INT(11)"`
+	NIsdel       int   `xorm:"default 0 comment('是否被用户删除: 0=未删除, 1=删除') TINYINT(1)"`
 }

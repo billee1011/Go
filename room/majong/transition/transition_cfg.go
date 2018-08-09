@@ -614,8 +614,8 @@ var transitionCfg = `
             - event_settle_finish
           next_state: state_mopai
         - 
-          # 结算事件 转移到 结束
           events: 
+          # 结算事件 转移到 结束
             - event_settle_finish
           next_state: state_gameover
     - 

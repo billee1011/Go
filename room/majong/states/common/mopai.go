@@ -31,7 +31,7 @@ func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, ba
 	context := flow.GetMajongContext()
 	for _, player := range context.Players {
 		ntf := &room.RoomMopaiNtf{}
-		if player.PalyerId == context.GetMopaiPlayer() {
+		if player.PlayerId == context.GetMopaiPlayer() {
 			ntf.Card = proto.Uint32(utils.ServerCard2Uint32(card))
 		}
 		ntf.Player = &context.MopaiPlayer
@@ -40,7 +40,7 @@ func (s *MoPaiState) notifyMopai(flow interfaces.MajongFlow, playerID uint64, ba
 			MsgID: int(msgid.MsgID_ROOM_MOPAI_NTF),
 			Msg:   ntf,
 		}
-		flow.PushMessages([]uint64{player.GetPalyerId()}, toClientMessage)
+		flow.PushMessages([]uint64{player.GetPlayerId()}, toClientMessage)
 	}
 }
 
@@ -52,7 +52,7 @@ func (s *MoPaiState) mopai(flow interfaces.MajongFlow) (majongpb.StateID, error)
 
 	players := context.GetPlayers()
 	activePlayer := utils.GetPlayerByID(players, context.GetMopaiPlayer())
-	context.ActivePlayer = activePlayer.GetPalyerId()
+	context.ActivePlayer = activePlayer.GetPlayerId()
 	if !utils.HasAvailableWallCards(flow) {
 		// if len(context.WallCards) == 0 {
 		logEntry.Infoln("没牌了")
