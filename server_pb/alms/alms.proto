@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package alms;
+
+//AlmsConfig 救济金配置
+message AlmsConfig {
+    int64   alms_get_norm       = 1;     // 救济线
+    int32   alms_get_times      = 2;     // 最多领取次数
+    int64   alms_get_number     = 3;     // 领取数量
+    int32   alms_count_donw     = 4;     // 救济倒计时，时间是秒
+    int32   deposit_count_donw  = 5;     // 快充倒计时，时间是秒
+}

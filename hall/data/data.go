@@ -94,8 +94,6 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 
 // GetPlayerInfo 根据玩家id获取玩家个人资料信息
 func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err error) {
-	logrus.Debugln("get player info playerId :%d, fields:%s", playerID, fields)
-
 	dbPlayer, err = new(db.TPlayer), nil
 
 	// 从redis获取
@@ -367,7 +365,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		funcErr = fmt.Errorf("get mysql enginer error： %v", merr.Error())
 		return
 	}
-	strCol := "id,gameID,name,type"
+	strCol := "id,gameID,name,type,minPeople,maxPeople"
 	funcErr = engine.Table(gameconfigTableName).Select(strCol).Find(&gameConfig)
 
 	if funcErr != nil {
@@ -375,7 +373,7 @@ func GetGameInfoList() (gameConfig []*db.TGameConfig, gamelevelConfig []*db.TGam
 		return
 	}
 
-	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,minPeople,maxPeople,realOnlinePeople,showOnlinePeople,status,tag,remark"
+	strCol = "id,gameID,levelID,name,fee,baseScores,lowScores,highScores,realOnlinePeople,showOnlinePeople,status,tag,remark"
 	funcErr = engine.Table(gamelevelconfigTableName).Select(strCol).Find(&gamelevelConfig)
 
 	if funcErr != nil {
@@ -618,7 +616,7 @@ func setDBPlayerGameByField(dbPlayerGame *db.TPlayerGame, field string, val stri
 	case "gameName":
 		dbPlayerGame.Gamename = val
 	case "winningRate":
-		dbPlayerGame.Winningrate, _ = strconv.Atoi(val)
+		dbPlayerGame.Winningrate, _ = strconv.ParseFloat(val, 64)
 	case "winningBurea":
 		dbPlayerGame.Winningburea, _ = strconv.Atoi(val)
 	case "totalBureau":
@@ -799,6 +797,49 @@ func updatePlayerGameFieldsToRedis(playerID uint64, gameID uint32, fields []stri
 	}
 	redisCli.Expire(playerGameKey, redisTimeOut)
 	return nil
+}
+
+// GetPlayerTodayCharge 获取玩家今日充值数量
+func GetPlayerTodayCharge(playerID uint64) (uint64, error) {
+	playerKey := cache.FmtPlayerChargeKey(playerID)
+	vals, err := getRedisField(playerRedisName, playerKey, cache.TodayChargeKey, cache.LastChargeTime)
+	if err != nil {
+		if err == redis.Nil {
+			return 0, nil
+		}
+		return 0, err
+	}
+	chargeStr, _ := vals[0].(string)
+	charge, _ := strconv.ParseUint(chargeStr, 10, 16)
+	if charge == uint64(0) {
+		return 0, nil
+	}
+	chargeTimeStr, _ := vals[1].(string)
+	chargeTime, err := time.Parse(time.UnixDate, chargeTimeStr)
+	if err == nil {
+		year, month, day := chargeTime.Date()
+		cyear, cmonth, cday := time.Now().Date()
+		if year == cyear && month == cmonth && day == cday {
+			return charge, nil
+		}
+	}
+	return 0, nil
+}
+
+// AddPlayerTodayCharge 添加玩家今日充值数
+// 非重要的数据，不保证数据一致性
+func AddPlayerTodayCharge(playerID uint64, charge uint64) error {
+	todayCharge, err := GetPlayerTodayCharge(playerID)
+	if err != nil {
+		return fmt.Errorf("获取今日充值数失败")
+	}
+	todayCharge += charge
+	lastChargeTimeStr := time.Now().Format(time.UnixDate)
+	playerKey := cache.FmtPlayerChargeKey(playerID)
+	return setRedisFields(playerRedisName, playerKey, map[string]string{
+		cache.TodayChargeKey: strconv.FormatUint(todayCharge, 10),
+		cache.LastChargeTime: lastChargeTimeStr,
+	}, time.Hour*24)
 }
 
 func init() {
