@@ -1,40 +1,40 @@
 package gutils
 
 import (
-	"steve/client_pb/room"
+	"steve/client_pb/common"
 	"steve/entity/prop"
 )
 
 // PropTypeServer2Client 道具类型转换 server -> client
-func PropTypeServer2Client(propID int32) room.PropType {
+func PropTypeServer2Client(propID int32) common.PropType {
 	switch propID {
 	case prop.Rose:
-		return room.PropType_ROSE
+		return common.PropType_ROSE
 	case prop.Beer:
-		return room.PropType_BEER
+		return common.PropType_BEER
 	case prop.Bomb:
-		return room.PropType_BOMB
+		return common.PropType_BOMB
 	case prop.GrabChicken:
-		return room.PropType_GRAB_CHICKEN
+		return common.PropType_GRAB_CHICKEN
 	case prop.EggGun:
-		return room.PropType_EGG_GUN
+		return common.PropType_EGG_GUN
 	default:
-		return room.PropType_INVALID_PROP
+		return common.PropType_INVALID_PROP
 	}
 }
 
 // PropTypeClient2Server 道具类型转换 client -> server
-func PropTypeClient2Server(propID room.PropType) int32 {
+func PropTypeClient2Server(propID common.PropType) int32 {
 	switch propID {
-	case room.PropType_ROSE:
+	case common.PropType_ROSE:
 		return prop.Rose
-	case room.PropType_BEER:
+	case common.PropType_BEER:
 		return prop.Beer
-	case room.PropType_BOMB:
+	case common.PropType_BOMB:
 		return prop.Bomb
-	case room.PropType_GRAB_CHICKEN:
+	case common.PropType_GRAB_CHICKEN:
 		return prop.GrabChicken
-	case room.PropType_EGG_GUN:
+	case common.PropType_EGG_GUN:
 		return prop.EggGun
 	default:
 		return prop.InvalidProp
