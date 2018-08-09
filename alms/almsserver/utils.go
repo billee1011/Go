@@ -1,4 +1,4 @@
-package server
+package almsserver
 
 import (
 	"steve/alms/data"

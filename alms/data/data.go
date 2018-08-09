@@ -60,7 +60,7 @@ func GetAlmsConfigByPlayerID(playerID uint64) (*AlmsConfig, error) {
 		"func_name": "getAlmsConfigByPlayerID",
 	})
 	//从 redis 获取救济金配置
-	newConfig := []string{AlmsGetNorm, AlmsGetTimes, AlmsGetNumber, AlmsCountDonw, DepositCountDonw, AlmsGameLeveIsOK, AlmsVersion}
+	newConfig := []string{AlmsGetNorm, AlmsGetTimes, AlmsGetNumber, AlmsCountDonw, DepositCountDonw, GameLeveConfigs, AlmsVersion}
 	acm, err := GetAlmsConfigFileds(newConfig...)
 	ac := &AlmsConfig{}
 	if err != nil || !checkMapStringInterface(acm, newConfig) {
@@ -77,13 +77,13 @@ func GetAlmsConfigByPlayerID(playerID uint64) (*AlmsConfig, error) {
 
 	} else {
 		ac = &AlmsConfig{
-			GetNorm:             InterToint64(acm[AlmsGetNorm]),
-			GetTimes:            int(InterToint64(acm[AlmsGetTimes])),
-			GetNumber:           InterToint64(acm[AlmsGetNumber]),
-			AlmsCountDonw:       int(InterToint64(acm[AlmsCountDonw])),
-			DepositCountDonw:    int(InterToint64(acm[DepositCountDonw])),
-			GemeLeveIsOpentAlms: JSONToGameLeveConfig(acm[AlmsGameLeveIsOK].(string)),
-			Version:             int(InterToint64(acm[AlmsVersion])),
+			GetNorm:          InterToint64(acm[AlmsGetNorm]),
+			GetTimes:         int(InterToint64(acm[AlmsGetTimes])),
+			GetNumber:        InterToint64(acm[AlmsGetNumber]),
+			AlmsCountDonw:    int(InterToint64(acm[AlmsCountDonw])),
+			DepositCountDonw: int(InterToint64(acm[DepositCountDonw])),
+			GameLeveConfigs:  JSONToGameLeveConfig(acm[GameLeveConfigs].(string)),
+			Version:          int(InterToint64(acm[AlmsVersion])),
 		}
 	}
 	// 获取当前玩家救济已领取次数t_hall_info
@@ -137,20 +137,21 @@ func GetDBAlmsConfigData() (*AlmsConfig, error) {
 	glos := make([]*GameLeveConfig, 0, len(tgcs))
 	for _, tgc := range tgcs {
 		glo := &GameLeveConfig{
-			GameID:  int32(tgc.Gameid),
-			LevelID: int32(tgc.Levelid),
-			IsOpen:  tgc.Isalms,
+			GameID:    int32(tgc.Gameid),
+			LevelID:   int32(tgc.Levelid),
+			LowScores: int64(tgc.Lowscores),
+			IsOpen:    tgc.Isalms,
 		}
 		glos = append(glos, glo)
 	}
 	ac := &AlmsConfig{
-		GetNorm:             int64(almsConfigData.Getnorm),
-		GetTimes:            almsConfigData.Gettimes,
-		GetNumber:           int64(almsConfigData.Getnumber),
-		AlmsCountDonw:       almsConfigData.Almscountdonw,
-		DepositCountDonw:    almsConfigData.Depositcountdonw,
-		GemeLeveIsOpentAlms: glos,
-		Version:             almsConfigData.Version,
+		GetNorm:          int64(almsConfigData.Getnorm),
+		GetTimes:         almsConfigData.Gettimes,
+		GetNumber:        int64(almsConfigData.Getnumber),
+		AlmsCountDonw:    almsConfigData.Almscountdonw,
+		DepositCountDonw: almsConfigData.Depositcountdonw,
+		GameLeveConfigs:  glos,
+		Version:          almsConfigData.Version,
 	}
 	return ac, nil
 }
