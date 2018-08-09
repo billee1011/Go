@@ -1,3 +1,5 @@
+#!/bin/bash
+
 pushd configuration 
 serviceloader configuration --config=config.yml &
 popd 
@@ -26,10 +28,6 @@ pushd match
 nohup  serviceloader match --config=config.yml  &
 popd 
 
-pushd gold 
-sh ./start.sh
-popd 
-
 pushd robot 
 nohup serviceloader robot --config=config.yml  &
 popd
@@ -43,4 +41,13 @@ pushd msgserver
 nohup serviceloader msgserver --config=config.yml  &
 popd
 
+# 依赖hall服
+sleep 2 
 
+pushd alms
+nohup serviceloader alms --config=config.yml  &
+popd
+
+pushd back
+nohup serviceloader back --config=config.yml  &
+popd

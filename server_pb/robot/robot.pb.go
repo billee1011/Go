@@ -17,16 +17,44 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 // GameConfig 游戏玩法信息
 type GameConfig struct {
-	GameId  uint32 `protobuf:"varint,1,opt,name=game_id,json=gameId" json:"game_id,omitempty"`
-	LevelId uint32 `protobuf:"varint,2,opt,name=level_id,json=levelId" json:"level_id,omitempty"`
+	GameId               uint32   `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
+	LevelId              uint32   `protobuf:"varint,2,opt,name=level_id,json=levelId,proto3" json:"level_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GameConfig) Reset()                    { *m = GameConfig{} }
-func (m *GameConfig) String() string            { return proto.CompactTextString(m) }
-func (*GameConfig) ProtoMessage()               {}
-func (*GameConfig) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+func (m *GameConfig) Reset()         { *m = GameConfig{} }
+func (m *GameConfig) String() string { return proto.CompactTextString(m) }
+func (*GameConfig) ProtoMessage()    {}
+func (*GameConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{0}
+}
+func (m *GameConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GameConfig.Unmarshal(m, b)
+}
+func (m *GameConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GameConfig.Marshal(b, m, deterministic)
+}
+func (dst *GameConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameConfig.Merge(dst, src)
+}
+func (m *GameConfig) XXX_Size() int {
+	return xxx_messageInfo_GameConfig.Size(m)
+}
+func (m *GameConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_GameConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GameConfig proto.InternalMessageInfo
 
 func (m *GameConfig) GetGameId() uint32 {
 	if m != nil {
@@ -44,14 +72,36 @@ func (m *GameConfig) GetLevelId() uint32 {
 
 // GameWinRate 游戏对应的胜率
 type GameWinRate struct {
-	Game    *GameConfig `protobuf:"bytes,1,opt,name=game" json:"game,omitempty"`
-	WinRate int32       `protobuf:"varint,2,opt,name=win_rate,json=winRate" json:"win_rate,omitempty"`
+	Game                 *GameConfig `protobuf:"bytes,1,opt,name=game,proto3" json:"game,omitempty"`
+	WinRate              int32       `protobuf:"varint,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
 }
 
-func (m *GameWinRate) Reset()                    { *m = GameWinRate{} }
-func (m *GameWinRate) String() string            { return proto.CompactTextString(m) }
-func (*GameWinRate) ProtoMessage()               {}
-func (*GameWinRate) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+func (m *GameWinRate) Reset()         { *m = GameWinRate{} }
+func (m *GameWinRate) String() string { return proto.CompactTextString(m) }
+func (*GameWinRate) ProtoMessage()    {}
+func (*GameWinRate) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{1}
+}
+func (m *GameWinRate) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GameWinRate.Unmarshal(m, b)
+}
+func (m *GameWinRate) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GameWinRate.Marshal(b, m, deterministic)
+}
+func (dst *GameWinRate) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameWinRate.Merge(dst, src)
+}
+func (m *GameWinRate) XXX_Size() int {
+	return xxx_messageInfo_GameWinRate.Size(m)
+}
+func (m *GameWinRate) XXX_DiscardUnknown() {
+	xxx_messageInfo_GameWinRate.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GameWinRate proto.InternalMessageInfo
 
 func (m *GameWinRate) GetGame() *GameConfig {
 	if m != nil {
@@ -69,17 +119,39 @@ func (m *GameWinRate) GetWinRate() int32 {
 
 // RobotPlayerInfo 机器人玩家信息
 type RobotPlayerInfo struct {
-	NickName    string           `protobuf:"bytes,1,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	Avatar      string           `protobuf:"bytes,2,opt,name=avatar" json:"avatar,omitempty"`
-	Coin        uint64           `protobuf:"varint,3,opt,name=coin" json:"coin,omitempty"`
-	State       RobotPlayerState `protobuf:"varint,4,opt,name=state,enum=robot.RobotPlayerState" json:"state,omitempty"`
-	GameWinRate *GameWinRate     `protobuf:"bytes,5,opt,name=game_win_rate,json=gameWinRate" json:"game_win_rate,omitempty"`
+	NickName             string           `protobuf:"bytes,1,opt,name=nick_name,json=nickName,proto3" json:"nick_name,omitempty"`
+	Avatar               string           `protobuf:"bytes,2,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Coin                 uint64           `protobuf:"varint,3,opt,name=coin,proto3" json:"coin,omitempty"`
+	State                RobotPlayerState `protobuf:"varint,4,opt,name=state,proto3,enum=robot.RobotPlayerState" json:"state,omitempty"`
+	GameWinRate          *GameWinRate     `protobuf:"bytes,5,opt,name=game_win_rate,json=gameWinRate,proto3" json:"game_win_rate,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *RobotPlayerInfo) Reset()                    { *m = RobotPlayerInfo{} }
-func (m *RobotPlayerInfo) String() string            { return proto.CompactTextString(m) }
-func (*RobotPlayerInfo) ProtoMessage()               {}
-func (*RobotPlayerInfo) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
+func (m *RobotPlayerInfo) Reset()         { *m = RobotPlayerInfo{} }
+func (m *RobotPlayerInfo) String() string { return proto.CompactTextString(m) }
+func (*RobotPlayerInfo) ProtoMessage()    {}
+func (*RobotPlayerInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{2}
+}
+func (m *RobotPlayerInfo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RobotPlayerInfo.Unmarshal(m, b)
+}
+func (m *RobotPlayerInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RobotPlayerInfo.Marshal(b, m, deterministic)
+}
+func (dst *RobotPlayerInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RobotPlayerInfo.Merge(dst, src)
+}
+func (m *RobotPlayerInfo) XXX_Size() int {
+	return xxx_messageInfo_RobotPlayerInfo.Size(m)
+}
+func (m *RobotPlayerInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_RobotPlayerInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RobotPlayerInfo proto.InternalMessageInfo
 
 func (m *RobotPlayerInfo) GetNickName() string {
 	if m != nil {
@@ -118,14 +190,36 @@ func (m *RobotPlayerInfo) GetGameWinRate() *GameWinRate {
 
 // WinRateRange 胜率范围
 type WinRateRange struct {
-	High int32 `protobuf:"varint,1,opt,name=high" json:"high,omitempty"`
-	Low  int32 `protobuf:"varint,2,opt,name=low" json:"low,omitempty"`
+	High                 int32    `protobuf:"varint,1,opt,name=high,proto3" json:"high,omitempty"`
+	Low                  int32    `protobuf:"varint,2,opt,name=low,proto3" json:"low,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *WinRateRange) Reset()                    { *m = WinRateRange{} }
-func (m *WinRateRange) String() string            { return proto.CompactTextString(m) }
-func (*WinRateRange) ProtoMessage()               {}
-func (*WinRateRange) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
+func (m *WinRateRange) Reset()         { *m = WinRateRange{} }
+func (m *WinRateRange) String() string { return proto.CompactTextString(m) }
+func (*WinRateRange) ProtoMessage()    {}
+func (*WinRateRange) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{3}
+}
+func (m *WinRateRange) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WinRateRange.Unmarshal(m, b)
+}
+func (m *WinRateRange) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WinRateRange.Marshal(b, m, deterministic)
+}
+func (dst *WinRateRange) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WinRateRange.Merge(dst, src)
+}
+func (m *WinRateRange) XXX_Size() int {
+	return xxx_messageInfo_WinRateRange.Size(m)
+}
+func (m *WinRateRange) XXX_DiscardUnknown() {
+	xxx_messageInfo_WinRateRange.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_WinRateRange proto.InternalMessageInfo
 
 func (m *WinRateRange) GetHigh() int32 {
 	if m != nil {
@@ -143,14 +237,36 @@ func (m *WinRateRange) GetLow() int32 {
 
 // CoinsRange 金币范围
 type CoinsRange struct {
-	High int64 `protobuf:"varint,1,opt,name=high" json:"high,omitempty"`
-	Low  int64 `protobuf:"varint,2,opt,name=low" json:"low,omitempty"`
+	High                 int64    `protobuf:"varint,1,opt,name=high,proto3" json:"high,omitempty"`
+	Low                  int64    `protobuf:"varint,2,opt,name=low,proto3" json:"low,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CoinsRange) Reset()                    { *m = CoinsRange{} }
-func (m *CoinsRange) String() string            { return proto.CompactTextString(m) }
-func (*CoinsRange) ProtoMessage()               {}
-func (*CoinsRange) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
+func (m *CoinsRange) Reset()         { *m = CoinsRange{} }
+func (m *CoinsRange) String() string { return proto.CompactTextString(m) }
+func (*CoinsRange) ProtoMessage()    {}
+func (*CoinsRange) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{4}
+}
+func (m *CoinsRange) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CoinsRange.Unmarshal(m, b)
+}
+func (m *CoinsRange) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CoinsRange.Marshal(b, m, deterministic)
+}
+func (dst *CoinsRange) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CoinsRange.Merge(dst, src)
+}
+func (m *CoinsRange) XXX_Size() int {
+	return xxx_messageInfo_CoinsRange.Size(m)
+}
+func (m *CoinsRange) XXX_DiscardUnknown() {
+	xxx_messageInfo_CoinsRange.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CoinsRange proto.InternalMessageInfo
 
 func (m *CoinsRange) GetHigh() int64 {
 	if m != nil {
@@ -168,16 +284,38 @@ func (m *CoinsRange) GetLow() int64 {
 
 // GetLeisureRobotInfoReq 获取空闲机器人信息请求
 type GetLeisureRobotInfoReq struct {
-	Game         *GameConfig      `protobuf:"bytes,1,opt,name=game" json:"game,omitempty"`
-	WinRateRange *WinRateRange    `protobuf:"bytes,2,opt,name=win_rate_range,json=winRateRange" json:"win_rate_range,omitempty"`
-	CoinsRange   *CoinsRange      `protobuf:"bytes,3,opt,name=coins_range,json=coinsRange" json:"coins_range,omitempty"`
-	NewState     RobotPlayerState `protobuf:"varint,4,opt,name=new_state,json=newState,enum=robot.RobotPlayerState" json:"new_state,omitempty"`
+	Game                 *GameConfig      `protobuf:"bytes,1,opt,name=game,proto3" json:"game,omitempty"`
+	WinRateRange         *WinRateRange    `protobuf:"bytes,2,opt,name=win_rate_range,json=winRateRange,proto3" json:"win_rate_range,omitempty"`
+	CoinsRange           *CoinsRange      `protobuf:"bytes,3,opt,name=coins_range,json=coinsRange,proto3" json:"coins_range,omitempty"`
+	NewState             RobotPlayerState `protobuf:"varint,4,opt,name=new_state,json=newState,proto3,enum=robot.RobotPlayerState" json:"new_state,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *GetLeisureRobotInfoReq) Reset()                    { *m = GetLeisureRobotInfoReq{} }
-func (m *GetLeisureRobotInfoReq) String() string            { return proto.CompactTextString(m) }
-func (*GetLeisureRobotInfoReq) ProtoMessage()               {}
-func (*GetLeisureRobotInfoReq) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
+func (m *GetLeisureRobotInfoReq) Reset()         { *m = GetLeisureRobotInfoReq{} }
+func (m *GetLeisureRobotInfoReq) String() string { return proto.CompactTextString(m) }
+func (*GetLeisureRobotInfoReq) ProtoMessage()    {}
+func (*GetLeisureRobotInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{5}
+}
+func (m *GetLeisureRobotInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetLeisureRobotInfoReq.Unmarshal(m, b)
+}
+func (m *GetLeisureRobotInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetLeisureRobotInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *GetLeisureRobotInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetLeisureRobotInfoReq.Merge(dst, src)
+}
+func (m *GetLeisureRobotInfoReq) XXX_Size() int {
+	return xxx_messageInfo_GetLeisureRobotInfoReq.Size(m)
+}
+func (m *GetLeisureRobotInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetLeisureRobotInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetLeisureRobotInfoReq proto.InternalMessageInfo
 
 func (m *GetLeisureRobotInfoReq) GetGame() *GameConfig {
 	if m != nil {
@@ -209,16 +347,38 @@ func (m *GetLeisureRobotInfoReq) GetNewState() RobotPlayerState {
 
 // GetLeisureRobotInfoRsp 获取空闲机器人信息响应
 type GetLeisureRobotInfoRsp struct {
-	RobotPlayerId uint64 `protobuf:"varint,1,opt,name=robot_player_id,json=robotPlayerId" json:"robot_player_id,omitempty"`
-	Coin          int64  `protobuf:"varint,2,opt,name=coin" json:"coin,omitempty"`
-	WinRate       int32  `protobuf:"varint,3,opt,name=win_rate,json=winRate" json:"win_rate,omitempty"`
-	ErrCode       int32  `protobuf:"varint,4,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	RobotPlayerId        uint64   `protobuf:"varint,1,opt,name=robot_player_id,json=robotPlayerId,proto3" json:"robot_player_id,omitempty"`
+	Coin                 int64    `protobuf:"varint,2,opt,name=coin,proto3" json:"coin,omitempty"`
+	WinRate              int32    `protobuf:"varint,3,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ErrCode              int32    `protobuf:"varint,4,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetLeisureRobotInfoRsp) Reset()                    { *m = GetLeisureRobotInfoRsp{} }
-func (m *GetLeisureRobotInfoRsp) String() string            { return proto.CompactTextString(m) }
-func (*GetLeisureRobotInfoRsp) ProtoMessage()               {}
-func (*GetLeisureRobotInfoRsp) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
+func (m *GetLeisureRobotInfoRsp) Reset()         { *m = GetLeisureRobotInfoRsp{} }
+func (m *GetLeisureRobotInfoRsp) String() string { return proto.CompactTextString(m) }
+func (*GetLeisureRobotInfoRsp) ProtoMessage()    {}
+func (*GetLeisureRobotInfoRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{6}
+}
+func (m *GetLeisureRobotInfoRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetLeisureRobotInfoRsp.Unmarshal(m, b)
+}
+func (m *GetLeisureRobotInfoRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetLeisureRobotInfoRsp.Marshal(b, m, deterministic)
+}
+func (dst *GetLeisureRobotInfoRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetLeisureRobotInfoRsp.Merge(dst, src)
+}
+func (m *GetLeisureRobotInfoRsp) XXX_Size() int {
+	return xxx_messageInfo_GetLeisureRobotInfoRsp.Size(m)
+}
+func (m *GetLeisureRobotInfoRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetLeisureRobotInfoRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetLeisureRobotInfoRsp proto.InternalMessageInfo
 
 func (m *GetLeisureRobotInfoRsp) GetRobotPlayerId() uint64 {
 	if m != nil {
@@ -250,17 +410,39 @@ func (m *GetLeisureRobotInfoRsp) GetErrCode() int32 {
 
 // SetRobotPlayerStateReq 設置机器人玩家状态請求
 type SetRobotPlayerStateReq struct {
-	RobotPlayerId uint64           `protobuf:"varint,1,opt,name=robot_player_id,json=robotPlayerId" json:"robot_player_id,omitempty"`
-	NewState      RobotPlayerState `protobuf:"varint,2,opt,name=new_state,json=newState,enum=robot.RobotPlayerState" json:"new_state,omitempty"`
-	OldState      RobotPlayerState `protobuf:"varint,3,opt,name=old_state,json=oldState,enum=robot.RobotPlayerState" json:"old_state,omitempty"`
-	ServerType    ServerType       `protobuf:"varint,4,opt,name=server_type,json=serverType,enum=robot.ServerType" json:"server_type,omitempty"`
-	ServerAddr    string           `protobuf:"bytes,5,opt,name=server_addr,json=serverAddr" json:"server_addr,omitempty"`
+	RobotPlayerId        uint64           `protobuf:"varint,1,opt,name=robot_player_id,json=robotPlayerId,proto3" json:"robot_player_id,omitempty"`
+	NewState             RobotPlayerState `protobuf:"varint,2,opt,name=new_state,json=newState,proto3,enum=robot.RobotPlayerState" json:"new_state,omitempty"`
+	OldState             RobotPlayerState `protobuf:"varint,3,opt,name=old_state,json=oldState,proto3,enum=robot.RobotPlayerState" json:"old_state,omitempty"`
+	ServerType           ServerType       `protobuf:"varint,4,opt,name=server_type,json=serverType,proto3,enum=robot.ServerType" json:"server_type,omitempty"`
+	ServerAddr           string           `protobuf:"bytes,5,opt,name=server_addr,json=serverAddr,proto3" json:"server_addr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *SetRobotPlayerStateReq) Reset()                    { *m = SetRobotPlayerStateReq{} }
-func (m *SetRobotPlayerStateReq) String() string            { return proto.CompactTextString(m) }
-func (*SetRobotPlayerStateReq) ProtoMessage()               {}
-func (*SetRobotPlayerStateReq) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
+func (m *SetRobotPlayerStateReq) Reset()         { *m = SetRobotPlayerStateReq{} }
+func (m *SetRobotPlayerStateReq) String() string { return proto.CompactTextString(m) }
+func (*SetRobotPlayerStateReq) ProtoMessage()    {}
+func (*SetRobotPlayerStateReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{7}
+}
+func (m *SetRobotPlayerStateReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetRobotPlayerStateReq.Unmarshal(m, b)
+}
+func (m *SetRobotPlayerStateReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetRobotPlayerStateReq.Marshal(b, m, deterministic)
+}
+func (dst *SetRobotPlayerStateReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetRobotPlayerStateReq.Merge(dst, src)
+}
+func (m *SetRobotPlayerStateReq) XXX_Size() int {
+	return xxx_messageInfo_SetRobotPlayerStateReq.Size(m)
+}
+func (m *SetRobotPlayerStateReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetRobotPlayerStateReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetRobotPlayerStateReq proto.InternalMessageInfo
 
 func (m *SetRobotPlayerStateReq) GetRobotPlayerId() uint64 {
 	if m != nil {
@@ -299,14 +481,36 @@ func (m *SetRobotPlayerStateReq) GetServerAddr() string {
 
 // SetRobotPlayerStateRsp 設置机器人玩家状态响应
 type SetRobotPlayerStateRsp struct {
-	Result  bool  `protobuf:"varint,1,opt,name=result" json:"result,omitempty"`
-	ErrCode int32 `protobuf:"varint,2,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	Result               bool     `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"`
+	ErrCode              int32    `protobuf:"varint,2,opt,name=err_code,json=errCode,proto3" json:"err_code,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SetRobotPlayerStateRsp) Reset()                    { *m = SetRobotPlayerStateRsp{} }
-func (m *SetRobotPlayerStateRsp) String() string            { return proto.CompactTextString(m) }
-func (*SetRobotPlayerStateRsp) ProtoMessage()               {}
-func (*SetRobotPlayerStateRsp) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
+func (m *SetRobotPlayerStateRsp) Reset()         { *m = SetRobotPlayerStateRsp{} }
+func (m *SetRobotPlayerStateRsp) String() string { return proto.CompactTextString(m) }
+func (*SetRobotPlayerStateRsp) ProtoMessage()    {}
+func (*SetRobotPlayerStateRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_robot_d95685496104e965, []int{8}
+}
+func (m *SetRobotPlayerStateRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetRobotPlayerStateRsp.Unmarshal(m, b)
+}
+func (m *SetRobotPlayerStateRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetRobotPlayerStateRsp.Marshal(b, m, deterministic)
+}
+func (dst *SetRobotPlayerStateRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetRobotPlayerStateRsp.Merge(dst, src)
+}
+func (m *SetRobotPlayerStateRsp) XXX_Size() int {
+	return xxx_messageInfo_SetRobotPlayerStateRsp.Size(m)
+}
+func (m *SetRobotPlayerStateRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetRobotPlayerStateRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetRobotPlayerStateRsp proto.InternalMessageInfo
 
 func (m *SetRobotPlayerStateRsp) GetResult() bool {
 	if m != nil {
@@ -342,8 +546,9 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for RobotService service
-
+// RobotServiceClient is the client API for RobotService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RobotServiceClient interface {
 	GetLeisureRobotInfoByInfo(ctx context.Context, in *GetLeisureRobotInfoReq, opts ...grpc.CallOption) (*GetLeisureRobotInfoRsp, error)
 	SetRobotPlayerState(ctx context.Context, in *SetRobotPlayerStateReq, opts ...grpc.CallOption) (*SetRobotPlayerStateRsp, error)
@@ -359,7 +564,7 @@ func NewRobotServiceClient(cc *grpc.ClientConn) RobotServiceClient {
 
 func (c *robotServiceClient) GetLeisureRobotInfoByInfo(ctx context.Context, in *GetLeisureRobotInfoReq, opts ...grpc.CallOption) (*GetLeisureRobotInfoRsp, error) {
 	out := new(GetLeisureRobotInfoRsp)
-	err := grpc.Invoke(ctx, "/robot.RobotService/GetLeisureRobotInfoByInfo", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/robot.RobotService/GetLeisureRobotInfoByInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -368,15 +573,14 @@ func (c *robotServiceClient) GetLeisureRobotInfoByInfo(ctx context.Context, in *
 
 func (c *robotServiceClient) SetRobotPlayerState(ctx context.Context, in *SetRobotPlayerStateReq, opts ...grpc.CallOption) (*SetRobotPlayerStateRsp, error) {
 	out := new(SetRobotPlayerStateRsp)
-	err := grpc.Invoke(ctx, "/robot.RobotService/SetRobotPlayerState", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/robot.RobotService/SetRobotPlayerState", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for RobotService service
-
+// RobotServiceServer is the server API for RobotService service.
 type RobotServiceServer interface {
 	GetLeisureRobotInfoByInfo(context.Context, *GetLeisureRobotInfoReq) (*GetLeisureRobotInfoRsp, error)
 	SetRobotPlayerState(context.Context, *SetRobotPlayerStateReq) (*SetRobotPlayerStateRsp, error)
@@ -439,9 +643,9 @@ var _RobotService_serviceDesc = grpc.ServiceDesc{
 	Metadata: "robot.proto",
 }
 
-func init() { proto.RegisterFile("robot.proto", fileDescriptor1) }
+func init() { proto.RegisterFile("robot.proto", fileDescriptor_robot_d95685496104e965) }
 
-var fileDescriptor1 = []byte{
+var fileDescriptor_robot_d95685496104e965 = []byte{
 	// 583 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0x4f, 0x6f, 0xd3, 0x4e,
 	0x10, 0xfd, 0x39, 0x8e, 0x9b, 0x64, 0xdc, 0x3f, 0x3f, 0xb6, 0x52, 0xff, 0x04, 0x21, 0x22, 0x4b,

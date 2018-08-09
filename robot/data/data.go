@@ -1,8 +1,6 @@
 package data
 
 import (
-	"steve/entity/cache"
-
 	"github.com/Sirupsen/logrus"
 )
 
@@ -13,10 +11,6 @@ const (
 	RobotPlayerGameIDWinRate string = "gameidwinrate"
 	//RobotPlayerGameIDField 玩家游戏 ID 字段名
 	RobotPlayerGameIDField string = "gameid"
-	//RobotPlayerNickNameField 玩家昵称字段
-	RobotPlayerNickNameField string = "nickname"
-	// RobotPlayerAvatarField 玩家头像
-	RobotPlayerAvatarField = "avatar"
 	// RobotPlayerStateField ...玩家状态
 	RobotPlayerStateField = "game_state"
 	// RobotPlayerGateAddrField ...网关服地址
@@ -29,7 +23,7 @@ const (
 
 //InitRobotRedis 初始化机器人redis
 func InitRobotRedis() {
-	robotMap := make(map[int64]*cache.RobotPlayer)
+	robotMap := make(map[int64]*RobotPlayer)
 	log := logrus.WithFields(logrus.Fields{"func_name": "initRobotRedis"})
 	if err := getMysqlRobotFieldValuedAll(robotMap); err != nil {
 		log.WithError(err).Errorln("初始化从mysql获取机器人失败")
@@ -49,7 +43,7 @@ func InitRobotRedis() {
 }
 
 //GetLeisureRobot 获取空闲机器人
-func GetLeisureRobot() ([]*cache.RobotPlayer, error) {
+func GetLeisureRobot() ([]*RobotPlayer, error) {
 	log := logrus.WithFields(logrus.Fields{"func_name": "GetLeisureRobot"})
 	robotPlayerIDAll, err := getRobotIDAll() // 获取所有机器人的玩家ID
 	if err != nil {
@@ -57,7 +51,7 @@ func GetLeisureRobot() ([]*cache.RobotPlayer, error) {
 	}
 	if len(robotPlayerIDAll) == 0 {
 		log.Info("数据库中不存在机器人")
-		return []*cache.RobotPlayer{}, nil
+		return []*RobotPlayer{}, nil
 	}
 	robots, lackRobotsID := getRedisLeisureRobotPlayer(robotPlayerIDAll) // 从redis 获取 空闲的RobotPlayer
 	if len(lackRobotsID) > 0 {                                           // 存在redis 中 不存在 机器人ID

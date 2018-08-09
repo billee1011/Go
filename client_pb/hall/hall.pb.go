@@ -31,7 +31,7 @@ func (m *HallGetPlayerInfoReq) Reset()         { *m = HallGetPlayerInfoReq{} }
 func (m *HallGetPlayerInfoReq) String() string { return proto.CompactTextString(m) }
 func (*HallGetPlayerInfoReq) ProtoMessage()    {}
 func (*HallGetPlayerInfoReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{0}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{0}
 }
 func (m *HallGetPlayerInfoReq) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallGetPlayerInfoReq.Unmarshal(m, b)
@@ -62,13 +62,14 @@ func (m *HallGetPlayerInfoReq) GetReserve() int32 {
 type HallGetPlayerInfoRsp struct {
 	ErrCode              *uint32             `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
 	ErrDesc              *string             `protobuf:"bytes,2,opt,name=err_desc,json=errDesc" json:"err_desc,omitempty"`
-	ShowUid              *uint64             `protobuf:"varint,3,opt,name=show_uid,json=showUid" json:"show_uid,omitempty"`
-	NickName             *string             `protobuf:"bytes,4,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	Gender               *uint32             `protobuf:"varint,5,opt,name=gender" json:"gender,omitempty"`
-	Avator               *string             `protobuf:"bytes,6,opt,name=avator" json:"avator,omitempty"`
-	Coin                 *uint64             `protobuf:"varint,7,opt,name=coin" json:"coin,omitempty"`
-	PlayerState          *common.PlayerState `protobuf:"varint,8,opt,name=player_state,json=playerState,enum=common.PlayerState" json:"player_state,omitempty"`
-	GameId               *common.GameId      `protobuf:"varint,9,opt,name=game_id,json=gameId,enum=common.GameId" json:"game_id,omitempty"`
+	NickName             *string             `protobuf:"bytes,3,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
+	Coin                 *uint64             `protobuf:"varint,4,opt,name=coin" json:"coin,omitempty"`
+	PlayerState          *common.PlayerState `protobuf:"varint,5,opt,name=player_state,json=playerState,enum=common.PlayerState" json:"player_state,omitempty"`
+	GameId               *common.GameId      `protobuf:"varint,6,opt,name=game_id,json=gameId,enum=common.GameId" json:"game_id,omitempty"`
+	RealnameStatus       *uint32             `protobuf:"varint,7,opt,name=realname_status,json=realnameStatus" json:"realname_status,omitempty"`
+	ShowUid              *uint64             `protobuf:"varint,8,opt,name=show_uid,json=showUid" json:"show_uid,omitempty"`
+	Gender               *uint32             `protobuf:"varint,9,opt,name=gender" json:"gender,omitempty"`
+	Avator               *string             `protobuf:"bytes,10,opt,name=avator" json:"avator,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
 	XXX_sizecache        int32               `json:"-"`
@@ -78,7 +79,7 @@ func (m *HallGetPlayerInfoRsp) Reset()         { *m = HallGetPlayerInfoRsp{} }
 func (m *HallGetPlayerInfoRsp) String() string { return proto.CompactTextString(m) }
 func (*HallGetPlayerInfoRsp) ProtoMessage()    {}
 func (*HallGetPlayerInfoRsp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{1}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{1}
 }
 func (m *HallGetPlayerInfoRsp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallGetPlayerInfoRsp.Unmarshal(m, b)
@@ -112,30 +113,9 @@ func (m *HallGetPlayerInfoRsp) GetErrDesc() string {
 	return ""
 }
 
-func (m *HallGetPlayerInfoRsp) GetShowUid() uint64 {
-	if m != nil && m.ShowUid != nil {
-		return *m.ShowUid
-	}
-	return 0
-}
-
 func (m *HallGetPlayerInfoRsp) GetNickName() string {
 	if m != nil && m.NickName != nil {
 		return *m.NickName
-	}
-	return ""
-}
-
-func (m *HallGetPlayerInfoRsp) GetGender() uint32 {
-	if m != nil && m.Gender != nil {
-		return *m.Gender
-	}
-	return 0
-}
-
-func (m *HallGetPlayerInfoRsp) GetAvator() string {
-	if m != nil && m.Avator != nil {
-		return *m.Avator
 	}
 	return ""
 }
@@ -161,22 +141,50 @@ func (m *HallGetPlayerInfoRsp) GetGameId() common.GameId {
 	return common.GameId_GAMEID_XUELIU
 }
 
+func (m *HallGetPlayerInfoRsp) GetRealnameStatus() uint32 {
+	if m != nil && m.RealnameStatus != nil {
+		return *m.RealnameStatus
+	}
+	return 0
+}
+
+func (m *HallGetPlayerInfoRsp) GetShowUid() uint64 {
+	if m != nil && m.ShowUid != nil {
+		return *m.ShowUid
+	}
+	return 0
+}
+
+func (m *HallGetPlayerInfoRsp) GetGender() uint32 {
+	if m != nil && m.Gender != nil {
+		return *m.Gender
+	}
+	return 0
+}
+
+func (m *HallGetPlayerInfoRsp) GetAvator() string {
+	if m != nil && m.Avator != nil {
+		return *m.Avator
+	}
+	return ""
+}
+
 // HallUpdatePlayerInfoReq 更新玩家信息请求
 type HallUpdatePlayerInfoReq struct {
-	Uid                  *uint64  `protobuf:"varint,1,opt,name=uid" json:"uid,omitempty"`
-	NickName             *string  `protobuf:"bytes,2,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
-	Avator               *string  `protobuf:"bytes,3,opt,name=avator" json:"avator,omitempty"`
-	Gender               *uint32  `protobuf:"varint,4,opt,name=gender" json:"gender,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Uid                  *uint64              `protobuf:"varint,1,opt,name=uid" json:"uid,omitempty"`
+	NickName             *string              `protobuf:"bytes,2,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
+	Avator               *string              `protobuf:"bytes,3,opt,name=avator" json:"avator,omitempty"`
+	Gender               *common.PlayerGender `protobuf:"varint,4,opt,name=gender,enum=common.PlayerGender" json:"gender,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *HallUpdatePlayerInfoReq) Reset()         { *m = HallUpdatePlayerInfoReq{} }
 func (m *HallUpdatePlayerInfoReq) String() string { return proto.CompactTextString(m) }
 func (*HallUpdatePlayerInfoReq) ProtoMessage()    {}
 func (*HallUpdatePlayerInfoReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{2}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{2}
 }
 func (m *HallUpdatePlayerInfoReq) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallUpdatePlayerInfoReq.Unmarshal(m, b)
@@ -217,27 +225,29 @@ func (m *HallUpdatePlayerInfoReq) GetAvator() string {
 	return ""
 }
 
-func (m *HallUpdatePlayerInfoReq) GetGender() uint32 {
+func (m *HallUpdatePlayerInfoReq) GetGender() common.PlayerGender {
 	if m != nil && m.Gender != nil {
 		return *m.Gender
 	}
-	return 0
+	return common.PlayerGender_PG_NIL
 }
 
 // HallUpdatePlayerInfoRsp 更新玩家信应答
 type HallUpdatePlayerInfoRsp struct {
-	ErrCode              *uint32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
-	Result               *bool    `protobuf:"varint,2,opt,name=result" json:"result,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	ErrCode              *uint32              `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	NickName             *string              `protobuf:"bytes,2,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`
+	Avator               *string              `protobuf:"bytes,3,opt,name=avator" json:"avator,omitempty"`
+	Gender               *common.PlayerGender `protobuf:"varint,4,opt,name=gender,enum=common.PlayerGender" json:"gender,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *HallUpdatePlayerInfoRsp) Reset()         { *m = HallUpdatePlayerInfoRsp{} }
 func (m *HallUpdatePlayerInfoRsp) String() string { return proto.CompactTextString(m) }
 func (*HallUpdatePlayerInfoRsp) ProtoMessage()    {}
 func (*HallUpdatePlayerInfoRsp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{3}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{3}
 }
 func (m *HallUpdatePlayerInfoRsp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallUpdatePlayerInfoRsp.Unmarshal(m, b)
@@ -264,17 +274,31 @@ func (m *HallUpdatePlayerInfoRsp) GetErrCode() uint32 {
 	return 0
 }
 
-func (m *HallUpdatePlayerInfoRsp) GetResult() bool {
-	if m != nil && m.Result != nil {
-		return *m.Result
+func (m *HallUpdatePlayerInfoRsp) GetNickName() string {
+	if m != nil && m.NickName != nil {
+		return *m.NickName
 	}
-	return false
+	return ""
+}
+
+func (m *HallUpdatePlayerInfoRsp) GetAvator() string {
+	if m != nil && m.Avator != nil {
+		return *m.Avator
+	}
+	return ""
+}
+
+func (m *HallUpdatePlayerInfoRsp) GetGender() common.PlayerGender {
+	if m != nil && m.Gender != nil {
+		return *m.Gender
+	}
+	return common.PlayerGender_PG_NIL
 }
 
 // HallGetPlayerStateReq 获取玩家当前状态请求
 type HallGetPlayerStateReq struct {
 	Reserve              *int32   `protobuf:"varint,1,opt,name=reserve" json:"reserve,omitempty"`
-	UserData             *uint64  `protobuf:"varint,2,opt,name=userData" json:"userData,omitempty"`
+	UserData             *uint64  `protobuf:"varint,2,opt,name=user_data,json=userData" json:"user_data,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -284,7 +308,7 @@ func (m *HallGetPlayerStateReq) Reset()         { *m = HallGetPlayerStateReq{} }
 func (m *HallGetPlayerStateReq) String() string { return proto.CompactTextString(m) }
 func (*HallGetPlayerStateReq) ProtoMessage()    {}
 func (*HallGetPlayerStateReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{4}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{4}
 }
 func (m *HallGetPlayerStateReq) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallGetPlayerStateReq.Unmarshal(m, b)
@@ -322,7 +346,7 @@ func (m *HallGetPlayerStateReq) GetUserData() uint64 {
 type HallGetPlayerStateRsp struct {
 	PlayerState          *common.PlayerState `protobuf:"varint,1,opt,name=player_state,json=playerState,enum=common.PlayerState" json:"player_state,omitempty"`
 	GameId               *common.GameId      `protobuf:"varint,6,opt,name=game_id,json=gameId,enum=common.GameId" json:"game_id,omitempty"`
-	UserData             *uint64             `protobuf:"varint,2,opt,name=userData" json:"userData,omitempty"`
+	UserData             *uint64             `protobuf:"varint,2,opt,name=user_data,json=userData" json:"user_data,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
 	XXX_sizecache        int32               `json:"-"`
@@ -332,7 +356,7 @@ func (m *HallGetPlayerStateRsp) Reset()         { *m = HallGetPlayerStateRsp{} }
 func (m *HallGetPlayerStateRsp) String() string { return proto.CompactTextString(m) }
 func (*HallGetPlayerStateRsp) ProtoMessage()    {}
 func (*HallGetPlayerStateRsp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{5}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{5}
 }
 func (m *HallGetPlayerStateRsp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallGetPlayerStateRsp.Unmarshal(m, b)
@@ -385,7 +409,7 @@ func (m *HallGetGameListInfoReq) Reset()         { *m = HallGetGameListInfoReq{}
 func (m *HallGetGameListInfoReq) String() string { return proto.CompactTextString(m) }
 func (*HallGetGameListInfoReq) ProtoMessage()    {}
 func (*HallGetGameListInfoReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{6}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{6}
 }
 func (m *HallGetGameListInfoReq) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallGetGameListInfoReq.Unmarshal(m, b)
@@ -426,7 +450,7 @@ func (m *HallGetGameListInfoRsp) Reset()         { *m = HallGetGameListInfoRsp{}
 func (m *HallGetGameListInfoRsp) String() string { return proto.CompactTextString(m) }
 func (*HallGetGameListInfoRsp) ProtoMessage()    {}
 func (*HallGetGameListInfoRsp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_hall_cf1fe83f4455ea5e, []int{7}
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{7}
 }
 func (m *HallGetGameListInfoRsp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HallGetGameListInfoRsp.Unmarshal(m, b)
@@ -467,6 +491,258 @@ func (m *HallGetGameListInfoRsp) GetGameLevelConfig() []*common.GameLevelConfig 
 	return nil
 }
 
+// HallRealNameReq 实名认证请求
+type HallRealNameReq struct {
+	Name                 *string  `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	IdCard               *string  `protobuf:"bytes,2,opt,name=id_card,json=idCard" json:"id_card,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *HallRealNameReq) Reset()         { *m = HallRealNameReq{} }
+func (m *HallRealNameReq) String() string { return proto.CompactTextString(m) }
+func (*HallRealNameReq) ProtoMessage()    {}
+func (*HallRealNameReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{8}
+}
+func (m *HallRealNameReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HallRealNameReq.Unmarshal(m, b)
+}
+func (m *HallRealNameReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HallRealNameReq.Marshal(b, m, deterministic)
+}
+func (dst *HallRealNameReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HallRealNameReq.Merge(dst, src)
+}
+func (m *HallRealNameReq) XXX_Size() int {
+	return xxx_messageInfo_HallRealNameReq.Size(m)
+}
+func (m *HallRealNameReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_HallRealNameReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HallRealNameReq proto.InternalMessageInfo
+
+func (m *HallRealNameReq) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+func (m *HallRealNameReq) GetIdCard() string {
+	if m != nil && m.IdCard != nil {
+		return *m.IdCard
+	}
+	return ""
+}
+
+// HallRealNameRsp 实名认证响应
+type HallRealNameRsp struct {
+	ErrCode              *uint32  `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	ErrDesc              *string  `protobuf:"bytes,2,opt,name=err_desc,json=errDesc" json:"err_desc,omitempty"`
+	CoinReward           *uint64  `protobuf:"varint,3,opt,name=coin_reward,json=coinReward" json:"coin_reward,omitempty"`
+	NewCoin              *uint64  `protobuf:"varint,4,opt,name=new_coin,json=newCoin" json:"new_coin,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *HallRealNameRsp) Reset()         { *m = HallRealNameRsp{} }
+func (m *HallRealNameRsp) String() string { return proto.CompactTextString(m) }
+func (*HallRealNameRsp) ProtoMessage()    {}
+func (*HallRealNameRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{9}
+}
+func (m *HallRealNameRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HallRealNameRsp.Unmarshal(m, b)
+}
+func (m *HallRealNameRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HallRealNameRsp.Marshal(b, m, deterministic)
+}
+func (dst *HallRealNameRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HallRealNameRsp.Merge(dst, src)
+}
+func (m *HallRealNameRsp) XXX_Size() int {
+	return xxx_messageInfo_HallRealNameRsp.Size(m)
+}
+func (m *HallRealNameRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_HallRealNameRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HallRealNameRsp proto.InternalMessageInfo
+
+func (m *HallRealNameRsp) GetErrCode() uint32 {
+	if m != nil && m.ErrCode != nil {
+		return *m.ErrCode
+	}
+	return 0
+}
+
+func (m *HallRealNameRsp) GetErrDesc() string {
+	if m != nil && m.ErrDesc != nil {
+		return *m.ErrDesc
+	}
+	return ""
+}
+
+func (m *HallRealNameRsp) GetCoinReward() uint64 {
+	if m != nil && m.CoinReward != nil {
+		return *m.CoinReward
+	}
+	return 0
+}
+
+func (m *HallRealNameRsp) GetNewCoin() uint64 {
+	if m != nil && m.NewCoin != nil {
+		return *m.NewCoin
+	}
+	return 0
+}
+
+// HallGetPlayerGameInfoReq 获取玩家对应游戏的信息请求
+type HallGetPlayerGameInfoReq struct {
+	Uid                  *uint64        `protobuf:"varint,1,opt,name=uid" json:"uid,omitempty"`
+	GameId               *common.GameId `protobuf:"varint,2,opt,name=game_id,json=gameId,enum=common.GameId" json:"game_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *HallGetPlayerGameInfoReq) Reset()         { *m = HallGetPlayerGameInfoReq{} }
+func (m *HallGetPlayerGameInfoReq) String() string { return proto.CompactTextString(m) }
+func (*HallGetPlayerGameInfoReq) ProtoMessage()    {}
+func (*HallGetPlayerGameInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{10}
+}
+func (m *HallGetPlayerGameInfoReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HallGetPlayerGameInfoReq.Unmarshal(m, b)
+}
+func (m *HallGetPlayerGameInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HallGetPlayerGameInfoReq.Marshal(b, m, deterministic)
+}
+func (dst *HallGetPlayerGameInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HallGetPlayerGameInfoReq.Merge(dst, src)
+}
+func (m *HallGetPlayerGameInfoReq) XXX_Size() int {
+	return xxx_messageInfo_HallGetPlayerGameInfoReq.Size(m)
+}
+func (m *HallGetPlayerGameInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_HallGetPlayerGameInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HallGetPlayerGameInfoReq proto.InternalMessageInfo
+
+func (m *HallGetPlayerGameInfoReq) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoReq) GetGameId() common.GameId {
+	if m != nil && m.GameId != nil {
+		return *m.GameId
+	}
+	return common.GameId_GAMEID_XUELIU
+}
+
+// HallGetPlayerGameInfoRsp 获取玩家对应游戏的信息响应
+type HallGetPlayerGameInfoRsp struct {
+	ErrCode              *uint32            `protobuf:"varint,1,opt,name=err_code,json=errCode" json:"err_code,omitempty"`
+	Uid                  *uint64            `protobuf:"varint,2,opt,name=uid" json:"uid,omitempty"`
+	GameId               *common.GameId     `protobuf:"varint,3,opt,name=game_id,json=gameId,enum=common.GameId" json:"game_id,omitempty"`
+	TotalBureau          *uint32            `protobuf:"varint,4,opt,name=total_bureau,json=totalBureau" json:"total_bureau,omitempty"`
+	WinningRate          *float32           `protobuf:"fixed32,5,opt,name=winning_rate,json=winningRate" json:"winning_rate,omitempty"`
+	MaxWinningStream     *uint32            `protobuf:"varint,6,opt,name=max_winning_stream,json=maxWinningStream" json:"max_winning_stream,omitempty"`
+	MaxMultiple          *uint32            `protobuf:"varint,7,opt,name=max_multiple,json=maxMultiple" json:"max_multiple,omitempty"`
+	UserProperty         []*common.Property `protobuf:"bytes,8,rep,name=user_property,json=userProperty" json:"user_property,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *HallGetPlayerGameInfoRsp) Reset()         { *m = HallGetPlayerGameInfoRsp{} }
+func (m *HallGetPlayerGameInfoRsp) String() string { return proto.CompactTextString(m) }
+func (*HallGetPlayerGameInfoRsp) ProtoMessage()    {}
+func (*HallGetPlayerGameInfoRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_hall_3b06a3774f74ffe7, []int{11}
+}
+func (m *HallGetPlayerGameInfoRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HallGetPlayerGameInfoRsp.Unmarshal(m, b)
+}
+func (m *HallGetPlayerGameInfoRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HallGetPlayerGameInfoRsp.Marshal(b, m, deterministic)
+}
+func (dst *HallGetPlayerGameInfoRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HallGetPlayerGameInfoRsp.Merge(dst, src)
+}
+func (m *HallGetPlayerGameInfoRsp) XXX_Size() int {
+	return xxx_messageInfo_HallGetPlayerGameInfoRsp.Size(m)
+}
+func (m *HallGetPlayerGameInfoRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_HallGetPlayerGameInfoRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HallGetPlayerGameInfoRsp proto.InternalMessageInfo
+
+func (m *HallGetPlayerGameInfoRsp) GetErrCode() uint32 {
+	if m != nil && m.ErrCode != nil {
+		return *m.ErrCode
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetGameId() common.GameId {
+	if m != nil && m.GameId != nil {
+		return *m.GameId
+	}
+	return common.GameId_GAMEID_XUELIU
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetTotalBureau() uint32 {
+	if m != nil && m.TotalBureau != nil {
+		return *m.TotalBureau
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetWinningRate() float32 {
+	if m != nil && m.WinningRate != nil {
+		return *m.WinningRate
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetMaxWinningStream() uint32 {
+	if m != nil && m.MaxWinningStream != nil {
+		return *m.MaxWinningStream
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetMaxMultiple() uint32 {
+	if m != nil && m.MaxMultiple != nil {
+		return *m.MaxMultiple
+	}
+	return 0
+}
+
+func (m *HallGetPlayerGameInfoRsp) GetUserProperty() []*common.Property {
+	if m != nil {
+		return m.UserProperty
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*HallGetPlayerInfoReq)(nil), "hall.HallGetPlayerInfoReq")
 	proto.RegisterType((*HallGetPlayerInfoRsp)(nil), "hall.HallGetPlayerInfoRsp")
@@ -476,40 +752,59 @@ func init() {
 	proto.RegisterType((*HallGetPlayerStateRsp)(nil), "hall.HallGetPlayerStateRsp")
 	proto.RegisterType((*HallGetGameListInfoReq)(nil), "hall.HallGetGameListInfoReq")
 	proto.RegisterType((*HallGetGameListInfoRsp)(nil), "hall.HallGetGameListInfoRsp")
+	proto.RegisterType((*HallRealNameReq)(nil), "hall.HallRealNameReq")
+	proto.RegisterType((*HallRealNameRsp)(nil), "hall.HallRealNameRsp")
+	proto.RegisterType((*HallGetPlayerGameInfoReq)(nil), "hall.HallGetPlayerGameInfoReq")
+	proto.RegisterType((*HallGetPlayerGameInfoRsp)(nil), "hall.HallGetPlayerGameInfoRsp")
 }
 
-func init() { proto.RegisterFile("hall.proto", fileDescriptor_hall_cf1fe83f4455ea5e) }
+func init() { proto.RegisterFile("hall.proto", fileDescriptor_hall_3b06a3774f74ffe7) }
 
-var fileDescriptor_hall_cf1fe83f4455ea5e = []byte{
-	// 471 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0xcf, 0x6e, 0xd3, 0x40,
-	0x10, 0xc6, 0xe5, 0xd8, 0xb5, 0x9d, 0x49, 0x29, 0xb0, 0x94, 0x74, 0x29, 0x17, 0xcb, 0x17, 0x7c,
-	0x6a, 0x51, 0x90, 0x78, 0x00, 0x52, 0xa9, 0x54, 0x0a, 0x08, 0x19, 0xf5, 0xc2, 0xc5, 0x5a, 0xec,
-	0xa9, 0x6b, 0xb1, 0xf6, 0x9a, 0xdd, 0x4d, 0x80, 0xf7, 0xe0, 0x25, 0x38, 0xf0, 0x8e, 0x68, 0x37,
-	0x4e, 0x1b, 0x2b, 0xc1, 0x88, 0x53, 0xe6, 0x8f, 0x7e, 0x3b, 0xf3, 0x7d, 0x93, 0x04, 0xe0, 0x96,
-	0x71, 0x7e, 0xd6, 0x4a, 0xa1, 0x05, 0xf1, 0x4c, 0x7c, 0x7a, 0x98, 0x8b, 0xba, 0x16, 0xcd, 0xba,
-	0x16, 0xbf, 0x84, 0xe3, 0xb7, 0x8c, 0xf3, 0x4b, 0xd4, 0x1f, 0x38, 0xfb, 0x81, 0xf2, 0xaa, 0xb9,
-	0x11, 0x29, 0x7e, 0x25, 0x14, 0x02, 0x89, 0x0a, 0xe5, 0x0a, 0xa9, 0x13, 0x39, 0xc9, 0x41, 0xba,
-	0x49, 0xe3, 0x5f, 0xa3, 0x7d, 0x88, 0x6a, 0xc9, 0x33, 0x08, 0x51, 0xca, 0x2c, 0x17, 0xc5, 0x9a,
-	0x79, 0x90, 0x06, 0x28, 0xe5, 0x5c, 0x14, 0xb8, 0x69, 0x15, 0xa8, 0x72, 0x3a, 0x8a, 0x9c, 0x64,
-	0x6c, 0x5b, 0x17, 0xa8, 0x72, 0xd3, 0x52, 0xb7, 0xe2, 0x5b, 0xb6, 0xac, 0x0a, 0xea, 0x46, 0x4e,
-	0xe2, 0xa5, 0x81, 0xc9, 0xaf, 0xab, 0x82, 0x3c, 0x87, 0x71, 0x53, 0xe5, 0x5f, 0xb2, 0x86, 0xd5,
-	0x48, 0x3d, 0x8b, 0x85, 0xa6, 0xf0, 0x9e, 0xd5, 0x48, 0xa6, 0xe0, 0x97, 0xd8, 0x14, 0x28, 0xe9,
-	0x81, 0x9d, 0xd5, 0x65, 0xa6, 0xce, 0x56, 0x4c, 0x0b, 0x49, 0x7d, 0x4b, 0x74, 0x19, 0x21, 0xe0,
-	0xe5, 0xa2, 0x6a, 0x68, 0x60, 0x67, 0xd8, 0x98, 0xbc, 0x86, 0xc3, 0xd6, 0x4a, 0xc8, 0x94, 0x66,
-	0x1a, 0x69, 0x18, 0x39, 0xc9, 0xd1, 0xec, 0xc9, 0x59, 0xe7, 0xd0, 0x5a, 0xde, 0x47, 0xd3, 0x4a,
-	0x27, 0xed, 0x7d, 0x42, 0x5e, 0x40, 0x50, 0xb2, 0x1a, 0xb3, 0xaa, 0xa0, 0x63, 0x8b, 0x1c, 0x6d,
-	0x90, 0x4b, 0x56, 0xe3, 0x55, 0x91, 0xfa, 0xa5, 0xfd, 0x8c, 0xbf, 0xc3, 0x89, 0xb1, 0xea, 0xba,
-	0x2d, 0x98, 0xc6, 0xbe, 0xc1, 0x8f, 0xc0, 0x35, 0x92, 0x1d, 0xbb, 0x8e, 0x09, 0xfb, 0x72, 0x47,
-	0xbb, 0x72, 0x3b, 0x59, 0x6e, 0x4f, 0xd6, 0xbd, 0x0d, 0xde, 0xb6, 0x0d, 0xf1, 0xe2, 0x2f, 0x93,
-	0x87, 0xef, 0x34, 0x05, 0x5f, 0xa2, 0x5a, 0x72, 0x6d, 0xe7, 0x87, 0x69, 0x97, 0xc5, 0xef, 0xe0,
-	0x69, 0xef, 0xe4, 0x6b, 0x4f, 0x86, 0xbe, 0x26, 0xe4, 0x14, 0xc2, 0xa5, 0x42, 0x79, 0xc1, 0x34,
-	0xb3, 0x8f, 0x79, 0xe9, 0x5d, 0x1e, 0xff, 0x74, 0xf6, 0xbe, 0xa7, 0xda, 0x9d, 0x8b, 0x38, 0xff,
-	0x7f, 0x11, 0x7f, 0xe8, 0x22, 0x83, 0x6b, 0xcd, 0x60, 0xda, 0x6d, 0x65, 0xa0, 0x45, 0xa5, 0xf4,
-	0xbf, 0x7f, 0x0d, 0xbf, 0x9d, 0xfd, 0xd0, 0xb0, 0xcf, 0xaf, 0x60, 0x62, 0xd7, 0xcd, 0x45, 0x73,
-	0x53, 0x95, 0x74, 0x14, 0xb9, 0xc9, 0x64, 0x46, 0xb6, 0x57, 0x9e, 0xdb, 0x4e, 0x0a, 0xe5, 0x5d,
-	0x4c, 0xe6, 0xf0, 0xd8, 0x42, 0x1c, 0x57, 0xc8, 0x37, 0xa8, 0x6b, 0xd1, 0x93, 0x6d, 0x74, 0x61,
-	0xfa, 0x1d, 0xff, 0xb0, 0xec, 0x17, 0xde, 0x4c, 0x3f, 0x1d, 0x2b, 0x8d, 0x2b, 0x3c, 0xcf, 0x79,
-	0x85, 0x8d, 0xce, 0xda, 0xcf, 0xe7, 0xe6, 0x5f, 0xe1, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x1f,
-	0x65, 0xde, 0x16, 0x28, 0x04, 0x00, 0x00,
+var fileDescriptor_hall_3b06a3774f74ffe7 = []byte{
+	// 711 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0xc1, 0x6e, 0xd3, 0x4c,
+	0x10, 0x96, 0x9d, 0x34, 0x49, 0x27, 0x49, 0xdb, 0x7f, 0xff, 0xd2, 0x1a, 0x38, 0x10, 0x7c, 0x69,
+	0x0e, 0x55, 0x8b, 0x8a, 0xe0, 0xc8, 0xa1, 0xa9, 0x54, 0x2a, 0x95, 0x0a, 0x6d, 0x55, 0x21, 0x71,
+	0xb1, 0xb6, 0xf6, 0x34, 0xb5, 0xb0, 0x77, 0xcd, 0x7a, 0x93, 0xb4, 0x67, 0xee, 0xdc, 0x10, 0x4f,
+	0xc1, 0x2b, 0xf0, 0x10, 0x3c, 0x11, 0xda, 0x89, 0xdd, 0x26, 0x25, 0x35, 0x12, 0x42, 0x9c, 0xb2,
+	0xf3, 0x8d, 0xbf, 0x9d, 0x6f, 0x76, 0xbe, 0xdd, 0x00, 0x5c, 0x8a, 0x24, 0xd9, 0xc9, 0xb4, 0x32,
+	0x8a, 0xd5, 0xed, 0xfa, 0x51, 0x27, 0x54, 0x69, 0xaa, 0xe4, 0x14, 0xf3, 0x9f, 0xc1, 0xfa, 0x6b,
+	0x91, 0x24, 0x87, 0x68, 0xde, 0x26, 0xe2, 0x1a, 0xf5, 0x91, 0xbc, 0x50, 0x1c, 0x3f, 0x32, 0x0f,
+	0x9a, 0x1a, 0x73, 0xd4, 0x63, 0xf4, 0x9c, 0x9e, 0xd3, 0x5f, 0xe2, 0x65, 0xe8, 0xff, 0x70, 0x17,
+	0x51, 0xf2, 0x8c, 0x3d, 0x84, 0x16, 0x6a, 0x1d, 0x84, 0x2a, 0x9a, 0x72, 0xba, 0xbc, 0x89, 0x5a,
+	0x0f, 0x54, 0x84, 0x65, 0x2a, 0xc2, 0x3c, 0xf4, 0xdc, 0x9e, 0xd3, 0x5f, 0xa6, 0xd4, 0x01, 0xe6,
+	0x21, 0x7b, 0x0c, 0xcb, 0x32, 0x0e, 0x3f, 0x04, 0x52, 0xa4, 0xe8, 0xd5, 0x28, 0xd7, 0xb2, 0xc0,
+	0x89, 0x48, 0x91, 0x31, 0xa8, 0x87, 0x2a, 0x96, 0x5e, 0xbd, 0xe7, 0xf4, 0xeb, 0x9c, 0xd6, 0xec,
+	0x25, 0x74, 0x32, 0xaa, 0x1b, 0xe4, 0x46, 0x18, 0xf4, 0x96, 0x7a, 0x4e, 0x7f, 0x65, 0xef, 0xff,
+	0x9d, 0xa2, 0xad, 0xa9, 0xa6, 0x53, 0x9b, 0xe2, 0xed, 0xec, 0x36, 0x60, 0x5b, 0xd0, 0x1c, 0x8a,
+	0x14, 0x83, 0x38, 0xf2, 0x1a, 0x44, 0x59, 0x29, 0x29, 0x87, 0x22, 0xc5, 0xa3, 0x88, 0x37, 0x86,
+	0xf4, 0xcb, 0xb6, 0x60, 0x55, 0xa3, 0x48, 0xac, 0x20, 0x2a, 0x31, 0xca, 0xbd, 0x26, 0xb5, 0xb3,
+	0x52, 0xc2, 0xa7, 0x84, 0xda, 0xae, 0xf2, 0x4b, 0x35, 0x09, 0x46, 0x71, 0xe4, 0xb5, 0x48, 0x61,
+	0xd3, 0xc6, 0x67, 0x71, 0xc4, 0x36, 0xa0, 0x31, 0x44, 0x19, 0xa1, 0xf6, 0x96, 0x89, 0x5a, 0x44,
+	0x16, 0x17, 0x63, 0x61, 0x94, 0xf6, 0x80, 0x5a, 0x2d, 0x22, 0xff, 0xb3, 0x03, 0x9b, 0xf6, 0x50,
+	0xcf, 0xb2, 0x48, 0x18, 0x9c, 0x1f, 0xc5, 0x1a, 0xd4, 0x6c, 0x05, 0x87, 0x2a, 0xd8, 0xe5, 0xfc,
+	0x99, 0xb9, 0x77, 0xce, 0xec, 0xb6, 0x44, 0x6d, 0xb6, 0x04, 0xdb, 0xbe, 0x91, 0x54, 0xa7, 0xf6,
+	0xd7, 0xe7, 0x4f, 0xec, 0x90, 0x72, 0xa5, 0x50, 0xff, 0xeb, 0x7d, 0x82, 0xaa, 0x07, 0xfd, 0x0f,
+	0x94, 0x9d, 0xc0, 0x83, 0x39, 0xfb, 0x4d, 0x47, 0x5d, 0x65, 0x59, 0xab, 0x6a, 0x94, 0xa3, 0x0e,
+	0x22, 0x61, 0x04, 0xa9, 0xaa, 0xf3, 0x96, 0x05, 0x0e, 0x84, 0x11, 0xfe, 0x17, 0x67, 0xe1, 0x86,
+	0x79, 0xf6, 0x8b, 0xd3, 0x9c, 0xbf, 0xed, 0xb4, 0x4a, 0x5d, 0x7b, 0xb0, 0x51, 0xc8, 0xb2, 0xac,
+	0xe3, 0x38, 0x37, 0xbf, 0xbf, 0x9b, 0xdf, 0x9c, 0xc5, 0xa4, 0xea, 0xa1, 0x3d, 0x87, 0x36, 0xe9,
+	0x0d, 0x95, 0xbc, 0x88, 0x87, 0x9e, 0xdb, 0xab, 0xf5, 0xdb, 0x7b, 0x6c, 0x56, 0xf3, 0x80, 0x32,
+	0x1c, 0x86, 0x37, 0x6b, 0x36, 0x80, 0xff, 0x88, 0x94, 0xe0, 0x18, 0x93, 0x92, 0x5a, 0x23, 0xea,
+	0xe6, 0x2c, 0xf5, 0xd8, 0xe6, 0x0b, 0xfe, 0xea, 0x70, 0x1e, 0xf0, 0x5f, 0xc1, 0xaa, 0x95, 0xcb,
+	0x51, 0x24, 0xd6, 0x21, 0xb6, 0x39, 0x06, 0x75, 0x32, 0x8f, 0x43, 0x16, 0xa1, 0x35, 0xdb, 0x84,
+	0x66, 0x1c, 0x05, 0xa1, 0xd0, 0x51, 0xe1, 0xa9, 0x46, 0x1c, 0x0d, 0x84, 0x8e, 0xfc, 0x4f, 0xce,
+	0x9d, 0x0d, 0xfe, 0xf8, 0x19, 0x7a, 0x02, 0x6d, 0xfb, 0xba, 0x04, 0x1a, 0x27, 0xb6, 0x4c, 0x8d,
+	0x86, 0x01, 0x16, 0xe2, 0x84, 0x58, 0xae, 0xc4, 0x49, 0x30, 0xf3, 0x1c, 0x35, 0x25, 0x4e, 0x06,
+	0x2a, 0x96, 0xfe, 0x19, 0x78, 0x73, 0x06, 0xa2, 0x29, 0xdf, 0x7b, 0x79, 0x67, 0xdc, 0xe1, 0x56,
+	0xb9, 0xc3, 0xff, 0xee, 0xde, 0xb7, 0x6f, 0x75, 0x97, 0x45, 0x49, 0x77, 0x61, 0xc9, 0x5a, 0xa5,
+	0x21, 0x9f, 0x42, 0xc7, 0x28, 0x23, 0x92, 0xe0, 0x7c, 0xa4, 0x51, 0x8c, 0xa8, 0xd1, 0x2e, 0x6f,
+	0x13, 0xb6, 0x4f, 0x90, 0xfd, 0x64, 0x12, 0x4b, 0x19, 0xcb, 0x61, 0xa0, 0xcb, 0xe7, 0xd7, 0xe5,
+	0xed, 0x02, 0xe3, 0xd6, 0xff, 0xdb, 0xc0, 0x52, 0x71, 0x15, 0x94, 0x9f, 0xe5, 0x46, 0xa3, 0x48,
+	0xe9, 0x2a, 0x74, 0xf9, 0x5a, 0x2a, 0xae, 0xde, 0x4d, 0x13, 0xa7, 0x84, 0xdb, 0x0d, 0xed, 0xd7,
+	0xe9, 0x28, 0x31, 0x71, 0x96, 0x60, 0xf1, 0xd6, 0xb6, 0x53, 0x71, 0xf5, 0xa6, 0x80, 0xd8, 0x0b,
+	0xe8, 0xd2, 0x3d, 0xc9, 0xb4, 0xca, 0x50, 0x9b, 0x6b, 0xaf, 0x45, 0x3e, 0x5b, 0xbb, 0xb9, 0x89,
+	0x05, 0xce, 0x3b, 0xf6, 0xb3, 0x32, 0xda, 0xdf, 0x78, 0xbf, 0x9e, 0x1b, 0x1c, 0xe3, 0x6e, 0x98,
+	0xc4, 0x28, 0x4d, 0x90, 0x9d, 0xef, 0xda, 0x7f, 0xc0, 0x9f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x4b,
+	0xc2, 0xdc, 0xe6, 0x14, 0x07, 0x00, 0x00,
 }

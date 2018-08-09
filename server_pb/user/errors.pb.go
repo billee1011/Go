@@ -12,6 +12,12 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type ErrCode int32
 
 const (
@@ -37,15 +43,17 @@ var ErrCode_value = map[string]int32{
 func (x ErrCode) String() string {
 	return proto.EnumName(ErrCode_name, int32(x))
 }
-func (ErrCode) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+func (ErrCode) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_errors_5a7d5aafc675a956, []int{0}
+}
 
 func init() {
 	proto.RegisterEnum("user.ErrCode", ErrCode_name, ErrCode_value)
 }
 
-func init() { proto.RegisterFile("errors.proto", fileDescriptor1) }
+func init() { proto.RegisterFile("errors.proto", fileDescriptor_errors_5a7d5aafc675a956) }
 
-var fileDescriptor1 = []byte{
+var fileDescriptor_errors_5a7d5aafc675a956 = []byte{
 	// 111 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0x2d, 0x2a, 0xca,
 	0x2f, 0x2a, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x29, 0x2d, 0x4e, 0x2d, 0xd2, 0x72,

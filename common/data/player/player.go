@@ -150,17 +150,6 @@ func SetPlayerCoin(playerID uint64, coin uint64) error {
 	return setPlayerUint64Field(playerID, playerCoinField, coin)
 }
 
-// AddPlayerCoin 修改玩家金币数
-func AddPlayerCoin(playerID uint64, changeVal int64, gameID int, level int32) {
-	_, err := goldclient.AddGold(playerID, 1, changeVal, 0, 0, int32(gameID), level)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"func_name": "Player.AddCoin",
-			"player_id": playerID,
-		}).Errorln("room扣减金币失败")
-	}
-}
-
 // SetPlayerNickName 设置玩家昵称
 func SetPlayerNickName(playerID uint64, nickName string) {
 	setPlayerStringField(playerID, playerNickNameField, nickName)

@@ -1,8 +1,9 @@
 package matchv2
 
 import (
-	"fmt"
-	"steve/common/data/player"
+	"math/rand"
+	"steve/external/hallclient"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -13,13 +14,12 @@ func GetIdleRobot(level int) uint64 {
 		"func_name": "GetIdleRobot",
 		"level":     level,
 	})
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// 先直接分配一个
-	playerID, err := player.AllocPlayerID()
-	if err != nil {
-		entry.WithError(err).Errorln("分配玩家 ID 失败")
-		return 0
+	playerID, err := hallclient.GetPlayerByAccount(uint64(r.Intn(1000000)))
+	if err == nil {
+		entry.Debugf("GetIdleRobot playerId:%d", playerID)
+		return playerID
 	}
-	player.SetPlayerCoin(playerID, 10*10000)
-	player.SetPlayerNickName(playerID, fmt.Sprintf("Robot%v", playerID))
-	return playerID
+	return 0
 }

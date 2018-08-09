@@ -46,7 +46,7 @@ func (model *MjEventModel) Start() {
 
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
+		GetModelManager().StopDeskModel(model.GetDesk())
 	}()
 
 	event := desk.DeskEvent{EventID: int(server_pb.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk(),
@@ -273,7 +273,6 @@ func (model *MjEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 	modelMgr := GetModelManager()
 	playerID := leaveInfo.playerID
 
-	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerLeave(playerID, model.needTuoguan())
 	model.setMjPlayerQuitDesk(playerID, true)
 	mjPlayer := model.getContextPlayer(playerID)
 	ctx := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext)
@@ -283,6 +282,7 @@ func (model *MjEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 		playerMgr.GetPlayer(playerID).SetDesk(nil)
 		playerMgr.UnbindPlayerRoomAddr([]uint64{playerID})
 	}
+	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerLeave(playerID, model.needTuoguan())
 	logrus.WithField("player_id", playerID).Debugln("玩家退出")
 	close(leaveInfo.finishChannel)
 }
