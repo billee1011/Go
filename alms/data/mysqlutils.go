@@ -103,7 +103,7 @@ func getMysqlGameLevelConfigData() ([]*db.TGameLevelConfig, error) {
 		return nil, err
 	}
 	glcs := []*db.TGameLevelConfig{}
-	session := engine.Table(gameLevelConfigTableName).Select("gameID,levelID,isAlms")
+	session := engine.Table(gameLevelConfigTableName).Select("gameID,levelID,lowScores,isAlms")
 	if err := session.Find(&glcs); err != nil {
 		sql, _ := session.LastSQL()
 		return nil, fmt.Errorf("从数据库获取数据失败：(%v), sql:(%s)", err, sql)

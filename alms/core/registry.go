@@ -1,7 +1,7 @@
 package core
 
 import (
-	"steve/alms/server"
+	"steve/alms/almsserver"
 	"steve/client_pb/msgid"
 	"steve/structs/exchanger"
 
@@ -15,6 +15,6 @@ func registerHandles(e exchanger.Exchanger) error {
 			logrus.WithField("msg_id", msgID).Panic(err)
 		}
 	}
-	panicRegister(msgid.MsgID_ALMS_GET_GOLD_REQ, server.HandleGetAlmsReq)
+	panicRegister(msgid.MsgID_ALMS_GET_GOLD_REQ, almsserver.HandleGetAlmsReq)
 	return nil
 }
