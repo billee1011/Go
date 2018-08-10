@@ -58,28 +58,28 @@ func find(datas []uint64, data uint64) bool {
 }
 
 func (model *MessageModel) BroadcastMessage(playerIDs []uint64, msgID msgid.MsgID, body []byte, exceptQuit bool) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name":       "deskPlayerMgr.BroadcastMessage",
-		"dest_player_ids": playerIDs,
-		"msg_id":          msgID,
-	})
+	// logEntry := logrus.WithFields(logrus.Fields{
+	// 	"func_name":       "deskPlayerMgr.BroadcastMessage",
+	// 	"dest_player_ids": playerIDs,
+	// 	"msg_id":          msgID,
+	// })
 	// 是否针对所有玩家
 	if playerIDs == nil || len(playerIDs) == 0 {
 		deskId := model.GetDesk().GetUid()
 		m := GetModelManager().GetPlayerModel(deskId)
 		playerIDs = m.GetDeskPlayerIDs()
-		logEntry = logEntry.WithField("all_player_ids", playerIDs)
+		// logEntry = logEntry.WithField("all_player_ids", playerIDs)
 	}
 	if exceptQuit {
 		playerIDs = model.removeQuit(playerIDs)
 	}
-	logEntry = logEntry.WithField("real_dest_player_ids", playerIDs)
+	// logEntry = logEntry.WithField("real_dest_player_ids", playerIDs)
 
 	if len(playerIDs) == 0 {
 		return
 	}
 	util.BroadCastMessageBare(playerIDs, msgID, body)
-	logEntry.Debugln("广播消息")
+	// logEntry.Debugln("广播消息")
 }
 
 func (model *MessageModel) removeQuit(playerIDs []uint64) []uint64 {

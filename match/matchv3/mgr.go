@@ -1289,7 +1289,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		"levelID": globalInfo.levelID,
 	})
 
-	logEntry.Debugln("进入桌子合并函数")
+	// logEntry.Debugln("进入桌子合并函数")
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
@@ -1459,7 +1459,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	logEntry.Debugln("离开桌子合并函数")
+	// logEntry.Debugln("离开桌子合并函数")
 }
 
 // 从桌子中删除玩家
@@ -1514,14 +1514,14 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 	// 机器人加入时间
 	joinTime := int64(web.GetRobotJoinTime().Seconds())
 
-	logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
+	// logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
 
 	// 所有的概率
 	var index int32 = 0
 	for ; index <= 100; index++ {
 
 		var next *list.Element
-		// 该概率下所有的桌子
+		// 该概率下所有的桌子进入桌子超时检测函数
 		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = next {
 
 			// 提前保存下一个
@@ -1532,7 +1532,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 			// 间隔秒数
 			interval := tNowTime - desk.createTime
 
-			logEntry.Debugf("开始检测桌子:%v是否超时，桌子已创建时间:%v秒", desk, interval)
+			// logEntry.Debugf("开始检测桌子:%v是否超时，桌子已创建时间:%v秒", desk, interval)
 
 			// 超过时间，则开始加入机器人
 			if interval >= joinTime {
@@ -1548,7 +1548,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					endRate = 100
 				}
 
-				logEntry.Debugf("桌子的平均金币:%v", desk.aveGold)
+				// logEntry.Debugf("桌子的平均金币:%v", desk.aveGold)
 
 				// 金币范围
 				minGold, maxGold := manager.getGoldRange(desk.aveGold, interval)
@@ -1562,7 +1562,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					LevelID:     desk.levelID,
 				}
 
-				logEntry.Debugf("请求的机器人参数:%v", reqRobot)
+				// logEntry.Debugf("请求的机器人参数:%v", reqRobot)
 
 				// 从hall服获取一个空闲的机器人
 				robotPlayerID, robotGold, robotRate, err := robotclient.GetLeisureRobotInfoByInfo(reqRobot)
@@ -1596,7 +1596,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	logEntry.Debugln("离开桌子超时检测函数")
+	// logEntry.Debugln("离开桌子超时检测函数")
 }
 
 // checkSucTimeout 检测之前匹配成功的是否超时
@@ -1608,15 +1608,15 @@ func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
 		return
 	}
 
-	logEntry := logrus.WithFields(logrus.Fields{
-		"gameID":  globalInfo.gameID,
-		"levelID": globalInfo.levelID,
-	})
+	// logEntry := logrus.WithFields(logrus.Fields{
+	// 	"gameID":  globalInfo.gameID,
+	// 	"levelID": globalInfo.levelID,
+	// })
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
 
-	logEntry.Debugf("进入匹配成功超时检测函数，当前时间：%v", tNowTime)
+	// logEntry.Debugf("进入匹配成功超时检测函数，当前时间：%v", tNowTime)
 
 	// 新建，然后再替换
 	newSucDesks := map[uint64]*sucDesk{}
@@ -1643,5 +1643,5 @@ func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
 	// 替换玩家
 	globalInfo.sucPlayers = newSucPlayers
 
-	logEntry.Debugln("离开匹配成功超时检测函数")
+	// logEntry.Debugln("离开匹配成功超时检测函数")
 }
