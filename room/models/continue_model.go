@@ -26,8 +26,6 @@ type ContinueModel struct {
 
 	requestChannel chan continueRequestInfo
 	readyPlayers   []uint64
-	started        bool          // 是否已经启动续局逻辑
-	startChannel   chan struct{} // 续局逻辑开启
 	stopChannel    chan struct{} // model 停止
 	continueTime   time.Time     // 启动续局逻辑的时间
 
@@ -39,9 +37,7 @@ type ContinueModel struct {
 func NewContinueModel(desk *desk.Desk) DeskModel {
 	result := &ContinueModel{
 		requestChannel: make(chan continueRequestInfo, 4),
-		startChannel:   make(chan struct{}),
 		stopChannel:    make(chan struct{}),
-		started:        false,
 		readyPlayers:   make([]uint64, 0, 4),
 	}
 	result.SetDesk(desk)
@@ -58,32 +54,39 @@ func (model *ContinueModel) Active() {}
 
 // Start 启动 model
 func (model *ContinueModel) Start() {
-	go model.run()
 }
 
 // startContinue 开始续局逻辑
 func (model *ContinueModel) startContinue() {
-	model.startChannel <- struct{}{}
+	go model.runv2()
 }
 
-func (model *ContinueModel) run() {
+func (model *ContinueModel) runv2() {
+	model.continueTime = time.Now()
 	ticker := time.NewTicker(time.Second * 1)
+	quitChannel := GetModelManager().GetPlayerModel(model.GetDesk().GetUid()).getLeaveChannel()
 forstart:
 	for {
 		select {
-		case <-model.startChannel:
-			{
-				model.started = true
-				model.continueTime = time.Now()
-			}
 		case requestInfo := <-model.requestChannel:
 			{
-				model.handlePlayerContinueRequest(&requestInfo)
+				finish := model.handlePlayerContinueRequest(&requestInfo)
 				close(requestInfo.finish)
+				if finish {
+					break forstart
+				}
+			}
+		case quitInfo := <-quitChannel:
+			{
+				model.handleCancelRequest(quitInfo.playerID)
+				quitInfo.finishChannel <- nil
+				break forstart
 			}
 		case <-ticker.C:
 			{
-				model.checkDismiss()
+				if model.checkDismiss() {
+					break forstart
+				}
 			}
 		case <-model.stopChannel:
 			{
@@ -94,12 +97,9 @@ forstart:
 }
 
 // checkDismiss 超过20s解散牌桌
-func (model *ContinueModel) checkDismiss() {
-	if !model.started {
-		return
-	}
+func (model *ContinueModel) checkDismiss() bool {
 	if time.Now().Sub(model.continueTime) <= time.Second*20 {
-		return
+		return false
 	}
 	modelMgr := GetModelManager()
 	deskID := model.GetDesk().GetUid()
@@ -109,39 +109,35 @@ func (model *ContinueModel) checkDismiss() {
 		&client_match_pb.MatchContinueDeskDimissNtf{})
 
 	modelMgr.StopDeskModel(model.GetDesk())
+	return true
 }
 
 // handleCancelRequest 处理取消续局请求
-func (model *ContinueModel) handleCancelRequest(requestInfo *continueRequestInfo) {
+func (model *ContinueModel) handleCancelRequest(playerID uint64) {
 	modelMgr := GetModelManager()
 	deskID := model.GetDesk().GetUid()
-	modelMgr.GetMessageModel(deskID).BroadCastDeskMessageExcept([]uint64{requestInfo.playerID}, true,
+	modelMgr.GetMessageModel(deskID).BroadCastDeskMessageExcept([]uint64{playerID}, true,
 		msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &client_match_pb.MatchContinueDeskDimissNtf{})
 
 	modelMgr.StopDeskModel(model.GetDesk())
 }
 
-func (model *ContinueModel) handlePlayerContinueRequest(requestInfo *continueRequestInfo) {
+func (model *ContinueModel) handlePlayerContinueRequest(requestInfo *continueRequestInfo) bool {
 	playerID := requestInfo.playerID
 	entry := logrus.WithField("player_id", playerID)
 
 	response := requestInfo.response
-	if !model.started {
-		response.ErrCode = proto.Int32(1)
-		response.ErrDesc = proto.String("当前不能续局")
-		return
-	}
 
 	if requestInfo.request.GetCancel() {
-		model.handleCancelRequest(requestInfo)
-		return
+		model.handleCancelRequest(requestInfo.playerID)
+		return false
 	}
 
 	for _, _playerID := range model.readyPlayers {
 		if _playerID == playerID {
 			response.ErrCode = proto.Int32(0)
 			response.ErrDesc = proto.String("")
-			return
+			return false
 		}
 	}
 	response.ErrCode = proto.Int32(1)
@@ -150,12 +146,12 @@ func (model *ContinueModel) handlePlayerContinueRequest(requestInfo *continueReq
 	playerCoin, err := goldclient.GetGold(playerID, 1)
 	if err != nil {
 		entry.WithError(err).Errorln("获取玩家金币数失败")
-		return
+		return false
 	}
 	desk := model.GetDesk()
 	if uint64(playerCoin) < desk.GetConfig().MinScore {
 		response.ErrDesc = proto.String("金豆不足")
-		return
+		return false
 	}
 	response.ErrCode = proto.Int32(0)
 	response.ErrDesc = proto.String("")
@@ -173,15 +169,15 @@ func (model *ContinueModel) handlePlayerContinueRequest(requestInfo *continueReq
 			}
 		}
 		if !exist {
-			return
+			return false
 		}
 	}
 	model.startNextRound()
+	return true
 }
 
 // startNextRound 开始下一局
 func (model *ContinueModel) startNextRound() {
-	model.started = false
 	model.readyPlayers = model.readyPlayers[0:0]
 
 	desk := model.GetDesk()
