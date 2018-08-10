@@ -1,7 +1,6 @@
 package matchv3
 
 import (
-	"fmt"
 	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"github.com/spf13/viper"
 )
 
 // HandleMatchReq 匹配请求的处理(来自网关服)
@@ -118,12 +116,8 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		return
 	}
 
-	localIP := viper.GetString("rpc_addr")
-	localPort := viper.GetInt("rpc_port")
-	localAddr := fmt.Sprintf("%s:%d", localIP, localPort)
-
 	// 更新玩家所在的服务器类型和地址
-	bSuc, err = hallclient.UpdatePlayeServerAddr(playerID, user.ServerType_ST_MATCH, localAddr)
+	bSuc, err = hallclient.UpdatePlayeServerAddr(playerID, user.ServerType_ST_MATCH, GetServerAddr())
 	if err != nil || !bSuc {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("通知hall服更改玩家的匹配服地址时失败")

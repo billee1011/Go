@@ -1580,6 +1580,19 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					gold:     robotGold,
 				}
 
+				// 更新机器人状态
+				// 设置为匹配状态，后面匹配过程中出错删除时再标记为空闲状态，匹配成功时不需处理(room服会标记为游戏状态)
+				bSuc, err := hallclient.UpdatePlayerState(robotPlayerID, user.PlayerState_PS_IDIE, user.PlayerState_PS_MATCHING, globalInfo.gameID, globalInfo.levelID)
+				if err != nil || !bSuc {
+					logEntry.WithError(err).Errorf("内部错误，通知hall服设置机器人状态为匹配状态时失败，游戏ID:%v，场次ID:%v，机器人玩家ID:%v", globalInfo.gameID, globalInfo.levelID, robotPlayerID)
+				}
+
+				// 更新机器人所在的服务器类型和地址
+				bSuc, err = hallclient.UpdatePlayeServerAddr(robotPlayerID, user.ServerType_ST_MATCH, GetServerAddr())
+				if err != nil || !bSuc {
+					logEntry.WithError(err).Errorf("内部错误，通知hall服设置机器人的服务器类型及地址时失败，游戏ID:%v，场次ID:%v，机器人玩家ID:%v", globalInfo.gameID, globalInfo.levelID, robotPlayerID)
+				}
+
 				logEntry.Debugf("从hall服获取机器人成功，playerID:%v，金币数:%v，胜率:%v ", robotPlayerID, robotGold, robotRate)
 
 				// 把机器人加入桌子
