@@ -258,9 +258,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	propIds := make([]int32, 0)
 	propCount := make(map[int32]int64, len(props))
 	for _, prop := range props {
-		if prop.Count > 0 {
-			propIds = append(propIds, prop.PropID)
-		}
+		propIds = append(propIds, prop.PropID)
 		propCount[prop.PropID] = prop.Count
 	}
 
@@ -272,8 +270,8 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 		return
 	}
 
-	userProperty := new(common.Property)
 	for _, propConfig := range propConfigs {
+		userProperty := new(common.Property)
 		userProperty.PropId = proto.Int32(propConfig.PropID)
 		userProperty.PropName = proto.String(propConfig.PropName)
 		userProperty.PropType = common.PropType(propConfig.Type).Enum()
