@@ -8,6 +8,7 @@ import (
 	"steve/mailserver/data"
 	"steve/mailserver/define"
 	"time"
+	"steve/entity/goods"
 )
 
 /*
@@ -28,9 +29,32 @@ var provSendList map[int64][]*define.MailInfo
 func Init() error {
 	err := getDataFromDB()
 	if err != nil {
-		return err
+		logrus.Errorf("getDataFromDB first err:%v", err)
+		//return err
+	} else {
+		logrus.Debugf("getDataFromDB first win...")
 	}
+	//testJsonObject()
+	// 启动跑马灯是否开始检测协程
+	go runCheckMailChange()
 	return nil
+}
+
+func testJsonObject() {
+	dst := &define.SendDest{}
+	dst.SendType = 0
+	dst.Prov = 1
+	dst.Channel = 0
+	jsonDest, _ := data.MarshalSendDest(dst)
+	logrus.Debugln(jsonDest)
+
+	gs := &goods.Goods{}
+	gs.GoodsType = 0
+	gs.GoodsId = 1
+	gs.GoodsNum = 100
+
+	jsonGs, _ := data.MarshalAttachGoods([]*goods.Goods{gs,gs})
+	logrus.Debugln(jsonGs)
 }
 
 // 获取未读消息总数
@@ -247,6 +271,18 @@ func AwardAttach(uid uint64, mailId uint64) (string, error) {
 	return "", nil
 }
 
+
+// 启动邮件列表变化检测协程
+func  runCheckMailChange() error{
+
+	// 1分钟更新一次邮件列表
+	for {
+		time.Sleep(time.Minute)
+		getDataFromDB()
+	}
+	return nil
+}
+
 // 从DB获取邮件列表
 func getDataFromDB() error {
 	mailList, err := data.LoadMailListFromDB()
@@ -256,14 +292,14 @@ func getDataFromDB() error {
 	}
 	logrus.Debugln("email list:", mailList)
 	// 检测邮件状态
-	checkMailStatus()
+	checkMailStatus(mailList)
 	return err
 }
 
 // 检测邮件状态是否变化
-func checkMailStatus() error {
+func checkMailStatus(mailList map[uint64]*define.MailInfo) error {
 
-	curDate := time.Now().Format("2006-01-02 00:00:00")
+	curDate := time.Now().Format("2006-01-02 15:04:05")
 
 	bUpdate := false
 
@@ -273,22 +309,29 @@ func checkMailStatus() error {
 			if curDate >= mail.StartTime {
 				mail.State = define.StateSending
 				bUpdate = true
+				// 保存邮件状态变化到DB
+				data.SetEmailStateToDB(mail.Id, mail.State)
 			}
 		} else if mail.State == define.StateSending {
 			// 检测是否结束
 			if mail.IsUseEndTime && curDate >= mail.EndTime {
 				mail.State = define.StateSended
 				bUpdate = true
+				// 保存邮件状态变化到DB
+				data.SetEmailStateToDB(mail.Id, mail.State)
 			}
 		} else if mail.State == define.StateSended {
 			// 检测是否达到删除时间
 			if mail.IsUseDelTime && curDate >= mail.DelTime {
 				mail.State = define.StateDelete
 				bUpdate = true
+				// 保存邮件状态变化到DB
+				data.SetEmailStateToDB(mail.Id, mail.State)
 			}
 		}
 	}
 
+	bUpdate = true
 	// 更新发送列表provSendList
 	if bUpdate {
 		// 将发送中和发送截至的加入到指定列表中

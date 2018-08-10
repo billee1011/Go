@@ -21,16 +21,18 @@ CREATE TABLE `t_mail` (
   `n_detail` text COMMENT '邮件内容',
   `n_attach` varchar(256) DEFAULT NULL COMMENT '邮件附件：json格式 ',
   `n_dest` text COMMENT '发送对象:json格式',
-  `n_state` int(11) DEFAULT NULL COMMENT '邮件状态',
-  `n_starttime` datetime DEFAULT NULL COMMENT '发送开始时间： ',
-  `n_endtime` datetime DEFAULT NULL COMMENT '发送截至时间',
-  `n_deltime` datetime DEFAULT NULL COMMENT '邮件删除时间',
-  `n_createTime` datetime DEFAULT NULL COMMENT '创建时间',
+  `n_state` int(11) DEFAULT NULL COMMENT '邮件状态：未发送=0＞审核中=1＞已审核=2＞发送中=3＞发送结束=4＞已拒绝=5＞已撤回=6＞已失效=7 ',
+  `n_starttime` datetime DEFAULT NULL COMMENT '发送开始时间: 2018-08-08 12:00:00',
+  `n_endtime` datetime DEFAULT NULL COMMENT '发送截至时间: 2018-08-18 12:00:00',
+  `n_deltime` datetime DEFAULT NULL COMMENT '邮件删除时间: 2018-09-18 12:00:00',
+  `n_createTime` datetime DEFAULT NULL COMMENT '创建时间: 2018-08-08 12:00:00',
   `n_createBy` varchar(64) DEFAULT NULL COMMENT '创建人',
-  `n_updateTime` datetime DEFAULT NULL COMMENT '最后更新时间',
+  `n_updateTime` datetime DEFAULT NULL COMMENT '最后更新时间: 2018-08-08 12:00:00',
   `n_updateBy` varchar(64) DEFAULT NULL COMMENT '最后更新人',
+  `n_isUseEndTime` tinyint(1) DEFAULT '1' COMMENT '是否启用截至时间',
+  `n_isUseDelTime` tinyint(1) DEFAULT '1' COMMENT '是否启用删除时间',
   PRIMARY KEY (`n_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统消息表，邮件表'
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='系统消息表，邮件表'
 
 CREATE TABLE `t_player_mail` (
   `n_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '递增ID',
@@ -46,6 +48,31 @@ CREATE TABLE `t_player_mail` (
 */
 
 const dbName = "player"
+
+
+// 修改邮件状态
+func SetEmailStateToDB(mailId uint64, state int8)  error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+	sql := ""
+
+	sql = fmt.Sprintf("update t_mail set n_state=%d  where n_id ='%d';",state, mailId )
+	res, err := engine.Exec(sql)
+	if err != nil {
+		logrus.Errorf("SetEmailStateToDB err:mailId=%d, err=%v",  mailId, err)
+		return err
+	}
+	if aff, _ := res.RowsAffected(); aff == 0 {
+		logrus.Errorf("SetEmailStateToDB no record err:mailId=%d",  mailId)
+		return nil
+	}
+
+	return nil
+}
 
 
 // 删除邮件
@@ -221,7 +248,7 @@ func LoadMailListFromDB() (map[uint64]*define.MailInfo, error) {
 		return nil, fmt.Errorf("connect db error")
 	}
 
-	sql := fmt.Sprintf("select n_id, n_title, n_detail, n_attach, n_dest, n_state, n_starttime , n_endtime, n_deltime, n_updateTime from t_mail ;")
+	sql := fmt.Sprintf("select n_id, n_title, n_detail, n_attach, n_dest, n_state, n_starttime , n_endtime, n_deltime, n_updateTime,n_isUseEndTime,n_isUseDelTime from t_mail where n_state>=2 and n_state<=4  ;")
 	res, err := engine.QueryString(sql)
 	if err != nil {
 
@@ -258,8 +285,19 @@ func LoadMailListFromDB() (map[uint64]*define.MailInfo, error) {
 		if info.AttachGoods == nil {
 			logrus.Errorf("parseAttachGoods error: mailid=%d, tilte=%s", id, info.Title)
 		}
+
+		if row["n_isUseEndTime"] == "1" {
+			info.IsUseEndTime = true
+		}
+		if row["n_isUseDelTime"] == "1" {
+			info.IsUseDelTime = true
+		}
+
 		list[info.Id] = info
+		logrus.Debugf("add email:%v", *info)
 	}
+
+	logrus.Debugf("email sum: %d", len(list))
 
 	return list, nil
 }
@@ -267,8 +305,8 @@ func LoadMailListFromDB() (map[uint64]*define.MailInfo, error) {
 // 解析发送目标json
 func parseSendDest( strJson string) []*define.SendDest {
 
-	jsonObject := make([]*define.SendDest,0, 2)
-	err := json.Unmarshal([]byte(strJson), jsonObject)
+	jsonObject := make([]*define.SendDest,0,2)
+	err := json.Unmarshal([]byte(strJson), &jsonObject)
 	if err != nil {
 		return nil
 	}
@@ -282,8 +320,8 @@ func MarshalSendDest(dest *define.SendDest) (string, error) {
 
 // 解析附件物品json
 func parseAttachGoods( strJson string) []*goods.Goods {
-	jsonObject := make([]*goods.Goods,0, 2)
-	err := json.Unmarshal([]byte(strJson), jsonObject)
+	jsonObject := make([]*goods.Goods,0,2)
+	err := json.Unmarshal([]byte(strJson), &jsonObject)
 	if err != nil {
 		return nil
 	}

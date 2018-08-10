@@ -2,7 +2,8 @@ package core
 
 /*
 	功能： 服务配置中心，定义RPC服务关联，Client消息分派。
-
+	作者: SkyWang
+	日期:
  */
 import (
 	"steve/client_pb/msgid"

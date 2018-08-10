@@ -22,4 +22,6 @@ const (
 	
 	// 跑马灯服务名称
 	MsgServiceName = "msgserver"
+	// 邮件服务名称
+	MailServiceName = "mailserver"
 )

@@ -35,6 +35,10 @@ var gServerMessageRange = map[string]messageRange{
 		minMsgID: 0x4001,
 		maxMsgID: 0x4fff,
 	},
+	common.MailServiceName: {
+		minMsgID: 0x5001,
+		maxMsgID: 0x5fff,
+	},
 }
 
 // GetMessageServer 获取消息处理服务名字
