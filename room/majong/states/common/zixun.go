@@ -11,6 +11,7 @@ import (
 	"steve/room/majong/global"
 	"steve/room/majong/interfaces"
 	"steve/room/majong/utils"
+	"steve/room/util"
 
 	"github.com/Sirupsen/logrus"
 
@@ -327,7 +328,7 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 	}
 	//查听,打什么,听什么
 	canTingInfos := CheckTing(player, mjContext)
-	zixunNtf.CanTingCardInfo = utils.TransCanTingInfos(canTingInfos)
+	zixunNtf.CanTingCardInfo = util.CanTingCardInfoSvr2Client(canTingInfos)
 	player.GetZixunRecord().CanTingCardInfo = canTingInfos
 
 	if zixunNtf.GetEnableZimo() == true {
