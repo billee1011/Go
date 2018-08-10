@@ -45,7 +45,7 @@ func (h *dingqueStateAI) dingque(player *majong.Player) *ai.AIEvent {
 	color := h.getColor(player)
 	eventContext := &majong.DingqueRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 		Color: color,
 	}

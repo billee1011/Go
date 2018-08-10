@@ -2,12 +2,11 @@ package quittests
 
 import (
 	"steve/client_pb/common"
+	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	"steve/simulate/global"
-	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,34 +17,24 @@ func TestHuQuit(t *testing.T) {
 	params.GameID = common.GameId_GAMEID_XUEZHAN // 血战
 	params.IsHsz = false
 	params.PeiPaiGame = "scxz"
+	params.PlayerSeatGold = map[int]uint64{0: 1000000, 1: 1000000, 2: 1000000, 3: 1000000}
 	params.WallCards = []uint32{31, 31, 31, 31, 32, 32, 32, 32}
 	deskData, err := utils.StartGame(params)
 	assert.Nil(t, err)
 	assert.NotNil(t, deskData)
-	players, err := utils.CreateAndLoginUsersNum(3)
-	assert.Nil(t, err)
 	//庄家等待自询状态,可以天胡
 	assert.Nil(t, utils.WaitZixunNtf(deskData, params.BankerSeat))
 	//庄家选择天胡,并且退出游戏
 	assert.Nil(t, utils.SendHuReq(deskData, params.BankerSeat))
 	utils.CheckHuNotify(t, deskData, []int{params.BankerSeat}, params.BankerSeat, 14, room.HuType_HT_TIANHU)
-	utils.SendQuitReq(deskData, params.BankerSeat)
-	//此时离开的玩家可以加入新的队列,等待新的游戏
-	time.Sleep(time.Second * 1)
-	p := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
-	rsp, err := utils.ApplyJoinDesk(p.Player, common.GameId_GAMEID_XUEZHAN)
-	joinOther3Player(t, players)
-	assert.Nil(t, err)
-	assert.Equal(t, int32(0), rsp.GetErrCode())
-	assert.Equal(t, uint32(common.GameId_GAMEID_XUEZHAN), rsp.GetGameId())
-}
 
-func joinOther3Player(t *testing.T, players []interfaces.ClientPlayer) {
-	for _, player := range players {
-		rsp, err := utils.ApplyJoinDesk(player, common.GameId_GAMEID_XUEZHAN)
-		assert.Nil(t, err)
-		assert.Equal(t, int32(0), rsp.GetErrCode())
-	}
+	assert.Nil(t, utils.SendQuitReq(deskData, params.BankerSeat))
+	player := utils.GetDeskPlayerBySeat(params.BankerSeat, deskData)
+	assert.Nil(t, player.Expectors[msgid.MsgID_ROOM_DESK_QUIT_RSP].Recv(global.DefaultWaitMessageTime, nil))
+	//此时离开的玩家可以加入新的队列,等待新的游戏
+	state, _, err := utils.GetPlayerState(player.Player)
+	assert.Nil(t, err)
+	assert.Equal(t, common.PlayerState_PS_IDLE, state)
 }
 
 // TestHuQuitRecover 玩家没有胡牌,没有认输,退出游戏后提示游戏进行中,需要进行恢复对局

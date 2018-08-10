@@ -29,7 +29,7 @@ func BroadcaseMessage(flow MajongFlow, msgID msgid.MsgID, msg proto.Message) {
 	players := []uint64{}
 
 	for _, player := range mjContext.GetPlayers() {
-		players = append(players, player.GetPalyerId())
+		players = append(players, player.GetPlayerId())
 	}
 	flow.PushMessages(players, ToClientMessage{
 		MsgID: int(msgID),

@@ -71,6 +71,7 @@ func Init(profName string, exposeType string, httpPort int) {
 
 	if context.exposeType == TypeExposeSvg {
 		serverMux := mux.NewRouter()
+		serverMux.HandleFunc("/", http.HandlerFunc(allIndex))
 		serverMux.HandleFunc("/debug/pprofsvg/", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/block", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/goroutine", http.HandlerFunc(svgPprof))
@@ -78,19 +79,24 @@ func Init(profName string, exposeType string, httpPort int) {
 		serverMux.HandleFunc("/debug/pprofsvg/mutex", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/threadcreate", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/cpuprofile", http.HandlerFunc(svgPprof))
+		serverMux.HandleFunc("/debug/pprofsvg/profile", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/"+profName, http.HandlerFunc(svgPprof))
 		startServer(serverMux, profName)
 	}
 }
 
 func startServer(serverMux *mux.Router, profName string) {
-	serverMux.HandleFunc("/debug/pprof/", http.HandlerFunc(httppprof.Index))
+	serverMux.HandleFunc("/debug/pprof/", http.HandlerFunc(pprofIndex))
 	serverMux.HandleFunc("/debug/pprof/block", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/goroutine", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/heap", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/mutex", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/threadcreate", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/cpuprofile", http.HandlerFunc(httppprof.Index))
+	serverMux.HandleFunc("/debug/pprof/profile", http.HandlerFunc(httppprof.Profile))
+	serverMux.HandleFunc("/debug/pprof/cmdline", http.HandlerFunc(httppprof.Cmdline))
+	serverMux.HandleFunc("/debug/pprof/symbol", http.HandlerFunc(httppprof.Symbol))
+	serverMux.HandleFunc("/debug/pprof/trace", http.HandlerFunc(httppprof.Trace))
 	serverMux.HandleFunc("/debug/pprof/"+profName, http.HandlerFunc(httppprof.Index))
 
 	go func() {
@@ -105,16 +111,57 @@ func startServer(serverMux *mux.Router, profName string) {
 	}()
 }
 
+func allIndex(res http.ResponseWriter, req *http.Request) {
+	httppprof.Index(res, req)
+	addNonIndex(res, "pprof")
+	res.Write([]byte(`<script>
+function replaceLinks(){
+    var all = document.getElementsByTagName("a");
+	var reg = /.+?\:\/\/.+?(\/.+?)(?:#|$)/;
+    for(var i = 0; i < all.length; i++) {
+		var link = reg.exec( all[i].href )[1];
+console.log (link);
+		if(link.substring(0, 6) != "/debug") {
+        	var link2 = "/debug/pprofsvg" + link;
+        	link = "/debug/pprof" + link;
+			all[i].href = link;
+
+			var a = document.createElement('a');
+			var linkText = document.createTextNode("SVG");
+			a.appendChild(linkText);
+			a.title = "SVG";
+			a.target = "_blank";
+			a.href = link2;
+			a.setAttribute("style", "margin-left:20px");
+			all[i].appendChild(a);
+		}
+    }
+};replaceLinks();
+	</script>`))
+}
+func addNonIndex(res http.ResponseWriter, svgstr string) {
+	res.Write([]byte("<br /><div><a href=\"profile?debug=1\">profile</a></div>"))
+	res.Write([]byte("<div><a href=\"/debug/pprof/cmdline?debug=1\">cmdline</a></div>"))
+	res.Write([]byte("<div><a href=\"/debug/pprof/symbol?debug=1\">symbol</a></div>"))
+	res.Write([]byte("<div><a href=\"/debug/pprof/trace?debug=1\">trace</a></div>"))
+}
+
+func pprofIndex(res http.ResponseWriter, req *http.Request) {
+	httppprof.Index(res, req)
+	addNonIndex(res, "pprof")
+}
+
 //对svg路径的请求做一次包装，输出通过命令返回的svg图片
 func svgPprof(res http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	k := req.Form["debug"]
-	if len(k) > 0 && k[0] == "1" {
+	if len(k) > 0 && (k[0] == "1" || k[0] == "2") {
 		fmt.Println("test")
 		out := execPprof(req.URL.Path)
 		res.Write(out)
 	} else {
 		httppprof.Index(res, req)
+		addNonIndex(res, "pprofsvg")
 	}
 }
 
@@ -134,6 +181,7 @@ func execPprof(url string) []byte {
 	}
 	return []byte(str)
 }
+
 
 func AddClient(clientID uint64) {
 	if libProfile != nil {

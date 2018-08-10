@@ -82,7 +82,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		roomPlayerInfo := translateToRoomPlayer(deskPlayer)
 		player := utils.GetMajongPlayer(playerID, mjContext)
 		if player == nil {
-			logEntry.WithField("palyerID: ", playerID).Errorln("mjContext找不到对应玩家")
+			logEntry.WithField("playerID: ", playerID).Errorln("mjContext找不到对应玩家")
 			continue
 		}
 		svrHandCard := player.GetHandCards()
@@ -171,7 +171,7 @@ func GetRecoverPlayerInfo(reqPlayerID uint64, d *desk.Desk) (recoverPlayerInfo [
 		huaGroup := &room.CardsGroup{
 			Cards: util.ServerCards2Numbers(player.GetHuaCards()),
 			Type:  room.CardsGroupType_CGT_HUA.Enum(),
-			Pid:   proto.Uint64(player.GetPalyerId()),
+			Pid:   proto.Uint64(player.GetPlayerId()),
 		}
 		gamePlayerInfo.CardsGroup = append(gamePlayerInfo.CardsGroup, huaGroup)
 		// 出牌组

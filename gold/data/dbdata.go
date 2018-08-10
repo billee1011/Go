@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"steve/external/datareportclient"
+	"steve/datareport/fixed"
 )
 
 /*
@@ -35,6 +37,8 @@ var gCostList = map[int16]string{
 var bInitGold = true
 
 const dbName = "player"
+
+const dbLogName = "log"
 
 // 设置货币类型列表
 func SetGoldTypeList(list, get, cost map[int16]string) {
@@ -148,10 +152,45 @@ func SaveGoldToDB(uid uint64, goldType int16, goldValue int64, changeValue int64
 	return nil
 }
 
+// 上报到数据中心
+func upGoldLog(plog *define.GoldLog) error {
+
+	opId := fixed.LOG_TYPE_GOLD_ADD
+
+	if plog.CurrencyType == define.GOLD_COIN {
+		if plog.Amount > 0{
+			opId = fixed.LOG_TYPE_GOLD_ADD
+		} else {
+			opId = fixed.LOG_TYPE_GOLD_REMV
+		}
+	} else if plog.CurrencyType == define.GOLD_INGOT  {
+		if plog.Amount > 0{
+			opId = fixed.LOG_TYPE_YB_ADD
+		} else {
+			opId = fixed.LOG_TYPE_YB_REMV
+		}
+	}	else if plog.CurrencyType == define.GOLD_CARD  {
+		if plog.Amount > 0{
+			opId = fixed.LOG_TYPE_CARD_ADD
+		} else {
+			opId = fixed.LOG_TYPE_CARD_REMV
+		}
+	}
+
+	_, err := datareportclient.DataReport(opId,0,0,int(plog.Channel),plog.PlayerID,strconv.FormatInt(plog.Amount,10))
+	if err != nil {
+		logrus.Errorf("upGoldLog err:uid=%d,op=%d,changed=%d",plog.PlayerID, opId, plog.Amount)
+	}
+	return nil
+}
+
 func InsertGoldLog(plog *define.GoldLog) error {
 
+	// 上报到数据中心
+	upGoldLog(plog)
+
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbLogName)
 	if err != nil {
 		return fmt.Errorf("connect db error")
 	}

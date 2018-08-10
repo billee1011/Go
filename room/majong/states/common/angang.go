@@ -80,7 +80,7 @@ func (s *AnGangState) doAngang(flow interfaces.MajongFlow) {
 		return
 	}
 	player.HandCards = newCards
-	s.addGangCard(card, player, player.GetPalyerId())
+	s.addGangCard(card, player, player.GetPlayerId())
 	s.notifyPlayers(flow, card, player)
 	return
 }
@@ -89,8 +89,8 @@ func (s *AnGangState) doAngang(flow interfaces.MajongFlow) {
 func (s *AnGangState) notifyPlayers(flow interfaces.MajongFlow, card *majongpb.Card, player *majongpb.Player) {
 	intCard := uint32(utils.ServerCard2Number(card))
 	body := room.RoomGangNtf{
-		ToPlayerId:   proto.Uint64(player.GetPalyerId()),
-		FromPlayerId: proto.Uint64(player.GetPalyerId()),
+		ToPlayerId:   proto.Uint64(player.GetPlayerId()),
+		FromPlayerId: proto.Uint64(player.GetPlayerId()),
 		Card:         proto.Uint32(intCard),
 		GangType:     room.GangType_AnGang.Enum(),
 	}

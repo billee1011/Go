@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"steve/entity/cache"
+	"steve/common/data/redis"
 )
 
 type ModelManager struct {
@@ -53,9 +55,9 @@ func (manager *ModelManager) StartDeskModel(deskID uint64) error {
 }
 
 // StopDeskModel 停止 models
-func (manager *ModelManager) StopDeskModel(deskID uint64) error {
-	_models, ok := manager.modelMap.Load(deskID)
-	manager.modelMap.Delete(deskID)
+func (manager *ModelManager) StopDeskModel(desk *desk.Desk) error {
+	_models, ok := manager.modelMap.Load(desk.GetUid())
+	manager.modelMap.Delete(desk.GetUid())
 	if !ok {
 		return fmt.Errorf("无对象")
 	}
@@ -63,6 +65,11 @@ func (manager *ModelManager) StopDeskModel(deskID uint64) error {
 	for _, model := range models {
 		model.Stop()
 	}
+
+	reportKey :=cache.FmtGameReportKey(desk.GetGameId(),/**/0) //临时0
+	redisCli := redis.GetRedisClient()
+	redisCli.DecrBy(reportKey,int64(desk.GetConfig().Num))
+
 	return nil
 }
 

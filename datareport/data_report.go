@@ -6,7 +6,7 @@ import (
 	"steve/server_pb/data_report"
 	"steve/structs/service"
 	reportservice "steve/datareport/service"
-)
+	)
 
 type dataReport struct {
 	e   *structs.Exposer
@@ -34,9 +34,5 @@ func (d *dataReport) Init(e *structs.Exposer, param ...string) error {
 }
 
 func (d *dataReport) Start() error {
-	startTimeReport()
 	return nil
-}
-
-func startTimeReport() {
 }
