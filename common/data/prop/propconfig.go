@@ -4,12 +4,17 @@ import (
 	"encoding/json"
 	"steve/entity/constant"
 	"steve/external/configclient"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // GetPropsConfig 获取道具配置信息
 func GetPropsConfig() (propConfig []constant.PropAttr, err error) {
 	// 现在直接从数据库获取，后面改为先从redis获取；订阅更新消息，更新时删掉redis数据 TODO
+	logrus.Debugf("GetPropsConfig PropKey:(%v),PropSubKey:(%v)", constant.PropKey, constant.PropSubKey)
+
 	val, err := configclient.GetConfig(constant.PropKey, constant.PropSubKey)
+
 	if err != nil {
 		return nil, err
 	}
@@ -17,7 +22,11 @@ func GetPropsConfig() (propConfig []constant.PropAttr, err error) {
 	err = json.Unmarshal([]byte(val), propConfig)
 	if err != nil {
 		return nil, err
+		logrus.Debugf("GetPropsConfig err:(%v)", err.Error())
+
 	}
+	logrus.Debugf("GetPropsConfig propConfig:(%v)", propConfig)
+
 	return
 }
 

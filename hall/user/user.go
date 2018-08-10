@@ -235,10 +235,12 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 		return
 	}
 
-	response.TotalBureau = proto.Uint32(uint32(dbPlayerGame.Totalbureau))
-	response.WinningRate = proto.Float32(float32(dbPlayerGame.Winningrate))
-	response.MaxWinningStream = proto.Uint32(uint32(dbPlayerGame.Maxwinningstream))
-	response.MaxMultiple = proto.Uint32(uint32(dbPlayerGame.Maxmultiple))
+	if exist {
+		response.TotalBureau = proto.Uint32(uint32(dbPlayerGame.Totalbureau))
+		response.WinningRate = proto.Float32(float32(dbPlayerGame.Winningrate))
+		response.MaxWinningStream = proto.Uint32(uint32(dbPlayerGame.Maxwinningstream))
+		response.MaxMultiple = proto.Uint32(uint32(dbPlayerGame.Maxmultiple))
+	}
 
 	// 获取自己游戏信息直接返回
 	if playerID == uid {

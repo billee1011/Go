@@ -14,14 +14,14 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values(
             "tag": "热卖",
             "price": 600,
             "coin": 100,
-            "present_coin": 0,
+            "present_coin": 0
         },
         {
             "name": "金豆 1000",
             "tag": "特惠",
             "price": 800,
             "coin": 1000,
-            "present_coin": 0,
+            "present_coin": 0
         }
     ]
     }'
@@ -41,46 +41,46 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
     'interactive',
     '{
         "props":[
-        {
-            "propID": 1,
-            "name": "rose"，
-            “attrType”: 1,
-            "attrID":1,
-            "attrValue":-100,
-            "attrLimit":10000,
-        },
-        {
-            "propID": 2,
-            "name": "beer"，
-            “attrType”: 1,
-            "attrID":1,
-            "attrValue":-100,
-            "attrLimit":10000,
-        },
-        {
-            "propID": 3,
-            "name": "bomb"，
-            “attrType”: 1,
-            "attrID":1,
-            "attrValue":-100,
-            "attrLimit":10000,
-        },
-        {
-            "propID": 4,
-            "name": "grabChicken，
-            “attrType”: 1,
-            "attrID":1,
-            "attrValue":-100,
-            "attrLimit":10000,
-        },
-        {
-            "propID": 5,
-            "name": "eggGun"，
-            “attrType”: 1,
-            "attrID":1,
-            "attrValue":-10000,
-            "attrLimit":500000,
-        }
-    ]
+            {
+                "propID": 1,
+                "name": "rose",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 2,
+                "name": "beer",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 3,
+                "name": "bomb",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 4,
+                "name": "grabChicken",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 5,
+                "name": "eggGun",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-10000,
+                "attrLimit":500000
+            }
+        ]
     }'
 );
