@@ -34,7 +34,7 @@ func (a *AlmsCore) Init(e *structs.Exposer, param ...string) error {
 		return err
 	}
 	// 存储到redis
-	if err = data.SetAlmsConfigWatchs(data.AlmsConfigToMap(acd), data.RedisTimeOut); err != nil {
+	if err = data.SetAlmsConfigWatchs(data.AlmsConfigToMap(acd)); err != nil {
 		entry.WithError(err).Errorln("Init set alms config redis 失败")
 		return err
 	}

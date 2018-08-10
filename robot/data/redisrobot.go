@@ -19,8 +19,8 @@ var RedisClifunc = getRobotRedis
 var errRobotRedisGain = errors.New("robot_redis 获取失败")
 var errRobotRedisOpertaion = errors.New("robot_redis 操作失败")
 
-// RedisTimeOut 过期时间
-var RedisTimeOut = time.Hour * 24 * 30
+// RedisTimeOut 过期时间 30 分钟
+var RedisTimeOut = time.Minute * 30
 
 // getRobotRedis 获取机器人服redis
 func getRobotRedis() *redis.Client {
