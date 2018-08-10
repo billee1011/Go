@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "net/http/pprof"
 	_ "steve/room/ai/ddz" // 斗地主 AI
 	_ "steve/room/ai/scxl"
 	"steve/room/common"
