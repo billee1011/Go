@@ -23,16 +23,20 @@ func NewService() service.Service {
 	return new(dataReport)
 }
 
-func (d *dataReport) Init(e *structs.Exposer, param ...string) error{
+func (d *dataReport) Init(e *structs.Exposer, param ...string) error {
 	d.e = e
 	rpcServer := e.RPCServer
-	err := rpcServer.RegisterService(datareport.RegisterReportServiceServer,reportservice.GetReportService())
+	err := rpcServer.RegisterService(datareport.RegisterReportServiceServer, reportservice.GetReportService())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *dataReport) Start() error{
+func (d *dataReport) Start() error {
+	startTimeReport()
 	return nil
+}
+
+func startTimeReport() {
 }
