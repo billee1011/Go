@@ -61,3 +61,23 @@ CREATE TABLE `t_horse_race` (
   PRIMARY KEY (`n_id`),
   KEY `t_horse_race_n_channel_IDX` (`n_channel`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='跑马灯表'
+
+
+CREATE TABLE `t_mail` (
+  `n_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '递增ID',
+  `n_title` varchar(150) DEFAULT NULL COMMENT '邮件标题',
+  `n_detail` text COMMENT '邮件内容',
+  `n_attach` varchar(256) DEFAULT NULL COMMENT '邮件附件：json格式 ',
+  `n_dest` text COMMENT '发送对象:json格式',
+  `n_state` int(11) NOT NULL COMMENT '邮件状态：未发送=0＞审核中=1＞已审核=2＞发送中=3＞发送结束=4＞已拒绝=5＞已撤回=6＞已失效=7 ',
+  `n_starttime` datetime DEFAULT NULL COMMENT '发送开始时间: 2018-08-08 12:00:00',
+  `n_endtime` datetime DEFAULT NULL COMMENT '发送截至时间: 2018-08-18 12:00:00',
+  `n_deltime` datetime DEFAULT NULL COMMENT '邮件删除时间: 2018-09-18 12:00:00',
+  `n_createTime` datetime DEFAULT NULL COMMENT '创建时间: 2018-08-08 12:00:00',
+  `n_createBy` varchar(64) DEFAULT NULL COMMENT '创建人',
+  `n_updateTime` datetime DEFAULT NULL COMMENT '最后更新时间: 2018-08-08 12:00:00',
+  `n_updateBy` varchar(64) DEFAULT NULL COMMENT '最后更新人',
+  `n_isUseEndTime` tinyint(1) DEFAULT '1' COMMENT '是否启用截至时间',
+  `n_isUseDelTime` tinyint(1) DEFAULT '1' COMMENT '是否启用删除时间',
+  PRIMARY KEY (`n_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='系统消息表，邮件表'
