@@ -226,7 +226,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	// 不存在直接返回
 	if !exist && playerID == uid {
 		response.ErrCode = proto.Uint32(0)
-		return
+		//return
 	}
 
 	// 出错直接返回
@@ -245,7 +245,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	// 获取自己游戏信息直接返回
 	if playerID == uid {
 		response.ErrCode = proto.Uint32(0)
-		return
+		//return
 	}
 
 	// 获取玩家道具
@@ -274,13 +274,15 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 
 	userProperty := new(common.Property)
 	for _, propConfig := range propConfigs {
-		propID := uint32(propConfig.PropID)
-		userProperty.PropId = proto.Uint32(propID)
+		userProperty.PropId = proto.Int32(propConfig.PropID)
 		userProperty.PropName = proto.String(propConfig.PropName)
 		userProperty.PropType = common.PropType(propConfig.Type).Enum()
-		userProperty.PropCost = proto.Uint32(uint32(propConfig.Value))
-		userProperty.PropCount = proto.Uint32(uint32(propID))
+		userProperty.PropCost = proto.Int64(propConfig.Value)
+		userProperty.PropCount = proto.Uint32(uint32(propCount[propConfig.PropID]))
 		response.UserProperty = append(response.UserProperty, userProperty)
+		response.ErrCode = proto.Uint32(0)
 	}
+
+	logrus.Debugf("Handle get player game info uid:(%d) rsp:(%v)", uid, response)
 	return
 }

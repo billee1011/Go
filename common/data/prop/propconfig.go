@@ -9,7 +9,8 @@ import (
 )
 
 // GetPropsConfig 获取道具配置信息
-func GetPropsConfig() (propConfig []constant.PropAttr, err error) {
+func GetPropsConfig() ([]constant.PropAttr, error) {
+	var err error
 	// 现在直接从数据库获取，后面改为先从redis获取；订阅更新消息，更新时删掉redis数据 TODO
 	logrus.Debugf("GetPropsConfig PropKey:(%v),PropSubKey:(%v)", constant.PropKey, constant.PropSubKey)
 
@@ -19,15 +20,13 @@ func GetPropsConfig() (propConfig []constant.PropAttr, err error) {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(val), propConfig)
+	var propConfig []constant.PropAttr
+	err = json.Unmarshal([]byte(val), &propConfig)
 	if err != nil {
 		return nil, err
-		logrus.Debugf("GetPropsConfig err:(%v)", err.Error())
-
 	}
-	logrus.Debugf("GetPropsConfig propConfig:(%v)", propConfig)
 
-	return
+	return propConfig, err
 }
 
 // GetSomePropsConfig 获取某些道具配置信息
@@ -39,7 +38,7 @@ func GetSomePropsConfig(propIDs []int32) (propConfig []constant.PropAttr, err er
 	}
 
 	var allConfig []constant.PropAttr
-	err = json.Unmarshal([]byte(val), allConfig)
+	err = json.Unmarshal([]byte(val), &allConfig)
 	if err != nil {
 		return nil, err
 	}

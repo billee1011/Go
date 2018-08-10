@@ -39,8 +39,7 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
 INSERT `t_common_config`(`key`, `subkey`, `value`) values ( 
     'prop', 
     'interactive',
-    '{
-        "props":[
+    '[
             {
                 "propID": 1,
                 "name": "rose",
@@ -81,6 +80,6 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
                 "attrValue":-10000,
                 "attrLimit":500000
             }
-        ]
-    }'
+    ]
+    '
 );
