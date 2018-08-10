@@ -260,6 +260,8 @@ func createDDZPlayerExpectors(client interfaces.Client) map[msgid.MsgID]interfac
 		msgid.MsgID_ROOM_DDZ_GAME_OVER_NTF, // 斗地主 结束通知
 		msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
 		//msgid.MsgID_ROOM_DDZ_RESUME_RSP,    // 斗地主 回复对局响应
+		msgid.MsgID_HALL_GET_PLAYER_GAME_INFO_RSP,
+		msgid.MsgID_ROOM_USE_PROP_NTF,
 	}
 
 	result := map[msgid.MsgID]interfaces.MessageExpector{}

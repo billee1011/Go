@@ -125,10 +125,12 @@ func HandleTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 // HandleUsePropReq 使用道具请求处理
 func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomUsePropReq) (ret []exchanger.ResponseMsg) {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "HandleUsePropReq",
-		"player_id": playerID,
+		"func_name":    "HandleUsePropReq",
+		"player_id":    playerID,
+		"to_player_id": *req.PlayerId,
+		"prop_id":      *req.PropId,
 	})
-
+	logEntry.Println("开始处理使用道具请求@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	errDesc := "不能使用该道具"
 	rsp := room.RoomUsePropRsp{
 		ErrCode: room.RoomError_FAILED.Enum(),
@@ -155,6 +157,7 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 	propID := gutils.PropTypeClient2Server(req.GetPropId())
 	prop, err := propclient.GetPlayerOneProp(playerID, propID)
 	if err != nil {
+		logEntry.WithError(err).Debugln("获取玩家道具信息失败")
 		return
 	}
 
@@ -162,18 +165,21 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 	if prop.Count > 0 {
 		err = propclient.AddPlayerProp(playerID, propID, -1)
 		if err != nil {
+			logEntry.WithError(err).Debugln("增加玩家道具失败")
 			return
 		}
 	} else { // 使用金币购买
 		propConfig, err := propclient.GetOnePropsConfig(propID)
 		if err != nil {
+			logEntry.WithError(err).Debugln("获取道具配置失败")
 			return
 		}
 
 		coin, err := goldclient.GetGold(playerID, constant.GOLD_COIN)
-		if coin > propConfig.Limit {
+		if coin >= propConfig.Limit {
 			goldclient.AddGold(playerID, constant.GOLD_COIN, propConfig.Value, 0, 0, int32(desk.GetGameId()), desk.GetLevel())
 		} else {
+			logEntry.WithError(err).Debugf("玩家金币数不足, limit: %d, coin: %d", propConfig.Limit, coin)
 			return
 		}
 	}
@@ -190,6 +196,6 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 		logEntry.WithError(err).Debugln("序列化失败")
 		return
 	}
-	modelmanager.GetModelManager().GetMessageModel(playerID).BroadcastMessage([]uint64{}, msgid.MsgID_ROOM_USE_PROP_NTF, msgBody, true)
+	modelmanager.GetModelManager().GetMessageModel(desk.GetUid()).BroadcastMessage([]uint64{}, msgid.MsgID_ROOM_USE_PROP_NTF, msgBody, true)
 	return nil
 }

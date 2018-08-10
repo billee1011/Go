@@ -13,9 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPlaycard1(t *testing.T) {
+func TestProp(t *testing.T) {
 	// 配牌1
 	params := doudizhu.NewStartDDZGameParamsTest1()
+	params.PlayerSeatGold = map[int]uint64{0: 100000, 1: 100000, 2: 100000}
 	seat := 0
 	deskData, err := utils.StartDDZGame(params)
 	assert.NotNil(t, deskData)
@@ -34,6 +35,13 @@ func TestPlaycard1(t *testing.T) {
 	for _, prop := range rsp.UserProperty {
 		err = utils.SendUsePropReq(seat, deskData, toPlayerID, common.PropType(*prop.PropId))
 		assert.Nil(t, err)
+		if common.PropType(*prop.PropId) == common.PropType_EGG_GUN {
+			expector, _ = player.Expectors[msgid.MsgID_ROOM_USE_PROP_RSP]
+			rsp1 := room.RoomUsePropRsp{}
+			assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
+			assert.Equal(t, room.RoomError_FAILED, *rsp.ErrCode)
+			break
+		}
 		for _, playert := range deskData.Players {
 			expector, _ := playert.Expectors[msgid.MsgID_ROOM_USE_PROP_NTF]
 			ntf := room.RoomUsePropNtf{}

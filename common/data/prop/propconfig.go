@@ -63,7 +63,7 @@ func GetOnePropsConfig(propID int32) (propConfig constant.PropAttr, err error) {
 	}
 
 	var allConfig []constant.PropAttr
-	err = json.Unmarshal([]byte(val), allConfig)
+	err = json.Unmarshal([]byte(val), &allConfig)
 	if err != nil {
 		return
 	}
