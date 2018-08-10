@@ -35,17 +35,54 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 	needHu := outCard == majong.Card{}
 	if needHu {
 		aiEvent = h.hu(player)
-		logEntry.Infoln("中级AI胡牌")
+		logEntry.Infoln("中级AI自摸胡牌")
 		return
+	}
+	moCard := mjContext.LastMopaiCard
+	for _, pengCard := range NonPointer(utils.TransPengCard(player.PengCards)) {
+		if pengCard == *moCard {
+			aiEvent = h.gang(player, &pengCard)
+			logEntry.WithField("摸牌", moCard).Infoln("中级AI补杠")
+			return
+		}
 	}
 	if gang {
 		aiEvent = h.gang(player, &outCard)
-	} else {
-		aiEvent = h.chupai(player, &outCard)
+		logEntry.WithField("outCard", outCard).Infoln("中级AI暗杠")
+		return
 	}
 
-	logEntry.WithField("outCard", outCard).WithField("gang", gang).Infoln("中级AI出牌")
+	if len(zxRecord.CanTingCardInfo) > 0 {
+		max := -1
+		var card majong.Card
+		remainCardCount := transMap(getRemainCardCount(handCards, mjContext))
+		for _, canTingInfo := range zxRecord.CanTingCardInfo {
+			total := 0
+			for _, tingInfo := range canTingInfo.TingCardInfo {
+				count := remainCardCount[tingInfo.TingCard]
+				total += count * int(tingInfo.Times)
+			}
+			if max < total {
+				max = total
+				card = gutils.Uint32ToServerCard(canTingInfo.OutCard)
+			}
+		}
+		h.chupai(player, &card)
+		logEntry.WithField("CanTingCardInfo", zxRecord.CanTingCardInfo).WithField("outCard", card).Infoln("中级AI最大胡牌概率出牌")
+		return
+	}
+
+	aiEvent = h.chupai(player, &outCard)
+	logEntry.WithField("outCard", outCard).Infoln("中级AI出牌")
 	return
+}
+
+func transMap(counts map[majong.Card]int) map[uint32]int {
+	result := make(map[uint32]int)
+	for card, count := range counts {
+		result[utils.ServerCard2Uint32(&card)] = count
+	}
+	return result
 }
 
 func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majong.Card, bool) {
@@ -58,33 +95,9 @@ func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majo
 	if len(singles) == 1 {
 		return singles[0].cards[0], false //只有一张单牌，直接出牌
 	}
-
-	//var wallCards []majong.Card
-	//for _, wallCard := range mjContext.WallCards {
-	//	wallCards = append(wallCards, *wallCard)
-	//}
-	//
-	//remainCards := CountCard(wallCards)
-
-	var visibleCards []*majong.Card
-	visibleCards = append(visibleCards, handCards...)
-	for _, player := range mjContext.Players {
-		visibleCards = append(visibleCards, player.OutCards...)
-		visibleCards = append(visibleCards, utils.TransChiCard(player.ChiCards)...)
-		visibleCards = append(visibleCards, utils.TransPengCard(player.PengCards)...)
-		visibleCards = append(visibleCards, utils.TransGangCard(player.GangCards)...)
-		visibleCards = append(visibleCards, utils.TransHuCard(player.HuCards)...)
-	}
-
-	countMap := CountCard(NonPointer(visibleCards))
-
-	remainCards := make(map[majong.Card]int)
-	for k, v := range countMap {
-		remainCards[k] = 4 - v
-	}
-
+	remainCardCount := getRemainCardCount(handCards, mjContext)
 	if len(singles) > 1 {
-		outCard := whichSingle(remainCards, singles, len(pairs) >= 1)
+		outCard := whichSingle(remainCardCount, singles, len(pairs) >= 1)
 		return outCard, false
 	}
 
@@ -104,7 +117,7 @@ func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majo
 	chances := make(map[*Split]int)
 	xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 	for _, twoCard := range twoCards {
-		count := countValidCard(remainCards, getValidCard(twoCard))
+		count := countValidCard(remainCardCount, getValidCard(twoCard))
 		if twoCard.t == PAIR {
 			chances[&twoCard] = count * (4 / 1) // 可碰，四家摸到都有可能成刻
 		}
@@ -128,8 +141,35 @@ func getOutCard(handCards []*majong.Card, mjContext *majong.MajongContext) (majo
 		}
 	}
 	singles = SplitSingle(needChai.cards)
-	outCard := whichSingle(remainCards, singles, needChai.t == PAIR && len(pairs) >= 2 || needChai.t != PAIR && len(pairs) >= 1)
+	outCard := whichSingle(remainCardCount, singles, needChai.t == PAIR && len(pairs) >= 2 || needChai.t != PAIR && len(pairs) >= 1)
 	return outCard, false
+}
+
+func getRemainCardCount(handCards []*majong.Card, mjContext *majong.MajongContext) map[majong.Card]int {
+	//var wallCards []majong.Card
+	//for _, wallCard := range mjContext.WallCards {
+	//	wallCards = append(wallCards, *wallCard)
+	//}
+	//
+	//remainCards := CountCard(wallCards)
+
+	var visibleCards []*majong.Card
+	visibleCards = append(visibleCards, handCards...)
+	for _, player := range mjContext.Players {
+		visibleCards = append(visibleCards, player.OutCards...)
+		visibleCards = append(visibleCards, utils.TransChiCard(player.ChiCards)...)
+		visibleCards = append(visibleCards, utils.TransPengCard(player.PengCards)...)
+		visibleCards = append(visibleCards, utils.TransGangCard(player.GangCards)...)
+		visibleCards = append(visibleCards, utils.TransHuCard(player.HuCards)...)
+	}
+
+	countMap := CountCard(NonPointer(visibleCards))
+
+	remainCards := make(map[majong.Card]int)
+	for k, v := range countMap {
+		remainCards[k] = 4 - v
+	}
+	return remainCards
 }
 
 func whichSingle(remainCards map[majong.Card]int, singles []Split, cha bool) majong.Card {

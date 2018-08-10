@@ -532,24 +532,6 @@ func TransHuCard(huCards []*majongpb.HuCard) []*majongpb.Card {
 	return cards
 }
 
-// TransCanTingInfos 出本张牌可以听信息转换
-func TransCanTingInfos(canTingInfos []*majongpb.CanTingCardInfo) []*room.CanTingCardInfo {
-	infos := make([]*room.CanTingCardInfo, 0)
-	for _, canTingInfo := range canTingInfos {
-		infos = append(infos, &room.CanTingCardInfo{OutCard: &canTingInfo.OutCard, TingCardInfo: TransTingCardInfos(canTingInfo.TingCardInfo)})
-	}
-	return infos
-}
-
-// TransTingCardInfos 听牌信息转换
-func TransTingCardInfos(tingCardInfos []*majongpb.TingCardInfo) []*room.TingCardInfo {
-	tingInfos := make([]*room.TingCardInfo, 0)
-	for _, tingInfo := range tingCardInfos {
-		tingInfos = append(tingInfos, &room.TingCardInfo{TingCard: &tingInfo.TingCard, Times: &tingInfo.Times})
-	}
-	return tingInfos
-}
-
 // GetAllMopaiCount 获取所有人的摸牌数总和
 func GetAllMopaiCount(mjContext *majongpb.MajongContext) int {
 	count := 0
