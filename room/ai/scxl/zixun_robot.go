@@ -67,8 +67,8 @@ func (h *zixunStateAI) getMiddleAIEvent(player *majong.Player, mjContext *majong
 				card = gutils.Uint32ToServerCard(canTingInfo.OutCard)
 			}
 		}
-		h.chupai(player, &card)
-		logEntry.WithField("CanTingCardInfo", zxRecord.CanTingCardInfo).WithField("outCard", card).Infoln("中级AI最大胡牌概率出牌")
+		aiEvent = h.chupai(player, &card)
+		logEntry.WithField("outCard", card).Infoln("中级AI最大胡牌概率出牌")
 		return
 	}
 
