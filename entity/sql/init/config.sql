@@ -94,6 +94,54 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
     }'
 );
 
+INSERT `t_common_config`(`key`, `subkey`, `value`) values ( 
+    'prop', 
+    'interactive',
+    '[
+            {
+                "propID": 1,
+                "name": "rose",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 2,
+                "name": "beer",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 3,
+                "name": "bomb",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 4,
+                "name": "grabChicken",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+            {
+                "propID": 5,
+                "name": "eggGun",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-10000,
+                "attrLimit":500000
+            }
+    ]
+    '
+);
+
 /*游戏配置*/ 
 INSERT INTO `t_game_config` VALUES (1, 1, '血流麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:01:33', NULL, NULL, NULL);
 INSERT INTO `t_game_config` VALUES (2, 2, '血战麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:03:29', NULL, NULL, NULL);

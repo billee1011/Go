@@ -26,7 +26,7 @@ var (
 type PropAttr struct {
 	PropID   int32  `json:"propID"`    // 道具ID
 	PropName string `json:"name"`      // 道具名称
-	Type     int32  `json:"attrType"`  // 属性类型：货币、道具
+	Type     int32  `json:"attrType"`  // 属性类型：货币         | 道具
 	TypeID   int32  `json:"attrID"`    // 属性ID:金币、钻石、房卡 | 道具ID
 	Value    int64  `json:"attrValue"` // 属性值：操作数量
 	Limit    int64  `json:"attrLimit"` // 使用限制
