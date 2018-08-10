@@ -1,4 +1,14 @@
 
+echo "configuration------------------------------------\n"
+pushd configuration
+sh ./start.sh
+popd
+
+echo "gold---------------------------------\n"
+pushd gold
+sh ./start.sh
+popd
+
 echo "gateway------------------------------------\n"
 pushd gateway 
 #nohup serviceloader gateway --config=config.yml  &
@@ -28,8 +38,14 @@ pushd match
 #nohup serviceloader match --config=config.yml  &
 sh ./start.sh
 popd 
-echo "gold---------------------------------\n"
-pushd gold 
+
+echo "robot---------------------------------\n"
+pushd robot
+sh ./start.sh
+popd
+
+echo "msgserver---------------------------------\n"
+pushd msgserver
 sh ./start.sh
 popd
 
