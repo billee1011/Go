@@ -245,7 +245,7 @@ func DelMail(uid uint64, mailId uint64) error {
 	}
 
 	if one == nil {
-		// 设置邮件=已读
+		// 设置邮件为删除状态
 		return data.DelEmailFromDB(uid, mailId, true)
 	}
 	return data.DelEmailFromDB(uid, mailId, false)
@@ -266,7 +266,15 @@ func AwardAttach(uid uint64, mailId uint64) (string, error) {
 		return "", errors.New("邮件不存在")
 	}
 
+	// 如果已领取，直接返回
+	if one.IsGetAttach  {
+		return "", errors.New("邮件已领取")
+	}
+
 	// 发放附件奖励
+
+	// 标记为已领取
+	data.SetAttachGettedDB(uid, mailId)
 
 	return "", nil
 }
@@ -285,12 +293,14 @@ func  runCheckMailChange() error{
 
 // 从DB获取邮件列表
 func getDataFromDB() error {
-	mailList, err := data.LoadMailListFromDB()
+
+	list, err := data.LoadMailListFromDB()
 	if err != nil {
-		logrus.Errorln("load email list from db err:", mailList)
+		logrus.Errorln("load email list from db err:", list)
 		return err
 	}
-	logrus.Debugln("email list:", mailList)
+	logrus.Debugln("email list:", list)
+	mailList = list
 	// 检测邮件状态
 	checkMailStatus(mailList)
 	return err
@@ -354,7 +364,7 @@ func checkMailStatus(mailList map[uint64]*define.MailInfo) error {
 // 调用hall接口获取用户信息
 // 返回:渠道ID，省ID，城市ID
 func getUserInfo(uid uint64) (int64, int64, int64, bool) {
-	//return 1, 0, 0
+	return 0, 1, 0, true
 	info, err := hallclient.GetPlayerInfo(uid)
 	if err != nil {
 		return 0, 0, 0, false

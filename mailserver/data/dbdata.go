@@ -49,12 +49,13 @@ CREATE TABLE `t_player_mail` (
 
 const dbName = "player"
 
+const dbConfigName = "config"
 
 // 修改邮件状态
 func SetEmailStateToDB(mailId uint64, state int8)  error {
 
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbConfigName)
 	if err != nil {
 		return fmt.Errorf("connect db error")
 	}
@@ -97,6 +98,32 @@ func DelEmailFromDB(uid uint64, mailId uint64, bInsert bool)  error {
 	}
 	if aff, _ := res.RowsAffected(); aff == 0 {
 		logrus.Errorf("DelEmailFromDB no record err:uid=%d,mailId=%d", uid, mailId)
+		return nil
+	}
+
+	return nil
+}
+
+// 设置邮件已领取
+func SetAttachGettedDB(uid uint64, mailId uint64)  error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+	sql := ""
+
+
+	sql = fmt.Sprintf("update  t_player_mail set n_isGetAttach=1  where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
+
+	res, err := engine.Exec(sql)
+	if err != nil {
+		logrus.Errorf("SetAttachGettedDB err:uid=%d,mailId=%d, err=%v", uid, mailId, err)
+		return err
+	}
+	if aff, _ := res.RowsAffected(); aff == 0 {
+		logrus.Errorf("SetAttachGettedDB no record err:uid=%d,mailId=%d", uid, mailId)
 		return nil
 	}
 
@@ -243,7 +270,7 @@ func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 func LoadMailListFromDB() (map[uint64]*define.MailInfo, error) {
 
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbConfigName)
 	if err != nil {
 		return nil, fmt.Errorf("connect db error")
 	}
