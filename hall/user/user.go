@@ -3,6 +3,7 @@ package user
 import (
 	"bytes"
 	"io/ioutil"
+	"math"
 	"steve/client_pb/common"
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
@@ -275,7 +276,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 		userProperty.PropId = proto.Int32(propConfig.PropID)
 		userProperty.PropName = proto.String(propConfig.PropName)
 		userProperty.PropType = common.PropType(propConfig.Type).Enum()
-		userProperty.PropCost = proto.Int64(propConfig.Value)
+		userProperty.PropCost = proto.Int64(int64(math.Abs(float64(propConfig.Value))))
 		userProperty.PropCount = proto.Uint32(uint32(propCount[propConfig.PropID]))
 		response.UserProperty = append(response.UserProperty, userProperty)
 		response.ErrCode = proto.Uint32(0)
