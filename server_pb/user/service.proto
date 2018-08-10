@@ -5,8 +5,8 @@ package user;
 // PlayerState 玩家状态
 enum PlayerState{
     PS_IDIE = 0;     // 空闲中
-    PS_MATCHING = 1; // 匹配中
-    PS_GAMEING = 2;  // 游戏中
+    PS_GAMEING = 1;  // 游戏中
+    PS_MATCHING = 2; // 匹配中
 }
 
 // ServerType 服务类型
@@ -16,24 +16,24 @@ enum ServerType{
     ST_ROOM = 2;  // 房间服
 }
 
+
 // GameConfig 游戏玩法信息
 message GameConfig {
-    uint32 game_id = 1;         // 游戏 id
+    uint32 game_id = 1;         // 游戏 ID
     string game_name = 2;       // 游戏名称
     uint32 game_type = 3;       // 游戏类型
-   
+    uint32 min_people = 4;      // 允许最低人数  
+    uint32 max_people = 5;      // 允许最高人数    
 }
 
 // GameConfigLevel 游戏场次信息
 message GameLevelConfig {
-    uint32 game_id = 1;         // 游戏 id
+    uint32 game_id = 1;         // 游戏 ID
     uint32 level_id = 2;        // 游戏等级
     string level_name = 3;      // 游戏等级名称  
     uint32 base_scores = 4;     // 游戏底分
     uint32 low_scores = 5;      // 允许进入最低分
     uint32 high_scores = 6;     // 允许进入最高分
-    uint32 min_people = 7;      // 允许最低人数 
-    uint32 max_people = 8;      // 允许最高人数   
 }
 
 // GetPlayerByAccountReq 根据账号获取玩家请求
@@ -49,25 +49,25 @@ message GetPlayerByAccountRsp {
 
 // GetPlayerInfoReq 获取玩家信息
 message GetPlayerInfoReq {
-    uint64 player_id = 1;         // 玩家id
+    uint64 player_id = 1;         // 玩家ID
    
 }
 
 // GetPlayerInfoRsp 获取玩家信息应答
 message GetPlayerInfoRsp {
     int32 err_code = 1;           // 错误信息 
-    uint64 player_id = 2;         // 玩家 id
+    uint64 player_id = 2;         // 玩家 ID 
     string nick_name = 3;         // 玩家昵称
     string avatar = 4;            // 玩家头像
     uint32 gender = 5;            // 玩家性别
-    string name = 6 ;             // 玩家姓名
-    string phone = 7;             // 联系方式
-    string ip_addr = 8;           // 玩家ip地址   
+    uint32 channel_id = 6;        // 渠道 ID
+    uint32 province_id = 7;       // 省份 ID
+    uint32 city_id = 8;           // 城市 ID
 }
 
 // UpdatePlayerInfoReq 修改玩家信息
 message UpdatePlayerInfoReq {
-    uint64 player_id = 1;         // 玩家 id
+    uint64 player_id = 1;         // 玩家 ID
     string nick_name = 2;         // 玩家昵称
     string avatar = 3;            // 玩家头像
     uint32 gender = 4;            // 玩家性别 
@@ -89,8 +89,13 @@ message GetPlayerStateReq{
 // GetPlayerStateRsp 获取玩家状态应答
 message GetPlayerStateRsp{
     int32 err_code = 1;           // 错误信息
-    PlayerState state = 2;        // 玩家 ID  
-    uint32 game_id = 3;           // 正在进行的游戏id
+    PlayerState state = 2;        // 玩家ID  
+    uint32 game_id = 3;           // 正在进行的游戏ID  
+    uint32 level_id = 4;          // 正在进行的场次id
+    string ip_addr = 5;           // 客户端ID地址
+    string match_addr = 6;        // 匹配服地址
+    string gate_addr = 7;         // 网关服地址
+    string room_addr = 8;         // 房间服地址 
 }
 
 
@@ -111,17 +116,33 @@ message GetPlayerGameInfoRsp{
     uint32 max_multiple = 7;       // 最大获胜倍数 
 }
 
-// UpdatePlayerStateReq 更新玩家状态
+
+// UpdatePlayerGateInfoReq 更新玩家网关信息
+message UpdatePlayerGateInfoReq{
+    uint64 player_id = 1;                    // 玩家ID  
+    string ip_addr = 2;                      // 客户端IP地址  
+    string gate_addr = 3;                    // 网关服务地址
+}  
+
+// UpdatePlayerStateReq 更新玩家游戏状态
 message UpdatePlayerStateReq{
     uint64 player_id = 1;                    // 玩家ID  
     PlayerState old_state = 2;               // 旧状态       
     PlayerState new_state = 3;               // 新状态  
-    ServerType server_type = 4;              // 服务类型
-    string server_addr = 5;                  // 服务地址
+    uint32 game_id = 4;                      // 游戏ID
+    uint32 level_id = 5;                     // 场次ID
 }
 
-// UpdatePlayerStateRsp  更新玩家状态应答
-message UpdatePlayerStateRsp{
+// UpdatePlayerServerAddrReq 更新玩家服务端地址
+message UpdatePlayerServerAddrReq{ 
+    uint64 player_id = 1;                    // 玩家ID  
+    ServerType server_type = 5;              // 服务类型
+    string server_addr = 6;                  // 服务地址
+
+}
+
+// UpdatePlayerRsp  更新玩家应答
+message UpdatePlayerRsp{
     int32 err_code = 1;           // 错误信息
     bool result = 2;              // 更新结果
 }
@@ -138,21 +159,6 @@ message GetGameListInfoRsp{
     repeated GameLevelConfig game_level_config = 3;         // 游戏场次信息
 }
 
-// GetPlayerServerInfoReq 
-message GetPlayerServerInfoReq{
-    uint64 player_id = 1;                    // 玩家 id
-}
-
-// GetPlayerServerInfoRsp 获取玩家服务端信息
-message GetPlayerServerInfoRsp{
-    int32 err_code = 1;                      // 错误信息
-    uint64 player_id = 2;                    // 玩家  id  
-    string client_id = 3;                    // 客户端id
-    string match_addr = 4;                   // 匹配服地址
-    string gate_addr = 5;                    // 网关服地址
-    string room_addr = 6;                    // 房间服地址
-}
-
 // PlayerData 玩家数据服务
 service PlayerData {
     // GetPlayerByAccount 根据账号获取玩家
@@ -163,10 +169,14 @@ service PlayerData {
     rpc UpdatePlayerInfo(UpdatePlayerInfoReq) returns (UpdatePlayerInfoRsp);
      // GetPlayerState 获取玩家状态
     rpc GetPlayerState(GetPlayerStateReq) returns (GetPlayerStateRsp);
-    // GetPlayerGameInfo 获取玩家游戏信息
+    //  GetPlayerGameInfo 获取玩家游戏信息
     rpc GetPlayerGameInfo(GetPlayerGameInfoReq) returns (GetPlayerGameInfoRsp);
     // UpdatePlayerState 更新玩家状态
-    rpc UpdatePlayerState(UpdatePlayerStateReq) returns (UpdatePlayerStateRsp) ;
+    rpc UpdatePlayerState(UpdatePlayerStateReq) returns (UpdatePlayerRsp) ;
+     // UpdatePlayerGateInfo 更新玩家网关信息
+    rpc UpdatePlayerGateInfo(UpdatePlayerGateInfoReq) returns (UpdatePlayerRsp) ;
+     // UpdatePlayerServerAddr 更新玩家服务端信息 
+    rpc UpdatePlayerServerAddr(UpdatePlayerServerAddrReq) returns (UpdatePlayerRsp) ;
     // GetGameListInfo 获取游戏列表
     rpc GetGameListInfo(GetGameListInfoReq) returns (GetGameListInfoRsp);
    

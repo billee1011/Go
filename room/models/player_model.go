@@ -8,6 +8,9 @@ import (
 	"steve/room/fixed"
 	playerpkg "steve/room/player"
 	"sync"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type playerIDWithChannel struct {
@@ -137,11 +140,20 @@ func (model *PlayerModel) PlayerQuit(player *playerpkg.Player) {
 		model.mu.Unlock()
 		return
 	}
+	finishChannel := make(chan error)
 	model.leaveChannel <- playerIDWithChannel{
 		playerID:      player.GetPlayerID(),
-		finishChannel: make(chan error, 0),
+		finishChannel: finishChannel,
 	}
 	model.mu.Unlock()
+
+	timer := time.NewTimer(time.Second)
+	select {
+	case <-finishChannel:
+		break
+	case <-timer.C:
+		logrus.WithField("player_id", player.GetPlayerID()).Warningln("退出处理超时")
+	}
 }
 
 // handlePlayerLeave 处理玩家离开牌桌
@@ -172,7 +184,7 @@ func (model *PlayerModel) playerQuitEnterDeskNtf(player *playerpkg.Player, qeTyp
 
 func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value bool) {
 	for _, p := range model.GetDesk().GetConfig().Context.(*contexts.MajongDeskContext).MjContext.Players {
-		if p.GetPalyerId() == player.GetPlayerID() {
+		if p.GetPlayerId() == player.GetPlayerID() {
 			p.IsQuit = value
 		}
 	}
@@ -180,6 +192,15 @@ func (model *PlayerModel) setContextPlayerQuit(player *playerpkg.Player, value b
 
 func (model *PlayerModel) GetDeskPlayers() []*playerpkg.Player {
 	return model.players
+}
+
+func (model *PlayerModel) GetDeskPlayerByID(playerID uint64) *playerpkg.Player {
+	for _, player := range model.players {
+		if player.PlayerID == playerID {
+			return player
+		}
+	}
+	return nil
 }
 
 // GetDeskPlayerIDs 获取牌桌玩家 ID 列表， 座号作为索引

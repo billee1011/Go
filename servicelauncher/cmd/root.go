@@ -135,6 +135,8 @@ func initDefaultConfig() {
 	viper.SetDefault("redis_addr", "127.0.0.1:6379")
 	viper.SetDefault("redis_passwd", "")
 	viper.SetDefault("consul_addr", "127.0.0.1:8500")
+	viper.SetDefault("report_server_ip","")
+	viper.SetDefault("report_server_port","")
 }
 
 func initLogger() {

@@ -104,7 +104,7 @@ func initPlayers(players []uint64) []*server_pb.Player {
 	result := []*server_pb.Player{}
 	for _, playerID := range players {
 		result = append(result, &server_pb.Player{
-			PalyerId:          playerID,
+			PlayerId:          playerID,
 			HandCards:         []*server_pb.Card{},
 			OutCards:          []*server_pb.Card{},
 			ChiCards:          []*server_pb.ChiCard{},

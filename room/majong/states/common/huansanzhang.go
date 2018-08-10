@@ -193,7 +193,7 @@ func (s *HuansanzhangState) fetchCardFrom(flow interfaces.MajongFlow, seat int, 
 	var ok bool
 	for _, card := range cards {
 		if fromPlayer.HandCards, ok = utils.RemoveCards(fromPlayer.GetHandCards(), card, 1); !ok {
-			return nil, fmt.Errorf("移除卡牌失败。玩家: %v, 卡牌：%v 手牌：%v", fromPlayer.GetPalyerId(), card, fromPlayer.GetHandCards())
+			return nil, fmt.Errorf("移除卡牌失败。玩家: %v, 卡牌：%v 手牌：%v", fromPlayer.GetPlayerId(), card, fromPlayer.GetHandCards())
 		}
 		curPlayer.HandCards = append(curPlayer.HandCards, card)
 	}
@@ -219,7 +219,7 @@ func (s *HuansanzhangState) notifyFinish(flow interfaces.MajongFlow, dir room.Di
 			OutCards:  utils.ServerCards2Uint32(outCards),
 			Direction: dir.Enum(),
 		}
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+		flow.PushMessages([]uint64{player.GetPlayerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_FINISH_NTF),
 			Msg:   &notify,
 		})
@@ -300,8 +300,8 @@ func (s *HuansanzhangState) notifyPlayerHuangSanZhang(flow interfaces.MajongFlow
 		hszNtf := &room.RoomHuansanzhangNtf{
 			HszCard: utils.CardsToRoomCards(player.GetHuansanzhangCards()),
 		}
-		idHszMap[player.GetPalyerId()] = gutils.FmtMajongpbCards(player.GetHandCards())
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+		idHszMap[player.GetPlayerId()] = gutils.FmtMajongpbCards(player.GetHandCards())
+		flow.PushMessages([]uint64{player.GetPlayerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_HUANSANZHANG_NTF),
 			Msg:   hszNtf,
 		})

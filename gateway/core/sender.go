@@ -16,6 +16,8 @@ type sender struct{}
 
 var _ steve_proto_gaterpc.MessageSenderServer = new(sender)
 
+
+
 func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.SendMessageRequest) (*steve_proto_gaterpc.SendMessageResult, error) {
 	msgID := req.GetHeader().GetMsgId()
 	playerIDs := req.GetPlayerId()
@@ -46,6 +48,9 @@ func (mss *sender) SendMessage(ctx context.Context, req *steve_proto_gaterpc.Sen
 	}
 	return result, nil
 }
+
+
+
 
 func (mss *sender) fetchConnectionIDs(playerIDs []uint64) []uint64 {
 	result := make([]uint64, 0, len(playerIDs))

@@ -9,9 +9,10 @@ package server
 
 import (
 	"context"
-	"github.com/Sirupsen/logrus"
 	"steve/gold/logic"
 	"steve/server_pb/gold"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // GoldService 实现 gold.GoldServer
@@ -39,7 +40,7 @@ func (gs *GoldServer) GetGold(ctx context.Context, request *gold.GetGoldReq) (re
 	// 逻辑代码返回错误
 	if err != nil {
 		response.ErrCode = gold.ResultStat_FAILED
-		logrus.Errorln("GetGold resp", *response)
+		logrus.WithError(err).Errorln("GetGold resp", *response)
 		return response, nil
 	}
 	// 设置返回值
@@ -68,7 +69,7 @@ func (gs *GoldServer) AddGold(ctx context.Context, request *gold.AddGoldReq) (re
 	// 调用逻辑实现代码
 	item := request.GetItem()
 	after, err := logic.GetGoldMgr().AddGold(item.GetUid(), int16(item.GetGoldType()), item.GetChangeValue(),
-		item.GetSeq(), item.GetFuncId(), item.GetChannel(), item.GetTime())
+		item.GetSeq(), item.GetFuncId(), item.GetChannel(), item.GetTime(), item.GetGameId(), item.GetLevel())
 
 	// 逻辑代码返回错误
 	if err != nil {

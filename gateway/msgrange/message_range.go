@@ -11,25 +11,33 @@ type messageRange struct {
 }
 
 var gServerMessageRange = map[string]messageRange{
-	common.RoomServiceName: messageRange{
+	common.RoomServiceName: {
 		minMsgID: 0x10000,
 		maxMsgID: 0x1ffff,
 	},
-	common.GateServiceName: messageRange{
+	common.GateServiceName: {
 		minMsgID: 0x1001,
 		maxMsgID: 0x1fff,
 	},
-	common.MatchServiceName: messageRange{
+	common.MatchServiceName: {
 		minMsgID: 0x2001,
 		maxMsgID: 0x2fff,
 	},
-	common.LoginServiceName: messageRange{
+	common.LoginServiceName: {
 		minMsgID: 0x0001,
 		maxMsgID: 0x0fff,
 	},
-	common.HallServiceName: messageRange{
+	common.HallServiceName: {
 		minMsgID: 0x3001,
 		maxMsgID: 0x3fff,
+	},
+	common.MsgServiceName: {
+		minMsgID: 0x4001,
+		maxMsgID: 0x4fff,
+	},
+	common.AlmsServiceName: {
+		minMsgID: 0x6001,
+		maxMsgID: 0x6fff,
 	},
 }
 

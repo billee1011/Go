@@ -2,21 +2,23 @@ package matchv3
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
-	"steve/match/web"
-	"steve/server_pb/gold"
+	"steve/client_pb/match"
+	"steve/client_pb/msgid"
+	"steve/external/gateclient"
+	"steve/external/hallclient"
 	"steve/server_pb/room_mgr"
-	"steve/server_pb/user"
 	"steve/structs"
+	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // randSeat 给desk的所有玩家分配座位号
 func randSeat(desk *matchDesk) {
 	// 先分配为：0,1,2,3......
-	seat := 0
+	var seat int32 = 0
 	for i := range desk.players {
 		desk.players[i].seat = seat
 		seat++
@@ -29,212 +31,124 @@ func randSeat(desk *matchDesk) {
 }
 
 // sendCreateDesk 向room服请求创建牌桌，创建失败时则重新请求
-func sendCreateDesk(pDesk *matchDesk) {
+func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"func_name": "sendCreateDesk",
-		"desk":      pDesk.String(),
+		"desk":      desk,
 	})
+
+	logEntry.Debugln("进入函数，准备向room服请求创建桌子")
 
 	exposer := structs.GetGlobalExposer()
 
 	// 获取room的service
 	rs, err := exposer.RPCClient.GetConnectByServerName("room")
 	if err != nil || rs == nil {
-		logEntry.WithError(err).Errorln("获得room服的gRPC失败!!!")
+		logEntry.WithError(err).Errorln("获得room服的gRPC失败，桌子被丢弃!!!")
 		return
 	}
 
 	// 给desk的所有玩家分配座位号
-	//randSeat(desk)
+	randSeat(&desk)
+
+	// 通知玩家，匹配成功，创建桌子
+	// matchPlayer转换为deskPlayerInfo
+	deskPlayers := []*match.DeskPlayerInfo{}
+	for i := 0; i < len(desk.players); i++ {
+		pDeskPlayer := translateToDeskPlayer(&desk.players[i])
+		if pDeskPlayer == nil {
+			logEntry.Errorln("把matchPlayer转换为deskPlayerInfo失败，跳过")
+			continue
+		}
+		deskPlayers = append(deskPlayers, pDeskPlayer)
+	}
+
+	// 通知消息体
+	ntf := match.MatchSucCreateDeskNtf{
+		GameId:  &desk.gameID,
+		LevelId: &desk.levelID,
+		Players: deskPlayers,
+	}
+
+	// 广播给桌子内的所有真实玩家
+	for i := 0; i < len(desk.players); i++ {
+		if desk.players[i].robotLv == 0 {
+			gateclient.SendPackageByPlayerID(desk.players[i].playerID, uint32(msgid.MsgID_MATCH_SUC_CREATE_DESK_NTF), &ntf)
+		}
+	}
 
 	// 该桌子所有的玩家信息
 	createPlayers := []*roommgr.DeskPlayer{}
-	for _, player := range pDesk.players {
+	for i := 0; i < len(desk.players); i++ {
 
 		deskPlayer := &roommgr.DeskPlayer{
-			PlayerId:   player.playerID,
-			RobotLevel: int32(player.robotLv),
-			Seat:       uint32(player.seat),
+			PlayerId:   desk.players[i].playerID,
+			RobotLevel: desk.players[i].robotLv,
+			Seat:       uint32(desk.players[i].seat),
 		}
 
 		createPlayers = append(createPlayers, deskPlayer)
 	}
 
-	logEntry = logEntry.WithField("create_players", createPlayers)
-
 	roomMgrClient := roommgr.NewRoomMgrClient(rs)
 
 	// 调用room服的创建桌子
-	_, err = roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
-		Players:    createPlayers,
-		GameId:     uint32(pDesk.gameID),
-		FixBanker:  true,
-		BankerSeat: uint32(0),
+	rsp, err := roomMgrClient.CreateDesk(context.Background(), &roommgr.CreateDeskRequest{
+		GameId:   desk.gameID,
+		LevelId:  desk.levelID,
+		DeskId:   desk.deskID,
+		Players:  createPlayers,
+		MinCoin:  0,
+		MaxCoin:  0,
+		BaseCoin: 0,
 	})
 
 	// 不成功时，报错，应该重新调用或者重新匹配
-	if err != nil {
-		logEntry.WithError(err).Errorln("create desk failed!!!")
+	if err != nil || rsp.GetErrCode() != roommgr.RoomError_SUCCESS {
+		logEntry.WithError(err).Errorln("room服创建桌子失败，桌子被丢弃!!!")
 		return
 	}
 
-	logEntry.Debugln("create desk success.")
+	// 成功时的处理
+
+	// 记录匹配成功的真实玩家同桌信息
+	for i := 0; i < len(desk.players); i++ {
+		if desk.players[i].robotLv == 0 {
+			globalInfo.sucPlayers[desk.players[i].playerID] = desk.deskID
+		}
+	}
+
+	// 记录匹配成功的桌子信息
+	newSucDesk := sucDesk{
+		gameID:  desk.gameID,
+		levelID: desk.levelID,
+		sucTime: time.Now().Unix(),
+	}
+	globalInfo.sucDesks[desk.deskID] = &newSucDesk
+
+	logEntry.Debugln("离开函数，room服创建桌子成功")
+
 	return
 }
 
-// requestPlayerGold 向gold服请求指定玩家，指定货币类型的数量
-// playerID : 玩家playerID
-// goldType : 货币类型，对应枚举 gold.GoldType
-func requestPlayerGold(playerID uint64, goldType gold.GoldType) (int64, error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"playerID": playerID,
-		"goldType": goldType,
-	})
+// 把 matchPlayer 转换为 match.DeskPlayerInfo
+func translateToDeskPlayer(player *matchPlayer) *match.DeskPlayerInfo {
 
-	logEntry.Debugln("进入函数")
-
-	exposer := structs.GetGlobalExposer()
-
-	// 获取gold的Connection
-	goldConnection, err := exposer.RPCClient.GetConnectByServerName("gold")
-	if err != nil || goldConnection == nil {
-		logEntry.WithError(err).Errorln("获得gold服的gRPC失败!!!")
-		return 0, fmt.Errorf("获得gold服的gRPC失败!!!")
+	// 从hall服获取玩家基本信息
+	playerInfo, err := hallclient.GetPlayerInfo(player.playerID)
+	if err != nil || playerInfo == nil {
+		logrus.WithError(err).Errorln("从hall服获取玩家信息失败，玩家ID:%v", player.playerID)
+		return nil
 	}
 
-	// 请求结构体
-	reqGold := gold.GetGoldReq{
-		Item: &gold.GetItem{
-			Uid:      playerID,
-			GoldType: int32(goldType),
-			Value:    0,
-		},
+	deskPlayer := match.DeskPlayerInfo{
+		PlayerId: &player.playerID,
+		Name:     proto.String(playerInfo.GetNickName()),
+		Coin:     &player.gold,
+		Seat:     &player.seat,
+		Gender:   proto.Uint32(playerInfo.GetGender()),
+		Avatar:   proto.String(playerInfo.GetAvatar()),
 	}
 
-	goldClient := gold.NewGoldClient(goldConnection)
-
-	// 调用room服的创建桌子
-	rspGold, err := goldClient.GetGold(context.Background(), &reqGold)
-
-	// 不成功时，报错
-	if err != nil || rspGold == nil {
-		logEntry.WithError(err).Errorln("从gold服获取玩家金钱数据失败!!!")
-		return 0, fmt.Errorf("从gold服获取玩家金钱数据失败!!!")
-	}
-
-	// 其他出错
-	if rspGold.GetErrCode() != gold.ResultStat_SUCCEED || rspGold.GetErrDesc() != "" {
-		logEntry.Errorf("从gold服获取玩家金钱数据出错，errCode:%v，errDesc:%v \n", rspGold.GetErrCode(), rspGold.GetErrDesc())
-		return 0, fmt.Errorf("从gold服获取玩家金钱数据出错，errCode:%v，errDesc:%v \n", rspGold.GetErrCode(), rspGold.GetErrDesc())
-	}
-
-	logEntry.Debugln("create desk success.")
-	return rspGold.GetItem().GetValue(), nil
-}
-
-// requestPlayerWinRate 向hall服请求指定玩家，指定游戏的胜率
-// playerID : 玩家playerID
-// gameID 	: 游戏ID
-func requestPlayerWinRate(playerID uint64, gameID uint32) (float32, error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"playerID": playerID,
-		"gameID":   gameID,
-	})
-
-	logEntry.Debugln("进入函数")
-
-	exposer := structs.GetGlobalExposer()
-
-	// 获取hall服的Connection
-	hallConnection, err := exposer.RPCClient.GetConnectByServerName("hall")
-	if err != nil || hallConnection == nil {
-		logEntry.WithError(err).Errorln("获得hall服的gRPC失败!!!")
-		return 0, fmt.Errorf("获得hall服的gRPC失败!!!")
-	}
-
-	hallClient := user.NewPlayerDataClient(hallConnection)
-
-	// 向hall服请求游戏信息
-	rsp, err := hallClient.GetPlayerGameInfo(context.Background(), &user.GetPlayerGameInfoReq{PlayerId: playerID, GameId: gameID})
-
-	// 不成功时，报错
-	if err != nil || rsp == nil {
-		logrus.WithError(err).Errorln("从hall服获取玩家的胜率失败!!!")
-		return 0, fmt.Errorf("从hall服获取玩家的胜率失败!!!")
-	}
-
-	// 返回的不是成功，报错
-	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
-		logrus.WithError(err).Errorln("从hall服获取玩家胜率成功，但errCode显示失败!!!")
-		return 0, fmt.Errorf("从hall服获取玩家胜率成功，但errCode显示失败!!!")
-	}
-
-	// 计算胜率
-	var winRate float64 = 0.0
-
-	if rsp.GetTotalBurea() < web.GetMinGameTimes() {
-		winRate = 0.5
-		logEntry.Debugf("玩家总局数为：%v，少于规定的%v场，所以胜率定为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
-	} else {
-		winRate = float64(rsp.GetMaxWinningStream()) / float64(rsp.GetTotalBurea())
-		logEntry.Debugf("玩家总局数为：%v，胜利局数为：%v，计算得到胜率为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
-	}
-
-	result := float32(winRate) * 100
-
-	return result, nil
-}
-
-// requestPlayerIP 向hall服请求指定玩家的信息
-// playerID : 玩家playerID
-// gameID 	: 游戏ID
-func requestPlayerIP(playerID uint64) (string, error) {
-	logEntry := logrus.WithFields(logrus.Fields{
-		"playerID": playerID,
-	})
-
-	logEntry.Debugln("进入函数")
-
-	return "127.0.0.1", nil
-
-	/* 	exposer := structs.GetGlobalExposer()
-
-	   	// 获取hall服的Connection
-	   	hallConnection, err := exposer.RPCClient.GetConnectByServerName("hall")
-	   	if err != nil || hallConnection == nil {
-	   		logEntry.WithError(err).Errorln("获得hall服的gRPC失败!!!")
-	   		return 0, fmt.Errorf("获得hall服的gRPC失败!!!")
-	   	}
-
-	   	hallClient := user.NewPlayerDataClient(hallConnection)
-
-	   	// 向hall服请求游戏信息
-	   	rsp, err := hallClient.GetPlayerGameInfo(context.Background(), &user.GetPlayerGameInfoReq{PlayerId: playerID, GameId: gameID})
-
-	   	// 不成功时，报错
-	   	if err != nil || rsp == nil {
-	   		logrus.WithError(err).Errorln("从hall服获取玩家的胜率失败!!!")
-	   		return 0, fmt.Errorf("从hall服获取玩家的胜率失败!!!")
-	   	}
-
-	   	// 返回的不是成功，报错
-	   	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
-	   		logrus.WithError(err).Errorln("从hall服获取玩家胜率成功，但errCode显示失败!!!")
-	   		return 0, fmt.Errorf("从hall服获取玩家胜率成功，但errCode显示失败!!!")
-	   	}
-
-	   	// 计算胜率
-	   	var winRate float64 = 0.0
-
-	   	if rsp.GetTotalBurea() < web.GetMinGameTimes() {
-	   		winRate = 0.5
-	   		logEntry.Debugf("玩家总局数为：%v，少于规定的%v场，所以胜率定为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
-	   	} else {
-	   		winRate = float64(rsp.GetMaxWinningStream()) / float64(rsp.GetTotalBurea())
-	   		logEntry.Debugf("玩家总局数为：%v，胜利局数为：%v，计算得到胜率为50%", rsp.GetTotalBurea(), web.GetMinGameTimes())
-	   	}
-
-	   	result := float32(winRate) * 100
-
-	   	return result, nil */
+	return &deskPlayer
 }

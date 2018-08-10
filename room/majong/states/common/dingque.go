@@ -55,7 +55,7 @@ func (s *DingqueState) notifyTingCards(flow interfaces.MajongFlow) {
 		if seat == int(mjContext.GetZhuangjiaIndex()) {
 			continue
 		}
-		utils.NotifyTingCards(flow, player.GetPalyerId())
+		utils.NotifyTingCards(flow, player.GetPlayerId())
 	}
 }
 
@@ -90,7 +90,7 @@ func (s *DingqueState) dingque(eventContext interface{}, flow interfaces.MajongF
 	// 日志
 	logrus.WithFields(logrus.Fields{
 		"dinqueEvent":     dinqueEvent,
-		"dingQuePlayerID": dqPlayer.PalyerId,
+		"dingQuePlayerID": dqPlayer.PlayerId,
 		"dingQueColor":    dqPlayer.DingqueColor,
 		"isDingQue":       dqPlayer.HasDingque,
 	}).Info("-----定缺中")
@@ -118,7 +118,7 @@ func (s *DingqueState) OnExit(flow interfaces.MajongFlow) {
 	for _, player := range players {
 		// 房间定缺完成通知的玩家定缺消息
 		playerDingQue := &room.PlayerDingqueColor{
-			PlayerId: proto.Uint64(player.PalyerId),
+			PlayerId: proto.Uint64(player.PlayerId),
 			Color:    gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 		}
 		playerDingQueMsg = append(playerDingQueMsg, playerDingQue)
@@ -182,8 +182,8 @@ func (s *DingqueState) notifyPlayerDingQue(flow interfaces.MajongFlow) {
 		dingQueNtf := &room.RoomDingqueNtf{
 			Color: gutils.ServerColor2ClientColor(player.DingqueColor).Enum(),
 		}
-		idDingQueMap[player.GetPalyerId()] = player.GetDingqueColor()
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+		idDingQueMap[player.GetPlayerId()] = player.GetDingqueColor()
+		flow.PushMessages([]uint64{player.GetPlayerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_DINGQUE_NTF),
 			Msg:   dingQueNtf,
 		})

@@ -1,4 +1,6 @@
 # pprof
+
+
 用于输出pprof调试信息，第一版网关的socket连接接入了自定义的profile，能查看连接数，其他是一些内置的profile
 
 ## 配置
@@ -21,7 +23,7 @@ pprof默认的开一个http服务端口输出
 
 默认输出通过 http://localhost:9909/debug/pprof/ 查看
 
-svg图片输出通过 http://localhost:9909/debug/pprofsvg/ 查看
+*svg图片输出也可以通过默认输出查看（带SVG链接）*，或者单独的 http://localhost:9909/debug/pprofsvg/ 查看
 
 ### pprofHttpPort
 输出类型为http或svg时，指定http服务的端口

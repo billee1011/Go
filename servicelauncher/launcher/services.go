@@ -6,15 +6,17 @@ import (
 	hallcore "steve/hall/core"
 	logincore "steve/login/core"
 	matchcore "steve/match/core"
-	testcore "steve/testserver/core"
+	msgcore "steve/msgserver/core"
 	"steve/serviceloader/loader"
 	"steve/structs/service"
+	testcore "steve/testserver/core"
 
 	"github.com/Sirupsen/logrus"
-	"steve/structs"
-	"steve/servicelauncher/cmd"
-)
 
+	"steve/servicelauncher/cmd"
+	"steve/structs"
+	"steve/datareport"
+)
 
 // LoadService load service appointed by name
 func LoadService() {
@@ -30,10 +32,14 @@ func LoadService() {
 	// 	svr = roomcore.NewService()
 	case "testserver":
 		svr = testcore.NewService()
+	case "msgserver":
+		svr = msgcore.NewService()
 	case "gateway":
 		svr = gatewaycore.NewService()
 	case "gold":
 		svr = goldcore.NewService()
+	case "datareport":
+		svr = datareport.NewService()
 	}
 	if svr != nil {
 		exposer := structs.GetGlobalExposer()

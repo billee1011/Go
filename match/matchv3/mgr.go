@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"steve/external/goldclient"
+	"steve/external/hallclient"
+	"steve/external/robotclient"
 	"steve/match/web"
 	"steve/server_pb/gold"
 	"steve/server_pb/user"
@@ -17,10 +19,11 @@ import (
 
 // reqMatchPlayer 压入申请匹配通道的玩家信息
 type reqMatchPlayer struct {
+	isMatch  bool   // 申请匹配为true，取消匹配为false
 	playerID uint64 // 玩家 ID
-	winRate  int8   // 具体游戏的胜率
+	winRate  int32  // 具体游戏的胜率
 	gold     int64  // 金币数
-	IP       string // IP地址
+	IP       uint32 // IP地址
 }
 
 // playerOffline 玩家离线
@@ -30,20 +33,20 @@ type playerLogin struct {
 
 // gameLevelConfig 游戏场次配置数据
 type gameLevelConfig struct {
-	levelID            uint32 // 场次ID
-	levelName          string // 场次名字
-	bottomScore        uint32 // 底分
-	minGold            int64  // 金币要求下限
-	maxGold            int64  // 金币要求上限
-	minNeedPlayerCount uint32 // 允许最低人数
-	maxNeedPlayerCount uint32 // 允许最高人数
+	levelID     uint32 // 场次ID
+	levelName   string // 场次名字
+	bottomScore uint32 // 底分
+	minGold     int64  // 金币要求下限
+	maxGold     int64  // 金币要求上限
 }
 
 // gameConfig 游戏配置数据
 type gameConfig struct {
-	gameID      uint32                     // 游戏ID
-	gameName    string                     // 游戏名字
-	levelConfig map[uint32]gameLevelConfig // 所有的游戏场次
+	gameID             uint32                     // 游戏ID
+	gameName           string                     // 游戏名字
+	minNeedPlayerCount uint32                     // 允许最低人数
+	maxNeedPlayerCount uint32                     // 允许最高人数
+	levelConfig        map[uint32]gameLevelConfig // 所有的游戏场次
 }
 
 // levelGlobalInfo 单个游戏单个场次的全局信息
@@ -53,6 +56,9 @@ type levelGlobalInfo struct {
 
 	// 场次ID
 	levelID uint32
+
+	// 满桌所需人数
+	needPlayerCount uint8
 
 	// 胜率1% - 100%的所有匹配桌子
 	// allRateDesks[0] 表胜率为0%的所有匹配桌子，allRateDesks[1] 表胜率为1%的所有匹配桌子，.........，allRateDesks[100] 表胜率为100%的所有匹配桌子
@@ -67,7 +73,7 @@ type levelGlobalInfo struct {
 
 // gameInfo 单个游戏的匹配信息
 type gameInfo struct {
-	allLevelChan map[uint32]chan reqMatchPlayer // 本levelID戏所有场次的匹配申请通道,Key:场次ID, Value:该场次的匹配申请通道
+	allLevelChan map[uint32]chan reqMatchPlayer // 本levelID戏所有场次的匹配/取消匹配通道,Key:场次ID, Value:该场次的匹配/取消匹配通道
 	config       gameConfig                     // 游levelID配置数据
 }
 
@@ -78,15 +84,6 @@ type matchManager struct {
 	deskStartID    uint64              // 桌子ID起始值
 	rateCompuValue []float32           // 胜率计算配置
 	goldCompuValue []float32           // 金币计算配置
-
-	applyChannel chan reqMatchPlayer // 申请通道
-	//continueChannel chan continueApply // 续局通道
-	loginChannel chan playerLogin // 玩家登录通道
-
-	//maxDeskID    uint64           // 最大牌桌 ID
-
-	//desks      map[uint64]*desk  // 当前匹配中的牌桌
-	//playerDesk map[uint64]uint64 // 匹配中的玩家， playerID -> deskID
 }
 
 // matchMgr 匹配管理器
@@ -96,19 +93,6 @@ var matchMgr = &matchManager{
 	deskStartID:    0,
 	rateCompuValue: make([]float32, 0, web.GetMaxCompuValidTime()+1),
 	goldCompuValue: make([]float32, 0, web.GetMaxCompuValidTime()+1),
-
-	applyChannel: make(chan reqMatchPlayer, 128),
-	//continueChannel: make(chan continueApply, 128),
-	loginChannel: make(chan playerLogin, 128),
-	//maxDeskID:    0,
-	/* 	gameConfig: map[int]gameConfig{
-		int(roomanager.GameId_GAMEID_XUELIU):   gameConfig{needPlayerCount: 4},
-		int(roomanager.GameId_GAMEID_XUEZHAN):  gameConfig{needPlayerCount: 4},
-		int(roomanager.GameId_GAMEID_DOUDIZHU): gameConfig{needPlayerCount: 3},
-		int(roomanager.GameId_GAMEID_ERRENMJ):  gameConfig{needPlayerCount: 2},
-	}, */
-	//desks:      make(map[uint64]*desk, 128),
-	//playerDesk: make(map[uint64]uint64, 1024),
 }
 
 //  获取指定游戏的满桌需要的玩家
@@ -128,17 +112,17 @@ func (manager *matchManager) getGameNeedPlayerCount(gameID uint32, levelID uint3
 		return 0
 	}
 
-	// 得到该场次的信息
-	levelInfo, exist := gameInfo.config.levelConfig[levelID]
-	// 该场次不存在
-	if !exist {
-		logEntry.Errorln("场次ID不存在")
-		return 0
-	}
+	/* 	// 得到该场次的信息
+	   	levelInfo, exist := gameInfo.config.levelConfig[levelID]
+	   	// 该场次不存在
+	   	if !exist {
+	   		logEntry.Errorln("场次ID不存在")
+	   		return 0
+	   	} */
 
-	logEntry.Debugf("离开函数,最低满桌人数为：%v\n", levelInfo.minNeedPlayerCount)
+	logEntry.Debugf("离开函数,最低满桌人数为：%v", gameInfo.config.minNeedPlayerCount)
 
-	return uint8(levelInfo.minNeedPlayerCount)
+	return uint8(gameInfo.config.minNeedPlayerCount)
 }
 
 // init 初始化并运行
@@ -255,9 +239,11 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 
 		// 新游戏配置信息
 		newGameConf := gameConfig{
-			gameID:      pGameConf.GetGameId(),
-			gameName:    pGameConf.GetGameName(),
-			levelConfig: map[uint32]gameLevelConfig{},
+			gameID:             pGameConf.GetGameId(),
+			gameName:           pGameConf.GetGameName(),
+			minNeedPlayerCount: pGameConf.GetMinPeople(),
+			maxNeedPlayerCount: pGameConf.GetMaxPeople(),
+			levelConfig:        map[uint32]gameLevelConfig{},
 		}
 
 		// 加入该游戏
@@ -288,13 +274,11 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 
 		// 新场次配置信息
 		newLevelConf := gameLevelConfig{
-			levelID:            pLevelConf.GetLevelId(),
-			levelName:          pLevelConf.GetLevelName(),
-			bottomScore:        pLevelConf.GetBaseScores(),
-			minGold:            int64(pLevelConf.GetLowScores()),
-			maxGold:            int64(pLevelConf.GetHighScores()),
-			minNeedPlayerCount: pLevelConf.GetMinPeople(),
-			maxNeedPlayerCount: pLevelConf.GetMaxPeople(),
+			levelID:     pLevelConf.GetLevelId(),
+			levelName:   pLevelConf.GetLevelName(),
+			bottomScore: pLevelConf.GetBaseScores(),
+			minGold:     int64(pLevelConf.GetLowScores()),
+			maxGold:     int64(pLevelConf.GetHighScores()),
 		}
 
 		// 加入该场次
@@ -349,7 +333,7 @@ func (manager *matchManager) generateDeskID() uint64 {
 // interval为0时表示[0~1)秒时(也是首次匹配)的胜率浮动值
 // interval为1时表示[1~2)秒时的胜率浮动值
 // interval为2时表示[2~3)秒时的胜率浮动值
-func (manager *matchManager) getWinRateValue(interval int64) int8 {
+func (manager *matchManager) getWinRateValue(interval int64) int32 {
 	logEntry := logrus.WithFields(logrus.Fields{
 		"interval": interval,
 	})
@@ -361,13 +345,13 @@ func (manager *matchManager) getWinRateValue(interval int64) int8 {
 
 	// 有效时间内
 	if interval >= 0 && uint32(interval) <= web.GetMaxCompuValidTime() {
-		result := int8(manager.rateCompuValue[interval] * 100)
-		logEntry.Debugln("返回的胜率浮动值:", result)
+		result := int32(manager.rateCompuValue[interval] * 100)
+		//logEntry.Debugln("返回的胜率浮动值:", result)
 		return result
 	}
 
 	// 超过有效时间，认为是正无穷，即所有胜率
-	logEntry.Debugln("返回的胜率浮动值:100")
+	//logEntry.Debugln("返回的胜率浮动值:100")
 	return 100
 }
 
@@ -393,11 +377,11 @@ func (manager *matchManager) getGoldValue(interval int64) float32 {
 	}
 
 	// 超过有效时间，认为是正无穷，即所有金币数都可以
-	logEntry.Debugln("返回的胜率浮动值:10000")
+	logEntry.Debugln("返回的金币浮动值:10000")
 	return 10000
 }
 
-// 检测两个桌子玩家的IP是否有重复的
+// 检测两个桌子玩家的IP是否有重复的，只比较真实玩家
 // true表有重复的，false表无重复的
 func (manager *matchManager) checkDeskSameIP(pDesk1 *matchDesk, pDesk2 *matchDesk) bool {
 
@@ -407,10 +391,15 @@ func (manager *matchManager) checkDeskSameIP(pDesk1 *matchDesk, pDesk2 *matchDes
 		return false
 	}
 
+	// 若不限制相同IP，返回false
+	if !web.GetLimitSameIP() {
+		return false
+	}
+
 	for i := 0; i < len(pDesk1.players); i++ {
 		for j := 0; i < len(pDesk2.players); j++ {
-			// 存在IP相等的即返回
-			if pDesk1.players[i].IP == pDesk2.players[j].IP {
+			// 都是真实玩家，存在IP相等的即返回
+			if (pDesk1.players[i].robotLv == 0) && (pDesk2.players[i].robotLv == 0) && (pDesk1.players[i].IP == pDesk2.players[j].IP) {
 				return true
 			}
 		}
@@ -429,9 +418,19 @@ func (manager *matchManager) checkPlayerSameIP(pPlayer *matchPlayer, pDesk *matc
 		return false
 	}
 
+	// 若不限制相同IP，返回false
+	if !web.GetLimitSameIP() {
+		return false
+	}
+
+	// 自己是机器人，不检测
+	if pPlayer.robotLv != 0 {
+		return false
+	}
+
 	for i := 0; i < len(pDesk.players); i++ {
-		// 存在IP相等的即返回
-		if pPlayer.IP == pDesk.players[i].IP {
+		// 对方是真实玩家，且存在IP相等的即返回
+		if (pDesk.players[i].robotLv == 0) && (pPlayer.IP == pDesk.players[i].IP) {
 			return true
 		}
 	}
@@ -449,10 +448,18 @@ func (manager *matchManager) checkDeskLastSameDesk(pDesk1 *matchDesk, pDesk2 *ma
 		return false
 	}
 
+	// 若不限制上局同桌，返回false
+	if !web.GetLimitLastSameDesk() {
+		return false
+	}
+
 	for i := 0; i < len(pDesk1.players); i++ {
-		// 某个玩家上一局有同桌即返回
-		if manager.checkPlayerLastSameDesk(&pDesk1.players[i], pDesk2, pGlobalInfo) {
-			return true
+		// 只检测真实玩家
+		if pDesk1.players[i].robotLv == 0 {
+			// 与pDesk2的某个玩家上一局有同桌即返回
+			if manager.checkPlayerLastSameDesk(&pDesk1.players[i], pDesk2, pGlobalInfo) {
+				return true
+			}
 		}
 	}
 
@@ -469,7 +476,17 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 		return false
 	}
 
-	// 自己是否存在上一局
+	// 若不限制上局同桌，返回false
+	if !web.GetLimitLastSameDesk() {
+		return false
+	}
+
+	// 自己是机器人，不检测
+	if pPlayer.robotLv != 0 {
+		return false
+	}
+
+	// 自己不存在上一局，不检测
 	selfDeskID, selfExist := pGlobalInfo.sucPlayers[pPlayer.playerID]
 	if !selfExist {
 		return false
@@ -487,7 +504,7 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 			// 找到该桌子
 			desk, exist := pGlobalInfo.sucDesks[deskID]
 			if exist {
-				// 接着检测成功时间，若未超过同桌限制时间，认为是上局同桌
+				// 接着检测距离上次同桌的时间间隔，若未超过同桌限制时间，认为是上局同桌
 				if tNowTime-desk.sucTime < web.GetSameDeskLimitTime() {
 					return true
 				}
@@ -498,33 +515,59 @@ func (manager *matchManager) checkPlayerLastSameDesk(pPlayer *matchPlayer, pDesk
 	return false
 }
 
-// 检测指定金币数和指定桌子是否匹配
-// true表匹配，false表不匹配
-func (manager *matchManager) checkGoldMatchDesk(goldNum int64, pDesk *matchDesk) bool {
+// 获取指定金币数经过间隔为interval秒后的金币匹配范围
+// goldNum  : 金币数
+// inteval  : 间隔的秒数
+// 返回值
+// minGold  : 金币最小值
+// maxGold  : 金币最大值
+func (manager *matchManager) getGoldRange(goldNum int64, inteval int64) (minGold int64, maxGold int64) {
 
-	// 参数检测
-	if pDesk == nil {
-		logrus.Errorln("checkGoldMatchDesk() 参数错误，pDesk == nil，返回")
-		return false
+	// 差异百分比
+	goldValue := manager.getGoldValue(inteval)
+
+	// 金币匹配范围最小值
+	minGold = int64(float64(goldNum) * float64(1-goldValue))
+	if minGold < 0 {
+		minGold = 0
 	}
 
-	nowTime := time.Now().Unix()
+	//金币匹配范围最大值
+	maxGold = int64(float64(goldNum) * float64(1+goldValue))
 
-	// 金币差异度(百分比)
-	goldDiff := (float64(goldNum) - float64(pDesk.aveGold)) / float64(pDesk.aveGold)
+	return
+}
 
-	// 检测金币范围
-	if (float32(goldDiff)) > manager.getGoldValue(nowTime-pDesk.createTime) {
-		return false
+// 获取指定的胜率经过间隔为interval秒后的胜率匹配范围
+// rate     : 指定的胜率
+// inteval  : 间隔的秒数
+// 返回值
+// minRate  : 胜率起始值
+// maxRate  : 金币最大值
+func (manager *matchManager) getWinRateRange(rate int32, inteval int64) (minRate int32, maxRate int32) {
+
+	// 胜率浮动值
+	rateValue := manager.getWinRateValue(inteval)
+
+	// 胜率匹配范围最小值
+	minRate = rate - rateValue
+	if minRate < 0 {
+		minRate = 0
 	}
 
-	return true
+	//桌子金币匹配范围最大值
+	maxRate = rate + rateValue
+	if maxRate > 100 {
+		maxRate = 100
+	}
+
+	return
 }
 
 // 为指定玩家执行首次匹配
 func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *reqMatchPlayer) {
 	if globalInfo == nil || reqPlayer == nil {
-		logrus.Errorln("参数错误，globalInfo == nil || reqPlayer == nil 返回")
+		logrus.Errorln("firstMatch(), 参数错误，globalInfo == nil || reqPlayer == nil 返回")
 		return
 	}
 
@@ -536,19 +579,22 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 
 	// 胜率范围检测
 	if reqPlayer.winRate < 0 || reqPlayer.winRate > 100 {
-		logEntry.Errorf("错误，玩家%v的胜率为%v，不再执行匹配\n", reqPlayer.playerID, reqPlayer.winRate)
+		logEntry.Errorf("数据错误，玩家%v的胜率为%v，不再执行匹配", reqPlayer.playerID, reqPlayer.winRate)
 		return
 	}
 
-	// 找到的匹配的桌子
-	var pFindDesk *matchDesk = nil
+	// 找到的匹配桌子
+	var pFindIter *list.Element = nil
+
+	// 找到的匹配桌子所在index
+	var pFindIndex int32 = -1
 
 	// 新建一个匹配玩家
 	newMatchPlayer := matchPlayer{
 		playerID: reqPlayer.playerID,
 		robotLv:  0,
 		seat:     -1,
-		IP:       IPStringToUInt32(reqPlayer.IP),
+		IP:       reqPlayer.IP,
 		gold:     reqPlayer.gold,
 	}
 
@@ -579,10 +625,11 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		// 遍历该概率下所有的桌子
 		for iter := globalInfo.allRateDesks[i].Front(); iter != nil; iter = iter.Next() {
 
-			desk := iter.Value.(*matchDesk)
+			desk := *(iter.Value.(**matchDesk))
 
 			// 检测金币范围
-			if !manager.checkGoldMatchDesk(reqPlayer.gold, desk) {
+			minGold, maxGold := manager.getGoldRange(desk.aveGold, nowTime-desk.createTime)
+			if reqPlayer.gold < minGold || reqPlayer.gold > maxGold {
 				continue
 			}
 
@@ -599,32 +646,42 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindDesk == nil) || (pFindDesk != nil && desk.createTime < pFindDesk.createTime) {
-				pFindDesk = desk
+			if pFindIter == nil {
+				pFindIter = iter
+				pFindIndex = i
+			} else {
+				pFindDesk := *(pFindIter.Value.(**matchDesk))
+				if desk.createTime < pFindDesk.createTime {
+					pFindIter = iter
+					pFindIndex = i
+				}
 			}
 		}
 	}
 
 	// 找到的话，则加入桌子，返回
-	if pFindDesk != nil {
-		// 把玩家加入桌子
-		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk) == false {
-			logEntry.Errorf("首次范围检测时，玩家%v加入桌子失败，返回\n", reqPlayer.playerID)
-			return
+	if pFindIter != nil && pFindIndex != -1 {
+		pFindDesk := *(pFindIter.Value.(**matchDesk))
+
+		// 把玩家加入桌子，若桌子已满，则从列表中移除
+		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk, globalInfo) {
+			logEntry.Debugf("首次范围检测时，胜率为%v的玩家%v匹配进桌子%v，桌子满员，已删除", reqPlayer.winRate, newMatchPlayer, pFindDesk)
+			globalInfo.allRateDesks[pFindIndex].Remove(pFindIter)
+		} else {
+			logEntry.Debugf("首次范围检测时，胜率为%v的玩家%v匹配进桌子%v，桌子未满员，继续匹配", reqPlayer.winRate, newMatchPlayer, pFindDesk)
 		}
 
 		// 成功入桌即返回
-		logEntry.Debugf("首次范围检测时，胜率为%v的玩家%v匹配进桌子%v，正常返回", reqPlayer.winRate, reqPlayer.playerID, pFindDesk)
 		return
 	}
 
 	///////////////////////////////////  首次范围失败后，再检测那些不在首次范围的，但因胜率范围扩张造成现在可能在玩家匹配范围了  /////////////////////////////
 
 	// 剩下的需要检测的胜率值，也是allWinRate的下标值
-	lastIndexs := make([]int8, 0, 101)
+	lastIndexs := make([]int32, 0, 101)
 
 	// 从(playerBeginRate - 0]
-	for i := playerBeginRate - 1; i >= int8(0); i-- {
+	for i := playerBeginRate - 1; i >= 0; i-- {
 		lastIndexs = append(lastIndexs, i)
 	}
 
@@ -635,7 +692,7 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 
 	// 遍历lastIndexs
 	for i := 0; i < len(lastIndexs); i++ {
-		index := int8(lastIndexs[i])
+		index := lastIndexs[i]
 
 		// 遍历该概率下的所有桌子
 		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
@@ -654,13 +711,13 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			rateValue := manager.getWinRateValue(interval)
 
 			// 该桌子的浮动值下限
-			deskBeginRate := index - int8(rateValue)
+			deskBeginRate := index - rateValue
 			if deskBeginRate < 0 {
 				deskBeginRate = 0
 			}
 
 			// 该桌子的浮动值上限
-			deskEndRate := index + int8(rateValue)
+			deskEndRate := index + rateValue
 			if deskEndRate > 100 {
 				deskEndRate = 100
 			}
@@ -671,7 +728,8 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			}
 
 			// 检测金币范围
-			if !manager.checkGoldMatchDesk(reqPlayer.gold, desk) {
+			minGold, maxGold := manager.getGoldRange(desk.aveGold, nowTime-desk.createTime)
+			if reqPlayer.gold < minGold || reqPlayer.gold > maxGold {
 				continue
 			}
 
@@ -688,46 +746,181 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindDesk == nil) || (pFindDesk != nil && desk.createTime < pFindDesk.createTime) {
-				pFindDesk = desk
+			if (pFindIter == nil) || (pFindIter != nil && desk.createTime < pFindIter.Value.(*matchDesk).createTime) {
+				pFindIter = iter
+				pFindIndex = index
 			}
 		}
 	}
 
 	// 找到的话，则加入桌子，返回
-	if pFindDesk != nil {
-		// 把玩家加入桌子
-		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk) == false {
-			logEntry.Errorf("二次范围检测时，玩家%v加入桌子失败，返回\n", reqPlayer.playerID)
-			return
+	if pFindIter != nil && pFindIndex != -1 {
+		pFindDesk := pFindIter.Value.(*matchDesk)
+
+		// 把玩家加入桌子，若桌子已满，则从列表中移除
+		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk, globalInfo) {
+
+			logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，桌子满员，已删除", reqPlayer.winRate, newMatchPlayer, pFindDesk)
+			globalInfo.allRateDesks[pFindIndex].Remove(pFindIter)
+		} else {
+			logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，桌子未满员，继续匹配", reqPlayer.winRate, newMatchPlayer, pFindDesk)
 		}
 
 		// 成功入桌即返回
-		logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，正常返回", reqPlayer.winRate, reqPlayer.playerID, pFindDesk)
 		return
 	}
 
 	//////////////////////////////////////////////////////////  所有的桌子都失败了，新建桌子  ////////////////////////////////////////////////
 	// 创建桌子
-	needPlayerCount := manager.getGameNeedPlayerCount(globalInfo.gameID, globalInfo.levelID)
 	// 桌子唯一ID
 	deskID := manager.generateDeskID()
-	newDesk := createMatchDesk(deskID, globalInfo.gameID, globalInfo.levelID, needPlayerCount, reqPlayer.gold)
+	newDesk := createMatchDesk(deskID, globalInfo.gameID, globalInfo.levelID, globalInfo.needPlayerCount, reqPlayer.gold)
 	if newDesk == nil {
 		logEntry.Errorf("创建匹配桌子失败，返回")
 		return
 	}
 
-	// 把该玩家压入桌子
-	if manager.addPlayerToDesk(&newMatchPlayer, newDesk) == false {
-		logEntry.Errorf("新建桌子后，玩家%v加入桌子失败，返回\n", reqPlayer.playerID)
-		return
-	}
+	// 把玩家加入桌子，若桌子已满，则从列表中移除
+	if manager.addPlayerToDesk(&newMatchPlayer, newDesk, globalInfo) {
+		logEntry.Debugf("胜率为%v的玩家%v匹配失败后，创建桌子并加入，桌子满员，不再加入列表", reqPlayer.winRate, newMatchPlayer)
+	} else {
+		logEntry.Debugf("胜率为%v的玩家%v匹配失败后，创建桌子并加入，桌子未满员，加入列表，继续匹配", reqPlayer.winRate, newMatchPlayer)
 
-	logEntry.Debugf("胜率为%v的玩家%v匹配失败后，创建桌子并加入，正常返回", reqPlayer.winRate, reqPlayer.playerID)
+		globalInfo.allRateDesks[reqPlayer.winRate].PushBack(&newDesk)
+	}
 
 	logEntry.Debugln("离开函数")
 	return
+}
+
+// 取消玩家匹配
+func (manager *matchManager) cancelMatch(globalInfo *levelGlobalInfo, reqPlayer *reqMatchPlayer) {
+	if globalInfo == nil || reqPlayer == nil {
+		logrus.Errorln("cancelMatch() 参数错误，globalInfo == nil || reqPlayer == nil 返回")
+		return
+	}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"reqPlayer": reqPlayer,
+	})
+
+	logEntry.Debugln("进入函数")
+
+	// 胜率范围检测
+	if reqPlayer.winRate < 0 || reqPlayer.winRate > 100 {
+		logEntry.Errorf("数据错误，玩家%v的胜率为%v，不再执行取消匹配", reqPlayer.playerID, reqPlayer.winRate)
+		return
+	}
+
+	///////////////////////////////////////////////////////// 以玩家胜率为中心，向左右依次搜索，直到所有的桌子 ///////////////////////////////////////////////
+	serIndexs := make([]int32, 0, 100)
+
+	// 先压入自身胜率的index
+	serIndexs = append(serIndexs, reqPlayer.winRate)
+
+	var i int32 = 0
+	var leftIndex int32 = 0
+	var rightIndex int32 = 0
+
+	for i = 1; i <= 100; i++ {
+
+		// 左侧,只压入有效的
+		leftIndex = reqPlayer.winRate - i
+		if leftIndex >= 0 {
+			serIndexs = append(serIndexs, leftIndex)
+		}
+
+		// 右侧,只压入有效的
+		rightIndex = reqPlayer.winRate + i
+		if rightIndex <= 100 {
+			serIndexs = append(serIndexs, rightIndex)
+		}
+	}
+
+	bRemovePlayer := false
+
+	var index int32 = 0
+	for i := 0; i < len(serIndexs); i++ {
+
+		index = serIndexs[i]
+
+		var next *list.Element = nil
+
+		// 该概率下所有的桌子
+		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = next {
+
+			next = iter.Next()
+
+			desk := *(iter.Value.(**matchDesk))
+
+			// 该概率下所有的玩家
+			for i := 0; i < len(desk.players); i++ {
+
+				// 找到该玩家
+				if desk.players[i].playerID == reqPlayer.playerID {
+					logEntry.Debugf("取消匹配时，在胜率为%v的桌子列表中找到了玩家，游戏ID:%v，级别ID:%v，从桌子删除前信息为:%v", index, globalInfo.gameID, globalInfo.levelID, desk)
+					bRemovePlayer = true
+					break
+				}
+			}
+
+			// 找到桌子后，删掉该玩家
+			if bRemovePlayer {
+				tempPlayers := make([]matchPlayer, 0, desk.needPlayerCount)
+				for i := 0; i < len(desk.players); i++ {
+					// 不是该玩家则压入
+					if desk.players[i].playerID != reqPlayer.playerID {
+						tempPlayers = append(tempPlayers, desk.players[i])
+					}
+				}
+				desk.players = tempPlayers
+				logEntry.Debugf("取消匹配时，在胜率为%v的桌子列表中找到了玩家，游戏ID:%v，级别ID:%v，从桌子删除后信息为:%v", index, globalInfo.gameID, globalInfo.levelID, desk)
+
+				// 剩余是否存在真实玩家
+				bExistTruePlayer := false
+				for i := 0; i < len(desk.players); i++ {
+					if desk.players[i].robotLv == 0 {
+						bExistTruePlayer = true
+						break
+					}
+				}
+
+				// 没真实玩家了，就删除桌子
+				if !bExistTruePlayer {
+					globalInfo.allRateDesks[index].Remove(iter)
+					logEntry.Debugf("由于删除该玩家后，桌子里不再有真实玩家，删除桌子")
+				}
+
+				// 找到即跳出
+				break
+			}
+		}
+
+		// 找到即跳出
+		if bRemovePlayer {
+			break
+		}
+	}
+
+	// 已删除玩家，重置玩家状态
+	if bRemovePlayer {
+		// 设置为空闲状态
+		bSuc, err := hallclient.UpdatePlayerState(reqPlayer.playerID, user.PlayerState_PS_MATCHING, user.PlayerState_PS_IDIE, 0, 0)
+		if err != nil || !bSuc {
+			logEntry.WithError(err).Errorln("内部错误，通知hall服设置玩家状态为空闲状态时失败")
+			return
+		}
+
+		// 更新玩家所在的服务器类型和地址，地址置空
+		bSuc, err = hallclient.UpdatePlayeServerAddr(reqPlayer.playerID, user.ServerType_ST_MATCH, "")
+		if err != nil || !bSuc {
+			logEntry.WithError(err).Errorln("内部错误，通知hall服设置玩家的服务器类型及地址时失败")
+			return
+		}
+	} else {
+		// 没找到该玩家，报错
+		logEntry.Errorf("玩家取消匹配时在匹配桌子中找不到该玩家，游戏ID:%v，级别ID:%v", globalInfo.gameID, globalInfo.levelID)
+	}
 }
 
 // startLevelMatch 开始单个游戏单个场次的匹配
@@ -735,27 +928,30 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 // levelID : 场次ID
 func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "singleLevelMatch",
-		"gameID":    gameID,
-		"levelID":   levelID,
+		"gameID":  gameID,
+		"levelID": levelID,
 	})
 
 	logEntry.Debugln("进入函数")
 
 	// 该场次的全局信息
 	globalInfo := levelGlobalInfo{
-		gameID:       gameID,
-		levelID:      levelID,
-		allRateDesks: make([]list.List, 101), // 胜率1% - 100%的所有匹配桌子
-		sucPlayers:   map[uint64]uint64{},    // 已成功匹配的玩家，Key:玩家ID，Value:桌子ID
-		sucDesks:     map[uint64]*sucDesk{},  // 已成功匹配的桌子，Key:桌子ID，Value:桌子信息
+		gameID:          gameID,
+		levelID:         levelID,
+		needPlayerCount: manager.getGameNeedPlayerCount(gameID, levelID),
+		allRateDesks:    make([]list.List, 101), // 胜率1% - 100%的所有匹配桌子
+		sucPlayers:      map[uint64]uint64{},    // 已成功匹配的玩家，Key:玩家ID，Value:桌子ID
+		sucDesks:        map[uint64]*sucDesk{},  // 已成功匹配的桌子，Key:桌子ID，Value:桌子信息
 	}
 
-	// 2秒1次的合并定时器
+	// 1秒1次的合并定时器
 	mergeTimer := time.NewTicker(time.Second * 1)
 
-	// 1秒1次的超时定时器
-	timeoutTimer := time.NewTicker(time.Second * 1)
+	// 1秒1次的超时定时器(检测匹配桌子是否超时，添加机器人)
+	deskTimer := time.NewTicker(time.Second * 1)
+
+	// 60秒1次的超时定时器(检测之前成功的玩家是否超时)
+	sucTimer := time.NewTicker(time.Second * 60)
 
 	// 本场次的匹配申请通道
 	gameInfo, exist := manager.allGame[gameID]
@@ -773,21 +969,26 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 	// 一直匹配
 	for {
 		select {
-		case req := <-reqMatchChan: // 匹配申请
+		case req := <-reqMatchChan: // 匹配/取消匹配申请
 			{
-				manager.firstMatch(&globalInfo, &req) // 首次匹配
+				// 分辨匹配还是取消
+				if req.isMatch {
+					manager.firstMatch(&globalInfo, &req) // 首次匹配
+				} else {
+					manager.cancelMatch(&globalInfo, &req) // 取消匹配
+				}
 			}
-		//case pl := <-manager.loginChannel: // 登录玩家
-		//	{
-		//		manager.onPlayerLogin(pl.playerID)
-		//	}
 		case <-mergeTimer.C: // 合并定时器
 			{
-				//manager.mergeDesks(&globalInfo)
+				manager.mergeDesks(&globalInfo)
 			}
-		case <-timeoutTimer.C: // 超时定时器
+		case <-deskTimer.C: // 桌子超时定时器
 			{
-				//manager.checkTimeout(&globalInfo)
+				manager.checkDeskTimeout(&globalInfo)
+			}
+		case <-sucTimer.C: // 匹配成功超时定时器
+			{
+				manager.checkSucTimeout(&globalInfo)
 			}
 		}
 	}
@@ -796,72 +997,17 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 	return
 }
 
-/* // addContinueDesk 添加续局牌桌
-func (manager *matchManager) addContinueDesk(players []deskPlayer, gameID int, fixBanker bool, bankerSeat int) {
-	manager.maxDeskID++
-	// 有玩家在匹配中，不创建
-	for _, player := range players {
-		if _, ok := manager.playerDesk[player.playerID]; ok {
-			logrus.WithField("player_id", player.playerID).Infoln("添加续局牌桌时玩家已经在匹配中了")
-			return
-		}
-	}
-	deskID := manager.maxDeskID
-	desk := createContinueDesk(gameID, deskID, players, fixBanker, bankerSeat)
-	for _, player := range players {
-		manager.playerDesk[player.playerID] = deskID
-	}
-	manager.desks[deskID] = desk
-}
-
-// dismissContinueDesk 解散续局牌桌
-// emitPlayer 发起解散的玩家 ID，超时解散时为0
-func (manager *matchManager) dismissContinueDesk(desk *desk, emitPlayer uint64) {
-	logrus.WithFields(logrus.Fields{
-		"func_name":    "mgr.dismissContinueDesk",
-		"ready_player": desk.players,
-	}).Debugln("解散续局牌桌")
-	notify := match.MatchContinueDeskDimissNtf{}
-
-	for _, deskPlayer := range desk.players {
-		delete(manager.playerDesk, deskPlayer.playerID)
-		if deskPlayer.playerID != emitPlayer {
-			gutils.SendMessage(deskPlayer.playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
-		}
-		// 更新状态为空闲状态
-		player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
-			State:  int(common.PlayerState_PS_IDLE),
-			GameID: int(desk.gameID),
-		})
-	}
-	for playerID := range desk.continueWaitPlayers {
-		delete(manager.playerDesk, playerID)
-		if playerID != emitPlayer {
-			gutils.SendMessage(playerID, msgid.MsgID_MATCH_CONTINUE_DESK_DIMISS_NTF, &notify)
-		}
-	}
-	delete(manager.desks, desk.deskID)
-} */
-
-// addPlayer 添加匹配玩家
-func (manager *matchManager) addPlayer(playerID uint64, gameID int) {
-	manager.applyChannel <- reqMatchPlayer{
-		playerID: playerID,
-	}
-	return
-}
-
 // 分发匹配请求
 // playerID 	:	玩家ID
 // gameID		：	请求匹配的游戏ID
 // levelID		:   请求匹配的级别ID
+// IP			: 	客户端IP地址
 // 返回string 	 ：	 返回的错误描述，成功时返回空
-func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, levelID uint32) string {
+func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, levelID uint32, clientIP uint32) string {
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "dispatchMatchReq",
-		"playerID":  playerID,
-		"gameID":    gameID,
-		"levelID":   levelID,
+		"playerID": playerID,
+		"gameID":   gameID,
+		"levelID":  levelID,
 	})
 
 	logEntry.Debugln("进入函数")
@@ -887,27 +1033,37 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 	// 获取玩家金币数
 	playerGold, err := goldclient.GetGold(playerID, int16(gold.GoldType_GOLD_COIN))
 	if err != nil {
-		logrus.Errorln("从gold服获取玩家金币失败")
+		logrus.WithError(err).Errorln("从gold服获取玩家金币失败")
 		return fmt.Sprintf("从gold服获取玩家金币失败，游戏ID:%v，场次ID:%v，请求的玩家ID:%v", gameID, levelID, playerID)
 	}
 
 	// 金币范围检测
 	if playerGold < levelConfig.minGold {
-		logrus.Errorln("玩家金币数小于游戏场次金币要求最小值，最小值：%v", levelConfig.minGold)
+		logrus.Errorln("玩家金币数小于游戏场次金币要求最小值，最小值：%v，玩家金币:%v", levelConfig.minGold, playerGold)
 		return fmt.Sprintf("玩家金币数小于游戏场次金币要求最小值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
 	if playerGold > levelConfig.maxGold {
-		logrus.Errorf("玩家金币数大于游戏场次金币要求最大值，最大值：%v", levelConfig.maxGold)
+		logrus.Errorf("玩家金币数大于游戏场次金币要求最大值，最大值：%v，玩家金币:%v", levelConfig.maxGold, playerGold)
 		return fmt.Sprintf("玩家金币数大于游戏场次金币要求最大值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
-	// 获取该游戏的胜率
-	// 计算该游戏的胜率，已经乘以100,比如：50表胜率为50%
-	playerWinRate, err := requestPlayerWinRate(playerID, gameID)
-	if err != nil {
-		logrus.Errorln("从hall服获取玩家胜率失败")
-		return fmt.Sprintf("从hall服获取玩家胜率失败，游戏ID:%v，场次ID:%v，请求的玩家ID:%v", gameID, levelID, playerID)
+	// 获取该玩家的游戏信息
+	playerGameInfo, err := hallclient.GetPlayerGameInfo(playerID, gameID)
+	if err != nil || playerGameInfo == nil {
+		logrus.WithError(err).Errorln("从hall服获取玩家游戏信息失败")
+		return fmt.Sprintf("从hall服获取玩家游戏信息失败，游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
+	}
+	logEntry.Debugln("从hall服获取的玩家游戏信息：", playerGameInfo)
+
+	// 计算胜率
+	var playerWinRate int32 = 0
+
+	// 场数不足时，采用默认胜率
+	if playerGameInfo.GetTotalBurea() < web.GetMinGameTimes() {
+		playerWinRate = web.GetDefaultWinRate()
+	} else {
+		playerWinRate = int32((float64(playerGameInfo.GetWinningBurea()) / float64(playerGameInfo.GetTotalBurea())) * 100)
 	}
 
 	// 全部检测通过
@@ -919,14 +1075,78 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 		return fmt.Sprintf("请求匹配的游戏存在，场次存在，但找不到该场次的匹配申请通道，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
-	clientIP, _ := requestPlayerIP(playerID)
+	req := reqMatchPlayer{
+		isMatch:  true,          // 申请匹配
+		playerID: playerID,      // playerID
+		winRate:  playerWinRate, // 胜率
+		gold:     playerGold,    // 金币数
+		IP:       clientIP,      // IP地址
+	}
+
+	// 压入通道
+	reqMatchChan <- req
+
+	logEntry.Debugln("已经把匹配请求压入对应的通道，压入的请求的:", req)
+
+	logEntry.Debugln("离开函数")
+
+	return ""
+}
+
+// 分发取消匹配请求
+// playerID 	:	玩家ID
+// gameID		：	请求取消匹配的游戏ID
+// levelID		:   请求取消匹配的级别ID
+// 返回string 	 ：	 返回的错误描述，成功时返回空
+func (manager *matchManager) dispatchCancelMatchReq(playerID uint64, gameID uint32, levelID uint32) string {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"playerID": playerID,
+		"gameID":   gameID,
+		"levelID":  levelID,
+	})
+
+	logEntry.Debugln("进入函数")
+
+	// 得到该游戏的信息
+	gameInfo, exist := manager.allGame[gameID]
+
+	// 该游戏不存在
+	if !exist {
+		logrus.Errorln("内部错误，取消匹配时，发现正在匹配的游戏不存在")
+		return fmt.Sprintf("取消匹配时，发现正在匹配的游戏ID:%v不存在，请求的玩家ID:%v", gameID, playerID)
+	}
+
+	// 获取该场次的申请通道
+	reqMatchChan, exist := gameInfo.allLevelChan[levelID]
+	if !exist {
+		logrus.Errorln("内部错误，取消匹配时，发现游戏存在，场次存在，但找不到该场次的申请通道")
+		return fmt.Sprintf("请求匹配的游戏存在，场次存在，但找不到该场次的匹配申请通道，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
+	}
+
+	// 获取该玩家的游戏信息
+	pPlayerGameInfo, err := hallclient.GetPlayerGameInfo(playerID, gameID)
+	if err != nil || pPlayerGameInfo == nil {
+		logrus.WithError(err).Errorln("从hall服获取玩家游戏信息失败")
+		return fmt.Sprintf("从hall服获取玩家游戏信息失败，游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
+	}
+
+	// 计算胜率
+	var playerWinRate int32 = 0
+
+	// 场数不足时，采用默认胜率
+	if pPlayerGameInfo.GetTotalBurea() < web.GetMinGameTimes() {
+		playerWinRate = web.GetDefaultWinRate()
+	} else {
+		playerWinRate = int32((float64(pPlayerGameInfo.GetWinningBurea()) / float64(pPlayerGameInfo.GetTotalBurea())) * 100)
+	}
 
 	// 压入通道
 	reqMatchChan <- reqMatchPlayer{
-		playerID: playerID,            // playerID
-		winRate:  int8(playerWinRate), // 胜率
-		gold:     playerGold,          // 金币数
-		IP:       clientIP,            // IP地址
+		isMatch:  false,         // 取消匹配
+		playerID: playerID,      // playerID
+		winRate:  playerWinRate, // 胜率
+		gold:     0,             // 金币数，暂时不需要
+		IP:       0,             // IP地址，暂时不需要
 	}
 
 	logEntry.Debugln("离开函数")
@@ -934,191 +1154,16 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 	return ""
 }
 
-/* // addContinueApply 添加续局申请
-func (manager *matchManager) addContinueApply(playerID uint64, cancel bool, gameID int) {
-	manager.continueChannel <- continueApply{
-		playerID: playerID,
-		cancel:   cancel,
-		gameID:   gameID,
-	}
-	return
-} */
-
-// addLoginData 添加玩家登录信息
-func (manager *matchManager) addLoginData(playerID uint64) {
-	manager.loginChannel <- playerLogin{
-		playerID: playerID,
-	}
-}
-
-/* // run 执行匹配流程
-func (manager *matchManager) run() {
-
-	// 从DB读取游戏配置信息
-	// todo
-
-	// 机器人的定时器（1秒1次）
-	robotTick := time.NewTicker(time.Second * 1)
-
-	for {
-		select {
-		case ap := <-manager.applyChannel: // 普通匹配申请
-			{
-				manager.acceptApplyPlayer(ap.gameID, ap.playerID)
-			}
-		case cp := <-manager.continueChannel: // 续局匹配申请
-			{
-				manager.acceptContinuePlayer(cp.gameID, cp.playerID, cp.cancel)
-			}
-		case pl := <-manager.loginChannel: // 登录玩家
-			{
-				manager.onPlayerLogin(pl.playerID)
-			}
-		case <-robotTick.C: // 机器人定时器
-			{
-				manager.handleRobotTick()
-			}
-		}
-	}
-} */
-
-/* // onPlayerLogin 玩家登录，取消玩家匹配
-func (manager *matchManager) onPlayerLogin(playerID uint64) {
-	entry := logrus.WithField("player_id", playerID)
-
-	// 是否存在其桌子
-	deskID, ok := manager.playerDesk[playerID]
-	if !ok {
-		return
-	}
-
-	// 得到该桌子
-	desk, ok := manager.desks[deskID]
-	if !ok {
-		delete(manager.playerDesk, playerID)
-		entry.Errorln("没有对应的牌桌")
-		return
-	}
-
-	// 续局牌桌直接解散
-	if desk.isContinue {
-		entry.Debugln("玩家重新登录，解散续局牌桌")
-		manager.dismissContinueDesk(desk, playerID)
-		return
-	}
-
-	// 从桌子中删除
-	//desk.removePlayer(playerID)
-
-	// 删除 playerID -> deskID的映射
-	delete(manager.playerDesk, playerID)
-
-	entry.Debugln("玩家重新登录，移出普通匹配")
-
-	// 桌子没人了，则解散桌子
-	if len(desk.players) == 0 {
-		delete(manager.desks, deskID)
-	}
-} */
-
-/* // acceptContinuePlayer 接收续局匹配玩家
-func (manager *matchManager) acceptContinuePlayer(gameID int, playerID uint64, cancel bool) {
-	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "mgr.acceptContinuePlayer",
-		"player_id": playerID,
-		"cancel":    cancel,
-	})
-	deskID, ok := manager.playerDesk[playerID]
-	if !ok && !cancel {
-		manager.acceptApplyPlayer(gameID, playerID)
-		return
-	}
-	entry = entry.WithField("desk_id", deskID)
-	desk, ok := manager.desks[deskID]
-	if !ok {
-		delete(manager.playerDesk, playerID)
-		entry.Errorln("牌桌不存在")
-		manager.acceptApplyPlayer(gameID, playerID)
-		return
-	}
-	// 非续局牌桌
-	if !desk.isContinue {
-		return
-	}
-	if cancel {
-		entry.Debugf("玩家取消续局造成解散续局牌桌，玩家ID：%v", playerID)
-		manager.dismissContinueDesk(desk, playerID)
-		return
-	}
-	player, ok := desk.continueWaitPlayers[playerID]
-	if !ok {
-		return
-	}
-	entry.Debugln("接收续局玩家")
-	delete(desk.continueWaitPlayers, playerID)
-	manager.addDeskPlayer2Desk(&player, desk)
-	return
-} */
-
-/* // acceptApplyPlayer 接收申请匹配玩家
-func (manager *matchManager) acceptApplyPlayer(gameID int, playerID uint64) {
-	deskID, ok := manager.playerDesk[playerID]
-	logrus.WithFields(logrus.Fields{
-		"func_name":   "mgr.acceptApplyPlayer",
-		"player_id":   playerID,
-		"game_id":     gameID,
-		"old_desk_id": deskID,
-	}).Debugln("接收申请匹配玩家")
-	if ok {
-		// 等待续局中
-		if desk, exist := manager.desks[deskID]; exist && desk.isContinue {
-			logrus.Debugf("普通匹配时发现玩家已经在续局牌桌中，解散续局牌桌，玩家ID:%v", playerID)
-			manager.dismissContinueDesk(desk, playerID)
-		} else {
-			return // 匹配中
-		}
-	}
-	// 加入到牌桌
-	for _, desk := range manager.desks {
-		if desk.gameID != gameID || desk.isContinue {
-			continue
-		}
-		manager.addDeskPlayer2Desk(&deskPlayer{
-			playerID: playerID,
-		}, desk)
-		return
-	}
-	manager.maxDeskID++
-	desk := createDesk(gameID, manager.maxDeskID)
-	manager.desks[desk.deskID] = desk
-	manager.addDeskPlayer2Desk(&deskPlayer{
-		playerID: playerID,
-	}, desk)
-} */
-
-/* // addDeskPlayer2Desk 将玩家添加到牌桌
-func (manager *matchManager) addDeskPlayer2Desk(deskPlayer *deskPlayer, desk *desk) {
-	player.SetPlayerPlayStates(deskPlayer.playerID, player.PlayStates{
-		State:  int(common.PlayerState_PS_MATCHING),
-		GameID: int(desk.gameID),
-	})
-	desk.players = append(desk.players, *deskPlayer)
-	manager.playerDesk[deskPlayer.playerID] = desk.deskID
-	manager.removeOfflines(desk)
-	config := manager.gameConfig[desk.gameID]
-	if len(desk.players) >= config.needPlayerCount {
-		manager.onDeskFinish(desk)
-	}
-} */
-
 // 将玩家添加到牌桌
-// pMatchPlayer : 匹配的玩家
-//
-func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchDesk) (bSuc bool) {
+// pMatchPlayer : 要加入的玩家
+// pDesk 		: 要加入的桌子
+// globalInfo	: 该场次的全局信息
+// 返回 true表桌子已满且已发送给room，可以删除，false表桌子未满，继续匹配
+func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchDesk, globalInfo *levelGlobalInfo) bool {
 
 	// 参数检测
 	if pPlayer == nil || pDesk == nil {
-		logrus.Error("参数错误，pPlayer == nil || pDesk == nil，返回")
+		logrus.Error("严重错误，pPlayer == nil || pDesk == nil，返回")
 		return false
 	}
 
@@ -1127,16 +1172,21 @@ func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchD
 		"desk":   pDesk,
 	})
 
-	// 原总金币数
-	oldAllGold := pDesk.aveGold * int64(len(pDesk.players))
-
 	// 压入该玩家
 	pDesk.players = append(pDesk.players, *pPlayer)
 
-	// 计算平均金币
-	pDesk.aveGold = (oldAllGold + pPlayer.gold) / int64(len(pDesk.players))
+	// 总金币
+	var allGold int64 = 0
 
-	logrus.Debugf("桌子%v压入了玩家%v\n", pDesk, pPlayer)
+	// 把不是指定玩家的其他玩家加进来
+	for i := 0; i < len(pDesk.players); i++ {
+		allGold += pDesk.players[i].gold
+	}
+
+	// 重新计算平均金币
+	pDesk.aveGold = allGold / int64(len(pDesk.players))
+
+	logrus.Debugf("桌子%v压入了玩家%v，当前人数:%v", pDesk, pPlayer, len(pDesk.players))
 
 	// playerID与deskID的映射
 	//manager.playerDesk[deskPlayer.playerID] = desk.deskID
@@ -1144,103 +1194,88 @@ func (manager *matchManager) addPlayerToDesk(pPlayer *matchPlayer, pDesk *matchD
 	// 移除不在线的
 	//manager.removeOfflines(desk)
 
-	// 满桌需要的玩家数量
-	needPlayerCount := manager.getGameNeedPlayerCount(pDesk.gameID, pDesk.levelID)
-
 	// 满员时的处理
-	if uint8(len(pDesk.players)) >= needPlayerCount {
-		manager.onDeskFull(pDesk)
+	if uint8(len(pDesk.players)) >= pDesk.needPlayerCount {
+		return manager.onDeskFull(pDesk, globalInfo)
 	}
 
-	return true
+	return false
 }
-
-/* // fillRobots 填充机器人
-func (manager *matchManager) fillRobots(desk *desk) {
-	config := manager.gameConfig[desk.gameID]
-	logrus.WithFields(logrus.Fields{
-		"func_name":  "mgr.fillRobots",
-		"desk":       desk,
-		"need_count": config.needPlayerCount,
-	}).Debugln("加入机器人")
-	curPlayerCount := len(desk.players)
-	for i := curPlayerCount; i < config.needPlayerCount; i++ {
-		manager.addDeskPlayer2Desk(&deskPlayer{
-			playerID: GetIdleRobot(1),
-			robotLv:  1,
-		}, desk)
-	}
-} */
-
-/* // removeOfflines 移除 desk 中的离线玩家
-func (manager *matchManager) removeOfflines(desk *desk) {
-	newPlayers := make([]deskPlayer, 0, len(desk.players))
-	for _, deskPlayer := range desk.players {
-		// 机器人不移除
-		if deskPlayer.robotLv != 0 {
-			newPlayers = append(newPlayers, deskPlayer)
-			continue
-		}
-		online := (player.GetPlayerGateAddr(deskPlayer.playerID) != "")
-		if online {
-			newPlayers = append(newPlayers, deskPlayer)
-		} else {
-			delete(manager.playerDesk, deskPlayer.playerID)
-		}
-	}
-	desk.players = newPlayers
-}
-*/
-/* // onDeskFinish 牌桌匹配完成
-func (manager *matchManager) onDeskFinish(desk *desk) {
-	requestCreateDesk(desk)
-	players := desk.players
-	// 解除关联
-	for _, player := range players {
-		delete(manager.playerDesk, player.playerID)
-	}
-	// 移除 desk
-	delete(manager.desks, desk.deskID)
-} */
 
 // onDeskFull 桌子满员时的处理
-func (manager *matchManager) onDeskFull(pDesk *matchDesk) {
+// 返回true : 表已经发送给room服创建桌子，桌子可以删除
+// 返回false: 表某玩家离线或其他原因被移除，重新等待匹配
+func (manager *matchManager) onDeskFull(pDesk *matchDesk, globalInfo *levelGlobalInfo) bool {
 
-	// 移除桌子
+	// 参数检测
+	if pDesk == nil {
+		logrus.Errorln("内部错误，onDeskFull()，参数 pDesk == nil 为空，返回")
+		return false
+	}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"pDesk": pDesk,
+	})
+
+	logEntry.Debugln("进入函数")
+
+	tempPlayers := make([]matchPlayer, 0, pDesk.needPlayerCount)
+
+	// 重新检测玩家状态，目的是移除不在线的
+	for i := 0; i < len(pDesk.players); i++ {
+		player := pDesk.players[i]
+
+		// 机器人直接压入
+		if player.robotLv != 0 {
+			tempPlayers = append(tempPlayers, player)
+			continue
+		}
+
+		// 获取玩家当前状态
+		rsp, err := hallclient.GetPlayerState(player.playerID)
+		if err != nil || rsp == nil {
+			logEntry.Errorf("内部错误，从hall服获取玩家状态出错,玩家:%v", player)
+
+			// 暂时不移除玩家
+			tempPlayers = append(tempPlayers, player)
+			continue
+		}
+
+		// 游戏状态不符合，则移除该玩家
+		if rsp.GetState() != user.PlayerState_PS_MATCHING || rsp.GetGameId() != pDesk.gameID || rsp.GetLevelId() != pDesk.levelID {
+			// 检测是否是离线状态，其他状态则报错
+			if rsp.GetGateAddr() == "" {
+				logEntry.Warningf("桌子满员时发现，玩家%v最新状态错误，已离线，最新state:%v， gameID:%v，levelID:%v，该玩家被移除出桌子", player, rsp.GetState(), rsp.GetGameId(), rsp.GetLevelId())
+			} else {
+				logEntry.Errorf("桌子满员时发现，玩家%v最新状态错误，最新state:%v， gameID:%v，levelID:%v，该玩家被移除出桌子", player, rsp.GetState(), rsp.GetGameId(), rsp.GetLevelId())
+			}
+
+			continue
+		}
+
+		tempPlayers = append(tempPlayers, player)
+	}
+
+	pDesk.players = tempPlayers
+
+	// 人数不足了，则继续等待匹配
+	if uint8(len(pDesk.players)) != pDesk.needPlayerCount {
+		logEntry.Debugln("桌子满员后，由于有玩家被移出桌子，导致不满员，重新匹配")
+		return false
+	}
 
 	// 通知room服创建桌子
-	sendCreateDesk(pDesk)
+	sendCreateDesk(*pDesk, globalInfo)
 
-	/* 	players := pDesk.players
+	logEntry.Debugln("离开函数")
 
-	   	// 解除关联
-	   	for _, player := range players {
-	   		delete(manager.playerDesk, player.playerID)
-	   	} */
-
-	// 移除 desk
-	//delete(manager.desks, pDesk.deskID)
+	return true
 }
 
 // deleteDesk 删除指定的桌子
 func (manager *matchManager) deleteDesk(pDesk *matchDesk) {
 
 }
-
-/* // handleRobotTick 处理机器人 tick
-func (manager *matchManager) handleRobotTick() {
-	// 避免遍历时删除
-	deskIDs := make([]uint64, 0, len(manager.desks))
-	for deskID := range manager.desks {
-		deskIDs = append(deskIDs, deskID)
-	}
-	for _, deskID := range deskIDs {
-		desk := manager.desks[deskID]
-		if !desk.isContinue && time.Now().Sub(desk.createTime) >= web.GetRobotJoinTime() {
-			//manager.fillRobots(desk)
-		}
-	}
-} */
 
 // mergeDesks 合并桌子
 func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
@@ -1250,28 +1285,32 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "mergeDesks",
-		"gameID":    globalInfo.gameID,
-		"levelID":   globalInfo.levelID,
+		"gameID":  globalInfo.gameID,
+		"levelID": globalInfo.levelID,
 	})
 
-	logEntry.Debugln("进入函数")
+	//logEntry.Debugln("进入桌子合并函数")
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
 
 	// 所有的概率
-	var index int8 = 0
+	var index int32 = 0
 	for ; index <= 100; index++ {
-		// 该概率下所有的桌子
-		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
 
-			desk := iter.Value.(*matchDesk)
+		var iterNext *list.Element = nil
+
+		// 该概率下所有的桌子
+		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iterNext {
+
+			iterNext = iter.Next()
+
+			desk := *(iter.Value.(**matchDesk))
 
 			// 距离桌子创建时间的间隔
 			interval := tNowTime - desk.createTime
 
-			// 不足1秒的，不检测，因为新建一个桌子时已检测过
+			// 不足1秒的，不检测，因为新建一个桌子时已检测过，不存在可合并的
 			if interval < 1 {
 				continue
 			}
@@ -1283,15 +1322,15 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 			nowRateValue := manager.getWinRateValue(interval)
 
 			// 所有的需要检测的胜率值，也是allRateDesks的下标值
-			checkIndexs := make([]int8, 0, 101)
+			checkIndexs := make([]int32, 0, 101)
 
 			// 左段起始值(包含自身)
-			leftStartIndex := index - int8(nowRateValue)
+			leftStartIndex := index - nowRateValue
 			if leftStartIndex < 0 {
 				leftStartIndex = 0
 			}
 			// 左段结束值(不包含自身)
-			leftEndIndex := index - int8(lastRateValue)
+			leftEndIndex := index - lastRateValue
 			if leftEndIndex < 0 {
 				leftEndIndex = 0
 			}
@@ -1301,27 +1340,48 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 			}
 
 			// 右段起始值(不包含自身)
-			rightStartIndex := index + int8(lastRateValue)
-			if leftStartIndex > 100 {
-				leftStartIndex = 100
+			rightStartIndex := index + lastRateValue
+			if rightStartIndex > 100 {
+				rightStartIndex = 100
 			}
+
 			// 右段结束值(包含自身)
-			rightEndIndex := index + int8(nowRateValue)
+			rightEndIndex := index + nowRateValue
+			if rightEndIndex > 100 {
+				rightEndIndex = 100
+			}
+
 			// 从[rightStartIndex - rightEndIndex)
 			for j := rightStartIndex + 1; j <= rightEndIndex; j++ {
 				checkIndexs = append(checkIndexs, j)
 			}
 
-			var pMergeDesk *matchDesk = nil
+			// 两段不应有重叠
+			if (leftStartIndex > leftEndIndex) || (rightStartIndex > rightEndIndex) || (leftEndIndex > rightStartIndex) {
+				logEntry.Errorf("左段或右段数据错误，跳过该桌子，左段起值：%v,左段终值：%v,右段起值：%v,右段终值：%v ", leftStartIndex, leftEndIndex, rightStartIndex, rightEndIndex)
+				continue
+			}
+
+			logEntry.Debugf("左段起值：%v,左段终值：%v,右段起值：%v,右段终值：%v ", leftStartIndex, leftEndIndex, rightStartIndex, rightEndIndex)
+
+			// 可合并桌子所在的信息
+			var pList2 *list.List = nil
+			var iter2 *list.Element = nil
 
 			// 和这些桌子尝试组合
 			for k := 0; k < len(checkIndexs); k++ {
-				merIndex := int8(checkIndexs[k])
+				merIndex := checkIndexs[k]
 
 				// 遍历该概率下的所有桌子
 				for merIter := globalInfo.allRateDesks[merIndex].Front(); merIter != nil; merIter = merIter.Next() {
 
-					merDesk := merIter.Value.(*matchDesk)
+					merDesk := *(merIter.Value.(**matchDesk))
+
+					// 检测金币范围
+					minGold, maxGold := manager.getGoldRange(merDesk.aveGold, tNowTime-merDesk.createTime)
+					if desk.aveGold < minGold || desk.aveGold > maxGold {
+						continue
+					}
 
 					// IP是否存在相同的
 					if manager.checkDeskSameIP(desk, merDesk) {
@@ -1333,99 +1393,255 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 						continue
 					}
 
-					// 可以合并
-					pMergeDesk = merDesk
+					// 找到可合并的即跳出
+					pList2 = &globalInfo.allRateDesks[merIndex]
+					iter2 = merIter
+					break
+				}
+
+				// 找到可合并的即跳出
+				if iter2 != nil {
 					break
 				}
 			}
 
 			// 有合并的桌子
-			if pMergeDesk != nil {
-				// 合并操作
-				// 根据两个桌子的创建时间，把时间短的桌子拆了，玩家添加到时间长的桌子;若有剩余玩家，继续留在当前桌子;若没有剩余玩家，
-				// todo
+			if iter2 != nil {
+				iter1 := iter
+				pDesk1 := iter1.Value.(*matchDesk)
+				pList1 := &globalInfo.allRateDesks[index]
+
+				pDesk2 := iter2.Value.(*matchDesk)
+
+				logEntry.Debugln("找到了可以合并的，桌子1:%v，桌子2:%v", pDesk1, pDesk2)
+
+				// desk1需作为时间最早的桌子，desk2需作为被拆的桌子
+				if pDesk1.createTime > pDesk2.createTime {
+					iter1, iter2 = iter2, iter1
+					pDesk1, pDesk2 = pDesk2, pDesk1
+					pList1, pList2 = pList2, pList1
+				}
+
+				// 把desk2的玩家移入到desk1
+
+				// 临时玩家，和桌子2的玩家一一对应
+				tempPlayers := make([]matchPlayer, 0, len(pDesk2.players))
+				for i := 0; i < len(pDesk2.players); i++ {
+					tempPlayers = append(tempPlayers, pDesk2.players[i])
+				}
+
+				for i := 0; i < len(tempPlayers); i++ {
+
+					// 先从desk2中删除这个玩家
+					manager.removePlayerFromDesk(&pDesk2.players[i], pDesk2)
+
+					// desk1桌子满，则从列表中删除desk1桌子，跳出
+					if manager.addPlayerToDesk(&tempPlayers[i], pDesk1, globalInfo) {
+						logEntry.Debugln("由于拆入的玩家已满桌，删除桌子1")
+						pList1.Remove(iter1)
+						break
+					}
+				}
+
+				// 是否存在真实玩家
+				bExistTruePlayer := false
+				for i := 0; i < len(pDesk2.players); i++ {
+					if pDesk2.players[i].robotLv == 0 {
+						bExistTruePlayer = true
+					}
+				}
+
+				// 桌子2没真实玩家了，就删除桌子
+				if !bExistTruePlayer {
+					pList2.Remove(iter2)
+				}
 			}
 		}
 	}
 
-	logEntry.Debugln("离开函数")
+	//logEntry.Debugln("离开桌子合并函数")
 }
 
-// checkTimeout 检测超时
-func (manager *matchManager) checkTimeout(globalInfo *levelGlobalInfo) {
+// 从桌子中删除玩家
+func (manager *matchManager) removePlayerFromDesk(pPlayer *matchPlayer, pDesk *matchDesk) {
+	// 参数检测
+	if pPlayer == nil || pDesk == nil {
+		logrus.Error("严重错误，removePlayerFromDesk(), pPlayer == nil || pDesk == nil，返回")
+		return
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"player": pPlayer,
+		"desk":   pDesk,
+	})
+
+	// 总金币
+	var allGold int64 = 0
+
+	// 新玩家
+	tempPlayers := make([]matchPlayer, 0, pDesk.needPlayerCount)
+
+	// 把不是指定玩家的其他玩家加进来
+	for i := 0; i < len(pDesk.players); i++ {
+		if pPlayer.playerID != pDesk.players[i].playerID {
+			tempPlayers = append(tempPlayers, pDesk.players[i])
+			allGold += pDesk.players[i].gold
+		}
+	}
+
+	// 新玩家
+	pDesk.players = tempPlayers
+
+	// 重新计算平均金币
+	pDesk.aveGold = allGold / int64(len(pDesk.players))
+}
+
+// checkDeskTimeout 检测桌子是否超时
+func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 	if globalInfo == nil {
-		logrus.Errorln("checkTimeout()，globalInfo == nil，返回")
+		logrus.Errorln("checkTimeout()，参数错误，globalInfo == nil，返回")
 		return
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"func_name": "checkTimeout",
-		"gameID":    globalInfo.gameID,
-		"levelID":   globalInfo.levelID,
+		"gameID":  globalInfo.gameID,
+		"levelID": globalInfo.levelID,
 	})
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
 
+	// 机器人加入时间
+	joinTime := int64(web.GetRobotJoinTime().Seconds())
+
+	//logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
+
 	// 所有的概率
-	var index int8 = 0
+	var index int32 = 0
 	for ; index <= 100; index++ {
-		// 该概率下所有的桌子
-		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
 
-			desk := iter.Value.(*matchDesk)
+		var next *list.Element
+		// 该概率下所有的桌子进入桌子超时检测函数
+		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = next {
 
-			if tNowTime-desk.createTime > 100 {
+			// 提前保存下一个
+			next = iter.Next()
 
+			desk := *(iter.Value.(**matchDesk))
+
+			// 间隔秒数
+			interval := tNowTime - desk.createTime
+
+			// logEntry.Debugf("开始检测桌子:%v是否超时，桌子已创建时间:%v秒", desk, interval)
+
+			// 超过时间，则开始加入机器人
+			if interval >= joinTime {
+
+				// 胜率范围
+				beginRate := index - manager.getWinRateValue(interval)
+				if beginRate < 0 {
+					beginRate = 0
+				}
+
+				endRate := int32(index) + int32(manager.getWinRateValue(interval))
+				if endRate > 100 {
+					endRate = 100
+				}
+
+				// logEntry.Debugf("桌子的平均金币:%v", desk.aveGold)
+
+				// 金币范围
+				minGold, maxGold := manager.getGoldRange(desk.aveGold, interval)
+
+				reqRobot := robotclient.LeisureRobotReqInfo{
+					CoinHigh:    maxGold,
+					CoinLow:     minGold,
+					WinRateHigh: endRate,
+					WinRateLow:  beginRate,
+					GameID:      desk.gameID,
+					LevelID:     desk.levelID,
+				}
+
+				// logEntry.Debugf("请求的机器人参数:%v", reqRobot)
+
+				// 从hall服获取一个空闲的机器人
+				robotPlayerID, robotGold, robotRate, err := robotclient.GetLeisureRobotInfoByInfo(reqRobot)
+				if err != nil {
+					logEntry.WithError(err).Error("从hall服获取机器人失败,继续下一个桌子")
+					continue
+				}
+
+				// 新建一个匹配玩家(机器人)
+				newMatchPlayer := matchPlayer{
+					playerID: robotPlayerID,
+					robotLv:  1, // todo
+					seat:     -1,
+					IP:       0,
+					gold:     robotGold,
+				}
+
+				logEntry.Debugf("从hall服获取机器人成功，playerID:%v，金币数:%v，胜率:%v ", robotPlayerID, robotGold, robotRate)
+
+				// 把机器人加入桌子
+				if manager.addPlayerToDesk(&newMatchPlayer, desk, globalInfo) {
+
+					logEntry.Debugf("请求到的机器人%v加入了桌子%v，桌子满员，桌子已删除", newMatchPlayer, desk)
+
+					// 桌子已满，则删除
+					globalInfo.allRateDesks[index].Remove(iter)
+				} else {
+					logEntry.Debugf("请求到的机器人%v加入了桌子%v，桌子未满员，继续匹配", newMatchPlayer, desk)
+				}
 			}
 		}
 	}
 
-	logEntry.Debugln("进入函数")
+	//logEntry.Debugln("离开桌子超时检测函数")
 }
 
-/* // checkContinueDesks 检查续局牌桌，超过 20s 解散
-func (manager *matchManager) checkContinueDesks() {
-	// 避免遍历时删除
-	deskIDs := make([]uint64, 0, len(manager.desks))
-	for deskID := range manager.desks {
-		deskIDs = append(deskIDs, deskID)
-	}
-	for _, deskID := range deskIDs {
-		desk := manager.desks[deskID]
-		// 非续局牌桌
-		if !desk.isContinue {
-			continue
-		}
-		interval := time.Now().Sub(desk.createTime)
-		// 超过解散时间
-		if interval >= web.GetContinueDismissTime() {
-			logrus.Debugf("续局牌桌超时，解散续局牌桌，桌子创建时间=%v，现在时间=%v,超时时间=%v", desk.createTime, time.Now(), web.GetContinueDismissTime())
-			manager.dismissContinueDesk(desk, 0)
-			continue
-		}
-		// 超过机器人续局时间
-		if interval >= web.GetContinueRobotTime() {
-			manager.robotContinue(desk)
-		}
-	}
-} */
+// checkSucTimeout 检测之前匹配成功的是否超时
+func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
 
-/* // robotContinue 机器人作续局决策
-func (manager *matchManager) robotContinue(desk *desk) {
-	robots := make([]uint64, 0, len(desk.continueWaitPlayers))
-
-	for playerID := range desk.continueWaitPlayers {
-		robots = append(robots, playerID)
+	// 参数检测
+	if globalInfo == nil {
+		logrus.Errorln("checkSucTimeout()，参数错误，globalInfo == nil，返回")
+		return
 	}
 
-	for _, playerID := range robots {
-		player := desk.continueWaitPlayers[playerID]
-		if player.robotLv == 0 {
-			continue
+	// logEntry := logrus.WithFields(logrus.Fields{
+	// 	"gameID":  globalInfo.gameID,
+	// 	"levelID": globalInfo.levelID,
+	// })
+
+	// 当前时间
+	tNowTime := time.Now().Unix()
+
+	// logEntry.Debugf("进入匹配成功超时检测函数，当前时间：%v", tNowTime)
+
+	// 新建，然后再替换
+	newSucDesks := map[uint64]*sucDesk{}
+	newSucPlayers := map[uint64]uint64{}
+
+	// 先遍历桌子，只记录未超时的
+	for key, desk := range globalInfo.sucDesks {
+		if tNowTime-desk.sucTime < web.GetSameDeskLimitTime() {
+			newSucDesks[key] = desk
 		}
-		rate := web.GetRobotContinueRate(player.winner)
-		continual := gutils.Probability(rate)
-		manager.acceptContinuePlayer(desk.gameID, playerID, !continual)
 	}
-} */
+
+	// 替换桌子
+	globalInfo.sucDesks = newSucDesks
+
+	// 再遍历玩家，只记录桌子存在的
+	for playerID, deskID := range globalInfo.sucPlayers {
+		_, exist := globalInfo.sucDesks[playerID]
+		if exist {
+			newSucPlayers[playerID] = deskID
+		}
+	}
+
+	// 替换玩家
+	globalInfo.sucPlayers = newSucPlayers
+
+	// logEntry.Debugln("离开匹配成功超时检测函数")
+}

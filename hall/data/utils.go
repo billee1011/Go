@@ -3,7 +3,6 @@ package data
 import (
 	"fmt"
 	"steve/entity/db"
-	"steve/server_pb/user"
 	"steve/structs"
 	"time"
 
@@ -22,7 +21,7 @@ func getRedisCli(redis string, db int) (*redis.Client, error) {
 
 func getMysqlEngine(mysqlName string) (*xorm.Engine, error) {
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(playerMysqlName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(mysqlName)
 	if err != nil {
 		return nil, fmt.Errorf("获取 mysql 引擎失败：%v", err)
 	}
@@ -49,28 +48,19 @@ func getRedisUint64Val(redisName string, key string) (uint64, error) {
 	return 0, fmt.Errorf("redis 命令执行失败: %v", redisCmd.Err())
 }
 
-func getRedisByteVal(redisName string, key string) ([]byte, error) {
-	redisCli, err := redisCliGetter(redisName, 0)
-	if err != nil {
-		return []byte{}, err
-	}
-	data, err := redisCli.Get(key).Bytes()
-	if err == nil {
-		return data, nil
-	}
-	return []byte{}, fmt.Errorf("redis 命令执行失败: %v", err)
-}
-
 func getRedisField(redisName string, key string, field ...string) ([]interface{}, error) {
 	redisCli, err := redisCliGetter(redisName, 0)
 	if err != nil {
 		return nil, err
 	}
 	result, err := redisCli.HMGet(key, field...).Result()
-	if err == nil {
-		return result, nil
+	if err != nil {
+		if err == redis.Nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("redis 命令执行失败: %v", err)
 	}
-	return nil, fmt.Errorf("redis 命令执行失败: %v", err)
+	return result, nil
 }
 
 func setRedisVal(redisName string, key string, val interface{}, duration time.Duration) error {
@@ -85,59 +75,48 @@ func setRedisVal(redisName string, key string, val interface{}, duration time.Du
 	return nil
 }
 
-// setRedisWatch 事务
-func setRedisWatch(redisName string, key string, fields map[string]string, duration time.Duration) error {
+func setRedisFields(redisName string, key string, fields map[string]string, duration time.Duration) error {
 	redisCli, err := redisCliGetter(redisName, 0)
-
-	list := make(map[string]interface{}, len(fields))
-	for k, v := range fields {
-		list[k] = v
+	if err != nil {
+		return err
 	}
-
-	err = redisCli.Watch(func(tx *redis.Tx) error {
-		err := tx.HKeys(key).Err()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-		cmd := tx.HMSet(key, list)
-		if cmd.Err() != nil {
-			return fmt.Errorf("set redis watch err: %v ", cmd.Err())
-		}
-		redisCli.Expire(key, duration)
-		return nil
-	}, key)
-	return err
+	kv := make(map[string]interface{}, len(fields))
+	for k, field := range fields {
+		kv[k] = field
+	}
+	status := redisCli.HMSet(key, kv)
+	if status.Err() != nil {
+		return fmt.Errorf("设置失败(%v)", status.Err())
+	}
+	redisCli.Expire(key, duration)
+	return nil
 }
 
-func dbGameConfig2serverGameConfig(dbGameConfigs []db.TGameConfig) (gameInfos []*user.GameConfig) {
-	gameInfos = make([]*user.GameConfig, 0)
-	for _, dbGameConfig := range dbGameConfigs {
-		gameInfo := &user.GameConfig{
-			GameId:   uint32(dbGameConfig.Gameid),
-			GameName: dbGameConfig.Name,
-			GameType: uint32(dbGameConfig.Type),
+func generateDbPlayer(playerID uint64, info map[string]string, fields ...string) (dbPlayer *db.TPlayer, err error) {
+	dbPlayer, err = new(db.TPlayer), nil
+	for _, field := range fields {
+		v, ok := info[field]
+		if !ok {
+			return nil, fmt.Errorf("错误的数据类型。field=%s val=%v", field, info)
 		}
-
-		gameInfos = append(gameInfos, gameInfo)
+		if err = setDBPlayerByField(dbPlayer, field, v); err != nil {
+			return nil, err
+		}
 	}
 	return
 }
 
-func dbGamelevelConfig2serverGameConfig(dbGameConfigs []db.TGameLevelConfig) (gamelevelConfigs []*user.GameLevelConfig) {
-	gamelevelConfigs = make([]*user.GameLevelConfig, 0)
-	for _, dbGameConfig := range dbGameConfigs {
-		gamelevelConfig := &user.GameLevelConfig{
-			GameId:     uint32(dbGameConfig.Gameid),
-			LevelId:    uint32(dbGameConfig.Levelid),
-			LevelName:  dbGameConfig.Name,
-			BaseScores: uint32(dbGameConfig.Basescores),
-			LowScores:  uint32(dbGameConfig.Lowscores),
-			HighScores: uint32(dbGameConfig.Highscores),
-			MinPeople:  uint32(dbGameConfig.Minpeople),
-			MaxPeople:  uint32(dbGameConfig.Maxpeople),
-		}
+func generateDbPlayerGame(playerID uint64, gameID uint32, info map[string]string, fields ...string) (dbPlayerGame *db.TPlayerGame, err error) {
+	dbPlayerGame, err = new(db.TPlayerGame), nil
 
-		gamelevelConfigs = append(gamelevelConfigs, gamelevelConfig)
+	for _, field := range fields {
+		v, ok := info[field]
+		if !ok {
+			return nil, fmt.Errorf("错误的数据类型。field=%s val=%v", field, info)
+		}
+		if err = setDBPlayerGameByField(dbPlayerGame, field, v); err != nil {
+			return nil, err
+		}
 	}
 	return
 }

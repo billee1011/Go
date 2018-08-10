@@ -99,7 +99,7 @@ func CalcMopaiPlayer(logEntry *logrus.Entry, huPlayers []uint64, srcPlayer uint6
 		return srcPlayer
 	}
 	mopaiIndex := (calcLastHuIndex(srcIndex, huIndexs, len(players)) + 1) % len(players)
-	return players[mopaiIndex].GetPalyerId()
+	return players[mopaiIndex].GetPlayerId()
 }
 
 func removeLastCard(logEntry *logrus.Entry, srcCards []*majongpb.Card, rmCard *majongpb.Card) []*majongpb.Card {

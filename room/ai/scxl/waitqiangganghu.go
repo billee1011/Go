@@ -45,7 +45,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params ai.AIEventGenerateParams
 		}
 	}
 	entry := logrus.WithFields(logrus.Fields{
-		"playerID":   player.GetPalyerId(),
+		"playerID":   player.GetPlayerId(),
 		"handCards":  gutils.FmtMajongpbCards(player.GetHandCards()),
 		"bugangCard": gutils.FmtMajongpbCards([]*majong.Card{mjContext.GetGangCard()}),
 		"canhu":      canhu,
@@ -68,7 +68,7 @@ func (h *waitQiangganghuStateAI) GenerateAIEvent(params ai.AIEventGenerateParams
 func (h *waitQiangganghuStateAI) qi(player *majong.Player) ai.AIEvent {
 	eventContext := &majong.QiRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 	}
 
@@ -81,7 +81,7 @@ func (h *waitQiangganghuStateAI) qi(player *majong.Player) ai.AIEvent {
 func (h *waitQiangganghuStateAI) hu(player *majong.Player) ai.AIEvent {
 	eventContext := &majong.HuRequestEvent{
 		Head: &majong.RequestEventHead{
-			PlayerId: player.GetPalyerId(),
+			PlayerId: player.GetPlayerId(),
 		},
 	}
 
@@ -94,7 +94,7 @@ func (h *waitQiangganghuStateAI) hu(player *majong.Player) ai.AIEvent {
 func (h *waitQiangganghuStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) error {
 	err := fmt.Errorf("不生成自动事件")
 	if mjContext.GetCurState() != majong.StateID_state_waitqiangganghu ||
-		player.GetPalyerId() == mjContext.GetLastGangPlayer() ||
+		player.GetPlayerId() == mjContext.GetLastGangPlayer() ||
 		len(player.GetHandCards())%3+1 != 2 ||
 		gutils.CheckHasDingQueCard(mjContext, player) ||
 		len(player.GetPossibleActions()) == 0 ||

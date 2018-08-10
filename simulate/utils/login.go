@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"steve/client_pb/hall"
 	"steve/client_pb/login"
 	msgid "steve/client_pb/msgid"
 	"steve/simulate/config"
@@ -59,10 +60,18 @@ func (p *clientPlayer) GetExpector(msgID msgid.MsgID) interfaces.MessageExpector
 	return p.expectors[msgID]
 }
 
-func loginPlayer(request *login.LoginAuthReq) (interfaces.ClientPlayer, error) {
+func loginPlayer(request *login.LoginAuthReq, expectedMsgs ...msgid.MsgID) (interfaces.ClientPlayer, error) {
 	gateClient := connect.NewTestClient(config.GetGatewayServerAddr(), config.GetClientVersion())
 	if gateClient == nil {
 		return nil, fmt.Errorf("连接网关服失败")
+	}
+	expectors := make(map[msgid.MsgID]interfaces.MessageExpector, len(expectedMsgs))
+	for _, msgID := range expectedMsgs {
+		expector, err := gateClient.ExpectMessage(msgID)
+		if err != nil {
+			return nil, fmt.Errorf("expector 失败, %v", msgID)
+		}
+		expectors[msgID] = expector
 	}
 	response := &login.LoginAuthRsp{}
 	err := facade.Request(gateClient, msgid.MsgID_LOGIN_AUTH_REQ, request,
@@ -73,23 +82,32 @@ func loginPlayer(request *login.LoginAuthReq) (interfaces.ClientPlayer, error) {
 	if response.GetErrCode() != login.ErrorCode_SUCCESS {
 		return nil, fmt.Errorf("登录失败，错误码：%v", response.GetErrCode())
 	}
+	playerInfoRsp := &hall.HallGetPlayerInfoRsp{}
+	if err := facade.Request(gateClient, msgid.MsgID_HALL_GET_PLAYER_INFO_REQ, &hall.HallGetPlayerInfoReq{},
+		global.DefaultWaitMessageTime, msgid.MsgID_HALL_GET_PLAYER_INFO_RSP, playerInfoRsp); err != nil {
+		return nil, fmt.Errorf("请求用户信息失败：%v", err)
+	}
+	if playerInfoRsp.GetErrCode() != 0 {
+		return nil, fmt.Errorf("请求用户信息失败，错误码:%d", playerInfoRsp.GetErrCode())
+	}
+
 	logrus.Infoln("登录成功", response)
 	return &clientPlayer{
 		playerID:  response.GetPlayerId(),
 		accountID: request.GetAccountId(),
-		coin:      0,
+		coin:      playerInfoRsp.GetCoin(),
 		client:    gateClient,
 		usrName:   "",
-		expectors: make(map[msgid.MsgID]interfaces.MessageExpector),
+		expectors: expectors,
 		token:     response.GetToken(),
 	}, nil
 }
 
 // LoginNewPlayer 自动分配账号 ID， 生成账号名称，然后登录
-func LoginNewPlayer() (interfaces.ClientPlayer, error) {
+func LoginNewPlayer(expectedMsgs ...msgid.MsgID) (interfaces.ClientPlayer, error) {
 	return loginPlayer(&login.LoginAuthReq{
 		AccountId: proto.Uint64(global.AllocAccountID()),
-	})
+	}, expectedMsgs...)
 }
 
 // LoginPlayerByToken 使用 token 登录玩家

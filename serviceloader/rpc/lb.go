@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"sync"
 
+	"time"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/hashicorp/consul/api"
 	"steve/thirdpart/github.com/bsm/grpclb/balancer"
 	"steve/thirdpart/github.com/bsm/grpclb/discovery/consul"
-	"github.com/hashicorp/consul/api"
-	"github.com/Sirupsen/logrus"
-	"time"
 )
 
 type loadBalancer struct {
@@ -33,7 +34,6 @@ func (lb *loadBalancer) getServerAddr(serverName string) (string, error) {
 	if len(servers) == 0 {
 		return "", fmt.Errorf("no server")
 	}
-	logrus.Debugln("getServerAddr>>", serverName,":", servers)
 	return servers[0].GetAddress(), nil
 }
 
@@ -48,15 +48,14 @@ func (lb *loadBalancer) getServerAddrByServerId(serverName string, serverId stri
 	if len(servers) == 0 {
 		return "", fmt.Errorf("no server")
 	}
-	logrus.Debugf("server=%s,svrId=%s",serverName, serverId)
 
-	for _, addr := range  servers {
+	for _, addr := range servers {
 		strScore := fmt.Sprintf("%d", addr.GetScore())
 		if strScore == serverId {
 			return addr.GetAddress(), nil
 		}
 	}
-	logrus.Errorf("err={find no server},server=%s,svrId=%s",serverName, serverId)
+	// logrus.Errorf("err={find no server},server=%s,svrId=%s", serverName, serverId)
 	return "", fmt.Errorf("no server")
 }
 
@@ -71,16 +70,16 @@ func (lb *loadBalancer) getServerAddrByHashId(serverName string, hashId uint64) 
 	if len(servers) == 0 {
 		return "", fmt.Errorf("no server")
 	}
-	logrus.Debugf("server=%s,hashId=%d",serverName, hashId)
+	// logrus.Debugf("server=%s,hashId=%d", serverName, hashId)
 
 	svrSum := uint64(len(servers))
 	index := hashId % svrSum
-	for _, addr := range  servers {
+	for _, addr := range servers {
 		if addr.GetScore() == int64(index) {
 			return addr.GetAddress(), nil
 		}
 	}
-	logrus.Errorf("err={find no server},server=%s,hashId=%d,index=%d",serverName, hashId, index)
+	logrus.Errorf("err={find no server},server=%s,hashId=%d,index=%d", serverName, hashId, index)
 	return "", fmt.Errorf("no server")
 }
 
@@ -93,7 +92,7 @@ func (lb *loadBalancer) initLbs() {
 		panic(err)
 	}
 
-	c := &balancer.Config{ }
+	c := &balancer.Config{}
 	// 从consul探测服务列表的频率
 	if c.Discovery.Interval == 0 {
 		c.Discovery.Interval = 5 * time.Second

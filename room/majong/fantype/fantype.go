@@ -3,8 +3,8 @@ package fantype
 import (
 	"math"
 	"steve/common/mjoption"
-	"steve/room/majong/utils"
 	"steve/entity/majong"
+	"steve/room/majong/utils"
 )
 
 // Combine 牌型组合
@@ -156,7 +156,7 @@ func (tc *typeCalculator) getPlayer() *majong.Player {
 		return tc.player
 	}
 	for _, player := range tc.mjContext.Players {
-		if player.GetPalyerId() == tc.playerID {
+		if player.GetPlayerId() == tc.playerID {
 			tc.player = player
 			return player
 		}
