@@ -58,12 +58,12 @@ func (s *ZimoState) doZimo(flow interfaces.MajongFlow) {
 		logEntry.Errorln(err)
 		return
 	}
-	mjContext.LastHuPlayers = []uint64{player.GetPalyerId()}
+	mjContext.LastHuPlayers = []uint64{player.GetPlayerId()}
 	huType := player.ZixunRecord.HuType
-	s.notifyHu(card, huType, player.GetPalyerId(), flow)
-	gutils.SetNextZhuangIndex(mjContext.GetLastHuPlayers(), player.GetPalyerId(), mjContext)
+	s.notifyHu(card, huType, player.GetPlayerId(), flow)
+	gutils.SetNextZhuangIndex(mjContext.GetLastHuPlayers(), player.GetPlayerId(), mjContext)
 	player.HandCards, _ = utils.RemoveCards(player.GetHandCards(), card, 1)
-	AddHuCard(card, player, player.GetPalyerId(), huType, true)
+	AddHuCard(card, player, player.GetPlayerId(), huType, true)
 
 	// 玩家胡状态
 	player.XpState = player.GetXpState() | majongpb.XingPaiState_hu
@@ -99,7 +99,7 @@ func (s *ZimoState) getZimoInfo(mjContext *majongpb.MajongContext) (player *majo
 	player = utils.GetPlayerByID(players, playerID)
 
 	// 没有上个摸牌的玩家，是为天胡， 取庄家作为胡牌玩家
-	if player.GetZixunCount() == 1 && player.GetPalyerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPalyerId() {
+	if player.GetZixunCount() == 1 && player.GetPlayerId() == mjContext.Players[int(mjContext.GetZhuangjiaIndex())].GetPlayerId() {
 		xpOption := mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId()))
 		switch xpOption.TianhuCardType {
 		case mjoption.MostTingsCard:

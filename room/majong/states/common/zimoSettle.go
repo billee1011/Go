@@ -67,7 +67,7 @@ func (s *ZiMoSettleState) setMopaiPlayer(flow interfaces.MajongFlow) {
 	if !gutils.IsPlayerContinue(mopaiPlayer.GetXpState(), mjContext) {
 		mopaiPlayer = utils.GetNextXpPlayerByID(mopaiPlayerID, players, mjContext)
 	}
-	mjContext.MopaiPlayer = mopaiPlayer.GetPalyerId()
+	mjContext.MopaiPlayer = mopaiPlayer.GetPlayerId()
 	mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 }
 

@@ -68,21 +68,4 @@ func Test_SCXZ_Zimo_Recover(t *testing.T) {
 	playerState, err := utils.GetDeskPlayerState(zimoPlayer.Player)
 	assert.Nil(t, err)
 	assert.Equal(t, playerState, common.PlayerState_PS_IDLE)
-
-	// assert.Nil(t, utils.SendNeedRecoverGameReq(quitSeat, deskData))
-	// expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_NEED_RESUME_RSP]
-	// rsp1 := room.RoomDeskNeedReusmeRsp{}
-	// assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &rsp1))
-	// assert.False(t, rsp1.GetIsNeed())
-
-	utils.ApplyJoinDesk(zimoPlayer.Player, common.GameId_GAMEID_XUELIU)
-
-	// 再加入3个玩家凑够4人开局避免影响其他测试用例
-	newPlayers, err := utils.CreateAndLoginUsers(3)
-	assert.Nil(t, err)
-	err = utils.ApplyJoinDeskPlayers(newPlayers, common.GameId_GAMEID_XUELIU)
-	assert.Nil(t, err)
-	expector, _ = zimoPlayer.Expectors[msgid.MsgID_ROOM_DESK_CREATED_NTF]
-	ntf1 := room.RoomDeskCreatedNtf{}
-	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, &ntf1))
 }

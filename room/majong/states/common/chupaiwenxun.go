@@ -86,11 +86,11 @@ func (s *ChupaiwenxunState) notifyPossibleActions(flow interfaces.MajongFlow) {
 		}
 		logrus.WithFields(logrus.Fields{
 			"func_name":   "ChupaiwenxunState.notifyPossibleActions",
-			"player_id":   player.GetPalyerId(),
+			"player_id":   player.GetPlayerId(),
 			"player_seat": index,
 			"actions":     actions,
 		}).Debugln("发送问询通知")
-		flow.PushMessages([]uint64{player.GetPalyerId()}, interfaces.ToClientMessage{
+		flow.PushMessages([]uint64{player.GetPlayerId()}, interfaces.ToClientMessage{
 			MsgID: int(msgid.MsgID_ROOM_CHUPAIWENXUN_NTF),
 			Msg:   &ntf,
 		})
@@ -220,7 +220,7 @@ func (s *ChupaiwenxunState) onActionRequestEvent(eventID majongpb.EventID, event
 		logEntry.WithError(err).Infoln("获取请求信息失败")
 		return
 	}
-	logEntry = logEntry.WithField("player_id", player.GetPalyerId())
+	logEntry = logEntry.WithField("player_id", player.GetPlayerId())
 	if err = s.canPlayerAction(player, action); err != nil {
 		logEntry.WithError(err).Infoln("玩家不能执行该行为")
 		return
@@ -260,11 +260,11 @@ func (s *ChupaiwenxunState) getMaxSelectedAction(players []*majongpb.Player) (bo
 		if !hasMaxSelectedAction || selectedPriority > s.getActionPriority(maxSelectedAction) {
 			hasMaxSelectedAction = true
 			maxSelectedAction = selectedAction
-			selectedPlayers = []uint64{player.GetPalyerId()}
+			selectedPlayers = []uint64{player.GetPlayerId()}
 			continue
 		}
 		if selectedPriority == s.getActionPriority(maxSelectedAction) {
-			selectedPlayers = append(selectedPlayers, player.GetPalyerId())
+			selectedPlayers = append(selectedPlayers, player.GetPlayerId())
 		}
 	}
 	return hasMaxSelectedAction, maxSelectedAction, selectedPlayers
@@ -425,9 +425,9 @@ func (s *ChupaiwenxunState) doQi(flow interfaces.MajongFlow, playerIDs []uint64)
 
 	players := mjContext.GetPlayers()
 	for _, player := range players {
-		if player.GetPalyerId() == lastOutCardPlayer {
+		if player.GetPlayerId() == lastOutCardPlayer {
 			nextPlayer := utils.GetNextXpPlayerByID(lastOutCardPlayer, players, flow.GetMajongContext())
-			mjContext.MopaiPlayer = nextPlayer.GetPalyerId()
+			mjContext.MopaiPlayer = nextPlayer.GetPlayerId()
 			mjContext.MopaiType = majongpb.MopaiType_MT_NORMAL
 			return
 		}

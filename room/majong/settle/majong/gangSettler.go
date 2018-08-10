@@ -2,8 +2,8 @@ package majong
 
 import (
 	"steve/common/mjoption"
-	"steve/room/majong/interfaces"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/interfaces"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -96,8 +96,8 @@ func CanGangSettle(playerID uint64, givePlayers, hasHuPlayers, quitPlayers []uin
 		}
 		return settleOption.GiveUpPlayerSettle.GiveUpPlayerGangSettle
 	}
-	for _, hasHupalyer := range hasHuPlayers {
-		if hasHupalyer != playerID {
+	for _, hasHuplayer := range hasHuPlayers {
+		if hasHuplayer != playerID {
 			continue
 		}
 		for _, quitPlayer := range quitPlayers {

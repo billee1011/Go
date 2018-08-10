@@ -73,6 +73,60 @@ func GetPlayerState(uid uint64) (*user.GetPlayerStateRsp, error) {
 	return rsp, nil
 }
 
+// GetGateAddr 获取玩家网关服地址
+// param:   uid:玩家ID
+// return:  网关服地址,错误信息
+func GetGateAddr(uid uint64) (string, error) {
+
+	// 得到服务连接
+	con, err := getHallServer()
+	if err != nil || con == nil {
+		return "", errors.New("no hall connection")
+	}
+
+	// 新建Client
+	client := user.NewPlayerDataClient(con)
+
+	// 调用RPC方法
+	rsp, err := client.GetPlayerState(context.Background(), &user.GetPlayerStateReq{
+		PlayerId: uid,
+	})
+
+	// 检测返回值
+	if err != nil {
+		return "", err
+	}
+
+	return rsp.GetGateAddr(), nil
+}
+
+// GetRoomAddr 获取玩家房间服地址
+// param:   uid:玩家ID
+// return:  房间服地址,错误信息
+func GetRoomAddr(uid uint64) (string, error) {
+
+	// 得到服务连接
+	con, err := getHallServer()
+	if err != nil || con == nil {
+		return "", errors.New("no hall connection")
+	}
+
+	// 新建Client
+	client := user.NewPlayerDataClient(con)
+
+	// 调用RPC方法
+	rsp, err := client.GetPlayerState(context.Background(), &user.GetPlayerStateReq{
+		PlayerId: uid,
+	})
+
+	// 检测返回值
+	if err != nil {
+		return "", err
+	}
+
+	return rsp.GetRoomAddr(), nil
+}
+
 // UpdatePlayerState 更新玩家状态
 // param: uid 玩家ID, oldState 玩家当前状态， newState 要更新状态， gameID 游戏ID，levelID 场次ID
 // return: 更新结果，错误信息
@@ -92,6 +146,8 @@ func UpdatePlayerState(uid uint64, oldState user.PlayerState, newState user.Play
 		PlayerId: uid,
 		OldState: oldState,
 		NewState: newState,
+		GameId:   gameID,
+		LevelId:  levelID,
 	})
 
 	// 检测返回值

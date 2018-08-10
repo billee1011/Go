@@ -44,15 +44,27 @@ func (model *MjEventModel) Active() {}
 func (model *MjEventModel) Start() {
 	model.event = make(chan desk.DeskEvent, 16)
 
+	model.StartProcessEvents()
+}
+
+// StartProcessEvents 开始处理事件
+func (model *MjEventModel) StartProcessEvents() {
 	go func() {
 		model.processEvents(context.Background())
-		GetModelManager().StopDeskModel(model.GetDesk().GetUid())
+
+		mjContext := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).MjContext
+		settler := model.GetDesk().GetConfig().Settle
+		statistics := settler.GetStatistics()
+		continueModel := GetContinueModel(model.GetDesk().GetUid())
+		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 	}()
 
 	event := desk.DeskEvent{EventID: int(server_pb.EventID_event_start_game), EventType: fixed.NormalEvent, Desk: model.GetDesk(),
 		StateNumber: model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).StateNumber,
 	}
 	model.PushEvent(event)
+
+	logrus.Debugln("eventmodel启动成功")
 }
 
 // Stop 停止
@@ -232,7 +244,7 @@ func (model *MjEventModel) recoverGameForPlayer(playerID uint64) {
 func (model *MjEventModel) getContextPlayer(playerID uint64) *server_pb.Player {
 	mjDeskContext := model.GetGameContext().(*context2.MajongDeskContext)
 	for _, contextPlayer := range mjDeskContext.MjContext.GetPlayers() {
-		if contextPlayer.GetPalyerId() == playerID {
+		if contextPlayer.GetPlayerId() == playerID {
 			return contextPlayer
 		}
 	}
@@ -273,7 +285,6 @@ func (model *MjEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 	modelMgr := GetModelManager()
 	playerID := leaveInfo.playerID
 
-	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerLeave(playerID, model.needTuoguan())
 	model.setMjPlayerQuitDesk(playerID, true)
 	mjPlayer := model.getContextPlayer(playerID)
 	ctx := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext)
@@ -283,6 +294,7 @@ func (model *MjEventModel) handlePlayerLeave(leaveInfo playerIDWithChannel) {
 		playerMgr.GetPlayer(playerID).SetDesk(nil)
 		playerMgr.UnbindPlayerRoomAddr([]uint64{playerID})
 	}
+	modelMgr.GetPlayerModel(model.GetDesk().GetUid()).handlePlayerLeave(playerID, model.needTuoguan())
 	logrus.WithField("player_id", playerID).Debugln("玩家退出")
 	close(leaveInfo.finishChannel)
 }
@@ -341,13 +353,8 @@ func (model *MjEventModel) checkGameOver(logEntry *logrus.Entry) bool {
 	mjContext := model.GetDesk().GetConfig().Context.(*context2.MajongDeskContext).MjContext
 	// 游戏结束
 	if mjContext.GetCurState() == server_pb.StateID_state_gameover {
-		continueModel := GetContinueModel(model.GetDesk().GetUid())
-		settler := model.GetDesk().GetConfig().Settle
-		statistics := settler.GetStatistics()
 		model.cancelTuoguanGameOver()
-		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		model.GetDesk().GetConfig().Settle.(*MajongSettle).RoundSettle(model.GetDesk(), model.GetDesk().GetConfig())
-		continueModel.ContinueDesk(mjContext.GetFixNextBankerSeat(), int(mjContext.GetNextBankerSeat()), statistics)
 		logEntry.Infoln("游戏结束状态")
 		return true
 	}

@@ -46,7 +46,7 @@ func (s *GameOverState) notifyGameOver(flow interfaces.MajongFlow) {
 	gameflow := true
 	for _, player := range mjContext.Players {
 		playerCardsGroup := &room.PlayerCardsGroup{
-			PlayerId:   proto.Uint64(player.GetPalyerId()),
+			PlayerId:   proto.Uint64(player.GetPlayerId()),
 			CardsGroup: gutils.GetCardsGroup(player),
 		}
 		cardsGroups = append(cardsGroups, playerCardsGroup)
@@ -84,23 +84,23 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 	// 玩家状态
 	quitPlayers := make([]uint64, 0)
 	// 认输玩家
-	giveupPalyers := make([]uint64, 0)
+	giveupPlayers := make([]uint64, 0)
 	for _, player := range mjContext.Players {
-		playerID := player.GetPalyerId()
+		playerID := player.GetPlayerId()
 		if player.IsQuit {
 			quitPlayers = append(quitPlayers, playerID)
 		}
 		if len(player.HuCards) != 0 {
-			huPlayers = append(huPlayers, player.GetPalyerId())
+			huPlayers = append(huPlayers, player.GetPlayerId())
 		}
 		if isFlowerPig(player) {
-			flowerPigPlayers = append(flowerPigPlayers, player.GetPalyerId())
+			flowerPigPlayers = append(flowerPigPlayers, player.GetPlayerId())
 		}
 		if isNoTingPlayers(player) {
-			noTingPlayers = append(noTingPlayers, player.GetPalyerId())
+			noTingPlayers = append(noTingPlayers, player.GetPlayerId())
 		}
 		if player.GetXpState() == majongpb.XingPaiState_give_up {
-			giveupPalyers = append(giveupPalyers, playerID)
+			giveupPlayers = append(giveupPlayers, playerID)
 		}
 	}
 	tingPlayersInfo, _ = getTingPlayerInfo(mjContext)
@@ -111,7 +111,7 @@ func (s *GameOverState) doRoundSettle(flow interfaces.MajongFlow) {
 		HasHuPlayers:     utils.GetHuPlayers(mjContext, []uint64{}),
 		TingPlayersInfo:  tingPlayersInfo,
 		QuitPlayers:      quitPlayers,
-		GiveupPlayers:    giveupPalyers,
+		GiveupPlayers:    giveupPlayers,
 		NotTingPlayers:   noTingPlayers,
 		SettleInfos:      mjContext.SettleInfos,
 		SettleID:         mjContext.CurrentSettleId,
@@ -179,7 +179,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 				hCard, _ := utils.IntToCard(int32(card))
 				//获取最大番型 * 根数
 				cardParams := interfaces.FantypeParams{
-					PlayerID:  players[i].GetPalyerId(),
+					PlayerID:  players[i].GetPlayerId(),
 					MjContext: context,
 					HandCard:  players[i].HandCards,
 					PengCard:  utils.TransPengCard(players[i].PengCards),
@@ -197,7 +197,7 @@ func getTingPlayerInfo(context *majongpb.MajongContext) (map[uint64]int64, error
 				}
 			}
 			if len(tingCards) != 0 {
-				tingPlayers[players[i].GetPalyerId()] = maxMulti
+				tingPlayers[players[i].GetPlayerId()] = maxMulti
 			}
 		}
 	}

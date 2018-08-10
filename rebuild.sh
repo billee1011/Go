@@ -25,11 +25,15 @@ pushd login
 sh ./build.sh
 popd
 
-pushd hall
+pushd robot
 sh ./build.sh
 popd
 
-pushd robot
+pushd msgserver
+sh ./build.sh
+popd
+
+pushd configuration
 sh ./build.sh
 popd
 
@@ -37,7 +41,11 @@ pushd gold
 sh ./build.sh
 popd
 
-pushd msgserver
+pushd hall
+sh ./build.sh
+popd
+
+pushd back
 sh ./build.sh
 popd
 

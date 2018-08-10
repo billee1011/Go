@@ -7,7 +7,7 @@ import (
 // checkMenFengKe 检测门风刻 与本门风相同的刻子
 func checkMenFengKe(tc *typeCalculator) bool {
 	playerAll := tc.mjContext.GetPlayers()
-	renNum, index := len(playerAll), gutils.GetPlayerIndex(tc.getPlayer().GetPalyerId(), playerAll)
+	renNum, index := len(playerAll), gutils.GetPlayerIndex(tc.getPlayer().GetPlayerId(), playerAll)
 	feng := gutils.GetPlayerSeat(renNum, index)
 
 	for _, combine := range tc.combines {

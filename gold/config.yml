@@ -27,15 +27,22 @@ redis_passwd:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
 mysql_list:
-  steve:
+  player:
     user: backuser
     passwd: Sdf123esdf
     addr: 192.168.7.108:3306
-    db: steve
+    db: player
+    params:
+      charset: utf8
+  log:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306
+    db: log
     params:
       charset: utf8
 
 #nsq 消息队列配置
-nsqd_addr: 192.168.7.108:4150
+nsqd_addr: 127.0.0.1:4150
 nsqlookupd_addrs:
-  - 192.168.7.108:4161
+  - 127.0.0.1:4161

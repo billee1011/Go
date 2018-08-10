@@ -1,8 +1,8 @@
 package fantype
 
 import (
-	"steve/room/majong/global"
 	majongpb "steve/entity/majong"
+	"steve/room/majong/global"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,7 +34,7 @@ func Test_SiGang(t *testing.T) {
 		},
 		playerID: 1,
 		player: &majongpb.Player{
-			PalyerId:  1,
+			PlayerId:  1,
 			GangCards: gangCard,
 		},
 		cache: make(map[int]bool, 0),

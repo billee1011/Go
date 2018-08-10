@@ -54,7 +54,7 @@ func SetNextZhuangIndex(huPlayerID []uint64, lostPlayerID uint64, mjContext *maj
 		} else if huPlayerCount > 1 {
 			mjContext.NextBankerSeat = uint32(GetPlayerIndex(lostPlayerID, mjContext.GetPlayers()))
 		} else if huPlayerCount == 0 {
-			mjContext.NextBankerSeat = 0
+			mjContext.NextBankerSeat = mjContext.GetZhuangjiaIndex()
 		}
 		mjContext.FixNextBankerSeat = true
 	}

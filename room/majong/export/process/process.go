@@ -31,11 +31,7 @@ func HandleMajongEvent(params HandleMajongEventParams) (result HandleMajongEvent
 		"params":    params,
 	})
 
-	cloneContext, err := deepCopyMjongContext(params.MajongContext)
-	if err != nil {
-		logEntry.WithError(err).Errorln("拷贝majongContext失败")
-		return
-	}
+	cloneContext := &params.MajongContext
 
 	result = HandleMajongEventResult{
 		NewContext: *cloneContext,
@@ -43,7 +39,7 @@ func HandleMajongEvent(params HandleMajongEventParams) (result HandleMajongEvent
 		Succeed:    false,
 	}
 	flow := flow.NewFlow(*cloneContext)
-	err = flow.ProcessEvent(params.EventID, params.EventContext)
+	err := flow.ProcessEvent(params.EventID, params.EventContext)
 	if err != nil {
 		logEntry.WithError(err).Errorln("处理事件失败")
 		return

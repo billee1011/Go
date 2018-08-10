@@ -2,7 +2,6 @@ package data
 
 import (
 	"fmt"
-	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/external/goldclient"
 	"steve/server_pb/gold"
@@ -14,7 +13,7 @@ import (
 
 const (
 	// MysqldbName 数据库名
-	MysqldbName             = "steve"
+	MysqldbName             = "player"
 	playerTableName         = "t_player"          // 玩家表
 	playerCurrencyTableName = "t_player_currency" // 玩家货币表
 	playerGameTableName     = "t_player_game"     // 玩家游戏表
@@ -38,16 +37,12 @@ func getMysqlEngineByName(mysqlName string) (*xorm.Engine, error) {
 }
 
 //根据玩家ID获取机器人的各个属性
-func getMysqlRobotPropByPlayerID(playerID uint64) *cache.RobotPlayer {
-	robotPlayer := &cache.RobotPlayer{}
+func getMysqlRobotPropByPlayerID(playerID uint64) *RobotPlayer {
+	robotPlayer := &RobotPlayer{}
 	// 从金币服获取
 	gold, err := goldclient.GetGold(playerID, int16(gold.GoldType_GOLD_COIN))
 	if err != nil {
 		logrus.Errorf("从金币服获取获取金币失败 err(%v)", playerID, err)
-	}
-	player, err := getMysqlPlayerByPlayerID(playerID, "nickname") // 昵称
-	if err != nil {
-		logrus.Errorf("msql获取昵称失败 err(%v)", playerID, err)
 	}
 	playerGame, err := getMysqlPlayerGameByPlayerID(playerID, "gameID,winningRate") //游戏ID和胜率
 	if err != nil {
@@ -59,7 +54,6 @@ func getMysqlRobotPropByPlayerID(playerID uint64) *cache.RobotPlayer {
 		robotPlayer.GameIDWinRate[uint64(playerGame.Gameid)] = uint64(playerGame.Winningrate)
 	}
 	robotPlayer.Coin = uint64(gold)
-	robotPlayer.NickName = player.Nickname
 	return robotPlayer
 }
 
@@ -132,19 +126,4 @@ func getMysqlRobotGameWinRateAll() ([]*db.TPlayerGame, error) {
 		return nil, err
 	}
 	return robotsPGs, nil
-}
-
-// 获取所有机器人的昵称
-func getMysqlRobotNicknameAll() ([]*db.TPlayer, error) {
-	engine, err := MysqlEnginefunc(MysqldbName)
-	if err != nil {
-		return nil, err
-	}
-	// 昵称
-	where := fmt.Sprintf("type=%v", playerType)
-	robotsTPs := make([]*db.TPlayer, 0)
-	if err := engine.Table(playerTableName).Select("playerID,nickname").Where(where).Find(&robotsTPs); err != nil {
-		return nil, err
-	}
-	return robotsTPs, nil
 }

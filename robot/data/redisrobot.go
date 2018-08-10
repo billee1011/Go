@@ -12,19 +12,6 @@ import (
 
 const (
 	robotRedisKey = "Robot:%v"
-
-	//玩家ID字段名
-	robotPlayerIDField string = "playerID"
-	//玩家金币数字段名
-	robotPlayerCoinField string = "coin"
-	//玩家状态字段名
-	robotPlayerStateField string = "state"
-	//玩家游戏 ID 字段名
-	robotPlayerGameIDField string = "game_id"
-	//玩家昵称字段
-	robotPlayerNickNameField string = "nick_name"
-	//玩家头像字段
-	robotPlayerHeadImageField string = "head_image"
 )
 
 //RedisClifunc 获取redisClien
@@ -32,8 +19,8 @@ var RedisClifunc = getRobotRedis
 var errRobotRedisGain = errors.New("robot_redis 获取失败")
 var errRobotRedisOpertaion = errors.New("robot_redis 操作失败")
 
-// RedisTimeOut 过期时间
-var RedisTimeOut = time.Hour * 24 * 30
+// RedisTimeOut 过期时间 30 分钟
+var RedisTimeOut = time.Minute * 30
 
 // getRobotRedis 获取机器人服redis
 func getRobotRedis() *redis.Client {
