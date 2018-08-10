@@ -130,8 +130,8 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 		"to_player_id": *req.PlayerId,
 		"prop_id":      *req.PropId,
 	})
-	logEntry.Println("开始处理使用道具请求@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-	errDesc := "不能使用该道具"
+	logEntry.Println("开始处理使用道具请求")
+	errDesc := "无法使用该道具"
 	rsp := room.RoomUsePropRsp{
 		ErrCode: room.RoomError_FAILED.Enum(),
 		ErrDesc: &errDesc,
@@ -180,6 +180,8 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 			goldclient.AddGold(playerID, constant.GOLD_COIN, propConfig.Value, 0, 0, int32(desk.GetGameId()), desk.GetLevel())
 		} else {
 			logEntry.WithError(err).Debugf("玩家金币数不足, limit: %d, coin: %d", propConfig.Limit, coin)
+			errDesc = "金币不足，无法使用该道具"
+			ret[0].Body.(*room.RoomUsePropRsp).ErrDesc = &errDesc
 			return
 		}
 	}

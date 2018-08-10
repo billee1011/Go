@@ -208,13 +208,6 @@ func updatePropCountToRedis(playerID uint64, propID int32, oldCount, newCount ui
 	}
 
 	err = redisCli.Watch(func(tx *redis.Tx) error {
-		countStr := tx.HGet(playerPropKey, "count").Val()
-		currentCount, _ := strconv.Atoi(countStr)
-
-		if uint32(currentCount) != oldCount {
-			err = fmt.Errorf("更新玩家playerID:(%d) 道具propID:(%d)出错，道具当前个数为:(%d),不为:(%d)", playerID, propID, currentCount, oldCount)
-			return err
-		}
 		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
 			pipe.HMSet(playerPropKey, kv)
 			return nil
@@ -226,6 +219,18 @@ func updatePropCountToRedis(playerID uint64, propID int32, oldCount, newCount ui
 		redisCli.Expire(playerPropKey, redisTimeOut)
 	}
 	return err
+}
+
+// expirePlayerProp 设置玩家道具redis key失效
+func expirePlayerProp(playerID uint64, propID int32) bool {
+	redisCli, err := redisCliGetter(playerRedisName, 0)
+	if err != nil {
+		return false
+	}
+
+	playerPropKey := cache.FmtPlayerPropKey(playerID, propID)
+
+	return redisCli.Del(playerPropKey).Val() == 1
 }
 
 // updatePropCountToMysql 更新Mysql中玩家道具的个数
@@ -246,29 +251,44 @@ func updatePropCountToMysql(playerID uint64, propID int32, oldCount, newCount ui
 		return err
 	}
 
-	if len(res) != 1 {
+	dbCount := 0
+
+	if len(res) > 1 {
 		err = fmt.Errorf("玩家(%d)存在多条 propID:%d 信息记录： %v", playerID, propID, err)
 		return err
 	}
 
-	sqlCount, err := strconv.Atoi(res[0][fields[0]])
-	if err != nil {
-		return err
+	if len(res) == 1 {
+		dbCount, _ = strconv.Atoi(res[0][fields[0]])
 	}
 
-	if uint32(sqlCount) != oldCount {
-		err = fmt.Errorf("msqyl中玩家(%d) 道具propID:(%d) 个数为:(%d),与 redis中道具个数:(%d)不一致 ", playerID, propID, sqlCount, oldCount)
+	if uint32(dbCount) != oldCount {
+		err = fmt.Errorf("msqyl中玩家(%d) 道具propID:(%d) 个数为:(%d),与 redis中道具个数:(%d)不一致 ", playerID, propID, dbCount, oldCount)
 		return err
 	}
 
 	dbProp := db.TPlayerProps{
-		Count: int64(newCount),
+		Playerid:   int64(playerID),
+		Propid:     int64(propID),
+		Count:      int64(newCount),
+		Createtime: time.Now(),
+		Createby:   "programmer",
+		Updatetime: time.Now(),
+		Updateby:   "programmer",
 	}
 
-	_, err = engine.Table(playerPropsTableName).Where("playerID = ? and propID = ?", playerID, propID).Cols(fields...).Update(dbProp)
-	if err != nil {
-		return fmt.Errorf("更新失败 (%v)", err.Error())
+	if len(res) == 1 {
+		_, err = engine.Table(playerPropsTableName).Where("playerID = ? and propID = ?", playerID, propID).Cols(fields...).Update(dbProp)
+		if err != nil {
+			return fmt.Errorf("更新失败 (%v)", err.Error())
+		}
+	} else {
+		affected, err := engine.Table(playerPropsTableName).Insert(&dbProp)
+		if err != nil || affected == 0 {
+			return fmt.Errorf("insert t_player_props sql error：(%v)， affect=(%d)", err, affected)
+		}
 	}
+
 	return nil
 }
 
@@ -331,6 +351,7 @@ func AddPlayerProp(playerID uint64, propID int32, count int32) (err error) {
 
 	// 道具余量
 	oldCount := prop.Count
+
 	// 道具结算
 	newCount := int32(oldCount) + count
 
@@ -339,10 +360,12 @@ func AddPlayerProp(playerID uint64, propID int32, count int32) (err error) {
 		return
 	}
 
-	// 更新道具个数到redis
-	rerr := updatePropCountToRedis(playerID, propID, uint32(oldCount), uint32(newCount))
-	if rerr != nil {
-		err = fmt.Errorf("更新玩家道具propId:(%d)到redis失败，err:(%v)", propID, rerr.Error())
+	// 设置redis失效
+	result := expirePlayerProp(playerID, propID)
+
+	if !result {
+		err = fmt.Errorf("删减玩家道具propId:(%d),删除redis道具key失败", propID)
+		return
 	}
 
 	// 更新道具个数到mysql
@@ -350,5 +373,12 @@ func AddPlayerProp(playerID uint64, propID int32, count int32) (err error) {
 	if merr != nil {
 		err = fmt.Errorf("更新玩家道具propId:(%d)到mysql失败，err:(%v)", propID, merr.Error())
 	}
+
+	// 更新道具个数到redis
+	rerr := updatePropCountToRedis(playerID, propID, uint32(oldCount), uint32(newCount))
+	if rerr != nil {
+		err = fmt.Errorf("更新玩家道具propId:(%d)到redis失败，err:(%v)", propID, rerr.Error())
+	}
+
 	return
 }
