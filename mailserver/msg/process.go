@@ -176,14 +176,14 @@ func ProcessAwardAttachReq(playerID uint64, header *steve_proto_gaterpc.Header, 
 		Body:  response,
 	}}
 
-	info, err := logic.AwardAttach(playerID, req.GetMailId())
+	gs, err := logic.AwardAttach(playerID, req.GetMailId())
 	if err != nil {
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = proto.String("失败")
 		logrus.Errorln("ProcessAwardAttachReq err:", err)
 		return nil
 	}
-	response.AwardInfo = &info
+	response.AttachGoods = gs
 
 	logrus.Debugln("ProcessAwardAttachReq resp", response)
 	return ret

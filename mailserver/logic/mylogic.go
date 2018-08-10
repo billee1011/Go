@@ -253,22 +253,22 @@ func DelMail(uid uint64, mailId uint64) error {
 }
 
 // 领取附件奖励请求
-func AwardAttach(uid uint64, mailId uint64) (string, error) {
+func AwardAttach(uid uint64, mailId uint64) ([]*mailserver.Goods, error) {
 
 	// 从DB获取玩家的已读邮件列表
 	one, _ := data.GetTheMailFromDB(uid, mailId)
 	if one != nil && one.IsDel {
-		return "", errors.New("邮件已被用户删除")
+		return nil, errors.New("邮件已被用户删除")
 	}
 
 	if one == nil {
 		// 设置邮件=已读
-		return "", errors.New("邮件不存在")
+		return nil, errors.New("邮件不存在")
 	}
 
 	// 如果已领取，直接返回
 	if one.IsGetAttach  {
-		return "", errors.New("邮件已领取")
+		return nil, errors.New("邮件已领取")
 	}
 
 	// 发放附件奖励
@@ -276,7 +276,7 @@ func AwardAttach(uid uint64, mailId uint64) (string, error) {
 	// 标记为已领取
 	data.SetAttachGettedDB(uid, mailId)
 
-	return "", nil
+	return nil, nil
 }
 
 
