@@ -1289,7 +1289,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		"levelID": globalInfo.levelID,
 	})
 
-	// logEntry.Debugln("进入桌子合并函数")
+	//logEntry.Debugln("进入桌子合并函数")
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
@@ -1459,7 +1459,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	// logEntry.Debugln("离开桌子合并函数")
+	//logEntry.Debugln("离开桌子合并函数")
 }
 
 // 从桌子中删除玩家
@@ -1514,7 +1514,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 	// 机器人加入时间
 	joinTime := int64(web.GetRobotJoinTime().Seconds())
 
-	// logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
+	//logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
 
 	// 所有的概率
 	var index int32 = 0
@@ -1596,7 +1596,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	// logEntry.Debugln("离开桌子超时检测函数")
+	//logEntry.Debugln("离开桌子超时检测函数")
 }
 
 // checkSucTimeout 检测之前匹配成功的是否超时
