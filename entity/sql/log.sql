@@ -49,6 +49,7 @@ CREATE TABLE `t_game_detail` (
   `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
   `deskID` bigint(20) DEFAULT NULL COMMENT '桌子ID',
   `gameID` int(11) DEFAULT NULL COMMENT '游戏ID',
+  `levelID` int(11) DEFAULT NULL COMMENT '场次ID',
   `amount` bigint(20) DEFAULT NULL COMMENT '输赢金额',
   `isWinner` tinyint(1) DEFAULT NULL COMMENT '是否赢家',
   `brokerCount` int(11) DEFAULT NULL COMMENT '破产次数',
