@@ -31,21 +31,21 @@ func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
 	response := room.RoomDeskQuitRsp{
 		UserData: proto.Uint32(req.GetUserData()),
-		ErrCode:  room.RoomError_SUCCESS.Enum(),
+		ErrCode:  room.RoomError_FAILED.Enum(),
 	}
-	// 退出暂时总是回复成功
-	// TODO : 血战的换对手需要等退出完成后才返回
-	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
-
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
+		util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 		return
 	}
 	desk := player.GetDesk()
 	if desk == nil {
+		util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 		return
 	}
 	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
+	response.ErrCode = room.RoomError_SUCCESS.Enum()
+	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 	return
 }
 
