@@ -66,12 +66,13 @@ func Init(profName string, exposeType string, httpPort int) {
 
 	if context.exposeType == TypeExposeHttp {
 		serverMux := mux.NewRouter()
+		serverMux.HandleFunc("/debug/pprof/", http.HandlerFunc(pprofIndex))
 		startServer(serverMux, profName)
 	}
 
 	if context.exposeType == TypeExposeSvg {
 		serverMux := mux.NewRouter()
-		serverMux.HandleFunc("/", http.HandlerFunc(allIndex))
+		serverMux.HandleFunc("/debug/pprof/", http.HandlerFunc(allIndex))
 		serverMux.HandleFunc("/debug/pprofsvg/", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/block", http.HandlerFunc(svgPprof))
 		serverMux.HandleFunc("/debug/pprofsvg/goroutine", http.HandlerFunc(svgPprof))
@@ -86,7 +87,6 @@ func Init(profName string, exposeType string, httpPort int) {
 }
 
 func startServer(serverMux *mux.Router, profName string) {
-	serverMux.HandleFunc("/debug/pprof/", http.HandlerFunc(pprofIndex))
 	serverMux.HandleFunc("/debug/pprof/block", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/goroutine", http.HandlerFunc(httppprof.Index))
 	serverMux.HandleFunc("/debug/pprof/heap", http.HandlerFunc(httppprof.Index))
@@ -117,15 +117,12 @@ func allIndex(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(`<script>
 function replaceLinks(){
     var all = document.getElementsByTagName("a");
-	var reg = /.+?\:\/\/.+?(\/.+?)(?:#|$)/;
     for(var i = 0; i < all.length; i++) {
-		var link = reg.exec( all[i].href )[1];
-console.log (link);
-		if(link.substring(0, 6) != "/debug") {
-        	var link2 = "/debug/pprofsvg" + link;
-        	link = "/debug/pprof" + link;
-			all[i].href = link;
-
+		var link = all[i].href;
+		console.log (link, link.indexOf("pprofsvg"));
+		if(link.indexOf("pprofsvg") == -1 && link.indexOf("cmdline") == -1 && 
+			link.indexOf("symbol") == -1 && link.indexOf("trace") == -1) {
+        	var link2 = link.replace("pprof", "pprofsvg");
 			var a = document.createElement('a');
 			var linkText = document.createTextNode("SVG");
 			a.appendChild(linkText);
