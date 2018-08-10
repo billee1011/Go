@@ -1289,7 +1289,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		"levelID": globalInfo.levelID,
 	})
 
-	logEntry.Debugln("进入桌子合并函数")
+	//logEntry.Debugln("进入桌子合并函数")
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
@@ -1459,7 +1459,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	logEntry.Debugln("离开桌子合并函数")
+	//logEntry.Debugln("离开桌子合并函数")
 }
 
 // 从桌子中删除玩家
