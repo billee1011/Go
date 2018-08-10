@@ -28,4 +28,7 @@ startserver gold gold gold
 startserver msgserver msgserver msgserver
 startserver alms alms alms
 startserver match match match
-startserver back back back
+
+pushd back
+serviceloader back --config=config.yml &
+popd
