@@ -14,10 +14,8 @@ import (
 
 //玩家登陆接受到，救济金配合通知
 func Test_Alms_Login(t *testing.T) {
-	player, _ := utils.LoginNewPlayer()
+	player, _ := utils.LoginNewPlayer(msgid.MsgID_ALMS_LOGIN_GOLD_CONFIG_NTF)
 	assert.NotNil(t, player)
-
-	player.AddExpectors(msgid.MsgID_ALMS_LOGIN_GOLD_CONFIG_NTF)
 
 	expector := player.GetExpector(msgid.MsgID_ALMS_LOGIN_GOLD_CONFIG_NTF)
 	ntf := &alms.AlmsConfigNtf{}
