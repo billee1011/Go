@@ -748,7 +748,7 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		// 遍历该概率下的所有桌子
 		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
 
-			desk := iter.Value.(*matchDesk)
+			desk := *(iter.Value.(**matchDesk))
 
 			// 距离桌子创建时间的间隔
 			interval := nowTime - desk.createTime
@@ -797,20 +797,25 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindIter == nil) || (pFindIter != nil && desk.createTime < pFindIter.Value.(*matchDesk).createTime) {
+			if pFindIter == nil {
 				pFindIter = iter
 				pFindIndex = index
+			} else {
+				pFindDesk := *(pFindIter.Value.(**matchDesk))
+				if desk.createTime < pFindDesk.createTime {
+					pFindIter = iter
+					pFindIndex = index
+				}
 			}
 		}
 	}
 
 	// 找到的话，则加入桌子，返回
 	if pFindIter != nil && pFindIndex != -1 {
-		pFindDesk := pFindIter.Value.(*matchDesk)
+		pFindDesk := *(pFindIter.Value.(**matchDesk))
 
 		// 把玩家加入桌子，若桌子已满，则从列表中移除
 		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk, globalInfo) {
-
 			logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，桌子满员，已删除", reqPlayer.winRate, newMatchPlayer, pFindDesk)
 			globalInfo.allRateDesks[pFindIndex].Remove(pFindIter)
 		} else {
@@ -1468,10 +1473,10 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 			// 有合并的桌子
 			if iter2 != nil {
 				iter1 := iter
-				pDesk1 := iter1.Value.(*matchDesk)
+				pDesk1 := *(iter1.Value.(**matchDesk))
 				pList1 := &globalInfo.allRateDesks[index]
 
-				pDesk2 := iter2.Value.(*matchDesk)
+				pDesk2 := *(iter2.Value.(**matchDesk))
 
 				logEntry.Debugln("找到了可以合并的，桌子1:%v，桌子2:%v", pDesk1, pDesk2)
 
