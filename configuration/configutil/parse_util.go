@@ -69,24 +69,24 @@ func main() {
 	ParseToGameLevelConfigMap(json)
 }
 
-func ParseToGameLevelConfigMap(json string) map[int]config.GameLevelConfig{
+func ParseToGameLevelConfigMap(json string) []config.GameLevelConfig{
 	arr, _ := ourjson.ParseArray(json)
 	jsonObjs := arr.Values()
-	result := make(map[int]config.GameLevelConfig,len(jsonObjs))
-	for _,obj := range jsonObjs{
+	result := make([]config.GameLevelConfig,len(jsonObjs))
+	for index,obj := range jsonObjs{
 		configObj := parseToGameLevelConfig(obj.JsonObject())
-		result[configObj.GameID] = configObj
+		result[index] = configObj
 	}
 	return result
 }
 
-func ParseToGameConfigMap(json string) map[int]config.GameConfig {
+func ParseToGameConfigMap(json string) []config.GameConfig {
 	arr, _ := ourjson.ParseArray(json)
 	jsonObjs := arr.Values()
-	result := make(map[int]config.GameConfig,len(jsonObjs))
-	for _,obj := range jsonObjs{
+	result := make([]config.GameConfig,len(jsonObjs))
+	for index,obj := range jsonObjs{
 		configObj := parseToGameConfig(obj.JsonObject())
-		result[configObj.GameID] = configObj
+		result[index] = configObj
 	}
 	return result
 }
