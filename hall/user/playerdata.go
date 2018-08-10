@@ -336,7 +336,7 @@ func createPlayer(accID uint64) (uint64, error) {
 	}
 	if err := data.InitPlayerCoin(db.TPlayerCurrency{
 		Playerid:       int64(playerID),
-		Coins:          10000,
+		Coins:          100000,
 		Ingots:         0,
 		Keycards:       0,
 		Obtainingots:   0,

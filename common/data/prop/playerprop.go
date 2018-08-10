@@ -38,7 +38,7 @@ func getRedisCli(redis string, db int) (*redis.Client, error) {
 
 func getMysqlEngine(mysqlName string) (*xorm.Engine, error) {
 	exposer := structs.GetGlobalExposer()
-	engine, err := exposer.MysqlEngineMgr.GetEngine(playerMysqlName)
+	engine, err := exposer.MysqlEngineMgr.GetEngine(mysqlName)
 	if err != nil {
 		return nil, fmt.Errorf("获取 mysql 引擎失败：%v", err)
 	}
@@ -88,11 +88,6 @@ func getPlayerProps(playerID uint64, propID int32, fields ...string) (prop prop.
 	}
 	// 从 DB 获取
 	prop, err = getPlayerPropFieldsFromDB(playerID, propID, fields)
-	if err == nil {
-		return
-	} else {
-		err = fmt.Errorf("获取道具(%v)失败", propID)
-	}
 	return
 }
 
