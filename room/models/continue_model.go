@@ -193,7 +193,7 @@ func (model *ContinueModel) startNextRound() {
 
 // Stop 停止 model
 func (model *ContinueModel) Stop() {
-	model.stopChannel <- struct{}{}
+	close(model.stopChannel)
 }
 
 // PushContinueRequest 处理玩家续局请求

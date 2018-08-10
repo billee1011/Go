@@ -66,6 +66,8 @@ func (model *PlayerModel) Stop() {
 		if pla.GetDesk() == model.GetDesk() {
 			pla.SetDesk(nil)
 			playerIDs = append(playerIDs, pla.GetPlayerID())
+		} else {
+			logrus.Debugln("desk 不一致")
 		}
 	}
 	playerMgr.UnbindPlayerRoomAddr(playerIDs)
