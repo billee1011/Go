@@ -193,6 +193,7 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 		ToPlayerId:   &desPlayerID,
 		PropId:       req.PropId,
 	}
+	logEntry.Println("使用道具玩家 和 接受玩家", playerID, desPlayerID)
 	msgBody, err := proto.Marshal(&ntf)
 	if err != nil {
 		logEntry.WithError(err).Debugln("序列化失败")
