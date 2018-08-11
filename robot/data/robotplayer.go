@@ -22,7 +22,7 @@ func getRedisLeisureRobotPlayer(robotPlayerIDAll []uint64) ([]*RobotPlayer, []ui
 	robotsIDCoins := make([]*RobotPlayer, 0)
 	lackRobotsID := make([]uint64, 0) // 没有存入redis的机器人
 	for _, robotPlayerID := range robotPlayerIDAll {
-		robotPlayerInfo, err := GetRobotFields(robotPlayerID, RobotPlayerStateField, RobotPlayerGameIDWinRate)
+		robotPlayerInfo, err := GetRobotFields(robotPlayerID, cache.GameState, RobotPlayerGameIDWinRate)
 		if err != nil || len(robotPlayerInfo) != 2 {
 			lackRobotsID = append(lackRobotsID, robotPlayerID)
 			continue
