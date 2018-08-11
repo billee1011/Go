@@ -132,7 +132,7 @@ func almsConfigChange(a alms.AlmsConfig) {
 		return
 	}
 	// 修改redis 救济金配置
-	if err := data.SetAlmsConfigWatchs(changeConfig, data.RedisTimeOut); err != nil {
+	if err := data.SetAlmsConfigWatchs(changeConfig); err != nil {
 		entry.WithError(err).Errorf("redis 救济金配置 改变失败 changeConfig(%v) \n", changeConfig)
 		return
 	}

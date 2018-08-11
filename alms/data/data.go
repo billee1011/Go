@@ -42,7 +42,7 @@ func UpdataAlmsConfigVersion() error {
 		newVersion = int(InterToint64(versionStr)) + 1
 	}
 	// 修改redis
-	if err := SetAlmsConfigWatch(AlmsVersion, newVersion, RedisTimeOut); err != nil {
+	if err := SetAlmsConfigWatch(AlmsVersion, newVersion); err != nil {
 		entry.WithError(err).Errorln("redis 救济金配置 Version 改变失败")
 		return err
 	}
@@ -71,7 +71,7 @@ func GetAlmsConfigByPlayerID(playerID uint64) (*AlmsConfig, error) {
 			return nil, err
 		}
 		// 存储到redis
-		if err = SetAlmsConfigWatchs(AlmsConfigToMap(ac), RedisTimeOut); err != nil {
+		if err = SetAlmsConfigWatchs(AlmsConfigToMap(ac)); err != nil {
 			entry.WithError(err).Errorln("存储救济金配置数据redis失败")
 		}
 

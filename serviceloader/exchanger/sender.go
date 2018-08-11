@@ -119,14 +119,13 @@ func (s *sender) classifyPlayers(playerIDs []uint64) map[*grpc.ClientConn][]uint
 // aquireClientGate 查询玩家所在的网关服
 func (s *sender) aquirePlayerGate(playerID uint64) *grpc.ClientConn {
 	entry := logrus.WithFields(logrus.Fields{
-		"func_name": "sender.aquireClientGate",
 		"player_id": playerID,
 	})
 
 	g := structs.GetGlobalExposer()
 	gateAddr, _ := hallclient.GetGateAddr(playerID)
 	if gateAddr == "" {
-		entry.Debugln("玩家不在线")
+		// entry.Debugln("玩家不在线")
 		return nil
 	}
 	cc, err := g.RPCClient.GetConnectByAddr(gateAddr)

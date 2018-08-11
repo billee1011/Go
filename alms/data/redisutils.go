@@ -152,7 +152,7 @@ func GetAlmsConfigFileds(fields ...string) (map[string]interface{}, error) {
 }
 
 // SetAlmsConfigWatch 设置救济金配置
-func SetAlmsConfigWatch(fieldName string, val interface{}, duration time.Duration) error {
+func SetAlmsConfigWatch(fieldName string, val interface{}) error {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "SetAlmsConfigWatch",
 		"fieldName": fieldName,
@@ -169,18 +169,17 @@ func SetAlmsConfigWatch(fieldName string, val interface{}, duration time.Duratio
 			pipe.HSet(key, fieldName, val)
 			return nil
 		})
-		redisCli.Expire(key, duration)
 		return err
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")
-		return SetAlmsConfigWatch(fieldName, val, duration)
+		return SetAlmsConfigWatch(fieldName, val)
 	}
 	return err
 }
 
 // SetAlmsConfigWatchs 设置救济金配置多个属性
-func SetAlmsConfigWatchs(fields map[string]interface{}, duration time.Duration) error {
+func SetAlmsConfigWatchs(fields map[string]interface{}) error {
 	entry := logrus.WithFields(logrus.Fields{
 		"func_name": "SetAlmsConfigWatchs",
 		"fields":    fields,
@@ -196,12 +195,11 @@ func SetAlmsConfigWatchs(fields map[string]interface{}, duration time.Duration) 
 			pipe.HMSet(key, fields)
 			return nil
 		})
-		redisCli.Expire(key, duration)
 		return err
 	}, key)
 	if err == redis.TxFailedErr {
 		entry.WithError(err).Errorln("重试")
-		return SetAlmsConfigWatchs(fields, duration)
+		return SetAlmsConfigWatchs(fields)
 	}
 	return err
 }

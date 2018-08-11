@@ -57,6 +57,15 @@ type levelGlobalInfo struct {
 	// 场次ID
 	levelID uint32
 
+	// 最低金币
+	minGold int64
+
+	// 最高金币
+	maxGold int64
+
+	// 底分
+	bottomScore int64
+
 	// 满桌所需人数
 	needPlayerCount uint8
 
@@ -123,6 +132,34 @@ func (manager *matchManager) getGameNeedPlayerCount(gameID uint32, levelID uint3
 	logEntry.Debugf("离开函数,最低满桌人数为：%v", gameInfo.config.minNeedPlayerCount)
 
 	return uint8(gameInfo.config.minNeedPlayerCount)
+}
+
+//  获取指定游戏，指定场次的配置
+func (manager *matchManager) getGameLevelConfig(gameID uint32, levelID uint32) *gameLevelConfig {
+	logEntry := logrus.WithFields(logrus.Fields{
+		"gameID":  gameID,
+		"levelID": levelID,
+	})
+
+	logEntry.Debugln("进入函数")
+
+	// 得到该游戏的信息
+	gameInfo, exist := manager.allGame[gameID]
+	// 该游戏不存在
+	if !exist {
+		logEntry.Errorln("游戏ID不存在")
+		return nil
+	}
+
+	// 得到该场次的信息
+	levelInfo, exist := gameInfo.config.levelConfig[levelID]
+	// 该场次不存在
+	if !exist {
+		logEntry.Errorln("场次ID不存在")
+		return nil
+	}
+
+	return &levelInfo
 }
 
 // init 初始化并运行
@@ -583,6 +620,20 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		return
 	}
 
+	// 设置为匹配状态，后面匹配过程中出错删除时再标记为空闲状态，匹配成功时不需处理(room服会标记为游戏状态)
+	bSuc, err := hallclient.UpdatePlayerState(reqPlayer.playerID, user.PlayerState_PS_IDIE, user.PlayerState_PS_MATCHING, globalInfo.gameID, globalInfo.levelID)
+	if err != nil || !bSuc {
+		logEntry.WithError(err).Errorf("内部错误，通知hall服设置玩家状态为匹配状态时失败，可能是客户端刚刚匹配了其他游戏导致，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", globalInfo.gameID, globalInfo.levelID, reqPlayer.playerID)
+		return
+	}
+
+	// 更新玩家所在的服务器类型和地址
+	bSuc, err = hallclient.UpdatePlayeServerAddr(reqPlayer.playerID, user.ServerType_ST_MATCH, GetServerAddr())
+	if err != nil || !bSuc {
+		logEntry.WithError(err).Errorf("内部错误，通知hall服设置玩家的服务器类型及地址时失败，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", globalInfo.gameID, globalInfo.levelID, reqPlayer.playerID)
+		return
+	}
+
 	// 找到的匹配桌子
 	var pFindIter *list.Element = nil
 
@@ -934,10 +985,19 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 
 	logEntry.Debugln("进入函数")
 
+	levelConfig := manager.getGameLevelConfig(gameID, levelID)
+	if levelConfig == nil {
+		logEntry.Errorln("获取游戏场次的配置信息失败")
+		return
+	}
+
 	// 该场次的全局信息
 	globalInfo := levelGlobalInfo{
 		gameID:          gameID,
 		levelID:         levelID,
+		minGold:         levelConfig.minGold,
+		maxGold:         levelConfig.maxGold,
+		bottomScore:     int64(levelConfig.bottomScore),
 		needPlayerCount: manager.getGameNeedPlayerCount(gameID, levelID),
 		allRateDesks:    make([]list.List, 101), // 胜率1% - 100%的所有匹配桌子
 		sucPlayers:      map[uint64]uint64{},    // 已成功匹配的玩家，Key:玩家ID，Value:桌子ID
@@ -1289,7 +1349,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		"levelID": globalInfo.levelID,
 	})
 
-	logEntry.Debugln("进入桌子合并函数")
+	//logEntry.Debugln("进入桌子合并函数")
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
@@ -1459,7 +1519,7 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	logEntry.Debugln("离开桌子合并函数")
+	//logEntry.Debugln("离开桌子合并函数")
 }
 
 // 从桌子中删除玩家
@@ -1514,14 +1574,14 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 	// 机器人加入时间
 	joinTime := int64(web.GetRobotJoinTime().Seconds())
 
-	logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
+	//logEntry.Debugf("进入桌子超时检测函数，当前时间：%v", tNowTime)
 
 	// 所有的概率
 	var index int32 = 0
 	for ; index <= 100; index++ {
 
 		var next *list.Element
-		// 该概率下所有的桌子
+		// 该概率下所有的桌子进入桌子超时检测函数
 		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = next {
 
 			// 提前保存下一个
@@ -1532,7 +1592,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 			// 间隔秒数
 			interval := tNowTime - desk.createTime
 
-			logEntry.Debugf("开始检测桌子:%v是否超时，桌子已创建时间:%v秒", desk, interval)
+			// logEntry.Debugf("开始检测桌子:%v是否超时，桌子已创建时间:%v秒", desk, interval)
 
 			// 超过时间，则开始加入机器人
 			if interval >= joinTime {
@@ -1548,7 +1608,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					endRate = 100
 				}
 
-				logEntry.Debugf("桌子的平均金币:%v", desk.aveGold)
+				// logEntry.Debugf("桌子的平均金币:%v", desk.aveGold)
 
 				// 金币范围
 				minGold, maxGold := manager.getGoldRange(desk.aveGold, interval)
@@ -1562,7 +1622,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					LevelID:     desk.levelID,
 				}
 
-				logEntry.Debugf("请求的机器人参数:%v", reqRobot)
+				// logEntry.Debugf("请求的机器人参数:%v", reqRobot)
 
 				// 从hall服获取一个空闲的机器人
 				robotPlayerID, robotGold, robotRate, err := robotclient.GetLeisureRobotInfoByInfo(reqRobot)
@@ -1578,6 +1638,19 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					seat:     -1,
 					IP:       0,
 					gold:     robotGold,
+				}
+
+				// 更新机器人状态
+				// 设置为匹配状态，后面匹配过程中出错删除时再标记为空闲状态，匹配成功时不需处理(room服会标记为游戏状态)
+				bSuc, err := hallclient.UpdatePlayerState(robotPlayerID, user.PlayerState_PS_IDIE, user.PlayerState_PS_MATCHING, globalInfo.gameID, globalInfo.levelID)
+				if err != nil || !bSuc {
+					logEntry.WithError(err).Errorf("内部错误，通知hall服设置机器人状态为匹配状态时失败，游戏ID:%v，场次ID:%v，机器人玩家ID:%v", globalInfo.gameID, globalInfo.levelID, robotPlayerID)
+				}
+
+				// 更新机器人所在的服务器类型和地址
+				bSuc, err = hallclient.UpdatePlayeServerAddr(robotPlayerID, user.ServerType_ST_MATCH, GetServerAddr())
+				if err != nil || !bSuc {
+					logEntry.WithError(err).Errorf("内部错误，通知hall服设置机器人的服务器类型及地址时失败，游戏ID:%v，场次ID:%v，机器人玩家ID:%v", globalInfo.gameID, globalInfo.levelID, robotPlayerID)
 				}
 
 				logEntry.Debugf("从hall服获取机器人成功，playerID:%v，金币数:%v，胜率:%v ", robotPlayerID, robotGold, robotRate)
@@ -1596,7 +1669,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 		}
 	}
 
-	logEntry.Debugln("离开桌子超时检测函数")
+	//logEntry.Debugln("离开桌子超时检测函数")
 }
 
 // checkSucTimeout 检测之前匹配成功的是否超时
@@ -1608,15 +1681,15 @@ func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
 		return
 	}
 
-	logEntry := logrus.WithFields(logrus.Fields{
-		"gameID":  globalInfo.gameID,
-		"levelID": globalInfo.levelID,
-	})
+	// logEntry := logrus.WithFields(logrus.Fields{
+	// 	"gameID":  globalInfo.gameID,
+	// 	"levelID": globalInfo.levelID,
+	// })
 
 	// 当前时间
 	tNowTime := time.Now().Unix()
 
-	logEntry.Debugf("进入匹配成功超时检测函数，当前时间：%v", tNowTime)
+	// logEntry.Debugf("进入匹配成功超时检测函数，当前时间：%v", tNowTime)
 
 	// 新建，然后再替换
 	newSucDesks := map[uint64]*sucDesk{}
@@ -1643,5 +1716,5 @@ func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
 	// 替换玩家
 	globalInfo.sucPlayers = newSucPlayers
 
-	logEntry.Debugln("离开匹配成功超时检测函数")
+	// logEntry.Debugln("离开匹配成功超时检测函数")
 }

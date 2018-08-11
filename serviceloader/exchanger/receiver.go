@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"runtime/debug"
 	iexchanger "steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
 
@@ -19,6 +20,14 @@ type receiver struct {
 
 // HandleClientMessage 处理客户端消息
 func (r *receiver) HandleClientMessage(ctx context.Context, msg *steve_proto_gaterpc.ClientMessage) (*steve_proto_gaterpc.HandleResult, error) {
+
+	defer func() {
+		if x := recover(); x != nil {
+			logrus.Errorln(x)
+			debug.PrintStack()
+		}
+	}()
+
 	header := msg.GetHeader()
 	msgID := header.GetMsgId()
 	playerID := msg.GetPlayerId()

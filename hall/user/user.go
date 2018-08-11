@@ -3,9 +3,11 @@ package user
 import (
 	"bytes"
 	"io/ioutil"
+	"math"
 	"steve/client_pb/common"
 	"steve/client_pb/hall"
 	"steve/client_pb/msgid"
+	"steve/common/data/prop"
 	"steve/entity/cache"
 	"steve/entity/db"
 	"steve/external/goldclient"
@@ -198,7 +200,7 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 
 // HandleGetPlayerGameInfoReq 获取玩家游戏信息
 func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, req hall.HallGetPlayerGameInfoReq) (rspMsg []exchanger.ResponseMsg) {
-	logrus.Debugf("Handle get player game info req : (%v)", req)
+	logrus.Debugf("Handle get player game info req : %v", req)
 
 	// 传入参数
 	uid := req.GetUid()
@@ -206,9 +208,10 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 
 	// 默认返回消息
 	response := &hall.HallGetPlayerGameInfoRsp{
-		Uid:     proto.Uint64(uid),
-		GameId:  common.GameId(gameID).Enum(),
-		ErrCode: proto.Uint32(1),
+		Uid:          proto.Uint64(uid),
+		GameId:       common.GameId(gameID).Enum(),
+		UserProperty: make([]*common.Property, 0),
+		ErrCode:      proto.Uint32(1),
 	}
 	rspMsg = []exchanger.ResponseMsg{
 		exchanger.ResponseMsg{
@@ -222,19 +225,63 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	exist, dbPlayerGame, err := data.GetPlayerGameInfo(uid, uint32(gameID), fields...)
 
 	// 不存在直接返回
-	if !exist {
+	if !exist && playerID == uid {
+		response.ErrCode = proto.Uint32(0)
 		return
 	}
 
-	// 返回结果
-	if err == nil {
+	// 出错直接返回
+	if err != nil {
+		logrus.Debugf("Handle get player game info rsp:(%v),err:(%v) ", response, err.Error())
+		return
+	}
+
+	if exist {
 		response.TotalBureau = proto.Uint32(uint32(dbPlayerGame.Totalbureau))
 		response.WinningRate = proto.Float32(float32(dbPlayerGame.Winningrate))
 		response.MaxWinningStream = proto.Uint32(uint32(dbPlayerGame.Maxwinningstream))
 		response.MaxMultiple = proto.Uint32(uint32(dbPlayerGame.Maxmultiple))
+	}
+
+	// 获取自己游戏信息直接返回
+	if playerID == uid {
+		response.ErrCode = proto.Uint32(0)
+		return
+	}
+
+	// 获取玩家道具
+	props, err := prop.GetPlayerAllProps(uid)
+	if err != nil {
+		logrus.Debugf("Handle get player game info uid:(%d)获取玩家道具失败 err:(%v)", uid, err.Error())
+		return
+	}
+
+	propIds := make([]int32, 0)
+	propCount := make(map[int32]int64, len(props))
+	for _, prop := range props {
+		propIds = append(propIds, prop.PropID)
+		propCount[prop.PropID] = prop.Count
+	}
+
+	// 获取道具属性
+	propConfigs, err := prop.GetSomePropsConfig(propIds)
+
+	if err != nil {
+		logrus.Debugf("Handle get player game info uid:(%d)获取玩家道具属性失败 err:(%v)", uid, err.Error())
+		return
+	}
+
+	for _, propConfig := range propConfigs {
+		userProperty := new(common.Property)
+		userProperty.PropId = proto.Int32(propConfig.PropID)
+		userProperty.PropName = proto.String(propConfig.PropName)
+		userProperty.PropType = common.PropType(propConfig.Type).Enum()
+		userProperty.PropCost = proto.Int64(int64(math.Abs(float64(propConfig.Value))))
+		userProperty.PropCount = proto.Uint32(uint32(propCount[propConfig.PropID]))
+		response.UserProperty = append(response.UserProperty, userProperty)
 		response.ErrCode = proto.Uint32(0)
 	}
-	logrus.Debugf("Handle get player game info rsp: (%v)", response)
 
+	logrus.Debugf("Handle get player game info uid:(%d) rsp:(%v)", uid, response)
 	return
 }

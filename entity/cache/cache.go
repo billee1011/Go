@@ -91,11 +91,16 @@ func FmtPlayerTokenKey(playerID uint64) string {
 	return fmt.Sprintf(playerTokenKeyFmt, playerID)
 }
 
-func FmtGameReportKey(gameId int,level int) string {
-	return fmt.Sprintf("gamereport:%v-%v",gameId,level)
+// FmtPlayerPropKey 玩家道具 key
+func FmtPlayerPropKey(playerID uint64, propID int32) string {
+	return fmt.Sprintf("player:%v prop_%v", playerID, propID)
 }
 
 // FmtPlayerChargeKey fomat player's charge key
 func FmtPlayerChargeKey(playerID uint64) string {
 	return fmt.Sprintf(playerChargeKeyFmt, playerID)
+}
+
+func FmtGameReportKey(gameId int, level int) string {
+	return fmt.Sprintf("gamereport:%v-%v", gameId, level)
 }

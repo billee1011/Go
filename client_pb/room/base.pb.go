@@ -86,6 +86,9 @@ It has these top-level messages:
 	RoomTuoGuanReq
 	RoomTuoGuanNtf
 	RoomCancelTuoGuanReq
+	RoomUsePropReq
+	RoomUsePropRsp
+	RoomUsePropNtf
 	Result
 	NextStage
 	DDZStartGameNtf

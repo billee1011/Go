@@ -72,11 +72,15 @@ CREATE TABLE `t_game_config` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='游戏配置表';
 
+INSERT INTO `t_game_config` VALUES (1, 1, '血流麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:01:33', NULL, NULL, NULL);
+INSERT INTO `t_game_config` VALUES (2, 2, '血战麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:03:29', NULL, NULL, NULL);
+INSERT INTO `t_game_config` VALUES (3, 3, '斗地主', 2, 3, 3, NULL, NULL, NULL, NULL, NULL, '2018-08-07 20:36:58', NULL, NULL, NULL);
+INSERT INTO `t_game_config` VALUES (4, 4, '二人麻将', 1, 2, 2, NULL, NULL, NULL, NULL, NULL, '2018-08-07 20:37:11', NULL, NULL, NULL);
+
 -- ----------------------------
 -- Table structure for t_game_level_config
 -- ----------------------------
 DROP TABLE IF EXISTS `t_game_level_config`;
-<<<<<<< HEAD
 CREATE TABLE `t_game_level_config`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `gameID` int(11) NULL DEFAULT NULL,
@@ -99,41 +103,13 @@ CREATE TABLE `t_game_level_config`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '游戏场次配置表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of t_game_level_config
--- ----------------------------
-INSERT INTO `t_game_level_config` VALUES (1, 1, 1, '新手场', 1, 1, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-INSERT INTO `t_game_level_config` VALUES (2, 2, 1, '新手场', 1, 1, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-INSERT INTO `t_game_level_config` VALUES (3, 3, 1, '新手场', 1, 1, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-INSERT INTO `t_game_level_config` VALUES (4, 4, 1, '新手场', 1, 2, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-
 SET FOREIGN_KEY_CHECKS = 1;
+
+<<<<<<< HEAD
 
 
 =======
-CREATE TABLE `t_game_level_config` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `gameID` int(11) DEFAULT NULL,
-  `levelID` int(11) DEFAULT NULL,
-  `name` varchar(256) DEFAULT NULL,
-  `fee` int(11) DEFAULT NULL COMMENT '费用',
-  `baseScores` int(11) DEFAULT NULL,
-  `lowScores` int(11) DEFAULT NULL,
-  `highScores` int(11) DEFAULT NULL,
-  `realOnlinePeople` int(11) DEFAULT NULL COMMENT '实时在线人数',
-  `showOnlinePeople` int(11) DEFAULT NULL COMMENT '显示在线人数',
-  `status` int(11) DEFAULT NULL,
-  `tag` int(11) DEFAULT NULL COMMENT '标签：1.热门；2.New',
-  `isAlms` int(11) DEFAULT NULL COMMENT '是否为救济金场，0：关闭，1：开启',
-  `remark` varchar(256) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `createBy` varchar(64) DEFAULT NULL,
-  `updateTime` datetime DEFAULT NULL,
-  `updateBy` varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='游戏场次配置表';
 >>>>>>> develop
-
 -- ----------------------------
 -- Table structure for t_horse_race
 -- ----------------------------

@@ -10,6 +10,7 @@ import (
 	"steve/server_pb/gold"
 	"sync"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -37,6 +38,7 @@ func (dp *Player) GetDesk() *desk.Desk {
 func (dp *Player) SetDesk(deskObj *desk.Desk) {
 	dp.mu.Lock()
 	dp.desk = deskObj
+	logrus.Debugln("设置 desk")
 	dp.mu.Unlock()
 }
 

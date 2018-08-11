@@ -21,10 +21,11 @@ import (
 	"steve/structs"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/golang/protobuf/proto"
 	fixed2 "steve/datareport/fixed"
 	"steve/external/datareportclient"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 )
 
 // MajongCoin   key:playerID value:score
@@ -793,6 +794,7 @@ func (majongSettle *MajongSettle) genGameDetail(desk *desk.Desk, summaryID int64
 			Playerid: playerID,
 			Deskid:   int64(desk.GetUid()),
 			Gameid:   desk.GetGameId(),
+			Levelid:  int(desk.GetLevel()),
 			Amount:   roundScore[playerID],
 		}
 		deskPlayer := GetModelManager().GetPlayerModel(desk.GetUid()).GetDeskPlayerByID(playerID)

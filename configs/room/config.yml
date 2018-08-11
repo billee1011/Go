@@ -9,8 +9,14 @@ rpc_server_name: room
 
 peipai_addr: 0.0.0.0:36102
 
+# redis 
 redis_addr: 127.0.0.1:6379
 redis_passwd: 
+
+redis_list:
+  player: 
+    addr: 127.0.0.1:6379
+    passwd:   
 
 consul_addr: 127.0.0.1:8500
 
@@ -28,5 +34,19 @@ mysql_list:
     db: log 
     params:
       charset: utf8
+  player:
+    user: backuser
+    passwd: Sdf123esdf
+    addr: 192.168.7.108:3306 
+    db: player 
+    params:
+      charset: utf8
+  config:
+    user: backuser
+    passwd: Sdf123esdf 
+    addr: 192.168.7.108:3306
+    db: config   
+    params:
+      charset: utf8 
 
 node: 1
