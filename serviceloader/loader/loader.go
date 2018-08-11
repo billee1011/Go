@@ -68,6 +68,7 @@ func CreateExposer(opt *Option) *structs.Exposer {
 	exposer.Publisher = pubsub.CreatePublisher()
 	exposer.Subscriber = pubsub.CreateSubscriber()
 	exposer.Option = opt
+	exposer.ConsulReq = &ConsulRequestImp{}
 
 	structs.SetGlobalExposer(exposer)
 	// 开启通用的负载报告服务

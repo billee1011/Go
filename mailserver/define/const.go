@@ -19,3 +19,8 @@ const (
 	StateBack   int8 = 6			//  已撤回
 	StateDelete  int8 = 7			//  已失效
 )
+
+const (
+	SendAll = 0					// 发送给所有玩家
+	SendList = 1					// 指定玩家列表
+)

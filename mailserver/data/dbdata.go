@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"steve/entity/goods"
 	"github.com/Sirupsen/logrus"
+	"time"
 )
 
 /*
@@ -51,6 +52,55 @@ const dbName = "player"
 
 const dbConfigName = "config"
 
+
+// 从DB中删除过期邮件
+func ClearExpiredEmailFromDB()  error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbConfigName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+	sql := ""
+
+	sql = fmt.Sprintf("delete from t_mail where n_state=%d;",define.StateDelete)
+	res, err := engine.Exec(sql)
+	if err != nil {
+		logrus.Errorf("ClearExpiredEmailFromDB err: err=%v",  err)
+		return err
+	}
+	aff, _ := res.RowsAffected()
+
+	logrus.Debugf("ClearExpiredEmailFromDB win: sql=%s, clearSum=%d",sql, aff)
+
+	return nil
+}
+
+// 从DB中删除过期的用户邮件
+func ClearExpiredUserEmailFromDB()  error {
+
+	exposer := structs.GetGlobalExposer()
+	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
+	if err != nil {
+		return fmt.Errorf("connect db error")
+	}
+	sql := ""
+
+	curDate := time.Now().Format("2006-01-02 15:04:05")
+
+	sql = fmt.Sprintf("delete from t_player_mail where n_deleteTime<'%s';",curDate)
+	res, err := engine.Exec(sql)
+	if err != nil {
+		logrus.Errorf("ClearExpiredUserEmailFromDB err: err=%v",  err)
+		return err
+	}
+	aff, _ := res.RowsAffected()
+
+	logrus.Debugf("ClearExpiredUserEmailFromDB win: sql=%s, clearSum=%d",sql, aff)
+
+	return nil
+}
+
 // 修改邮件状态
 func SetEmailStateToDB(mailId uint64, state int8)  error {
 
@@ -61,7 +111,7 @@ func SetEmailStateToDB(mailId uint64, state int8)  error {
 	}
 	sql := ""
 
-	sql = fmt.Sprintf("update t_mail set n_state=%d  where n_id ='%d';",state, mailId )
+	sql = fmt.Sprintf("update t_mail set n_state=%d  where n_id ='%d';",state, mailId)
 	res, err := engine.Exec(sql)
 	if err != nil {
 		logrus.Errorf("SetEmailStateToDB err:mailId=%d, err=%v",  mailId, err)
@@ -72,12 +122,15 @@ func SetEmailStateToDB(mailId uint64, state int8)  error {
 		return nil
 	}
 
+	logrus.Debugf("SetEmailStateToDB win: mailId=%d, state=%d", mailId, state)
+
 	return nil
 }
 
 
+
 // 删除邮件
-func DelEmailFromDB(uid uint64, mailId uint64, bInsert bool)  error {
+func DelEmailFromDB(uid uint64, mailId uint64, bInsert bool,delTime string)  error {
 
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
@@ -87,8 +140,8 @@ func DelEmailFromDB(uid uint64, mailId uint64, bInsert bool)  error {
 	sql := ""
 
 	if bInsert {
-		sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel) values('%d','%d','%d','%d','%d');",
-			uid, mailId, 0, 0, 1)
+		sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel,n_deleteTime) values('%d','%d','%d','%d','%d','%s');",
+			uid, mailId, 0, 0, 1, delTime)
 	} else {
 		sql = fmt.Sprintf("update  t_player_mail set n_isDel=1  where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
 	}
@@ -96,6 +149,16 @@ func DelEmailFromDB(uid uint64, mailId uint64, bInsert bool)  error {
 	if err != nil {
 		return err
 	}
+
+	// 将DB的结果保存到Redis
+	info := new(define.PlayerMail)
+	info.MailId = mailId
+	info.PlayerId = uid
+	info.IsDel = true
+	info.IsGetAttach = true
+	info.IsRead = true
+	SaveTheMailToRedis(uid, info)
+
 	if aff, _ := res.RowsAffected(); aff == 0 {
 		logrus.Errorf("DelEmailFromDB no record err:uid=%d,mailId=%d", uid, mailId)
 		return nil
@@ -122,6 +185,16 @@ func SetAttachGettedDB(uid uint64, mailId uint64)  error {
 		logrus.Errorf("SetAttachGettedDB err:uid=%d,mailId=%d, err=%v", uid, mailId, err)
 		return err
 	}
+
+	// 将DB的结果保存到Redis
+	info := new(define.PlayerMail)
+	info.MailId = mailId
+	info.PlayerId = uid
+	info.IsDel = false
+	info.IsGetAttach = true
+	info.IsRead = true
+	SaveTheMailToRedis(uid, info)
+
 	if aff, _ := res.RowsAffected(); aff == 0 {
 		logrus.Errorf("SetAttachGettedDB no record err:uid=%d,mailId=%d", uid, mailId)
 		return nil
@@ -132,7 +205,7 @@ func SetAttachGettedDB(uid uint64, mailId uint64)  error {
 
 
 // 设置邮件为已读
-func SetEmailReadTagFromDB(uid uint64, mailId uint64, bInsert bool)  error {
+func SetEmailReadTagFromDB(uid uint64, mailId uint64, bInsert bool,delTime string)  error {
 
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
@@ -148,30 +221,48 @@ func SetEmailReadTagFromDB(uid uint64, mailId uint64, bInsert bool)  error {
 			 uid, mailId)
 	} else {
 		// 插入记录
-		sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel) values('%d','%d','%d','%d','%d');",
-			uid, mailId, 1, 0, 0)
+		sql = fmt.Sprintf("insert into t_player_mail (n_playerid, n_mailID, n_isRead, n_isGetAttach, n_isDel,n_deleteTime) values('%d','%d','%d','%d','%d','%s');",
+			uid, mailId, 1, 0, 0,delTime)
 	}
 
 	res, err := engine.Exec(sql)
 	if err != nil {
 		return err
 	}
+
+	// 将DB的结果保存到Redis
+	info := new(define.PlayerMail)
+	info.MailId = mailId
+	info.PlayerId = uid
+	info.IsDel = false
+	info.IsGetAttach = false
+	info.IsRead = true
+	SaveTheMailToRedis(uid, info)
+
 	if aff, err := res.RowsAffected(); aff == 0 {
 		return err
 	}
+
 
 	return nil
 }
 
 // 从DB获取指定玩家的邮件列表
 func GetTheMailFromDB(uid uint64, mailId uint64) (*define.PlayerMail, error) {
+
+	// 先从redis获取
+	redisGet, errRedis := LoadTheMailFromRedis(uid, mailId)
+	if errRedis == nil {
+		return redisGet, nil
+	}
+
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
 	if err != nil {
 		return nil, fmt.Errorf("connect db error")
 	}
 
-	sql := fmt.Sprintf("select n_id, n_mailID, n_isRead, n_isGetAttach,n_isDel from t_player_mail where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
+	sql := fmt.Sprintf("select n_mailID, n_isRead, n_isGetAttach,n_isDel from t_player_mail where n_playerid='%d' and n_mailID ='%d' ;", uid, mailId)
 	res, err := engine.QueryString(sql)
 	if err != nil {
 		return nil, err
@@ -179,10 +270,7 @@ func GetTheMailFromDB(uid uint64, mailId uint64) (*define.PlayerMail, error) {
 
 	for _, row := range res {
 
-		id, _ := strconv.ParseInt(row["n_id"], 10, 64)
-
 		info := new(define.PlayerMail)
-		info.Id = id
 
 		info.PlayerId = uid
 		mailId, _ := strconv.ParseInt(row["n_mailID"], 10, 64)
@@ -207,6 +295,9 @@ func GetTheMailFromDB(uid uint64, mailId uint64) (*define.PlayerMail, error) {
 			info.IsDel = false
 		}
 
+		// 将DB的结果保存到Redis
+		SaveTheMailToRedis(uid, info)
+
 		return info, nil
 	}
 
@@ -214,6 +305,13 @@ func GetTheMailFromDB(uid uint64, mailId uint64) (*define.PlayerMail, error) {
 }
 // 从DB获取指定玩家的邮件列表
 func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
+
+	// 先从redis获取
+	redisList, errRedis := LoadUserMailListFromRedis(uid)
+	if errRedis == nil {
+		return redisList, nil
+	}
+
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
 	if err != nil {
@@ -229,13 +327,7 @@ func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 	list := make(map[uint64]*define.PlayerMail)
 	for _, row := range res {
 
-		id, _ := strconv.ParseInt(row["n_id"], 10, 64)
-		if id == 0 {
-			continue
-		}
-
 		info := new(define.PlayerMail)
-		info.Id = id
 
 		info.PlayerId = uid
 		mailId, _ := strconv.ParseInt(row["n_mailID"], 10, 64)
@@ -262,6 +354,8 @@ func GetUserMailFromDB(uid uint64) (map[uint64]*define.PlayerMail, error) {
 
 		list[info.MailId] = info
 	}
+	// 将DB的结果保存到Redis
+	SaveUserMailListToRedis(uid, list)
 
 	return list, nil
 }

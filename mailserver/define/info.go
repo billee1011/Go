@@ -39,12 +39,11 @@ CREATE TABLE `t_player_mail` (
 
 // 玩家邮件信息
 type PlayerMail struct {
-	Id          int64  // 唯一编号
-	PlayerId    uint64 // 玩家ID
-	MailId      uint64 // 邮件ID
-	IsRead      bool   // 是否已读
-	IsGetAttach bool   // 是否已领取附件
-	IsDel		bool   // 是否被玩家删除
+	PlayerId    uint64 	`json:"playerId"`		// 玩家ID
+	MailId      uint64  `json:"mailId"` 		// 邮件ID
+	IsRead      bool   `json:"isRead"` 		// 是否已读
+	IsGetAttach bool   `json:"isGetAttach"` // 是否已领取附件
+	IsDel		bool   `json:"isDel"` 		// 是否被玩家删除
 }
 
 type MailInfo struct {

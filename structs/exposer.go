@@ -9,6 +9,7 @@ import (
 	"steve/structs/rpc"
 	"steve/structs/sgrpc"
 	"steve/structs/arg"
+	"steve/structs/consul"
 )
 
 // Exposer provide common interfaces for services
@@ -23,6 +24,7 @@ type Exposer struct {
 	Publisher       pubsub.Publisher
 	Subscriber      pubsub.Subscriber
 	Option          arg.Option
+	ConsulReq       consul.Requester				// consul请求接口
 }
 
 var gExposer *Exposer

@@ -9,6 +9,7 @@ import (
 	"steve/mailserver/define"
 	"time"
 	"steve/entity/goods"
+	"steve/structs"
 )
 
 /*
@@ -22,9 +23,19 @@ import (
   日期： 2018-8-7
 */
 
-var mailList map[uint64]*define.MailInfo
+// 是否是主节点
+var isMasterNode = false
+// 清理过期邮件开始点数
+var clearBeginHour = 4
+// 清理过期邮件结束点数
+var clearEndHour = 6
 
+// 邮件列表
+var mailList map[uint64]*define.MailInfo
+// 省包节点列表
 var provSendList map[int64][]*define.MailInfo
+
+
 
 func Init() error {
 	err := getDataFromDB()
@@ -78,7 +89,7 @@ func GetGetUnReadSum(uid uint64) (int32, error) {
 		for _, mail := range list {
 
 			// 检测是否符合省包和渠道ID
-			isOk := checkMailProvChannel(mail, channel, prov)
+			isOk := checkMailProvChannel(uid, mail, channel, prov)
 			if !isOk {
 				continue
 			}
@@ -115,7 +126,7 @@ func GetMailList(uid uint64) ([]*mailserver.MailTitle, error) {
 	for _, mail := range list {
 
 		// 检测是否符合省包和渠道ID
-		isOk := checkMailProvChannel(mail, channel, prov)
+		isOk := checkMailProvChannel(uid,mail, channel, prov)
 		if !isOk {
 			continue
 		}
@@ -167,11 +178,11 @@ func GetMailDetail(uid uint64, mailId uint64) (*mailserver.MailDetail, error) {
 
 	if one == nil {
 		// 设置邮件=已读
-		data.SetEmailReadTagFromDB(uid, mailId, true)
+		data.SetEmailReadTagFromDB(uid, mailId, true, mail.DelTime)
 	} else {
 		if !one.IsRead {
 			// 设置邮件=已读
-			data.SetEmailReadTagFromDB(uid, mailId, false)
+			data.SetEmailReadTagFromDB(uid, mailId, false, mail.DelTime)
 		}
 	}
 
@@ -224,11 +235,11 @@ func SetReadTag(uid uint64, mailId uint64) error {
 
 	if one == nil {
 		// 设置邮件=已读
-		data.SetEmailReadTagFromDB(uid, mailId, true)
+		data.SetEmailReadTagFromDB(uid, mailId, true, mail.DelTime)
 	} else {
 		if !one.IsRead {
 			// 设置邮件=已读
-			data.SetEmailReadTagFromDB(uid, mailId, false)
+			data.SetEmailReadTagFromDB(uid, mailId, false, mail.DelTime)
 		}
 	}
 
@@ -238,6 +249,10 @@ func SetReadTag(uid uint64, mailId uint64) error {
 // 删除邮件
 func DelMail(uid uint64, mailId uint64) error {
 
+	mail, ok := mailList[mailId]
+	if !ok {
+		return errors.New("指定邮件不存在")
+	}
 	// 从DB获取玩家的已读邮件列表
 	one, _ := data.GetTheMailFromDB(uid, mailId)
 	if one != nil && one.IsDel {
@@ -246,9 +261,9 @@ func DelMail(uid uint64, mailId uint64) error {
 
 	if one == nil {
 		// 设置邮件为删除状态
-		return data.DelEmailFromDB(uid, mailId, true)
+		return data.DelEmailFromDB(uid, mailId, true,mail.DelTime)
 	}
-	return data.DelEmailFromDB(uid, mailId, false)
+	return data.DelEmailFromDB(uid, mailId, false,mail.DelTime)
 
 }
 
@@ -262,8 +277,11 @@ func AwardAttach(uid uint64, mailId uint64) ([]*mailserver.Goods, error) {
 	}
 
 	if one == nil {
-		// 设置邮件=已读
 		return nil, errors.New("邮件不存在")
+	}
+
+	if !one.IsRead {
+		return nil, errors.New("必须先读邮件, 才能领取附件")
 	}
 
 	// 如果已领取，直接返回
@@ -286,6 +304,9 @@ func  runCheckMailChange() error{
 	// 1分钟更新一次邮件列表
 	for {
 		time.Sleep(time.Minute)
+
+		// 判断当时是否是主节点
+		isMasterNode = structs.GetGlobalExposer().ConsulReq.IsMasterNode()
 		getDataFromDB()
 	}
 	return nil
@@ -303,7 +324,30 @@ func getDataFromDB() error {
 	mailList = list
 	// 检测邮件状态
 	checkMailStatus(mailList)
+
+	// 主节点每日半夜4-6点，清理过期邮件
+	clearExpiredEmail()
 	return err
+}
+
+// 主节点每日半夜4-6点，清理过期邮件
+var thisDay = 0
+func clearExpiredEmail() {
+	if !isMasterNode {
+		// 非主节点，直接返回
+		return
+	}
+
+	now := time.Now()
+	// 每日只执行1次
+	if thisDay == now.YearDay() {
+		return
+	}
+	if now.Hour() >= clearBeginHour && now.Hour() < clearEndHour {
+		data.ClearExpiredEmailFromDB()
+		data.ClearExpiredUserEmailFromDB()
+		thisDay = now.YearDay()
+	}
 }
 
 // 检测邮件状态是否变化
@@ -319,24 +363,35 @@ func checkMailStatus(mailList map[uint64]*define.MailInfo) error {
 			if curDate >= mail.StartTime {
 				mail.State = define.StateSending
 				bUpdate = true
-				// 保存邮件状态变化到DB
-				data.SetEmailStateToDB(mail.Id, mail.State)
+
+				// 主节点负责保存邮件状态到DB
+				if isMasterNode {
+					// 保存邮件状态变化到DB
+					data.SetEmailStateToDB(mail.Id, mail.State)
+				}
+
 			}
 		} else if mail.State == define.StateSending {
 			// 检测是否结束
 			if mail.IsUseEndTime && curDate >= mail.EndTime {
 				mail.State = define.StateSended
 				bUpdate = true
-				// 保存邮件状态变化到DB
-				data.SetEmailStateToDB(mail.Id, mail.State)
+				// 主节点负责保存邮件状态到DB
+				if isMasterNode {
+					// 保存邮件状态变化到DB
+					data.SetEmailStateToDB(mail.Id, mail.State)
+				}
 			}
 		} else if mail.State == define.StateSended {
 			// 检测是否达到删除时间
 			if mail.IsUseDelTime && curDate >= mail.DelTime {
 				mail.State = define.StateDelete
 				bUpdate = true
-				// 保存邮件状态变化到DB
-				data.SetEmailStateToDB(mail.Id, mail.State)
+				// 主节点负责保存邮件状态到DB
+				if isMasterNode {
+					// 保存邮件状态变化到DB
+					data.SetEmailStateToDB(mail.Id, mail.State)
+				}
 			}
 		}
 	}
@@ -348,7 +403,7 @@ func checkMailStatus(mailList map[uint64]*define.MailInfo) error {
 		myList := make(map[int64][]*define.MailInfo)
 		for _, mail := range mailList {
 			if mail.State == define.StateSending || mail.State == define.StateSended {
-				//myList[mail.]
+
 				for _, dest := range mail.DestList {
 
 					myList[dest.Prov] = append(myList[dest.Prov], mail)
@@ -377,7 +432,7 @@ func getUserInfo(uid uint64) (int64, int64, int64, bool) {
 }
 
 // 检测是否符合省包和渠道ID
-func checkMailProvChannel(mail *define.MailInfo, channel int64, prov int64) bool {
+func checkMailProvChannel(uid uint64,mail *define.MailInfo, channel int64, prov int64) bool {
 	isOk := false
 	for _, dest := range mail.DestList {
 		if dest.Prov != 0 && prov != dest.Prov {
@@ -387,8 +442,22 @@ func checkMailProvChannel(mail *define.MailInfo, channel int64, prov int64) bool
 		if dest.Channel != 0 && channel != dest.Channel {
 			continue
 		}
-		isOk = true
-		break
+		if dest.SendType == define.SendAll {
+			// 发送给所有人
+			isOk = true
+		} else {
+			// 发送给指定玩家列表
+			for _, id := range dest.PlayerList {
+				if id == uid {
+					isOk = true
+					break
+				}
+			}
+		}
+		if isOk {
+			break
+		}
+
 	}
 	return isOk
 }

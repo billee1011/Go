@@ -35,6 +35,7 @@ func Test_GetUnReadMailSum(t *testing.T) {
 
 }
 
+/*
 var mailId uint64 = 0
 
 func Test_GetMailList(t *testing.T) {
@@ -59,7 +60,8 @@ func Test_GetMailList(t *testing.T) {
 	t.Logf("Test_GetMailList win:", rsp)
 
 	if len(rsp.MailList) > 0 {
-		mailId = *rsp.MailList[0].MailId
+		mailId = rsp.MailList[0].GetMailId()
+		t.Logf("Test_GetMailList mailId:", mailId)
 		//getMailDetail(t,player, id)
 	}
 
@@ -124,18 +126,19 @@ func Test_SetMailReadTag(t *testing.T) {
 	assert.Zero(t, rsp2.GetErrCode())
 
 	return
-	/*
+
 	reqCmd = msgid.MsgID_MAILSVR_DEL_MAIL_REQ
 	rspCmd = msgid.MsgID_MAILSVR_DEL_MAIL_RSP
-	req2 := &mailserver.MailSvrDelMailReq{}
-	rsp2 := &mailserver.MailSvrDelMailRsp{}
-	req2.MailId = &mailId
+	req3 := &mailserver.MailSvrDelMailReq{}
+	rsp3 := &mailserver.MailSvrDelMailRsp{}
+	req3.MailId = &mailId
 	player.AddExpectors(rspCmd)
-	player.GetClient().SendPackage(utils.CreateMsgHead(reqCmd), req2)
+	player.GetClient().SendPackage(utils.CreateMsgHead(reqCmd), req3)
 	expector = player.GetExpector(rspCmd)
 
-	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, rsp2))
-	assert.Zero(t, rsp2.GetErrCode())
-*/
+	assert.Nil(t, expector.Recv(global.DefaultWaitMessageTime, rsp3))
+	assert.Zero(t, rsp3.GetErrCode())
+
 }
+*/
 
