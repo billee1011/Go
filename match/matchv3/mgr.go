@@ -3,7 +3,6 @@ package matchv3
 import (
 	"container/list"
 	"fmt"
-	"steve/configuration/configutil"
 	"steve/external/configclient"
 	"steve/external/goldclient"
 	"steve/external/hallclient"
@@ -141,8 +140,6 @@ func (manager *matchManager) getGameLevelConfig(gameID uint32, levelID uint32) *
 		"levelID": levelID,
 	})
 
-	logEntry.Debugln("进入函数")
-
 	// 得到该游戏的信息
 	gameInfo, exist := manager.allGame[gameID]
 	// 该游戏不存在
@@ -235,14 +232,13 @@ func (manager *matchManager) compuRateGold() bool {
 func (manager *matchManager) requestGameLevelConfig() bool {
 	logrus.Debugln("进入函数")
 
-	gameStr, err := configclient.GetConfig("game", "config")
+	// 游戏配置
+	gameConf, err := configclient.GetGameConfigMap()
 	if err != nil {
 		logrus.WithError(err).Errorln("获取游戏配置失败！！")
 		return false
 	}
 
-	// 游戏配置
-	gameConf := configutil.ParseToGameConfigMap(gameStr)
 	logrus.Debugf("读取到%v个游戏配置信息", len(gameConf))
 	for i := 0; i < len(gameConf); i++ {
 		pGameConf := gameConf[i]
@@ -270,13 +266,13 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 	}
 
 	// 场次配置
-	levelStr, err2 := configclient.GetConfig("game", "levelconfig")
-	if err2 != nil {
-		logrus.WithError(err2).Errorln("获取游戏场次配置失败！！")
+
+	levelConf, err := configclient.GetGameLevelConfigMap()
+	if err != nil {
+		logrus.WithError(err).Errorln("获取游戏级别配置失败！！")
 		return false
 	}
 
-	levelConf := configutil.ParseToGameLevelConfigMap(levelStr)
 	logrus.Debugf("读取到%v个场次配置信息", len(levelConf))
 	for i := 0; i < len(levelConf); i++ {
 		pLevelConf := levelConf[i]
