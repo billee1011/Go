@@ -94,7 +94,7 @@ INSERT `t_common_config`(`key`, `subkey`, `value`) values (
     }'
 );
 
-INSERT INTO `config`.`t_common_config` (`id`, `key`, `subkey`, `value`)
+INSERT INTO `t_common_config` (`id`, `key`, `subkey`, `value`)
 VALUES
   ('71', 'game', 'config', '[ 
 { 
@@ -152,7 +152,7 @@ VALUES
 
 
 
-INSERT INTO `config`.`t_common_config` (`id`, `key`, `subkey`, `value`)
+INSERT INTO `t_common_config` (`id`, `key`, `subkey`, `value`)
 VALUES
   ('72', 'game', 'levelconfig', '[ 
 { 
@@ -410,7 +410,7 @@ VALUES
 "tag":null,
 "isAlms":1,
 "remark":null
-}]');
+}]'); 
 
 
 -- /*游戏配置*/
