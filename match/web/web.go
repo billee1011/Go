@@ -105,11 +105,14 @@ func GetLimitLastSameDesk() bool {
 }
 
 func handleChangeDurationVal(d *time.Duration, min, max time.Duration, w http.ResponseWriter, r *http.Request, formField string) {
+
+	// 给客户端的回复
 	result := "OK"
 	defer func() {
 		w.Write([]byte(result))
 	}()
 
+	// 设置的值，转换为数字
 	val, err := strconv.Atoi(r.FormValue(formField))
 	if err != nil {
 		result = fmt.Sprintf("参数[%s]错误", formField)
@@ -176,8 +179,8 @@ func handleChangeRobotContinueRate(w http.ResponseWriter, r *http.Request) {
 }
 
 func init() {
-	http.HandleFunc("/set_robot_join_time", handleChangeRobotJoinTime)
-	http.HandleFunc("/set_continue_dismiss_time", handleChangeContinueDismissTime)
-	http.HandleFunc("/set_continue_robot_time", handleChangeContinueRobotTime)
-	http.HandleFunc("/set_robot_continue_rate", handleChangeRobotContinueRate)
+	http.HandleFunc("/set_robot_join_time", handleChangeRobotJoinTime)             // 设置机器人加入时间
+	http.HandleFunc("/set_continue_dismiss_time", handleChangeContinueDismissTime) // 设置续局牌桌解散时间
+	http.HandleFunc("/set_continue_robot_time", handleChangeContinueRobotTime)     // 设置机器人续局决策时间
+	http.HandleFunc("/set_robot_continue_rate", handleChangeRobotContinueRate)     // 设置机器人续局概率
 }

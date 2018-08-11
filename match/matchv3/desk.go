@@ -2,6 +2,8 @@ package matchv3
 
 import (
 	"fmt"
+	"steve/external/hallclient"
+	"steve/server_pb/user"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -83,4 +85,54 @@ func createMatchDesk(deskID uint64, gameID uint32, levelID uint32, needPlayerCou
 		players:         make([]matchPlayer, 0, needPlayerCount),
 		createTime:      time.Now().Unix(),
 	}
+}
+
+// dealErrorDesk 处理出现错误的桌子
+// 把桌子内的所有玩家更改为空闲状态
+func dealErrorDesk(pDesk *matchDesk) bool {
+	if pDesk == nil {
+		logrus.Errorln("DealDeskError() 参数错误，pDesk == nil")
+		return false
+	}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"pDesk": pDesk,
+	})
+
+	// 处理桌子内所有玩家
+	for i := 0; i < len(pDesk.players); i++ {
+		if !dealErrorPlayer(&pDesk.players[i]) {
+			logEntry.Errorf("处理错误桌子时，处理错误玩家失败，玩家ID:%v", pDesk.players[i].playerID)
+		}
+	}
+
+	return true
+}
+
+// dealErrorPlayer 处理出现错误的玩家
+func dealErrorPlayer(pPlayer *matchPlayer) bool {
+	if pPlayer == nil {
+		logrus.Errorln("dealErrorPlayer() 参数错误，pPlayer == nil")
+		return false
+	}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"pPlayer": pPlayer,
+	})
+
+	// 设置为匹配状态，后面匹配过程中出错删除时再标记为空闲状态，匹配成功时不需处理(room服会标记为游戏状态)
+	bSuc, err := hallclient.UpdatePlayerState(pPlayer.playerID, user.PlayerState_PS_MATCHING, user.PlayerState_PS_IDIE, 0, 0)
+	if err != nil || !bSuc {
+		logEntry.WithError(err).Errorf("处理错误玩家时，通知hall服设置玩家状态为空闲状态时失败，玩家ID:%v", pPlayer.playerID)
+		return false
+	}
+
+	// 更新玩家所在match服务器的地址
+	bSuc, err = hallclient.UpdatePlayeServerAddr(pPlayer.playerID, user.ServerType_ST_MATCH, "")
+	if err != nil || !bSuc {
+		logEntry.WithError(err).Errorf("处理错误玩家时，通知hall服设置玩家的match服务器地址时失败，玩家ID:%v", pPlayer.playerID)
+		return false
+	}
+
+	return true
 }

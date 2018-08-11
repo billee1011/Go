@@ -1111,10 +1111,17 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 	var playerWinRate int32 = 0
 
 	// 场数不足时，采用默认胜率
-	if playerGameInfo.GetTotalBurea() < web.GetMinGameTimes() {
+	totalBurea := playerGameInfo.GetTotalBurea()
+	if totalBurea < web.GetMinGameTimes() || totalBurea <= 0 {
 		playerWinRate = web.GetDefaultWinRate()
 	} else {
-		playerWinRate = int32((float64(playerGameInfo.GetWinningBurea()) / float64(playerGameInfo.GetTotalBurea())) * 100)
+		playerWinRate = int32((float64(playerGameInfo.GetWinningBurea()) / float64(totalBurea)) * 100)
+	}
+
+	// 最终需在[0-100]内
+	if playerWinRate < 0 || playerWinRate > 100 {
+		playerWinRate = web.GetDefaultWinRate()
+		logrus.Errorln("从hall服获取玩家游戏信息后，计算胜率不在0-100内，已设置为默认胜率进行匹配")
 	}
 
 	// 全部检测通过
