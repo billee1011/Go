@@ -16,7 +16,7 @@ func UpdatePlayerGotTimesByPlayerID(playerID uint64, changeTimes int) error {
 		return err
 	}
 	// redis
-	if err := UpdateAlmsPlayerGotTimes(playerID, changeTimes, RedisTimeOut); err != nil {
+	if err := UpdateAlmsPlayerGotTimes(playerID, changeTimes, redisPlayerTimeOut); err != nil {
 		entry.WithError(err).Errorln("修改玩家已经领取数量 redis 失败 playerID(%v)", playerID)
 		return err
 	}
@@ -42,7 +42,7 @@ func UpdataAlmsConfigVersion() error {
 		newVersion = int(InterToint64(versionStr)) + 1
 	}
 	// 修改redis
-	if err := SetAlmsConfigWatch(AlmsVersion, newVersion, RedisTimeOut); err != nil {
+	if err := SetAlmsConfigWatch(AlmsVersion, newVersion); err != nil {
 		entry.WithError(err).Errorln("redis 救济金配置 Version 改变失败")
 		return err
 	}
@@ -60,7 +60,7 @@ func GetAlmsConfigByPlayerID(playerID uint64) (*AlmsConfig, error) {
 		"func_name": "getAlmsConfigByPlayerID",
 	})
 	//从 redis 获取救济金配置
-	newConfig := []string{AlmsGetNorm, AlmsGetTimes, AlmsGetNumber, AlmsCountDonw, DepositCountDonw, AlmsGameLeveIsOK, AlmsVersion}
+	newConfig := []string{AlmsGetNorm, AlmsGetTimes, AlmsGetNumber, AlmsCountDonw, DepositCountDonw, GameLeveConfigs, AlmsVersion}
 	acm, err := GetAlmsConfigFileds(newConfig...)
 	ac := &AlmsConfig{}
 	if err != nil || !checkMapStringInterface(acm, newConfig) {
@@ -71,19 +71,19 @@ func GetAlmsConfigByPlayerID(playerID uint64) (*AlmsConfig, error) {
 			return nil, err
 		}
 		// 存储到redis
-		if err = SetAlmsConfigWatchs(AlmsConfigToMap(ac), RedisTimeOut); err != nil {
+		if err = SetAlmsConfigWatchs(AlmsConfigToMap(ac)); err != nil {
 			entry.WithError(err).Errorln("存储救济金配置数据redis失败")
 		}
 
 	} else {
 		ac = &AlmsConfig{
-			GetNorm:             InterToint64(acm[AlmsGetNorm]),
-			GetTimes:            int(InterToint64(acm[AlmsGetTimes])),
-			GetNumber:           InterToint64(acm[AlmsGetNumber]),
-			AlmsCountDonw:       int(InterToint64(acm[AlmsCountDonw])),
-			DepositCountDonw:    int(InterToint64(acm[DepositCountDonw])),
-			GemeLeveIsOpentAlms: JSONToGameLeveConfig(acm[AlmsGameLeveIsOK].(string)),
-			Version:             int(InterToint64(acm[AlmsVersion])),
+			GetNorm:          InterToint64(acm[AlmsGetNorm]),
+			GetTimes:         int(InterToint64(acm[AlmsGetTimes])),
+			GetNumber:        InterToint64(acm[AlmsGetNumber]),
+			AlmsCountDonw:    int(InterToint64(acm[AlmsCountDonw])),
+			DepositCountDonw: int(InterToint64(acm[DepositCountDonw])),
+			GameLeveConfigs:  JSONToGameLeveConfig(acm[GameLeveConfigs].(string)),
+			Version:          int(InterToint64(acm[AlmsVersion])),
 		}
 	}
 	// 获取当前玩家救济已领取次数t_hall_info
@@ -111,7 +111,7 @@ func GetPlayerGotTimesByPlayerID(playerID uint64) (int, error) {
 			return 0, err
 		}
 		// 存入redis
-		if err = UpdateAlmsPlayerGotTimes(playerID, times, RedisTimeOut); err != nil {
+		if err = UpdateAlmsPlayerGotTimes(playerID, times, redisPlayerTimeOut); err != nil {
 			entry.WithError(err).Errorln("存储玩家救济金领取次数失败")
 		}
 	}
@@ -137,20 +137,21 @@ func GetDBAlmsConfigData() (*AlmsConfig, error) {
 	glos := make([]*GameLeveConfig, 0, len(tgcs))
 	for _, tgc := range tgcs {
 		glo := &GameLeveConfig{
-			GameID:  int32(tgc.Gameid),
-			LevelID: int32(tgc.Levelid),
-			IsOpen:  tgc.Isalms,
+			GameID:    int32(tgc.Gameid),
+			LevelID:   int32(tgc.Levelid),
+			LowScores: int64(tgc.Lowscores),
+			IsOpen:    tgc.Isalms,
 		}
 		glos = append(glos, glo)
 	}
 	ac := &AlmsConfig{
-		GetNorm:             int64(almsConfigData.Getnorm),
-		GetTimes:            almsConfigData.Gettimes,
-		GetNumber:           int64(almsConfigData.Getnumber),
-		AlmsCountDonw:       almsConfigData.Almscountdonw,
-		DepositCountDonw:    almsConfigData.Depositcountdonw,
-		GemeLeveIsOpentAlms: glos,
-		Version:             almsConfigData.Version,
+		GetNorm:          int64(almsConfigData.Getnorm),
+		GetTimes:         almsConfigData.Gettimes,
+		GetNumber:        int64(almsConfigData.Getnumber),
+		AlmsCountDonw:    almsConfigData.Almscountdonw,
+		DepositCountDonw: almsConfigData.Depositcountdonw,
+		GameLeveConfigs:  glos,
+		Version:          almsConfigData.Version,
 	}
 	return ac, nil
 }

@@ -1,4 +1,4 @@
-package server
+package almsserver
 
 import (
 	"fmt"
@@ -62,13 +62,13 @@ func getPlayerAlmsConfigInfo(playerID uint64) error {
 		return err
 	}
 	almsConfig := &client_alms.AlmsConfig{
-		AlmsGetNorm:      proto.Int64(ac.GetNorm),                             // 救济线
-		AlmsGetTimes:     proto.Int32(int32(ac.GetTimes)),                     // 救济次数
-		AlmsGetNumber:    proto.Int64(ac.GetNumber),                           // 领取数量
-		AlmsCountDonw:    proto.Int32(int32(ac.AlmsCountDonw)),                // 救济倒计时
-		DepositCountDonw: proto.Int32(int32(ac.DepositCountDonw)),             // 快冲倒计时
-		GameLeveIsOpen:   dataToClentPbGameLeveIsOpen(ac.GemeLeveIsOpentAlms), // 游戏场次对应的是否开启
-		Version:          proto.Int32(int32(ac.Version)),                      // 版本
+		AlmsGetNorm:      proto.Int64(ac.GetNorm),                         // 救济线
+		AlmsGetTimes:     proto.Int32(int32(ac.GetTimes)),                 // 救济次数
+		AlmsGetNumber:    proto.Int64(ac.GetNumber),                       // 领取数量
+		AlmsCountDonw:    proto.Int32(int32(ac.AlmsCountDonw)),            // 救济倒计时
+		DepositCountDonw: proto.Int32(int32(ac.DepositCountDonw)),         // 快冲倒计时
+		GameLeveIsOpen:   dataToClentPbGameLeveIsOpen(ac.GameLeveConfigs), // 游戏场次对应的是否开启
+		Version:          proto.Int32(int32(ac.Version)),                  // 版本
 	}
 	ntf := &client_alms.AlmsConfigNtf{
 		AlmsConfig:     almsConfig,
@@ -132,7 +132,7 @@ func almsConfigChange(a alms.AlmsConfig) {
 		return
 	}
 	// 修改redis 救济金配置
-	if err := data.SetAlmsConfigWatchs(changeConfig, data.RedisTimeOut); err != nil {
+	if err := data.SetAlmsConfigWatchs(changeConfig); err != nil {
 		entry.WithError(err).Errorf("redis 救济金配置 改变失败 changeConfig(%v) \n", changeConfig)
 		return
 	}

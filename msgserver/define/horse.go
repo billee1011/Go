@@ -47,6 +47,7 @@ type HorseRace struct {
 	CheckStatus    int8            // 检测状态
 	Content        []*HorseContent // 跑马灯内容列表
 	LastUpdateTime string          // 最后修改时间
+	IsDel			bool 			// 是否删除
 }
 
 type HorseContentJson struct {

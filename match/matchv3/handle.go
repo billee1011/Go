@@ -1,7 +1,6 @@
 package matchv3
 
 import (
-	"fmt"
 	"steve/client_pb/common"
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"github.com/spf13/viper"
 )
 
 // HandleMatchReq 匹配请求的处理(来自网关服)
@@ -105,30 +103,6 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		response.ErrDesc = &errString
 
 		logEntry.Errorf("内部错误，处理客户端的请求匹配失败，请求匹配的游戏ID:%v，场次ID:%v \n", reqGameID, reqLevelID)
-		return
-	}
-
-	// 设置为匹配状态，后面匹配过程中出错删除时再标记为空闲状态，匹配成功时不需处理(room服会标记为游戏状态)
-	bSuc, err := hallclient.UpdatePlayerState(playerID, curState, user.PlayerState_PS_MATCHING, reqGameID, reqLevelID)
-	if err != nil || !bSuc {
-		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
-		response.ErrDesc = proto.String("通知hall服更改玩家状态为匹配状态时失败")
-
-		logEntry.WithError(err).Errorf("内部错误，通知hall服设置玩家状态为匹配状态时失败，可能是客户端刚刚匹配了其他游戏导致，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", reqGameID, reqLevelID, playerID)
-		return
-	}
-
-	localIP := viper.GetString("rpc_addr")
-	localPort := viper.GetInt("rpc_port")
-	localAddr := fmt.Sprintf("%s:%d", localIP, localPort)
-
-	// 更新玩家所在的服务器类型和地址
-	bSuc, err = hallclient.UpdatePlayeServerAddr(playerID, user.ServerType_ST_MATCH, localAddr)
-	if err != nil || !bSuc {
-		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
-		response.ErrDesc = proto.String("通知hall服更改玩家的匹配服地址时失败")
-
-		logEntry.WithError(err).Errorf("内部错误，通知hall服设置玩家的服务器类型及地址时失败，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", reqGameID, reqLevelID, playerID)
 		return
 	}
 

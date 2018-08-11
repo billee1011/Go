@@ -11,6 +11,7 @@ import (
 	"steve/room/majong/global"
 	"steve/room/majong/interfaces"
 	"steve/room/majong/utils"
+	"steve/room/util"
 
 	"github.com/Sirupsen/logrus"
 
@@ -326,7 +327,10 @@ func (s *ZiXunState) checkActions(flow interfaces.MajongFlow) {
 		zixunNtf.EnableChupaiCards = utils.ServerCards2Uint32(player.GetHandCards())
 	}
 	//查听,打什么,听什么
-	s.checkTing(zixunNtf, player, mjContext)
+	canTingInfos := CheckTing(player, mjContext)
+	zixunNtf.CanTingCardInfo = util.CanTingCardInfoSvr2Client(canTingInfos)
+	player.GetZixunRecord().CanTingCardInfo = canTingInfos
+
 	if zixunNtf.GetEnableZimo() == true {
 		//roomHuType, majongHuType := s.getHuType(playerID, mjContext)
 		s.checkFanType(record, mjContext, playerID, player.GetHandCards(), s.getHuCard(mjContext, player))
@@ -458,27 +462,11 @@ func (s *ZiXunState) getHuType(huPlayerID uint64, mjContext *majongpb.MajongCont
 	return room.HuType_HT_ZIMO, majongpb.HuType_hu_zimo
 }
 
-func (s *ZiXunState) getPengCards(pengCards []*majongpb.PengCard) []*majongpb.Card {
-	resultCards := []*majongpb.Card{}
-	for _, pengCard := range pengCards {
-		resultCards = append(resultCards, pengCard.GetCard())
-	}
-	return resultCards
-}
-
-func (s *ZiXunState) getGangCards(gangCards []*majongpb.GangCard) []*majongpb.Card {
-	resultCards := []*majongpb.Card{}
-	for _, gangCard := range gangCards {
-		resultCards = append(resultCards, gangCard.GetCard())
-	}
-	return resultCards
-}
-
-// checkTing 查听
-func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext) {
+// CheckTing 查听
+func CheckTing(player *majongpb.Player, context *majongpb.MajongContext) (canTingInfos []*majongpb.CanTingCardInfo) {
 	xpOption := mjoption.GetXingpaiOption(int(context.GetXingpaiOptionId()))
 
-	dingqueCards, checkCards := s.getDingqueCardNum(player, xpOption.EnableDingque)
+	dingqueCards, checkCards := GetDingqueCardNum(player, xpOption.EnableDingque)
 	dqnum := len(dingqueCards)
 	if gutils.IsTing(player) {
 		// 当玩家已经是听牌状态，只有摸上来的牌才有听牌提示
@@ -492,22 +480,23 @@ func (s *ZiXunState) checkTing(zixunNtf *room.RoomZixunNtf, player *majongpb.Pla
 			}
 		}
 		//满足条件说明,打出这张定缺牌可以进入听牌状态
-		s.addTingInfo(zixunNtf, player, context, newTingInfos)
+		canTingInfos = GetTingInfo(player, context, newTingInfos)
 	} else if dqnum == 0 {
 		//没有定缺牌的时候正常查听
 		tingInfos := utils.GetPlayCardCheckTing(player.GetHandCards(), nil)
-		s.addTingInfo(zixunNtf, player, context, tingInfos)
+		canTingInfos = GetTingInfo(player, context, tingInfos)
 	} else if dqnum == 1 {
 		tingInfos, err := utils.GetTingCards(checkCards, nil)
 		if err == nil && len(tingInfos) > 0 {
 			dingqueCard := utils.Card(utils.ServerCard2Number(dingqueCards[0]))
-			s.addTingInfo(zixunNtf, player, context, map[utils.Card][]utils.Card{dingqueCard: tingInfos})
+			canTingInfos = GetTingInfo(player, context, map[utils.Card][]utils.Card{dingqueCard: tingInfos})
 		}
 	}
 	// 玩家的定缺牌数量超过1张的时候,不查听
+	return
 }
 
-func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player, hasDingqueOption bool) (dingqueCards []*majongpb.Card, checkCards []*majongpb.Card) {
+func GetDingqueCardNum(player *majongpb.Player, hasDingqueOption bool) (dingqueCards []*majongpb.Card, checkCards []*majongpb.Card) {
 	dingqueCards = []*majongpb.Card{}
 	checkCards = []*majongpb.Card{}
 	if hasDingqueOption {
@@ -524,13 +513,10 @@ func (s *ZiXunState) getDingqueCardNum(player *majongpb.Player, hasDingqueOption
 	return
 }
 
-// addTingInfo 自询通知添加听牌信息
-func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card][]utils.Card) {
-	canTingInfos := []*room.CanTingCardInfo{}
-	recordCanTingInfos := []*majongpb.CanTingCardInfo{}
+// GetTingInfo 自询通知添加听牌信息
+func GetTingInfo(player *majongpb.Player, context *majongpb.MajongContext, tingInfos map[utils.Card][]utils.Card) (canTingInfos []*majongpb.CanTingCardInfo) {
 	for outCard, tingInfo := range tingInfos {
-		tingCardInfo := []*room.TingCardInfo{}
-		recordTingCardInfo := []*majongpb.TingCardInfo{}
+		tingCardInfo := []*majongpb.TingCardInfo{}
 		outCard0, err := utils.IntToCard(int32(outCard))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -542,7 +528,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 		newHand, success := utils.RemoveCards(player.GetHandCards(), outCard0, 1)
 		if !success {
 			logrus.WithFields(logrus.Fields{
-				"func_name": "addTingInfo",
+				"func_name": "GetTingInfo",
 			}).Error("牌型移除失败")
 		}
 		cardTypeOptionID := int(context.GetCardtypeOptionId())
@@ -553,7 +539,7 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 				PlayerID:  player.GetPlayerId(),
 				MjContext: context,
 				HandCard:  newHand,
-				PengCard:  s.getPengCards(player.GetPengCards()),
+				PengCard:  utils.TransPengCard(player.GetPengCards()),
 				GangCard:  player.GetGangCards(),
 				HuCard: &majongpb.HuCard{
 					Card: hCard,
@@ -563,26 +549,17 @@ func (s *ZiXunState) addTingInfo(zixunNtf *room.RoomZixunNtf, player *majongpb.P
 			// 移除胡类型的番型
 			types = gutils.DeleteHuType(cardTypeOptionID, types)
 			times := ctc.CardTypeValue(context, types, gen, hua)
-			tingCardInfo = append(tingCardInfo, &room.TingCardInfo{
-				TingCard: proto.Uint32(uint32(tt)),
-				Times:    proto.Uint32(uint32(times)),
-			})
-			recordTingCardInfo = append(recordTingCardInfo, &majongpb.TingCardInfo{
+			tingCardInfo = append(tingCardInfo, &majongpb.TingCardInfo{
 				TingCard: uint32(tt),
 				Times:    uint32(times),
 			})
 		}
-		canTingInfos = append(canTingInfos, &room.CanTingCardInfo{
-			OutCard:      proto.Uint32(uint32(outCard)),
+		canTingInfos = append(canTingInfos, &majongpb.CanTingCardInfo{
+			OutCard:      uint32(outCard),
 			TingCardInfo: tingCardInfo,
 		})
-		recordCanTingInfos = append(recordCanTingInfos, &majongpb.CanTingCardInfo{
-			OutCard:      uint32(outCard),
-			TingCardInfo: recordTingCardInfo,
-		})
 	}
-	zixunNtf.CanTingCardInfo = canTingInfos
-	player.GetZixunRecord().CanTingCardInfo = recordCanTingInfos
+	return
 }
 
 // checkZiMo 查自摸

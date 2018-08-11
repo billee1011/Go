@@ -39,6 +39,7 @@ var bInitGold = true
 const dbName = "player"
 
 const dbLogName = "log"
+
 // 设置货币类型列表
 func SetGoldTypeList(list, get, cost map[int16]string) {
 	mapID2Name = list

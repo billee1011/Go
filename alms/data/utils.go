@@ -24,12 +24,22 @@ func InterToint64(param interface{}) int64 {
 
 //检验redis 返回的 值
 func checkMapStringInterface(m map[string]interface{}, checkString []string) bool {
+	if len(m) != len(checkString) {
+		return false
+	}
 	for _, str := range checkString {
-		if str == AlmsGameLeveIsOK {
-			if len(JSONToGameLeveConfig(m[AlmsGameLeveIsOK].(string))) <= 0 {
+		switch m[str].(type) {
+		case string:
+			if str == GameLeveConfigs && len(JSONToGameLeveConfig(m[str].(string))) <= 0 {
 				return false
 			}
-		} else if InterToint64(m[str]) <= 0 {
+		case int64:
+			if InterToint64(m[str]) <= 0 {
+				return false
+			}
+		default:
+			logrus.WithFields(logrus.Fields{"func_name": "checkMapStringInterface",
+				"m[str]": m[str]}).Infoln("检验redis 返回的")
 			return false
 		}
 	}
@@ -54,8 +64,8 @@ func AlmsConfigToMap(ac *AlmsConfig) map[string]interface{} {
 	if ac.DepositCountDonw > 0 {
 		almsConfigMap[DepositCountDonw] = ac.DepositCountDonw // 快冲倒计时
 	}
-	if len(ac.GemeLeveIsOpentAlms) > 0 {
-		almsConfigMap[AlmsGameLeveIsOK] = GameLeveConfigToJSON(ac.GemeLeveIsOpentAlms) //游戏场次是否开启救济金
+	if len(ac.GameLeveConfigs) > 0 {
+		almsConfigMap[GameLeveConfigs] = GameLeveConfigToJSON(ac.GameLeveConfigs) //游戏场次是否开启救济金
 	}
 	if ac.Version > 0 {
 		almsConfigMap[AlmsVersion] = ac.Version // 版本号
@@ -84,7 +94,7 @@ func JSONToGameLeveConfig(gemeLeveOKJSON string) []*GameLeveConfig {
 	}
 	globyte := []byte(gemeLeveOKJSON)
 	if err := json.Unmarshal(globyte, &gemeLeveOK); err != nil {
-		logrus.WithFields(logrus.Fields{"func_name": "JSONToGameLeveConfig",
+		logrus.WithError(err).WithFields(logrus.Fields{"func_name": "JSONToGameLeveConfig",
 			"gemeLeveOKJSON": gemeLeveOKJSON}).Infoln("JSON 转 游戏场次配置失败")
 	}
 	return gemeLeveOK

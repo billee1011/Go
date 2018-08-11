@@ -14,10 +14,8 @@ import (
 
 //玩家登陆接受到，救济金配合通知
 func Test_Alms_Login(t *testing.T) {
-	player, _ := utils.LoginNewPlayer()
+	player, _ := utils.LoginNewPlayer(msgid.MsgID_ALMS_LOGIN_GOLD_CONFIG_NTF)
 	assert.NotNil(t, player)
-
-	player.AddExpectors(msgid.MsgID_ALMS_LOGIN_GOLD_CONFIG_NTF)
 
 	expector := player.GetExpector(msgid.MsgID_ALMS_LOGIN_GOLD_CONFIG_NTF)
 	ntf := &alms.AlmsConfigNtf{}
@@ -33,9 +31,9 @@ func Test_Apply_Alms(t *testing.T) {
 
 	player.AddExpectors(msgid.MsgID_ALMS_GET_GOLD_RSP)
 	client := player.GetClient()
-	aat := alms.AlmsApplyType_AAT_LOGIN
+	aat := alms.AlmsApplyType_AAT_SELECTIONS
 	req := &alms.AlmsGetGoldReq{}
-	gameID, levelID, totalGold, version := common.GameId_GAMEID_XUELIU, int32(1), int64(100000000000), int32(2)
+	gameID, levelID, totalGold, version := common.GameId_GAMEID_XUELIU, int32(1), int64(101), int32(1)
 	req.AlmsApplyType = &aat
 	req.GameId = &gameID
 	req.LevelId = &levelID

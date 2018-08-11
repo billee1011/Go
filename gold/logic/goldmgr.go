@@ -137,7 +137,7 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		return 0, err
 	}
 	plog.BeforeBalance = before
-	plog.AfterBalance = after
+
 
 	// 加金币后，玩家当前金币值
 	after, err = u.Add(goldType, value)
@@ -148,7 +148,7 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		data.InsertGoldLog(plog)
 		return 0, err
 	}
-
+	plog.AfterBalance = after
 
 	entry = logrus.WithFields(logrus.Fields{
 		"opr":        "add_gold",

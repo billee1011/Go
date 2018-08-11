@@ -17,22 +17,16 @@ import (
 
 var (
 	clientVersion     = flag.String("client_version", "1.0", "客户端版本号")
-	loinServerAddr    = flag.String("login_server_addr", "127.0.0.1:36201", "登录服地址")
-	gatewayServerAddr = flag.String("gateway_server_addr", "127.0.0.1:36001", "网关服地址")
+	gatewayServerAddr = flag.String("gateway_server_addr", "39.108.81.164:36003", "网关服地址")
 	peiPaiURL         = flag.String("peipai_url", "http://127.0.0.1:36102", "配牌服务地址")
 	matchHTTPAddr     = flag.String("match_http_addr", "http://127.0.0.1:37002", "匹配服 http 地址")
-	configRPCAddr     = flag.String("config_rpc_addr", "localhost:36401", "配置服 rpc 地址")
+	configRPCAddr     = flag.String("config_rpc_addr", "127.0.0.1:36801", "配置服 rpc 地址")
 	dbPath            *string
 )
 
 // GetConfigRPCAddr 获取配置服 RPC 地址
 func GetConfigRPCAddr() string {
 	return *configRPCAddr
-}
-
-// GetLoginServerAddr 获取登录服地址
-func GetLoginServerAddr() string {
-	return *loinServerAddr
 }
 
 // GetGatewayServerAddr 获取网关服地址
