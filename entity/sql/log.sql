@@ -39,6 +39,8 @@ CREATE TABLE `t_currency_record` (
   UNIQUE KEY `t_currency_record_tradeID_uindex` (`tradeID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表';
 
+
+
 -- ----------------------------
 -- Table structure for t_game_detail
 -- ----------------------------

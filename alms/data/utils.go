@@ -24,12 +24,22 @@ func InterToint64(param interface{}) int64 {
 
 //检验redis 返回的 值
 func checkMapStringInterface(m map[string]interface{}, checkString []string) bool {
+	if len(m) != len(checkString) {
+		return false
+	}
 	for _, str := range checkString {
-		if str == GameLeveConfigs {
-			if len(JSONToGameLeveConfig(m[GameLeveConfigs].(string))) <= 0 {
+		switch m[str].(type) {
+		case string:
+			if str == GameLeveConfigs && len(JSONToGameLeveConfig(m[str].(string))) <= 0 {
 				return false
 			}
-		} else if InterToint64(m[str]) <= 0 {
+		case int64:
+			if InterToint64(m[str]) <= 0 {
+				return false
+			}
+		default:
+			logrus.WithFields(logrus.Fields{"func_name": "checkMapStringInterface",
+				"m[str]": m[str]}).Infoln("检验redis 返回的")
 			return false
 		}
 	}
@@ -84,7 +94,7 @@ func JSONToGameLeveConfig(gemeLeveOKJSON string) []*GameLeveConfig {
 	}
 	globyte := []byte(gemeLeveOKJSON)
 	if err := json.Unmarshal(globyte, &gemeLeveOK); err != nil {
-		logrus.WithFields(logrus.Fields{"func_name": "JSONToGameLeveConfig",
+		logrus.WithError(err).WithFields(logrus.Fields{"func_name": "JSONToGameLeveConfig",
 			"gemeLeveOKJSON": gemeLeveOKJSON}).Infoln("JSON 转 游戏场次配置失败")
 	}
 	return gemeLeveOK

@@ -8,6 +8,9 @@ import (
 	"steve/room/fixed"
 	playerpkg "steve/room/player"
 	"sync"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type playerIDWithChannel struct {
@@ -63,6 +66,8 @@ func (model *PlayerModel) Stop() {
 		if pla.GetDesk() == model.GetDesk() {
 			pla.SetDesk(nil)
 			playerIDs = append(playerIDs, pla.GetPlayerID())
+		} else {
+			logrus.Debugln("desk 不一致")
 		}
 	}
 	playerMgr.UnbindPlayerRoomAddr(playerIDs)
@@ -137,11 +142,20 @@ func (model *PlayerModel) PlayerQuit(player *playerpkg.Player) {
 		model.mu.Unlock()
 		return
 	}
+	finishChannel := make(chan error)
 	model.leaveChannel <- playerIDWithChannel{
 		playerID:      player.GetPlayerID(),
-		finishChannel: make(chan error, 0),
+		finishChannel: finishChannel,
 	}
 	model.mu.Unlock()
+
+	timer := time.NewTimer(time.Second)
+	select {
+	case <-finishChannel:
+		break
+	case <-timer.C:
+		logrus.WithField("player_id", player.GetPlayerID()).Warningln("退出处理超时")
+	}
 }
 
 // handlePlayerLeave 处理玩家离开牌桌

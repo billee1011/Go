@@ -67,17 +67,7 @@ func ServerCard2Number(card *majongpb.Card) uint32 {
 	if card == nil {
 		return 0
 	}
-	if card.Color == majongpb.CardColor_ColorWan {
-		color = 1
-	} else if card.Color == majongpb.CardColor_ColorTiao {
-		color = 2
-	} else if card.Color == majongpb.CardColor_ColorTong {
-		color = 3
-	} else if card.Color == majongpb.CardColor_ColorZi {
-		color = 4
-	} else if card.Color == majongpb.CardColor_ColorHua {
-		color = 5
-	}
+	color = uint32(card.Color)
 	value := color*10 + uint32(card.Point)
 	return value
 }
@@ -97,6 +87,13 @@ func ServerCards2Int32(cards []*majongpb.Card) []int32 {
 	for _, c := range cards {
 		result = append(result, int32(ServerCard2Number(c)))
 	}
+	return result
+}
+
+func Uint32ToServerCard(card uint32) majongpb.Card {
+	var result majongpb.Card
+	result.Color = majongpb.CardColor(card / 10)
+	result.Point = int32(card % 10)
 	return result
 }
 

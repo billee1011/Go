@@ -1,12 +1,17 @@
 package registers
 
 import (
+	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
 	propclient "steve/common/data/prop"
 	"steve/entity/constant"
 	"steve/external/goldclient"
 	"steve/gutils"
+	"steve/room/models"
+	"steve/structs/exchanger"
+	"steve/structs/proto/gate_rpc"
+
 	modelmanager "steve/room/models"
 	player2 "steve/room/player"
 	"steve/room/util"
@@ -17,6 +22,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// HandleRoomChatReq 处理玩家聊天请求
 func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskChatReq) (ret []exchanger.ResponseMsg) {
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
@@ -31,21 +37,21 @@ func HandleRoomChatReq(playerID uint64, header *steve_proto_gaterpc.Header, req 
 func HandleRoomDeskQuitReq(playerID uint64, header *steve_proto_gaterpc.Header, req room.RoomDeskQuitReq) (rspMsg []exchanger.ResponseMsg) {
 	response := room.RoomDeskQuitRsp{
 		UserData: proto.Uint32(req.GetUserData()),
-		ErrCode:  room.RoomError_SUCCESS.Enum(),
+		ErrCode:  room.RoomError_FAILED.Enum(),
 	}
-	// 退出暂时总是回复成功
-	// TODO : 血战的换对手需要等退出完成后才返回
-	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
-
 	player := player2.GetPlayerMgr().GetPlayer(playerID)
 	if player == nil {
+		util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 		return
 	}
 	desk := player.GetDesk()
 	if desk == nil {
+		util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 		return
 	}
 	modelmanager.GetModelManager().GetPlayerModel(desk.GetUid()).PlayerQuit(player)
+	response.ErrCode = room.RoomError_SUCCESS.Enum()
+	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_DESK_QUIT_RSP, &response)
 	return
 }
 
@@ -119,6 +125,34 @@ func HandleTuoGuanReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 		return
 	}
 	player.SetTuoguan(req.GetTuoguan(), true)
+	return
+}
+
+// HandleContinueReq 处理续局请求
+func HandleContinueReq(playerID uint64, header *steve_proto_gaterpc.Header, req match.MatchDeskContinueReq) (ret []exchanger.ResponseMsg) {
+	entry := logrus.WithField("player_id", playerID)
+
+	response := &match.MatchDeskContinueRsp{
+		ErrCode: proto.Int32(0),
+		ErrDesc: proto.String("成功"),
+	}
+	ret = []exchanger.ResponseMsg{{
+		MsgID: uint32(msgid.MsgID_MATCH_CONTINUE_RSP),
+		Body:  response,
+	}}
+
+	player := player2.GetPlayerMgr().GetPlayer(playerID)
+	if player == nil {
+		entry.Debugln("获取玩家失败")
+		return
+	}
+	desk := player.GetDesk()
+	if desk == nil {
+		entry.Debugln("玩家不在房间")
+		return
+	}
+	continueModel := models.GetContinueModel(desk.GetUid())
+	*response = continueModel.PushContinueRequest(playerID, &req)
 	return
 }
 

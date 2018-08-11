@@ -103,18 +103,13 @@ CREATE TABLE `t_game_level_config`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '游戏场次配置表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of t_game_level_config
--- ----------------------------
-INSERT INTO `t_game_level_config` VALUES (1, 1, 1, '新手场', 1, 1, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-INSERT INTO `t_game_level_config` VALUES (2, 2, 1, '新手场', 1, 1, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-INSERT INTO `t_game_level_config` VALUES (3, 3, 1, '新手场', 1, 1, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-INSERT INTO `t_game_level_config` VALUES (4, 4, 1, '新手场', 1, 2, 0, 1000000, 1, 1, 1, NULL, NULL, NULL, '2018-08-08 18:17:31', NULL, NULL, NULL);
-
 SET FOREIGN_KEY_CHECKS = 1;
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> develop
 -- ----------------------------
 -- Table structure for t_horse_race
 -- ----------------------------

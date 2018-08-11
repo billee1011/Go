@@ -8,11 +8,11 @@ import (
 type CardColor int32
 
 const (
-	CardColor_ColorWan  CardColor = 0
-	CardColor_ColorTong CardColor = 1
+	CardColor_ColorWan  CardColor = 1
 	CardColor_ColorTiao CardColor = 2
-	CardColor_ColorZi   CardColor = 3
-	CardColor_ColorHua  CardColor = 4
+	CardColor_ColorTong CardColor = 3
+	CardColor_ColorZi   CardColor = 4
+	CardColor_ColorHua  CardColor = 5
 )
 
 func (c CardColor) String() string {
