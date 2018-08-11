@@ -851,10 +851,4 @@ func init() {
 	if err != nil {
 		logrus.Panicf("创建 id 生成器失败: %v", err)
 	}
-	redisCli, err := redisCliGetter(playerRedisName, 0)
-	if err != nil {
-		logrus.Panicf("获取 redis 客户端失败(%s)。", err.Error())
-	}
-	redisCli.Set(showUID, 10000*10000*10, -1)
-
 }
