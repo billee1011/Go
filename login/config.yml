@@ -30,3 +30,15 @@ redis_list:
     passwd: 
 
 node: 1
+
+# 内部认证，不通过账号系统
+inner_auth: true  
+
+# 账号系统登录 url 
+login_url: http://192.168.7.26:8086/mock/24/account/loginv2
+
+# 产品 ID 
+product_id: 9999
+
+
+
