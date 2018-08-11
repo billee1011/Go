@@ -227,7 +227,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	// 不存在直接返回
 	if !exist && playerID == uid {
 		response.ErrCode = proto.Uint32(0)
-		//return
+		return
 	}
 
 	// 出错直接返回
@@ -246,7 +246,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	// 获取自己游戏信息直接返回
 	if playerID == uid {
 		response.ErrCode = proto.Uint32(0)
-		//return
+		return
 	}
 
 	// 获取玩家道具
