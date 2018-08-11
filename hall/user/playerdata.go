@@ -302,15 +302,15 @@ func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.Get
 
 // createPlayer 创建玩家
 func createPlayer(accID uint64) (uint64, error) {
-	playerID := data.AllocPlayerID()
+	showUID := data.AllocShowUID()
+	playerID := uint64(showUID)
 
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
-	showUID := data.AllocShowUID()
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
-		Playerid:     int64(playerID),
+		Playerid:     int64(showUID),
 		Showuid:      showUID,
 		Type:         1,
 		Channelid:    0,                                // TODO ，渠道 ID
