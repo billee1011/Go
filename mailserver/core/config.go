@@ -2,14 +2,14 @@ package core
 
 /*
 	功能： 服务配置中心，定义RPC服务关联，Client消息分派。
-
+	作者: SkyWang
+	日期:
  */
 import (
 	"steve/client_pb/msgid"
-	"steve/msgserver/msg"
-	"steve/msgserver/logic"
+	"steve/mailserver/msg"
+	"steve/mailserver/logic"
 )
-
 
 /////////////////////////////////////////[1.配置线程模型]////////////////////////////////////
 // 是否采用单线程运行所有协程(goroutime)
@@ -26,7 +26,12 @@ var pbServerImp interface{} = nil
 
 // 添加从GateWay过来的Client消息处理
 var mapMsg  = map[msgid.MsgID] interface{} {
-	msgid.MsgID_MSGSVR_GET_HORSE_RACE_REQ:msg.ProcessGetHorseRaceReq,
+	msgid.MsgID_MAILSVR_GET_UNREAD_SUM_REQ:msg.ProcessGetUnReadSumReq,
+	msgid.MsgID_MAILSVR_GET_MAIL_LIST_REQ:msg.ProcessGetMailListReq,
+	msgid.MsgID_MAILSVR_GET_MAIL_DETAIL_REQ:msg.ProcessGetMailDetailReq,
+	msgid.MsgID_MAILSVR_DEL_MAIL_REQ:msg.ProcessDelMailReq,
+	msgid.MsgID_MAILSVR_SET_READ_TAG_REQ:msg.ProcessSetReadTagReq,
+	msgid.MsgID_MAILSVR_AWARD_ATTACH_REQ:msg.ProcessAwardAttachReq,
 }
 
 /////////////////////////////[4.向client发送通知消息]////////////////////////////////////////////
@@ -67,17 +72,15 @@ entry.WithError(err).Errorln("发布消息失败")
 		logrus.WithError(err).Panicln("订阅登录消息失败")
 	}
  */
-
 /////////////////////////////[6.服务初始化配置]////////////////////////////////////////////
 // 比如从DB或文件加载配置
 func InitServer() error {
-	err := logic.GetMsgMgr().Init()
+	err := logic.Init()
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
 
 
 
