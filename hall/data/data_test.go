@@ -235,6 +235,25 @@ func TestSetPlayerState(t *testing.T) {
 	assert.Equal(t, true, result)
 }
 
+func TestUpdatePlayerServerAddr(t *testing.T) {
+	viper.SetDefault("node", 200)
+	playerID := AllocPlayerID()
+	assert.NotZero(t, playerID)
+
+	alloc, err := gutils.NewNode(300)
+	assert.Nil(t, err)
+	accID := uint64(alloc.Generate().Int64())
+
+	NewPlayerData(accID, playerID)
+	playerState, _ := GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
+	fmt.Printf("%v", playerState)
+	playerID = uint64(123134141241)
+	result, err := UpdatePlayerServerAddr(playerID, 1, "127.0.0.1")
+	playerState, _ = GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+}
+
 func TestUpdatePlayerInfo(t *testing.T) {
 	viper.SetDefault("node", 200)
 	playerID := AllocPlayerID()
