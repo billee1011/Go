@@ -182,11 +182,13 @@ func (model *ContinueModel) startNextRound() {
 
 	desk := model.GetDesk()
 	var err error
-	desk.GetConfig().Context, err = createDeskContext(desk.GetGameId(), desk.GetPlayerIds(), model.zhuang, model.fixzhuang)
+	deskConfig := desk.GetConfig()
+	deskConfig.Context, err = createDeskContext(desk.GetGameId(), desk.GetPlayerIds(), model.zhuang, model.fixzhuang)
 	if err != nil {
 		logrus.WithField("players", model.readyPlayers).Errorln("初始化牌桌现场失败")
 		return
 	}
+	deskConfig.Settle = createDeskSettler(desk.GetGameId())
 	eventModel := GetEventModel(model.GetDesk().GetUid())
 	eventModel.StartProcessEvents()
 }

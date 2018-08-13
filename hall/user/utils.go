@@ -74,6 +74,7 @@ func DBGamelevelConfig2Client(dbGameConfigs []*db.TGameLevelConfig) []*common.Ga
 			HighScors:  proto.Uint32(uint32(dbGameConfig.Highscores)),
 			ShowPeople: proto.Uint32(uint32(dbGameConfig.Showonlinepeople)),
 			RealPeople: proto.Uint32(uint32(dbGameConfig.Realonlinepeople)),
+			LevelTag:   common.LevelTag(dbGameConfig.Tag).Enum(),
 		}
 		cGameLevelConfigs = append(cGameLevelConfigs, cGameLevelConfig)
 	}

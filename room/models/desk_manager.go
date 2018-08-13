@@ -115,6 +115,17 @@ func createDeskContext(gameID int, players []uint64, zhuang int, fixzhuang bool)
 	}
 }
 
+func createDeskSettler(gameID int) deskpkg.DeskSettler {
+	switch gameID {
+	case GameId_GAMEID_DOUDIZHU:
+		{
+			return nil
+		}
+	default:
+		return NewMajongSettle()
+	}
+}
+
 func (mgr *DeskManager) createDeskConfig(gameID int, players []uint64, req *roommgr.CreateDeskRequest) (deskpkg.DeskConfig, error) {
 	context, err := createDeskContext(gameID, players, 0, false)
 	if err != nil {

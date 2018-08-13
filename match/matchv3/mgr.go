@@ -2,15 +2,15 @@ package matchv3
 
 import (
 	"container/list"
-	"context"
 	"fmt"
+	"steve/configuration/configutil"
+	"steve/external/configclient"
 	"steve/external/goldclient"
 	"steve/external/hallclient"
 	"steve/external/robotclient"
 	"steve/match/web"
 	"steve/server_pb/gold"
 	"steve/server_pb/user"
-	"steve/structs"
 	"sync/atomic"
 	"time"
 
@@ -235,97 +235,83 @@ func (manager *matchManager) compuRateGold() bool {
 func (manager *matchManager) requestGameLevelConfig() bool {
 	logrus.Debugln("进入函数")
 
-	exposer := structs.GetGlobalExposer()
-
-	// 获取hall的connection
-	hallConnection, err := exposer.RPCClient.GetConnectByServerName("hall")
-	if err != nil || hallConnection == nil {
-		logrus.WithError(err).Errorln("获得hall服的gRPC失败!!!")
-		return false
-	}
-
-	hallClient := user.NewPlayerDataClient(hallConnection)
-
-	// 调用room服的创建桌子
-	rsp, err := hallClient.GetGameListInfo(context.Background(), &user.GetGameListInfoReq{})
-
-	// 不成功时，报错
-	if err != nil || rsp == nil {
-		logrus.WithError(err).Errorln("从hall服获取游戏场次配置信息失败!!!")
-		return false
-	}
-
-	// 返回的不是成功，报错
-	if rsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
-		logrus.WithError(err).Errorln("从hall服获取游戏场次配置信息成功，但errCode显示失败")
+	gameStr, err := configclient.GetConfig("game", "config")
+	if err != nil {
+		logrus.WithError(err).Errorln("获取游戏配置失败！！")
 		return false
 	}
 
 	// 游戏配置
-	rspGameConfig := rsp.GetGameConfig()
-	logrus.Debugf("hall服发送了%v个游戏配置信息", len(rspGameConfig))
-	for i := 0; i < len(rspGameConfig); i++ {
-		pGameConf := rspGameConfig[i]
+	gameConf := configutil.ParseToGameConfigMap(gameStr)
+	logrus.Debugf("读取到%v个游戏配置信息", len(gameConf))
+	for i := 0; i < len(gameConf); i++ {
+		pGameConf := gameConf[i]
 
 		// 游戏需不存在
-		_, exist := manager.allGame[pGameConf.GetGameId()]
+		_, exist := manager.allGame[uint32(pGameConf.GameID)]
 		if exist {
-			logrus.Errorln("游戏ID:%v存在重复", pGameConf.GetGameId())
+			logrus.Errorln("读取游戏配置时游戏ID:%v存在重复", pGameConf.GameID)
 			return false
 		}
 
 		// 新游戏配置信息
 		newGameConf := gameConfig{
-			gameID:             pGameConf.GetGameId(),
-			gameName:           pGameConf.GetGameName(),
-			minNeedPlayerCount: pGameConf.GetMinPeople(),
-			maxNeedPlayerCount: pGameConf.GetMaxPeople(),
+			gameID:             uint32(pGameConf.GameID),
+			gameName:           pGameConf.Name,
+			minNeedPlayerCount: uint32(pGameConf.MinPeople),
+			maxNeedPlayerCount: uint32(pGameConf.MaxPeople),
 			levelConfig:        map[uint32]gameLevelConfig{},
 		}
 
 		// 加入该游戏
-		manager.allGame[pGameConf.GetGameId()] = gameInfo{
+		manager.allGame[uint32(pGameConf.GameID)] = gameInfo{
 			allLevelChan: map[uint32]chan reqMatchPlayer{},
 			config:       newGameConf}
 	}
 
 	// 场次配置
-	rspLevelConfig := rsp.GetGameLevelConfig()
-	logrus.Debugf("hall服发送了%v个场次配置信息", len(rspLevelConfig))
-	for i := 0; i < len(rspLevelConfig); i++ {
-		pLevelConf := rspLevelConfig[i]
+	levelStr, err2 := configclient.GetConfig("game", "levelconfig")
+	if err2 != nil {
+		logrus.WithError(err2).Errorln("获取游戏场次配置失败！！")
+		return false
+	}
+
+	levelConf := configutil.ParseToGameLevelConfigMap(levelStr)
+	logrus.Debugf("读取到%v个场次配置信息", len(levelConf))
+	for i := 0; i < len(levelConf); i++ {
+		pLevelConf := levelConf[i]
 
 		// 游戏需存在
-		gInfo, exist := manager.allGame[pLevelConf.GetGameId()]
+		gInfo, exist := manager.allGame[uint32(pLevelConf.GameID)]
 		if !exist {
-			logrus.Errorln("游戏ID:%v中不存在", pLevelConf.GetGameId())
+			logrus.Errorln("读取游戏场次配置时游戏ID:%v中不存在", pLevelConf.GameID)
 			return false
 		}
 
 		// 场次需不存在
-		_, exist = gInfo.config.levelConfig[pLevelConf.GetLevelId()]
+		_, exist = gInfo.config.levelConfig[uint32(pLevelConf.LevelID)]
 		if exist {
-			logrus.Errorln("游戏ID:%v中场次ID:%v存在重复", pLevelConf.GetGameId(), pLevelConf.GetLevelId())
+			logrus.Errorln("读取游戏场次配置时游戏ID:%v中场次ID:%v存在重复", pLevelConf.GameID, pLevelConf.LevelID)
 			return false
 		}
 
 		// 新场次配置信息
 		newLevelConf := gameLevelConfig{
-			levelID:     pLevelConf.GetLevelId(),
-			levelName:   pLevelConf.GetLevelName(),
-			bottomScore: pLevelConf.GetBaseScores(),
-			minGold:     int64(pLevelConf.GetLowScores()),
-			maxGold:     int64(pLevelConf.GetHighScores()),
+			levelID:     uint32(pLevelConf.LevelID),
+			levelName:   pLevelConf.Name,
+			bottomScore: uint32(pLevelConf.BaseScores),
+			minGold:     int64(pLevelConf.LowScores),
+			maxGold:     int64(pLevelConf.HighScores),
 		}
 
 		// 加入该场次
-		gInfo.config.levelConfig[pLevelConf.GetLevelId()] = newLevelConf
+		gInfo.config.levelConfig[uint32(pLevelConf.LevelID)] = newLevelConf
 
 		// 该场次的申请通道
-		gInfo.allLevelChan[pLevelConf.GetLevelId()] = make(chan reqMatchPlayer, 1024)
+		gInfo.allLevelChan[uint32(pLevelConf.LevelID)] = make(chan reqMatchPlayer, 1024)
 	}
 
-	logrus.Debugf("接收hall服的游戏配置信息结束，配置如下：%v", manager.allGame)
+	logrus.Debugf("读取到的游戏配置信息结束，配置如下：%v", manager.allGame)
 
 	logrus.Debugln("离开函数")
 	return true
@@ -748,7 +734,7 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 		// 遍历该概率下的所有桌子
 		for iter := globalInfo.allRateDesks[index].Front(); iter != nil; iter = iter.Next() {
 
-			desk := iter.Value.(*matchDesk)
+			desk := *(iter.Value.(**matchDesk))
 
 			// 距离桌子创建时间的间隔
 			interval := nowTime - desk.createTime
@@ -797,20 +783,25 @@ func (manager *matchManager) firstMatch(globalInfo *levelGlobalInfo, reqPlayer *
 			// 可以进桌子了，再找到创建时间最早的那个
 
 			// 比较桌子创建时间，记录创建时间最早的
-			if (pFindIter == nil) || (pFindIter != nil && desk.createTime < pFindIter.Value.(*matchDesk).createTime) {
+			if pFindIter == nil {
 				pFindIter = iter
 				pFindIndex = index
+			} else {
+				pFindDesk := *(pFindIter.Value.(**matchDesk))
+				if desk.createTime < pFindDesk.createTime {
+					pFindIter = iter
+					pFindIndex = index
+				}
 			}
 		}
 	}
 
 	// 找到的话，则加入桌子，返回
 	if pFindIter != nil && pFindIndex != -1 {
-		pFindDesk := pFindIter.Value.(*matchDesk)
+		pFindDesk := *(pFindIter.Value.(**matchDesk))
 
 		// 把玩家加入桌子，若桌子已满，则从列表中移除
 		if manager.addPlayerToDesk(&newMatchPlayer, pFindDesk, globalInfo) {
-
 			logEntry.Debugf("二次范围检测时，胜率为%v的玩家%v匹配进桌子%v，桌子满员，已删除", reqPlayer.winRate, newMatchPlayer, pFindDesk)
 			globalInfo.allRateDesks[pFindIndex].Remove(pFindIter)
 		} else {
@@ -1468,10 +1459,10 @@ func (manager *matchManager) mergeDesks(globalInfo *levelGlobalInfo) {
 			// 有合并的桌子
 			if iter2 != nil {
 				iter1 := iter
-				pDesk1 := iter1.Value.(*matchDesk)
+				pDesk1 := *(iter1.Value.(**matchDesk))
 				pList1 := &globalInfo.allRateDesks[index]
 
-				pDesk2 := iter2.Value.(*matchDesk)
+				pDesk2 := *(iter2.Value.(**matchDesk))
 
 				logEntry.Debugln("找到了可以合并的，桌子1:%v，桌子2:%v", pDesk1, pDesk2)
 
@@ -1622,7 +1613,7 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 					LevelID:     desk.levelID,
 				}
 
-				// logEntry.Debugf("请求的机器人参数:%v", reqRobot)
+				logEntry.Debugf("请求的机器人参数:%v", reqRobot)
 
 				// 从hall服获取一个空闲的机器人
 				robotPlayerID, robotGold, robotRate, err := robotclient.GetLeisureRobotInfoByInfo(reqRobot)
