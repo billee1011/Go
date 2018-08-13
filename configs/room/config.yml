@@ -52,4 +52,4 @@ mysql_list:
 node: 1
 
 ai:
-  visible: false
+  visible: true
