@@ -68,6 +68,7 @@ func CreateExposer(opt *Option) *structs.Exposer {
 	exposer.Publisher = pubsub.CreatePublisher()
 	exposer.Subscriber = pubsub.CreateSubscriber()
 	exposer.Option = opt
+	exposer.ConsulReq = &ConsulRequestImp{}
 
 	structs.SetGlobalExposer(exposer)
 	// 开启通用的负载报告服务
@@ -91,7 +92,7 @@ func Run(service service.Service, exposer *structs.Exposer, opt Option) {
 		defer wg.Done()
 		defer recoverPanic()
 		// 从consul删除服务节点
-		defer DeleteMyConsulAgent()
+		//defer DeleteMyConsulAgent()
 		runRPCServer(exposer.RPCServer, opt.rpcAddr, opt.rpcPort)
 	}()
 

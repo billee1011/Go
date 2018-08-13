@@ -49,6 +49,11 @@ pushd back
 sh ./build.sh
 popd
 
+pushd mailserver
+sh ./build.sh
+popd
+
+
 sh ./simulate/packtests.sh
 
 

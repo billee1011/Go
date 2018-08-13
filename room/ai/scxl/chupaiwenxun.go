@@ -3,6 +3,7 @@ package scxlai
 import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
 	"math/rand"
 	"sort"
 	"steve/entity/majong"
@@ -54,8 +55,14 @@ func (h *chupaiWenxunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (
 		}
 	case ai.OverTimeAI, ai.SpecialOverTimeAI, ai.TuoGuangAI:
 		{
-			if event := h.chupaiWenxun(player); event != nil {
-				result.Events = append(result.Events, *event)
+			if viper.GetBool("ai.test") {
+				if event := h.askMiddleAI(player, *mjContext.LastOutCard); event != nil {
+					result.Events = append(result.Events, *event)
+				}
+			} else {
+				if event := h.chupaiWenxun(player); event != nil {
+					result.Events = append(result.Events, *event)
+				}
 			}
 		}
 	}
