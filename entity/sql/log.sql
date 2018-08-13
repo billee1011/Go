@@ -75,6 +75,7 @@ CREATE TABLE `t_game_sumary` (
   `scoreInfo` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT '玩家得分情况',
   `winnerIDs` varchar(256) CHARACTER SET latin1 DEFAULT NULL COMMENT '赢家IDs',
   `roundCurrency` text CHARACTER SET latin1 COMMENT '牌局日志信息',
+  `gamestartTime` datetime DEFAULT NULL COMMENT '游戏开始时间',
   `gameoverTime` datetime DEFAULT NULL COMMENT '游戏结束时间',
   `createTime` datetime DEFAULT NULL COMMENT '创建时间',
   `createBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL COMMENT '创建人',
@@ -82,6 +83,7 @@ CREATE TABLE `t_game_sumary` (
   `updateBy` varchar(64) CHARACTER SET latin1 DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`sumaryID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='游戏记录汇总表';
+
 
 -- ----------------------------
 -- Table structure for t_login_record
