@@ -2,6 +2,7 @@ package scxlai
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"steve/common/mjoption"
 	"steve/entity/majong"
 	"steve/gutils"
@@ -61,9 +62,17 @@ func (h *zixunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) (aiEvent ai.AIEvent) {
 	switch params.AIType {
 	case ai.OverTimeAI, ai.SpecialOverTimeAI:
-		aiEvent = h.generateOverTime(player, mjContext)
+		if viper.GetBool("ai.test") {
+			aiEvent = h.generateRobot(player, mjContext)
+		} else {
+			aiEvent = h.generateOverTime(player, mjContext)
+		}
 	case ai.TuoGuangAI:
-		aiEvent = h.generateTuoGuang(player, mjContext)
+		if viper.GetBool("ai.test") {
+			aiEvent = h.generateRobot(player, mjContext)
+		} else {
+			aiEvent = h.generateTuoGuang(player, mjContext)
+		}
 	case ai.RobotAI:
 		aiEvent = h.generateRobot(player, mjContext)
 	case ai.TingAI:
@@ -101,11 +110,6 @@ func (h *zixunStateAI) generateTuoGuang(player *majong.Player, mjContext *majong
 	// 生成托管AI事件
 	// 无状态下才会托管，因此托管就是出牌
 	return h.getNormalZiXunAIEvent(player, mjContext)
-}
-
-func (h *zixunStateAI) generateRobot(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	// 中级AI
-	return h.getMiddleAIEvent(player, mjContext)
 }
 
 func (h *zixunStateAI) generateTing(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
