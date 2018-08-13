@@ -49,5 +49,10 @@ pushd msgserver
 sh ./start.sh
 popd
 
+echo "mailserver---------------------------------\n"
+pushd mailserver
+sh ./start.sh
+popd
+
 ./p.sh
 
