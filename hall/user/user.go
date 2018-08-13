@@ -250,7 +250,7 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 	}
 
 	// 获取玩家道具
-	props, err := prop.GetPlayerAllProps(uid)
+	props, err := prop.GetPlayerAllProps(playerID)
 	if err != nil {
 		logrus.Debugf("Handle get player game info uid:(%d)获取玩家道具失败 err:(%v)", uid, err.Error())
 		return
@@ -265,6 +265,8 @@ func HandleGetPlayerGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Hea
 
 	// 获取道具属性
 	propConfigs, err := prop.GetSomePropsConfig(propIds)
+
+	logrus.Debugf("Handle get player game info propConfigs:(%v),", propConfigs)
 
 	if err != nil {
 		logrus.Debugf("Handle get player game info uid:(%d)获取玩家道具属性失败 err:(%v)", uid, err.Error())

@@ -15,8 +15,6 @@ import (
 	modelmanager "steve/room/models"
 	player2 "steve/room/player"
 	"steve/room/util"
-	"steve/structs/exchanger"
-	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
