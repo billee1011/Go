@@ -1,6 +1,7 @@
 package core
 
 import (
+	"runtime"
 	"steve/robot/data"
 	"steve/robot/robotservice"
 	"steve/server_pb/robot"
@@ -21,6 +22,7 @@ func NewService() service.Service {
 }
 
 func (r *RobotCore) Init(e *structs.Exposer, param ...string) error {
+	runtime.GOMAXPROCS(1) //单线程序
 	entry := logrus.WithField("name", "RobotCore.Init")
 	r.e = e
 	// 注册当前模块RPC服务处理器
@@ -28,9 +30,9 @@ func (r *RobotCore) Init(e *structs.Exposer, param ...string) error {
 		entry.WithError(err).Error("注册RPC服务处理器失败")
 		return err
 	}
-	data.InitRobotRedis() //从mysql获取到机器人,存到redis
+	err := data.InitRobotRedis() //从mysql获取到机器人,存到redis
 	entry.Debugf("RobotCoreserver init succeed ...")
-	return nil
+	return err
 }
 
 func (r *RobotCore) Start() error {

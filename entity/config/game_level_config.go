@@ -1,17 +1,19 @@
 package config
 
+// GameLevelConfig 游戏场次配置信息
 type GameLevelConfig struct {
-	GameID int
-	LevelID int
-	Name string
-	Fee int
-	BaseScores int
-	LowScores int
-	HighScores int
-	RealOnlinePeople int
-	ShowOnlinePeople int
-	Status int
-	Tag int
-	IsAlms int
-	Remark string
+	ID               int    `json:"id"`
+	GameID           int    `json:"gameID"`
+	LevelID          int    `json:"levelID"`
+	Name             string `json:"name"`
+	Fee              int    `json:"fee"`
+	BaseScores       int    `json:"baseScores"`
+	LowScores        int    `json:"lowScores"`
+	HighScores       int    `json:"highScores"`
+	RealOnlinePeople int    `json:"realOnlinePeople"`
+	ShowOnlinePeople int    `json:"showOnlinePeople"`
+	Status           int    `json:"status"`
+	Tag              int    `json:"tag"`
+	IsAlms           int    `json:"isAlms"`
+	Remark           string `json:"remark"`
 }

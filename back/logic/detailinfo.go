@@ -14,6 +14,7 @@ func insertDetailInfo(info gamelog.TGameDetail) error {
 		Playerid:    int64(info.Playerid),
 		Deskid:      info.Deskid,
 		Gameid:      info.Gameid,
+		Levelid:     info.Levelid,
 		Amount:      info.Amount,
 		Iswinner:    info.Iswinner,
 		Brokercount: info.BrokerCount,

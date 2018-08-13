@@ -49,7 +49,7 @@ message GetLeisureRobotInfoReq {
 message GetLeisureRobotInfoRsp {
     uint64 robot_player_id = 1;    // 机器人玩家id
     int64  coin            = 2;    // 玩家金币数
-    int32  win_rate        = 3;    // 胜率
+    double  win_rate       = 3;    // 胜率
     int32  err_code        = 4;    // 错误信息
 }
 
@@ -68,7 +68,33 @@ message SetRobotPlayerStateRsp {
     int32 err_code = 2;           // 错误信息
 }
 
+//UpdataRobotGameWinRateReq 更新机器人胜率請求
+message UpdataRobotGameWinRateReq {
+    uint64 robot_player_id     = 1;  // 机器人玩家id
+    int32  game_id             = 2;  // 游戏ID
+    double  oldWinRate         = 3;  // 旧的胜率
+    double  newWinRate         = 4;  // 新的胜率
+}
+
+//UpdataRobotGameWinRateRsp 更新机器人胜率响应
+message UpdataRobotGameWinRateRsp {
+    bool result = 1;              // 成功 true ,失敗 false
+    int32 err_code = 2;           // 错误信息
+}
+
+//IsRobotPlayerReq 判断是否时机器人請求
+message IsRobotPlayerReq{
+     uint64 robot_player_id     = 1;  // 机器人玩家id
+}
+
+//IsRobotPlayerRsp 判断是否时机器人响应
+message IsRobotPlayerRsp {
+    bool result = 1;              //  是机器人true ,不 false
+}
+
 service RobotService {
      rpc GetLeisureRobotInfoByInfo(GetLeisureRobotInfoReq) returns (GetLeisureRobotInfoRsp) {}
      rpc SetRobotPlayerState(SetRobotPlayerStateReq) returns (SetRobotPlayerStateRsp) {}
+     rpc UpdataRobotGameWinRate(UpdataRobotGameWinRateReq) returns (UpdataRobotGameWinRateRsp) {}
+     rpc IsRobotPlayer(IsRobotPlayerReq) returns (IsRobotPlayerRsp) {}
 }
