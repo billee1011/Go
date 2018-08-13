@@ -1,4 +1,4 @@
 
-protoc --go_out=plugins=grpc:props ./propserver/props.proto
+protoc --go_out=plugins=grpc:. ./props.proto
 
 

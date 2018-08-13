@@ -14,15 +14,15 @@ enum ResultStat {
 }
 
 // 道具
-message PropsItem {
-    int32 props_id = 1; 			// 道具ID
-    int64 add_num = 2;   		    // 加减数量
+message PropsInfo {
+    uint64 props_id = 1; 			// 道具ID
+    int64  add_num = 2;   		    // 加减道具数量(添加时，表示)
 }
 
 // 添加道具请求
 message AddPropsReq {
      uint64 uid = 1; 				// 玩家 ID
-     repeated PropsItem props_list = 2;    // 道具列表
+     repeated PropsInfo props_list = 2;    // 道具列表
      int32 func_id = 3;             // 功能ID：比如台费，玩牌，系统补助, 功能ID可以通过web来配置，主要用于统计分析。
      string seq = 4;                // 交易序列号:[ServerName]_[Server_ID]_20180723101111_递增ID
      int64 channel = 5;             // APP渠道ID，来源ID。 比如：华为平台，小米平台，微信平台
@@ -35,25 +35,25 @@ message AddPropsReq {
 message AddPropsRsp {
      ResultStat err_code = 1;		// 返回值
      string  err_desc	= 2;		// 错误描述
-     int64  cur_value = 3;          // 变化后的当前值
 }
 
 // 获取项
 message GetItem {
-     int32 props_id = 1; 			// 道具ID
-     int64 value = 2;   			// 当前值,请求时不填，返回时填值
+     uint64 props_id = 1; 			// 道具ID
+     int64 props_num = 2;   		//当前道具数量
 }
 
 // 获取玩家道具列表请求
 message GetPropsReq {
-    uint64 uid = 1; 				    // 玩家 ID
+    uint64 uid = 1; 				// 玩家 ID
+    uint64 props_id = 2; 			// 道具ID , 0:玩家全部道具, >0:表示玩家指定道具
 }
 
 //  获取玩家道具列表回复
 message GetPropsRsp {
     ResultStat err_code	= 1;			// 错误码
     string  err_desc	= 2;			// 错误描述
-    repeated GetItem item = 3;         // 返回结果
+    repeated PropsInfo props_list = 3;         // 返回道具列表
 }
 
 
