@@ -16,7 +16,7 @@ func UpdatePlayerGotTimesByPlayerID(playerID uint64, changeTimes int) error {
 		return err
 	}
 	// redis
-	if err := UpdateAlmsPlayerGotTimes(playerID, changeTimes, redisPlayerTimeOut); err != nil {
+	if err := UpdateAlmsPlayerGotTimes(playerID, changeTimes, RedisTimeOut); err != nil {
 		entry.WithError(err).Errorln("修改玩家已经领取数量 redis 失败 playerID(%v)", playerID)
 		return err
 	}
@@ -111,7 +111,7 @@ func GetPlayerGotTimesByPlayerID(playerID uint64) (int, error) {
 			return 0, err
 		}
 		// 存入redis
-		if err = UpdateAlmsPlayerGotTimes(playerID, times, redisPlayerTimeOut); err != nil {
+		if err = UpdateAlmsPlayerGotTimes(playerID, times, RedisTimeOut); err != nil {
 			entry.WithError(err).Errorln("存储玩家救济金领取次数失败")
 		}
 	}

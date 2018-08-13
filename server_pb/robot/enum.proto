@@ -8,6 +8,7 @@ enum ErrCode {
     EC_FAIL = 1;
     EC_Args = 2;   // 参数不正确
     EC_EMPTY = 3;  // 数据为空
+    EC_NOTROBOT =4; //不是机器人
 }
 
 // RobotPlayerState 机器人玩家状态
