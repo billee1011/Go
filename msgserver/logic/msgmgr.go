@@ -11,6 +11,7 @@ import (
 	"steve/msgserver/data"
 	"steve/msgserver/define"
 	"time"
+	"steve/structs"
 )
 
 /*
@@ -24,6 +25,9 @@ import (
 */
 
 var myMgr MsgMgr
+
+// 是否是主节点
+var isMasterNode = false
 
 func GetMsgMgr() *MsgMgr {
 	return &myMgr
@@ -257,6 +261,13 @@ func (gm *MsgMgr) checkHorseChanged(horse *define.HorseRace) bool {
 
 // 发送跑马灯变化通知
 func (gm *MsgMgr) sendHorseRaceChangedNtf() error {
+
+	isMasterNode = structs.GetGlobalExposer().ConsulReq.IsMasterNode()
+	// 判断当时是否是主节点
+	if !isMasterNode {
+		return nil
+	}
+	// 只有主节点发送广播通知
 	req := &msgserver.MsgSvrHorseRaceChangeNtf{}
 	channel := int32(0)
 	req.Channel = &channel

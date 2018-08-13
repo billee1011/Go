@@ -34,7 +34,7 @@ var gCostList = map[int16]string{
 }
 
 // 如果玩家账号不存在，向DB中加入此玩家初始金币值
-var bInitGold = true
+var bInitGold = false
 
 const dbName = "player"
 
