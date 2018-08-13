@@ -80,7 +80,7 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 		rsp.NickName, rsp.Avatar = player.Nickname, player.Avatar
 		rsp.ChannelId, rsp.ProvinceId, rsp.CityId = uint32(player.Channelid), uint32(player.Provinceid), uint32(player.Cityid)
 	}
-
+	logrus.Debugf("GetPlayerInfo rsp : (%v)", rsp)
 	return
 }
 
@@ -330,12 +330,12 @@ func createPlayer(accID uint64) (uint64, error) {
 		Playerid:     int64(playerID),
 		Showuid:      showUID,
 		Type:         1,
-		Channelid:    0,                                // TODO ，渠道 ID
+		Channelid:    1,                                // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", showUID), // TODO,昵称
 		Gender:       2,
 		Avatar:       getRandomAvator(), // TODO , 头像
-		Provinceid:   0,                 // TODO， 省ID
-		Cityid:       0,                 // TODO 市ID
+		Provinceid:   1,                 // TODO， 省ID
+		Cityid:       1,                 // TODO 市ID
 		Name:         "",                // TODO: 真实姓名
 		Phone:        "",                // TODO: 电话
 		Idcard:       "",                // TODO 身份证

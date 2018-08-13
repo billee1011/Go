@@ -10,9 +10,9 @@ import (
 	"steve/common/data/prop"
 	"steve/entity/cache"
 	"steve/entity/db"
-	"steve/external/configclient"
 	"steve/external/goldclient"
 	"steve/hall/data"
+	"steve/hall/logic"
 	"steve/server_pb/gold"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
@@ -184,27 +184,10 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 		},
 	}
 
-	// 游戏配置
-	gameConf, err := configclient.GetGameConfigMap()
-	if err != nil {
-		logrus.WithError(err).Errorln("获取游戏配置失败！！")
-		return
-	}
-	// 场次配置
-	levelConf, err := configclient.GetGameLevelConfigMap()
-	if err != nil {
-		logrus.WithError(err).Errorln("获取游戏级别配置失败！！")
-		return
-	}
-
 	// 返回结果
-	if err == nil {
-		response.GameConfig = DBGameConfig2Client(gameConf)
-		response.GameLevelConfig = DBGamelevelConfig2Client(levelConf)
-		response.ErrCode = proto.Uint32(0)
-		return
-	}
-	logrus.Debugf("Handle get game info rsp: (%v),err :(%v) ", response, err.Error())
+	response.GameConfig = DBGameConfig2Client(logic.GameConf)
+	response.GameLevelConfig = DBGamelevelConfig2Client(logic.LevelConf)
+	response.ErrCode = proto.Uint32(0)
 
 	return
 }

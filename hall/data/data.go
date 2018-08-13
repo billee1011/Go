@@ -95,7 +95,7 @@ func GetPlayerIDByAccountID(accountID uint64) (exist bool, playerID uint64, err 
 
 // GetPlayerInfo 根据玩家id获取玩家个人资料信息
 func GetPlayerInfo(playerID uint64, fields ...string) (dbPlayer *db.TPlayer, err error) {
-	logrus.Debugln("get player info playerId :(%d), fields:(%s)", playerID, fields)
+	logrus.Debugf("get player info playerId :(%d), fields:(%s)", playerID, fields)
 
 	dbPlayer, err = new(db.TPlayer), nil
 

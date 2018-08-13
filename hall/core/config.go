@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"steve/hall/logic"
 	"steve/structs"
 
 	"github.com/go-redis/redis"
@@ -22,6 +23,12 @@ func InitServer() error {
 	_, err = redisCli.Get(showUID).Result()
 	if err != nil {
 		redisCli.Set(showUID, 10000*10000*10, -1)
+	}
+
+	// 初始化游戏配置
+	err = logic.InitGameConfig()
+	if err != nil {
+		return fmt.Errorf("InitGameConfig失败(%s)", err.Error())
 	}
 	return nil
 }
