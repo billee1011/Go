@@ -147,25 +147,13 @@ message UpdatePlayerRsp{
     bool result = 2;              // 更新结果
 }
 
-// GetGameListInfoReq 获取游戏列表信息
-message GetGameListInfoReq{
-
-}
-
-// GetGameListInfoRsp 获取游戏列表信息应答
-message GetGameListInfoRsp{
-    int32 err_code = 1;                                     // 错误信息
-    repeated GameConfig game_config = 2;                    // 游戏玩法信息
-    repeated GameLevelConfig game_level_config = 3;         // 游戏场次信息
-}
-
 // PlayerData 玩家数据服务
 service PlayerData {
     // GetPlayerByAccount 根据账号获取玩家
     rpc GetPlayerByAccount(GetPlayerByAccountReq) returns(GetPlayerByAccountRsp);
     // GetPlayerInfo 获取玩家信息
     rpc GetPlayerInfo(GetPlayerInfoReq) returns (GetPlayerInfoRsp);
-    // UpdatePlayerInfo 更新玩家信息
+    // UpdatePlayerInfo 更新玩家信息 
     rpc UpdatePlayerInfo(UpdatePlayerInfoReq) returns (UpdatePlayerInfoRsp);
      // GetPlayerState 获取玩家状态
     rpc GetPlayerState(GetPlayerStateReq) returns (GetPlayerStateRsp);
@@ -177,6 +165,4 @@ service PlayerData {
     rpc UpdatePlayerGateInfo(UpdatePlayerGateInfoReq) returns (UpdatePlayerRsp) ;
      // UpdatePlayerServerAddr 更新玩家服务端信息 
     rpc UpdatePlayerServerAddr(UpdatePlayerServerAddrReq) returns (UpdatePlayerRsp) ;
-    // GetGameListInfo 获取游戏列表
-    rpc GetGameListInfo(GetGameListInfoReq) returns (GetGameListInfoRsp);
 }

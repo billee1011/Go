@@ -279,27 +279,6 @@ func (pds *PlayerDataService) UpdatePlayerServerAddr(ctx context.Context, req *u
 	return
 }
 
-// GetGameListInfo 获取玩家游戏列表信息
-func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.GetGameListInfoReq) (rsp *user.GetGameListInfoRsp, err error) {
-	logrus.Debugf("GetGameListInfo req :(%v)", *req)
-
-	// 默认返回消息
-	rsp, err = &user.GetGameListInfoRsp{
-		ErrCode:         int32(user.ErrCode_EC_FAIL),
-		GameConfig:      []*user.GameConfig{},
-		GameLevelConfig: []*user.GameLevelConfig{},
-	}, nil
-
-	// 逻辑处理
-	gameConfig, gameLevelConfig, err := data.GetGameInfoList()
-	// 返回消息
-	if err == nil {
-		rsp.GameConfig, rsp.GameLevelConfig = DBGameConfig2Server(gameConfig), DBGamelevelConfig2Sercer(gameLevelConfig)
-		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
-	}
-	return
-}
-
 // createPlayer 创建玩家
 func createPlayer(accID uint64) (uint64, error) {
 	showUID := data.AllocShowUID()

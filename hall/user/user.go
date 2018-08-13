@@ -10,6 +10,7 @@ import (
 	"steve/common/data/prop"
 	"steve/entity/cache"
 	"steve/entity/db"
+	"steve/external/configclient"
 	"steve/external/goldclient"
 	"steve/hall/data"
 	"steve/server_pb/gold"
@@ -183,13 +184,23 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 		},
 	}
 
-	// 逻辑处理
-	gameInfos, gameLevelInfos, err := data.GetGameInfoList()
+	// 游戏配置
+	gameConf, err := configclient.GetGameConfigMap()
+	if err != nil {
+		logrus.WithError(err).Errorln("获取游戏配置失败！！")
+		return
+	}
+	// 场次配置
+	levelConf, err := configclient.GetGameLevelConfigMap()
+	if err != nil {
+		logrus.WithError(err).Errorln("获取游戏级别配置失败！！")
+		return
+	}
 
 	// 返回结果
 	if err == nil {
-		response.GameConfig = DBGameConfig2Client(gameInfos)
-		response.GameLevelConfig = DBGamelevelConfig2Client(gameLevelInfos)
+		response.GameConfig = DBGameConfig2Client(gameConf)
+		response.GameLevelConfig = DBGamelevelConfig2Client(levelConf)
 		response.ErrCode = proto.Uint32(0)
 		return
 	}
