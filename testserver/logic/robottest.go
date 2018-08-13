@@ -7,17 +7,34 @@ import (
 )
 
 func startTestRobotServer() {
-	TestGetLRoboyPlayer()
-	TestSetLRoboyPlayerState()
+	pid := TestGetLRoboyPlayer()
+	TestSetLRoboyPlayerState(pid)
+	// TestSetLRoboyPlayerState(100002)
+	// TestUpdataWinRate()
+	// TestIsRobot()
 }
 
-func TestGetLRoboyPlayer() {
+func TestIsRobot() {
+	flag, err := robotclient.IsRobotPlayer(77777)
+	fmt.Println("++++++++++++++++++++++++++++")
+	fmt.Printf("err(%v)\n", err)
+	fmt.Printf("rsp(%v)\n", flag)
+}
+
+func TestUpdataWinRate() {
+	flag, err := robotclient.UpdataRobotPlayerWinRate(100002, 3, 55, 80)
+	fmt.Println("++++++++++++++++++++++++++++")
+	fmt.Printf("err(%v)\n", err)
+	fmt.Printf("rsp(%v)\n", flag)
+}
+
+func TestGetLRoboyPlayer() uint64 {
 	req := robotclient.LeisureRobotReqInfo{
-		CoinHigh:    8000,
-		CoinLow:     5000,
-		WinRateHigh: 50,
-		WinRateLow:  50,
-		GameID:      1,
+		CoinHigh:    10000,
+		CoinLow:     0,
+		WinRateHigh: 100,
+		WinRateLow:  0,
+		GameID:      2,
 		LevelID:     1,
 	}
 	playerID, coin, winR, err := robotclient.GetLeisureRobotInfoByInfo(req)
@@ -25,16 +42,17 @@ func TestGetLRoboyPlayer() {
 	fmt.Printf("err(%v)\n", err)
 	fmt.Printf("robotPlayerID(%v)\n", playerID)
 	fmt.Printf("coin(%v)\n", coin)
-	fmt.Printf("coin(%v)\n", winR)
+	fmt.Printf("winR(%v)\n", winR)
+	return playerID
 }
 
-func TestSetLRoboyPlayerState() {
-	NewState := uint32(robot.RobotPlayerState_RPS_IDIE)
-	OldState := uint32(robot.RobotPlayerState_RPS_MATCHING)
+func TestSetLRoboyPlayerState(playerID uint64) {
+	fmt.Println("++++++++++++++++++++++++++++")
+	NewState := uint32(robot.RobotPlayerState_RPS_MATCHING)
+	OldState := uint32(robot.RobotPlayerState_RPS_IDIE)
 	ServerType := uint32(robot.ServerType_ST_MATCH)
 	ServerAddr := "127.0.0.1:3306"
-	flag, err := robotclient.SetRobotPlayerState(uint64(2005), OldState, NewState, ServerType, ServerAddr)
+	flag, err := robotclient.SetRobotPlayerState(uint64(playerID), OldState, NewState, ServerType, ServerAddr)
 	fmt.Printf("err(%v)\n", err)
 	fmt.Printf("是否更改成功(%v)\n", flag)
-	fmt.Println("++++++++++++++++++++++++++++")
 }

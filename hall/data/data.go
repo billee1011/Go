@@ -47,6 +47,7 @@ const (
 	configRedisName          = "config"
 	configMysqlName          = "config"
 	playerTableName          = "t_player"
+	playerPropsTableName     = "t_player_props"
 	playerCurrencyTableName  = "t_player_currency"
 	playerGameTableName      = "t_player_game"
 	gameconfigTableName      = "t_game_config"
@@ -453,6 +454,21 @@ func InitPlayerState(playerID int64) (err error) {
 	return
 }
 
+// InitPlayerProps 初始化玩家道具
+func InitPlayerProps(playerpProps db.TPlayerProps) (err error) {
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return err
+	}
+	session := engine.Table(playerPropsTableName)
+	affected, err := session.Insert(&playerpProps)
+	if err != nil || affected == 0 {
+		sql, _ := session.LastSQL()
+		return fmt.Errorf("insert sql error：(%v)， affect=(%d), sql=(%s)", err, affected, sql)
+	}
+	return nil
+}
+
 // getPlayerStateFromRedis 从redis查找玩家状态信息
 func getPlayerStateFromRedis(playerID uint64, fields ...string) (*PlayerState, error) {
 
@@ -851,10 +867,4 @@ func init() {
 	if err != nil {
 		logrus.Panicf("创建 id 生成器失败: %v", err)
 	}
-	redisCli, err := redisCliGetter(playerRedisName, 0)
-	if err != nil {
-		logrus.Panicf("获取 redis 客户端失败(%s)。", err.Error())
-	}
-	redisCli.Set(showUID, 10000*10000*10, -1)
-
 }

@@ -109,9 +109,15 @@ func sendCreateDesk(desk matchDesk, globalInfo *levelGlobalInfo) {
 	// 调用room服的创建桌子
 	rsp, err := roomMgrClient.CreateDesk(context.Background(), req)
 
-	// 不成功时，报错，应该重新调用或者重新匹配
+	// 不成功时，报错，应该重新调用或者重新匹配，暂时丢弃，todo
 	if err != nil || rsp.GetErrCode() != roommgr.RoomError_SUCCESS {
 		logEntry.WithError(err).Errorln("room服创建桌子失败，桌子被丢弃!!!")
+
+		// 处理错误桌子
+		if !dealErrorDesk(&desk) {
+			logEntry.WithError(err).Errorln("room服创建桌子失败，处理该桌子时再次失败!!!")
+		}
+
 		return
 	}
 

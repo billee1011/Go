@@ -72,6 +72,11 @@ CREATE TABLE `t_game_config` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='游戏配置表';
 
+INSERT INTO `t_game_config` VALUES (1, 1, '血流麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:01:33', NULL, NULL, NULL);
+INSERT INTO `t_game_config` VALUES (2, 2, '血战麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:03:29', NULL, NULL, NULL);
+INSERT INTO `t_game_config` VALUES (3, 3, '斗地主', 2, 3, 3, NULL, NULL, NULL, NULL, NULL, '2018-08-07 20:36:58', NULL, NULL, NULL);
+INSERT INTO `t_game_config` VALUES (4, 4, '二人麻将', 1, 2, 2, NULL, NULL, NULL, NULL, NULL, '2018-08-07 20:37:11', NULL, NULL, NULL);
+
 -- ----------------------------
 -- Table structure for t_game_level_config
 -- ----------------------------
@@ -100,6 +105,11 @@ CREATE TABLE `t_game_level_config`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> develop
 -- ----------------------------
 -- Table structure for t_horse_race
 -- ----------------------------

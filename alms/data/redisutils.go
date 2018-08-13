@@ -55,8 +55,8 @@ var redisClifunc = getAlmsRedis //获取redisClien
 var errRobotRedisGain = errors.New("robot_redis 获取失败")
 var errRobotRedisOpertaion = errors.New("robot_redis 操作失败")
 
-// redisPlayerTimeOut 过期时间 1 天 玩家的信息存储时间
-var redisPlayerTimeOut = time.Hour * 24
+// RedisTimeOut 过期时间 1小时
+var RedisTimeOut = time.Hour
 
 // getAlmsRedis 获取redis
 func getAlmsRedis() *redis.Client {

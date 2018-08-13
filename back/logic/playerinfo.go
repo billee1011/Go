@@ -5,6 +5,7 @@ import (
 	"math"
 	"steve/back/data"
 	"steve/entity/gamelog"
+	"steve/external/robotclient"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -40,9 +41,14 @@ func updatePlayerInfo(detailInfo gamelog.TGameDetail) error {
 	if int(detailInfo.MaxTimes) > playerGame.Maxmultiple {
 		playerGame.Maxmultiple = int(detailInfo.MaxTimes)
 	}
+	// 旧胜率
+	oldWinRate := playerGame.Winningrate
 	// 更新胜率
 	// playerGame.Winningrate = int(math.Floor((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*100 + 0.5))
 	playerGame.Winningrate = math.Trunc((float64(playerGame.Winningburea)/float64(playerGame.Totalbureau))*1e4+0.5) * 1e-4 * 100
+
+	// 更新机器人的胜率
+	robotclient.UpdataRobotPlayerWinRate(uint64(playerGame.Playerid), int32(playerGame.Gameid), oldWinRate, playerGame.Winningrate)
 
 	// 创建时间
 	playerGame.Createtime = time.Now()

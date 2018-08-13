@@ -318,6 +318,9 @@ func (c *client) recvLoop() {
 			break
 		}
 		logrus.WithField("msg_id", header.GetMsgId()).Debugln("收到消息")
+		if *header.MsgId == uint32(msgid.MsgID_ROOM_USE_PROP_NTF) {
+			fmt.Println("收到@@@@@@@@@@@@@@@@@@@@@@@@@回复")
+		}
 		c.checkRequests(header, data[1+headsz:])
 		c.checkExpects(header, data[1+headsz:])
 	}
