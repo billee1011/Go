@@ -9,7 +9,7 @@ type TGameSumary struct {
 	Deskid        int64     `xorm:"comment('桌子ID') BIGINT(20)"`
 	Gameid        int       `xorm:"not null comment('游戏ID') INT(11)"`
 	Levelid       int       `xorm:"not null comment('场次ID') INT(11)"`
-	Playerids     string    `xorm:"comment('当前桌的所有玩家ID用","分割') VARCHAR(256)"`
+	Playerids     string    `xorm:"comment('当前桌的所有玩家ID用逗号分割') VARCHAR(256)"`
 	Scoreinfo     string    `xorm:"comment('玩家得分情况') VARCHAR(256)"`
 	Winnerids     string    `xorm:"comment('赢家IDs') VARCHAR(256)"`
 	Roundcurrency string    `xorm:"comment('牌局日志信息') TEXT"`

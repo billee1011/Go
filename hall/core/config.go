@@ -15,11 +15,11 @@ var playerRedisName = "player"
 // InitServer 初始化服务
 func InitServer() error {
 	// redis设置showUID
-	redisCli, err := getRedisCli(playerRedisName, 0)
-	if err != nil {
-		return fmt.Errorf("InitServer 获取 redis 客户端失败(%s)", err.Error())
-	}
-	redisCli.Set(showUID, 10000*10000*10, -1)
+	// redisCli, err := getRedisCli(playerRedisName, 0)
+	// if err != nil {
+	// 	return fmt.Errorf("InitServer 获取 redis 客户端失败(%s)", err.Error())
+	// }
+	// redisCli.Set(showUID, 10000*10000*10, -1)
 	return nil
 }
 
