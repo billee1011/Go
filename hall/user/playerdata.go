@@ -84,6 +84,30 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 	return
 }
 
+// InitRobotPlayerState 初始化机器人状态
+func (pds *PlayerDataService) InitRobotPlayerState(ctx context.Context, req *user.InitRobotPlayerStateReq) (rsp *user.InitRobotPlayerStateRsp, err error) {
+	logrus.Debugf("GetPlayerGameInfo Batch req : (%v)", *req)
+
+	// 默认返回消息
+	rsp, err = &user.InitRobotPlayerStateRsp{
+		ErrCode: int32(user.ErrCode_EC_FAIL),
+	}, nil
+
+	// 请求参数
+	robotIDs := req.GetRobotIds()
+
+	// 逻辑处理
+	successPids, err := data.InitRobotPlayerState(robotIDs...)
+
+	// 返回消息
+	if err == nil {
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		rsp.SuccessRobotId = successPids
+	}
+
+	return
+}
+
 // UpdatePlayerInfo 设置玩家信息
 func (pds *PlayerDataService) UpdatePlayerInfo(ctx context.Context, req *user.UpdatePlayerInfoReq) (rsp *user.UpdatePlayerInfoRsp, err error) {
 	logrus.Debugf("SetPlayerInfo req: (%v)", *req)
