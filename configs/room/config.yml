@@ -50,3 +50,6 @@ mysql_list:
       charset: utf8 
 
 node: 1
+
+ai:
+  visible: false
