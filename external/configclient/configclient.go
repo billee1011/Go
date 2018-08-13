@@ -42,6 +42,20 @@ func ParseToGameLevelConfigMap(jsonStr string) (conf []entityConf.GameLevelConfi
 	return
 }
 
+//获取救济金配置
+func GetAlmsConfigMap() (conf []entityConf.AlmsConfig,err error){
+	almsStr, err := GetConfig("game", "alms")
+	if err != nil {
+		logrus.WithError(err).Errorln("获取救济金配置失败")
+		return nil, err
+	}
+	if err := json.Unmarshal([]byte(almsStr), &conf); err != nil {
+		logrus.WithError(err).Errorf("游戏配置数据反序列化失败：%s", err.Error())
+		return nil, err
+	}
+	return
+}
+
 // GetGameConfigMap 获取游戏配置信息
 func GetGameConfigMap() (gameConf []entityConf.GameConfig, err error) {
 	gameStr, err := GetConfig("game", "config")
