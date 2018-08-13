@@ -197,6 +197,9 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	newState := uint32(req.GetNewState())
 	gameID := uint32(req.GetGameId())
 	levelID := uint32(req.GetLevelId())
+	serverType := uint32(req.GetServerType())
+	serverAddr := req.GetServerAddr()
+
 	// 校验入参
 	correct := validateUserSate(oldState, newState)
 	if !correct {
@@ -204,14 +207,20 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 		return
 	}
 
-	// 逻辑处理
-	result, err := data.UpdatePlayerState(playerID, oldState, newState, gameID, levelID)
+	// 更新状态
+	result, err := false, nil
+	if oldState != 0 && newState != 0 {
+		result, err = data.UpdatePlayerState(playerID, oldState, newState, gameID, levelID)
 
-	// 返回消息
+	}
+	// 更新服务地址
+	if serverType != 0 {
+		result, err = data.UpdatePlayerServerAddr(playerID, uint32(serverType), serverAddr)
+	}
+
 	if result && err == nil {
 		rsp.Result, rsp.ErrCode = true, int32(user.ErrCode_EC_SUCCESS)
 	}
-
 	return
 }
 
@@ -365,6 +374,9 @@ func validatePlayerInfoArgs() bool {
 
 // validateUserSate 校验更新玩家状态入参
 func validateUserSate(oldState, newState uint32) bool {
+	if oldState == 0 && newState == 0 {
+		return true
+	}
 	userState := map[user.PlayerState]bool{
 		user.PlayerState_PS_IDIE:     true,
 		user.PlayerState_PS_MATCHING: true,

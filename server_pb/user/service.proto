@@ -4,16 +4,18 @@ package user;
 
 // PlayerState 玩家状态
 enum PlayerState{
-    PS_IDIE = 0;     // 空闲中
-    PS_GAMEING = 1;  // 游戏中
-    PS_MATCHING = 2; // 匹配中
+    PS_NIL = 0;      // 无
+    PS_IDIE = 1;     // 空闲中
+    PS_GAMEING = 2;  // 游戏中
+    PS_MATCHING = 3; // 匹配中
 }
 
 // ServerType 服务类型
 enum ServerType{
-    ST_GATE = 0;  // 网关服
-    ST_MATCH = 1; // 匹配服
-    ST_ROOM = 2;  // 房间服
+    ST_NIL = 0;      // 无
+    ST_GATE = 1;  // 网关服
+    ST_MATCH = 2; // 匹配服
+    ST_ROOM = 3;  // 房间服 
 }
 
 
@@ -131,6 +133,8 @@ message UpdatePlayerStateReq{
     PlayerState new_state = 3;               // 新状态  
     uint32 game_id = 4;                      // 游戏ID
     uint32 level_id = 5;                     // 场次ID
+    ServerType server_type = 6;              // 服务类型   
+    string server_addr = 7;                  // 服务地址
 }
 
 // UpdatePlayerServerAddrReq 更新玩家服务端地址
@@ -138,7 +142,6 @@ message UpdatePlayerServerAddrReq{
     uint64 player_id = 1;                    // 玩家ID  
     ServerType server_type = 5;              // 服务类型
     string server_addr = 6;                  // 服务地址
-
 }
 
 // UpdatePlayerRsp  更新玩家应答
