@@ -5,8 +5,8 @@ import (
 )
 
 type TCurrencyRecord struct {
-	Tradeid       string    `xorm:"not null pk comment('流水ID') unique VARCHAR(64)"`
-	Playerid      int64     `xorm:"not null comment('玩家ID') BIGINT(20)"`
+	Tradeid       string    `xorm:"not null pk comment('流水ID') VARCHAR(64)"`
+	Playerid      int64     `xorm:"not null comment('玩家ID') index BIGINT(20)"`
 	Channel       int       `xorm:"comment('渠道ID') INT(11)"`
 	Currencytype  int       `xorm:"comment('货币类型: 1=金币, 2=元宝（钻石）， 3=房卡') INT(11)"`
 	Amount        int       `xorm:"comment('加减值') INT(11)"`
