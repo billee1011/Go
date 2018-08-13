@@ -35,7 +35,7 @@ func Test_GetUnReadMailSum(t *testing.T) {
 
 }
 
-/*
+
 var mailId uint64 = 0
 
 func Test_GetMailList(t *testing.T) {
@@ -140,5 +140,5 @@ func Test_SetMailReadTag(t *testing.T) {
 	assert.Zero(t, rsp3.GetErrCode())
 
 }
-*/
+
 
