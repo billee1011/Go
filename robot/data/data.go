@@ -4,59 +4,103 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-const (
-	//RobotPlayerIDField 玩家ID字段名
-	RobotPlayerIDField string = "playerID"
-	//RobotPlayerGameIDWinRate 玩家游戏ID对应的胜率字段名
-	RobotPlayerGameIDWinRate string = "gameidwinrate"
-	//RobotPlayerGameIDField 玩家游戏 ID 字段名
-	RobotPlayerGameIDField string = "gameid"
-	// RobotPlayerStateField ...玩家状态
-	RobotPlayerStateField = "game_state"
-	// RobotPlayerGateAddrField ...网关服地址
-	RobotPlayerGateAddrField = "gate_addr"
-	// RobotPlayerMatchAddrField ...匹配服地址
-	RobotPlayerMatchAddrField = "match_addr"
-	// RobotPlayerRoomAddrField ...房间服地址
-	RobotPlayerRoomAddrField = "room_addr"
-)
+var robotsMap map[int64]*RobotPlayer
+
+// RobotPlayer 机器人玩家
+type RobotPlayer struct {
+	State         int `protobuf:"varint,5,opt,name=state" json:"state,omitempty"`
+	GameIDWinRate []*PlayerGameGW
+}
+
+//PlayerGameGW 游戏ID对应的胜率
+type PlayerGameGW struct {
+	GameID  int
+	WinRate float64
+}
 
 //InitRobotRedis 初始化机器人redis
-func InitRobotRedis() {
-	robotMap := make(map[int64]*RobotPlayer)
-	log := logrus.WithFields(logrus.Fields{"func_name": "initRobotRedis"})
-	if err := getMysqlRobotFieldValuedAll(robotMap); err != nil {
-		log.WithError(err).Errorln("初始化从mysql获取机器人失败")
-		return
+func InitRobotRedis() error {
+	Startlimit = 0
+	robotsMap = make(map[int64]*RobotPlayer) //先清空
+	if err := GetMysqlRobotFieldValuedAll(robotsMap); err != nil {
+		logrus.WithError(err).Errorln("初始化从mysql获取机器人失败")
+		return err
 	}
-	failedIDErrMpa := make(map[uint64]error) //存入redis 失败 playerID
-	for playerID, robotPlayer := range robotMap {
-		err := SetRobotPlayerWatchs(uint64(playerID), FmtRobotPlayer(robotPlayer), RedisTimeOut)
-		if err != nil {
-			failedIDErrMpa[uint64(playerID)] = err
-			continue
+	logrus.Debugf("初始化从mysql获取机器人完成 robotsMaplen(%d)\n", len(robotsMap))
+	return nil
+}
+
+//GetRobotsMap 获取机器人信息
+func GetRobotsMap() map[int64]*RobotPlayer {
+	return robotsMap
+}
+
+// UpdataRobotState 更新机器人状态
+func UpdataRobotState(playerID int64, state int) bool {
+	if rp, isExist := robotsMap[playerID]; isExist {
+		rp.State = state
+		robotsMap[playerID] = rp
+		return true
+	}
+	return false
+}
+
+// UpdataRobotWinRate 更新机器人胜率
+func UpdataRobotWinRate(playerID int64, gameID int, winrate float64, flag bool) {
+	rp := robotsMap[playerID]
+	if flag {
+		for _, gw := range rp.GameIDWinRate {
+			if gw.GameID == gameID {
+				gw.WinRate = winrate
+			}
 		}
-	}
-	if len(failedIDErrMpa) > 0 {
-		log.WithFields(logrus.Fields{"failedIDErrMpa": failedIDErrMpa}).Info("失败的playerID")
+	} else {
+		// 找不到游戏ID的情况
+		pg := &PlayerGameGW{
+			GameID:  gameID,
+			WinRate: winrate,
+		}
+		if len(rp.GameIDWinRate) == 0 {
+			rp.GameIDWinRate = []*PlayerGameGW{pg}
+		} else {
+			rp.GameIDWinRate = append(rp.GameIDWinRate, pg)
+		}
 	}
 }
 
-//GetLeisureRobot 获取空闲机器人
-func GetLeisureRobot() ([]*RobotPlayer, error) {
-	log := logrus.WithFields(logrus.Fields{"func_name": "GetLeisureRobot"})
-	robotPlayerIDAll, err := getRobotIDAll() // 获取所有机器人的玩家ID
+//GetMysqlRobotFieldValuedAll 获取机器人需要的值
+func GetMysqlRobotFieldValuedAll(currRobotMap map[int64]*RobotPlayer) error {
+	engine, err := MysqlEnginefunc(MysqldbName)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if len(robotPlayerIDAll) == 0 {
-		log.Info("数据库中不存在机器人")
-		return []*RobotPlayer{}, nil
+	//gameid-winrate 游戏id对应的胜率
+	robotsPGs, err := getRobotInfo(engine)
+	if err != nil {
+		return err
 	}
-	robots, lackRobotsID := getRedisLeisureRobotPlayer(robotPlayerIDAll) // 从redis 获取 空闲的RobotPlayer
-	if len(lackRobotsID) > 0 {                                           // 存在redis 中 不存在 机器人ID
-		robots = getMysqlLeisureRobotPlayer(robots, lackRobotsID) //从mysql中获取空闲的玩家,并存入redis
+	for _, robot := range robotsPGs {
+		playerID := robot.Playerid
+		if playerID == 0 {
+			continue
+		}
+		nrp := &RobotPlayer{
+			State:         0,
+			GameIDWinRate: []*PlayerGameGW{},
+		}
+		if robot.Gameid > 0 {
+			pg := &PlayerGameGW{
+				GameID:  robot.Gameid,
+				WinRate: robot.Winningrate,
+			}
+			rp, isExist := currRobotMap[robot.Playerid]
+			if isExist && len(rp.GameIDWinRate) != 0 {
+				nrp.GameIDWinRate = append(rp.GameIDWinRate, pg)
+			} else {
+				nrp.GameIDWinRate = []*PlayerGameGW{pg}
+			}
+		}
+		currRobotMap[robot.Playerid] = nrp
 	}
-	log.WithFields(logrus.Fields{"robots": robots, "lackRobotsID": lackRobotsID}).Infoln("获取空闲机器人")
-	return robots, nil
+	return nil
 }

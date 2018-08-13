@@ -47,6 +47,7 @@ const (
 	configRedisName          = "config"
 	configMysqlName          = "config"
 	playerTableName          = "t_player"
+	playerPropsTableName     = "t_player_props"
 	playerCurrencyTableName  = "t_player_currency"
 	playerGameTableName      = "t_player_game"
 	gameconfigTableName      = "t_game_config"
@@ -451,6 +452,21 @@ func InitPlayerState(playerID int64) (err error) {
 		err = fmt.Errorf("save player_state into redis fail：(%v)", err)
 	}
 	return
+}
+
+// InitPlayerProps 初始化玩家道具
+func InitPlayerProps(playerpProps db.TPlayerProps) (err error) {
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return err
+	}
+	session := engine.Table(playerPropsTableName)
+	affected, err := session.Insert(&playerpProps)
+	if err != nil || affected == 0 {
+		sql, _ := session.LastSQL()
+		return fmt.Errorf("insert sql error：(%v)， affect=(%d), sql=(%s)", err, affected, sql)
+	}
+	return nil
 }
 
 // getPlayerStateFromRedis 从redis查找玩家状态信息

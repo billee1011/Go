@@ -26,6 +26,7 @@ type TGameDetail struct {
 	Playerid    uint64    `json:" Playerid   "`
 	Deskid      int64     `json:" Deskid     "`
 	Gameid      int       `json:" Gameid     "`
+	Levelid     int       `json:" Levelid    "`
 	Amount      int64     `json:" Amount     "`
 	Iswinner    int       `json:" Iswinner   "`
 	MaxTimes    uint32    `json:" MaxTimes   "`
