@@ -179,5 +179,4 @@ service PlayerData {
     rpc UpdatePlayerServerAddr(UpdatePlayerServerAddrReq) returns (UpdatePlayerRsp) ;
     // GetGameListInfo 获取游戏列表
     rpc GetGameListInfo(GetGameListInfoReq) returns (GetGameListInfoRsp);
-   
 }

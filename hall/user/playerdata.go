@@ -336,7 +336,7 @@ func createPlayer(accID uint64) (uint64, error) {
 	}
 	if err := data.InitPlayerCoin(db.TPlayerCurrency{
 		Playerid:       int64(playerID),
-		Coins:          10000,
+		Coins:          100000,
 		Ingots:         0,
 		Keycards:       0,
 		Obtainingots:   0,
@@ -353,6 +353,18 @@ func createPlayer(accID uint64) (uint64, error) {
 	}
 	if err := data.InitPlayerState(int64(playerID)); err != nil {
 		return playerID, fmt.Errorf("初始化玩家(%d)状态失败: %v", playerID, err)
+	}
+
+	if err := data.InitPlayerProps(db.TPlayerProps{
+		Playerid:   int64(playerID),
+		Propid:     int64(1),
+		Count:      5,
+		Createtime: time.Now(),
+		Createby:   "programmer",
+		Updatetime: time.Now(),
+		Updateby:   "",
+	}); err != nil {
+		return playerID, fmt.Errorf("初始化玩家(%d)道具失败: %v", playerID, err)
 	}
 	return playerID, nil
 }
