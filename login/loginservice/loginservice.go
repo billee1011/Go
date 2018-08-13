@@ -93,7 +93,7 @@ func (ls *LoginService) Login(ctx context.Context, request *login.LoginRequest) 
 
 	var accID uint64
 	if viper.GetBool("inner_auth") {
-		accID := request.GetAccountId()
+		accID = request.GetAccountId()
 		if accID == 0 {
 			accID = uint64(ls.idAllocNode.Generate())
 		}
