@@ -287,6 +287,11 @@ func createPlayer(accID uint64) (uint64, error) {
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
+
+	if has, err := data.ExistPlayerID(playerID); err != nil || has {
+		return 0, fmt.Errorf("初始化玩家(%d)数据失败: %v", playerID, err)
+	}
+
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
 		Playerid:     int64(playerID),

@@ -428,6 +428,19 @@ func AllocShowUID() int64 {
 	return r.Incr(showUID).Val()
 }
 
+// ExistPlayerID 判断玩家ID是否存在
+func ExistPlayerID(playerID uint64) (bool, error) {
+	engine, err := mysqlEngineGetter(playerMysqlName)
+	if err != nil {
+		return false, err
+	}
+	has, err := engine.SQL("select playerID from t_player where playerID = ?", fmt.Sprintf("%d", playerID)).Exist()
+	if err != nil {
+		return false, err
+	}
+	return has, nil
+}
+
 // InitPlayerData 初始化玩家数据
 func InitPlayerData(player db.TPlayer) error {
 	engine, err := mysqlEngineGetter(playerMysqlName)
