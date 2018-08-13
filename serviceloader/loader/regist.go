@@ -20,7 +20,9 @@ var errRegisterFailed = errors.New("向 consul 注册服务失败")
 var consulAddress string
 
 // 创建时保存的服务Id
-var svrID string
+var localSvrId string
+// 本地服务名
+var localSvrName string
 
 // RegisterParams 服务注册参数
 type RegisterParams struct {
@@ -152,7 +154,8 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 		}
 	}
 
-	svrID = serverID
+	localSvrId = serverID
+	localSvrName = serverName
 
 	registration := &api.AgentServiceRegistration{
 		ID:      serverID,
@@ -166,8 +169,52 @@ func registerToConsul(logEntry *logrus.Entry, serverName string, addr string, po
 		logEntry.Errorln(err)
 		return errRegisterFailed
 	}
+
 	return nil
 }
+
+// consul 请求器接口
+type ConsulRequestImp struct {
+
+}
+// 判断当前是否是主节点,通过consul实现竞选主节点功能
+func (c *ConsulRequestImp)IsMasterNode() bool {
+	masterId, err := c.GetMasterNodeId()
+	if err != nil {
+		return false
+	}
+	if masterId != localSvrId {
+		return false
+	}
+	return true
+}
+
+// 得到当前服务的主节点ID
+func (c  *ConsulRequestImp) GetMasterNodeId() (string, error) {
+	if len(consulAddress) == 0 {
+		return "", nil
+	}
+	config := api.DefaultConfig()
+	config.Address = consulAddress
+	consul, err := api.NewClient(config)
+	if err != nil {
+		return "", errors.New("consul connect failed: " + consulAddress)
+	}
+	if consul == nil {
+		return "", errors.New("consul  = nil: " + consulAddress)
+	}
+	l, err := consul.Agent().Services()
+	if err != nil {
+		return "", fmt.Errorf("getMasterNodeId failed: ", err)
+	}
+	for _, svr := range  l {
+		if svr.Service == localSvrName {
+			return svr.ID, nil
+		}
+	}
+	return "", fmt.Errorf("getMasterNodeId no find master id...")
+}
+
 
 // getConsulAgent 获取 consul 代理
 func createConsulAgent(logEntry *logrus.Entry, consulAddr string) *api.Agent {
@@ -184,9 +231,12 @@ func createConsulAgent(logEntry *logrus.Entry, consulAddr string) *api.Agent {
 
 // DeleteMyConsulAgent 从 consul 中删除本节点
 func DeleteMyConsulAgent() error {
-	return deleteConsulAgent(svrID)
+	return deleteConsulAgent(localSvrId)
 }
 
+
+
+// 从consul删除服务节点
 func deleteConsulAgent(sid string) error {
 	if len(consulAddress) == 0 {
 		return nil
@@ -201,7 +251,7 @@ func deleteConsulAgent(sid string) error {
 		return errors.New("consul  = nil: " + consulAddress)
 	}
 	if err := consul.Agent().ServiceDeregister(sid); err != nil {
-		return errors.New("deleteConsulAgent failed: " + svrID)
+		return errors.New("deleteConsulAgent failed: " + sid)
 	}
 	return nil
 }

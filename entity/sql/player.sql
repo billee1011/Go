@@ -116,7 +116,7 @@ CREATE TABLE `t_player` (
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=109938 DEFAULT CHARSET=utf8 COMMENT='玩家表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家表';
 
 -- ----------------------------
 -- Table structure for t_player_currency
@@ -138,7 +138,7 @@ CREATE TABLE `t_player_currency` (
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=109939 DEFAULT CHARSET=utf8 COMMENT='玩家货币表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家货币表';
 
 -- ----------------------------
 -- Table structure for t_player_game
@@ -159,11 +159,7 @@ CREATE TABLE `t_player_game` (
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`) USING BTREE
-<<<<<<< HEAD
-) ENGINE=InnoDB AUTO_INCREMENT=1072 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏汇总信息';
-
-=======
-) ENGINE=InnoDB AUTO_INCREMENT=117513 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='玩家游戏信息表';
 
 -- ----------------------------
 -- Table structure for t_player_mail
@@ -173,13 +169,14 @@ CREATE TABLE `t_player_mail` (
   `n_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '递增ID',
   `n_playerid` bigint(20) NOT NULL COMMENT '玩家ID',
   `n_mailID` bigint(20) NOT NULL COMMENT '邮件ID',
-  `n_isRead` int(11) DEFAULT NULL COMMENT '是否已读: 0=未读, 1=已读 ',
-  `n_isGetAttach` int(11) DEFAULT NULL COMMENT '是否已领取附件: 0=未领, 1=已领',
+  `n_isRead` tinyint(1) DEFAULT NULL COMMENT '是否已读: 0=未读, 1=已读 ',
+  `n_isGetAttach` tinyint(1) DEFAULT NULL COMMENT '是否已领取附件: 0=未领, 1=已领',
   `n_isDel` tinyint(1) DEFAULT '0' COMMENT '是否被用户删除: 0=未删除, 1=删除',
+  `n_deleteTime` datetime DEFAULT NULL COMMENT '删除时间',
   PRIMARY KEY (`n_id`),
   UNIQUE KEY `t_player_mail_UN` (`n_playerid`,`n_mailID`),
   KEY `t_player_mail_n_playerid_IDX` (`n_playerid`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='玩家邮件表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家邮件表'
 
 -- ----------------------------
 -- Table structure for t_player_props
