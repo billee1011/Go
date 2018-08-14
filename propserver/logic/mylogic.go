@@ -5,6 +5,7 @@ import (
 	"steve/propserver/data"
 	"steve/propserver/define"
 	"sync"
+	"steve/external/configclient"
 )
 
 /*
@@ -30,6 +31,22 @@ func (gm *PropsMgr) Init() error {
 	//goldMgr.userList = make(map[uint64]*userGold)
 	gm.muLock = make(map[uint64]*sync.RWMutex)
 	gm.propsList = make(map[uint64]*propsInfo, 10)
+
+	return gm.getPropsListFromDB()
+}
+
+func (gm *PropsMgr) getPropsListFromDB() error {
+	strJson, err := configclient.GetConfig("prop", "interactive")
+	if err != nil {
+		logrus.Errorf("GetPropsListFromDB from config err:", err)
+		return err
+	}
+
+	return gm.parseJsonPropsList(strJson)
+
+}
+
+func (gm *PropsMgr) parseJsonPropsList(strJson string) error {
 
 	return nil
 }
@@ -63,7 +80,7 @@ func (gm *PropsMgr) AddUserProps(uid uint64, propList map[uint64]int64, seq stri
 		"createTime": createTm,
 	})
 
-	for propId, _ := range  propList {
+	for propId := range  propList {
 		if !gm.checkPropId(propId) {
 			entry.Errorln("propId error")
 			return define.ErrPropId
@@ -91,6 +108,9 @@ func (gm *PropsMgr) AddUserProps(uid uint64, propList map[uint64]int64, seq stri
 
 	// 加道具前，玩家当前道具数量
 	for propId, num := range  propList {
+		if num >= 0 {
+			continue
+		}
 		before, _ = u.Get(propId)
 
 		if before+num < 0 {
@@ -102,7 +122,10 @@ func (gm *PropsMgr) AddUserProps(uid uint64, propList map[uint64]int64, seq stri
 	// 加道具后，玩家当前道具数量
 	for propId, num := range  propList {
 		before, _ = u.Get(propId)
-		after, _ = u.Add(propId, num)
+		if num != 0 {
+			after, _ = u.Add(propId, num)
+		}
+
 
 		propList[propId] = after
 
@@ -166,7 +189,6 @@ func (gm *PropsMgr) GetUserProps(uid uint64, propId uint64) (map[uint64]int64, e
 func (gm *PropsMgr) saveUserToCacheAndDB(entry *logrus.Entry, uid uint64, list map[uint64]int64) error {
 
 	// 暂时先保存到Redis
-
 	err := data.SavePropsToRedis(uid, list)
 	if err != nil {
 		// 记录redis写入失败
@@ -181,7 +203,6 @@ func (gm *PropsMgr) saveUserToCacheAndDB(entry *logrus.Entry, uid uint64, list m
 			entry.Errorln("SavePropsToDB error:", err)
 		}
 	}
-
 
 	return nil
 }
@@ -231,7 +252,7 @@ func (gm *PropsMgr) checkPropId(propId uint64) bool {
 	if _, ok := gm.propsList[propId]; ok {
 		return true
 	}
-
+	// 先不判断道具是否存在
 	return true
 	return false
 }

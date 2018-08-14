@@ -6,6 +6,17 @@ import "fmt"
  功能： 用户金币结构
  作者： SkyWang
  日期： 2018-7-24
+
+道具json:
+            {
+                "propID": 1,
+                "name": "rose",
+                "attrType": 1,
+                "attrID":1,
+                "attrValue":-100,
+                "attrLimit":10000
+            },
+
 */
 
 const SEQ_LIST_FULL  =  10
@@ -14,10 +25,11 @@ const SEQ_LIST_HALF  =  SEQ_LIST_FULL/2
 
 // 道具信息
 type propsInfo struct {
-	attrType  int32			// 属性类型
-	attrId    uint64		// 类型ID
-	attrValue int64			// 属性值
-	attrLimit int64			// 叠加上限
+	propID   uint32		`json:"propID"`		// 属性类型
+	attrType  int32		`json:"attrType"`		// 属性类型
+	attrId    uint64	`json:"attrID"`		// 类型ID
+	attrValue int64		`json:"attrValue"`	// 属性值
+	attrLimit int64		`json:"attrLimit"`	// 叠加上限
 }
 
 

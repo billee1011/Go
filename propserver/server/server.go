@@ -42,11 +42,11 @@ func (gs *PropsServer) GetUserProps(ctx context.Context, request *props.GetProps
 		return response, nil
 	}
 	// 设置返回值
-	retList := make([]*props.PropsInfo, len(m))
+	retList := make([]*props.GetItem, 0,  len(m))
 	for k, v := range  m {
-		a := new(props.PropsInfo)
+		a := new(props.GetItem)
 		a.PropsId = k
-		a.AddNum = v
+		a.PropsNum = v
 		retList = append(retList, a)
 	}
 	response.PropsList = retList
