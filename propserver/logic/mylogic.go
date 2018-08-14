@@ -6,6 +6,8 @@ import (
 	"steve/propserver/define"
 	"sync"
 	"steve/external/configclient"
+	"encoding/json"
+	"time"
 )
 
 /*
@@ -21,19 +23,87 @@ func GetMyLogic() *PropsMgr {
 }
 
 type PropsMgr struct {
-	userList sync.Map                 // 用户列表
-	muLock   map[uint64]*sync.RWMutex // 用户锁，一个用户一个锁
+	userList map[uint64]*userProps          // 用户列表
+	muLock   map[uint64]*sync.Mutex 		// 用户锁，一个用户一个锁
 
 	propsList map[uint64]*propsInfo
 }
 
 func (gm *PropsMgr) Init() error {
-	//goldMgr.userList = make(map[uint64]*userGold)
-	gm.muLock = make(map[uint64]*sync.RWMutex)
-	gm.propsList = make(map[uint64]*propsInfo, 10)
 
-	return gm.getPropsListFromDB()
+	gm.userList = make(map[uint64]*userProps)
+	gm.muLock = make(map[uint64]*sync.Mutex)
+
+	err := gm.getPropsListFromDB()
+	if err != nil {
+		logrus.Errorf("get getPropsListFromDB err:", err)
+	}
+
+	go gm.runMyTask()
+
+	return nil
 }
+
+// 启动道具列表变化检测协程
+func (gm *PropsMgr)  runMyTask() error{
+
+	// 1分钟更新一次邮件列表
+	for {
+		time.Sleep(time.Minute)
+
+		gm.getPropsListFromDB()
+
+		// 清理过期用户和锁
+		gm.clearExpiredUser()
+	}
+
+	return nil
+}
+
+// 每日半夜3-4点，从内存中清理过期玩家信息和玩家的锁
+var thisDay = 0
+// 清理过期邮件开始点数
+var clearBeginHour = 3
+// 清理过期邮件结束点数
+var clearEndHour = 4
+// 7天过期,7天未访问的User，从内存清理出去
+var clearTimeOut = int64(3600 * 24 * 7)
+func (gm *PropsMgr) clearExpiredUser() {
+
+	now := time.Now()
+	// 每日只执行1次
+	if thisDay == now.YearDay() {
+		return
+	}
+	if now.Hour() < clearBeginHour || now.Hour() >= clearEndHour {
+		return
+	}
+	thisDay = now.YearDay()
+
+	tick := now.Unix()
+
+	logrus.Infof("begin clearExpiredUser work ...")
+
+	for k, u := range  gm.userList {
+		if u.lastVisitTime == 0 {
+			continue
+		}
+		sub :=  tick - u.lastVisitTime
+		if sub < clearTimeOut {
+			continue
+		}
+
+		// 清理此用户
+		delete(gm.userList, k)
+		// 清理此用户的锁
+		delete(gm.muLock, k)
+
+		logrus.Infof("clearExpiredUser one: uid=%d", k)
+	}
+
+	logrus.Infof("end clearExpiredUser work ...")
+}
+
 
 func (gm *PropsMgr) getPropsListFromDB() error {
 	strJson, err := configclient.GetConfig("prop", "interactive")
@@ -48,14 +118,24 @@ func (gm *PropsMgr) getPropsListFromDB() error {
 
 func (gm *PropsMgr) parseJsonPropsList(strJson string) error {
 
+	jsonObject := make([]*propsInfo,0,2)
+	err := json.Unmarshal([]byte(strJson), &jsonObject)
+	if err != nil {
+		return nil
+	}
+	gm.propsList = make(map[uint64]*propsInfo, 10)
+	for _, one := range  jsonObject {
+		gm.propsList[one.PropID] = one
+	}
+
 	return nil
 }
 
-func (gm *PropsMgr) GetMutex(uid uint64) *sync.RWMutex {
+func (gm *PropsMgr) GetMutex(uid uint64) *sync.Mutex {
 	if mu, ok := gm.muLock[uid]; ok {
 		return mu
 	}
-	n := new(sync.RWMutex)
+	n := new(sync.Mutex)
 	gm.muLock[uid] = n
 	return n
 }
@@ -99,6 +179,8 @@ func (gm *PropsMgr) AddUserProps(uid uint64, propList map[uint64]int64, seq stri
 		_ = err
 		return  define.ErrNoUser
 	}
+	// 设置最后访问时间
+	u.lastVisitTime = time.Now().Unix()
 
 	// 判断交易流水号是否有冲突?
 	if !u.CheckSeq(seq) {
@@ -163,9 +245,11 @@ func (gm *PropsMgr) GetUserProps(uid uint64, propId uint64) (map[uint64]int64, e
 	// 2.不存在，从Redis获取玩家道具.
 	// 3.不存在，从DB获取玩家道具.
 
-	if !gm.checkPropId(propId) {
-		logrus.Errorf("for={prop id error},uid=%d,goldType=%d", uid, propId)
-		return nil, define.ErrNoProp
+	if propId != 0 {
+		if !gm.checkPropId(propId) {
+			logrus.Errorf("for={prop id error},uid=%d,goldType=%d", uid, propId)
+			return nil, define.ErrNoProp
+		}
 	}
 
 	// 按用户ID进行加锁,一个用户一个锁
@@ -177,6 +261,8 @@ func (gm *PropsMgr) GetUserProps(uid uint64, propId uint64) (map[uint64]int64, e
 	if u == nil {
 		return nil, define.ErrNoUser
 	}
+	// 设置最后访问时间
+	u.lastVisitTime = time.Now().Unix()
 	// 获取玩家指定道具
 	g, err := u.GetList(propId)
 	if err != nil {
@@ -212,17 +298,17 @@ func (gm *PropsMgr) getUser(uid uint64) (*userProps, error) {
 	if uid == 0 {
 		return nil, nil
 	}
-	u, ok := gm.userList.Load(uid)
+	u, ok := gm.userList[uid]
 	if !ok {
 		return gm.getUserFromCacheOrDB(uid)
 	}
-	return u.(*userProps), nil
+	return u, nil
 }
 
 // 新建用户
 func (gm *PropsMgr) newUser(uid uint64, m map[uint64]int64) *userProps {
 	n := newUserProps(uid, m)
-	gm.userList.Store(uid, n)
+	gm.userList[uid] = n
 	return n
 }
 
@@ -253,6 +339,5 @@ func (gm *PropsMgr) checkPropId(propId uint64) bool {
 		return true
 	}
 	// 先不判断道具是否存在
-	return true
 	return false
 }

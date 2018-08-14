@@ -87,7 +87,6 @@ func (gs *PropsServer) AddUserProps(ctx context.Context, request *props.AddProps
 	}
 	// 设置返回值
 
-
 	response.ErrCode = props.ResultStat_SUCCEED
 	logrus.Debugln("AddUserProps resp", *response)
 	return response, nil

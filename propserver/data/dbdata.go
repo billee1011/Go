@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"time"
+	"github.com/Sirupsen/logrus"
 )
 
 /*
@@ -59,6 +60,7 @@ func LoadPropsFromDB(uid uint64) (map[uint64]int64, error) {
 		}
 		m[id] = value
 	}
+	logrus.Debugf("LoadPropsFromDB win: uid=%d, propslist=%v", uid, m)
 	return m, nil
 }
 

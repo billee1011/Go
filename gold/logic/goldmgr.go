@@ -40,22 +40,88 @@ func GetGoldMgr() *GoldMgr {
 }
 
 type GoldMgr struct {
-	//userList map[uint64]*userGold // 用户列表
-	userList sync.Map			// 用户列表
-	muLock map[uint64] *sync.RWMutex // 用户锁，一个用户一个锁
+	userList map[uint64]*userGold // 用户列表
+	muLock map[uint64] *sync.Mutex // 用户锁，一个用户一个锁
 }
 
-func init() {
-	//goldMgr.userList = make(map[uint64]*userGold)
-	goldMgr.muLock = make(map[uint64] *sync.RWMutex)
+
+func (gm *GoldMgr) Init() {
+	goldMgr.userList = make(map[uint64]*userGold)
+	goldMgr.muLock = make(map[uint64] *sync.Mutex)
 	data.SetGoldTypeList(gTypeList, gGetList, gCostList)
+
+	// 启动清理任务
+	go gm.runClearTask()
+
 }
 
-func (gm *GoldMgr) GetMutex(uid uint64) *sync.RWMutex{
+// 运行清理任务
+func (gm *GoldMgr)  runClearTask() error{
+
+	// 7分钟更新
+	for {
+		time.Sleep(time.Minute * 7)
+
+		// 清理过期用户和锁
+		gm.clearExpiredUser()
+	}
+
+	return nil
+}
+
+// 每日半夜5-6点，从内存中清理过期玩家信息和玩家的锁
+var thisDay = 0
+// 清理过期邮件开始点数
+var clearBeginHour = 5
+// 清理过期邮件结束点数
+var clearEndHour = 6
+// 7天过期,7天未访问的User，从内存清理出去
+var clearTimeOut = int64(3600 * 24 * 7)
+//var clearTimeOut = int64(30)
+func (gm *GoldMgr) clearExpiredUser() {
+
+	now := time.Now()
+	// 每日只执行1次
+	if thisDay == now.YearDay() {
+		return
+	}
+	if now.Hour() < clearBeginHour || now.Hour() >= clearEndHour {
+		return
+	}
+	thisDay = now.YearDay()
+
+	tick := now.Unix()
+
+	logrus.Infof("begin clearExpiredUser work ...")
+
+	for k, u := range  gm.userList {
+		if u.lastVisitTime == 0 {
+			continue
+		}
+		sub :=  tick - u.lastVisitTime
+		if sub < clearTimeOut {
+			continue
+		}
+
+		// 清理此用户
+		delete(gm.userList, k)
+		// 清理此用户的锁
+		delete(gm.muLock, k)
+
+		logrus.Infof("clearExpiredUser one: uid=%d", k)
+	}
+
+	logrus.Infof("end clearExpiredUser work ...")
+
+}
+
+
+
+func (gm *GoldMgr) GetMutex(uid uint64) *sync.Mutex{
 	if mu , ok := gm.muLock[uid]; ok {
 		return mu
 	}
-	n := new(sync.RWMutex)
+	n := new(sync.Mutex)
 	gm.muLock[uid] = n
 	return n
 }
@@ -102,7 +168,8 @@ func (gm *GoldMgr) AddGold(uid uint64, goldType int16, value int64, seq string, 
 		_ = err
 		return 0, define.ErrNoUser
 	}
-
+	// 设置最后访问时间
+	u.lastVisitTime = time.Now().Unix()
 	// 判断交易流水号是否有冲突?
 	if !u.CheckSeq(seq) {
 		entry.Errorf("seq is same: uid=%d, seq=%s", uid, seq)
@@ -192,13 +259,15 @@ func (gm *GoldMgr) GetGold(uid uint64, goldType int16) (int64, error) {
 
 	// 按用户ID进行加锁,一个用户一个锁
 	mu := gm.GetMutex(uid)
-	mu.RLock()
-	defer mu.RUnlock()
+	mu.Lock()
+	defer mu.Unlock()
 
 	u, _ := gm.getUser(uid)
 	if u == nil {
 		return 0, define.ErrNoUser
 	}
+	// 设置最后访问时间
+	u.lastVisitTime = time.Now().Unix()
 	// 获取玩家金币
 	g, err := u.Get(goldType)
 	if err != nil {
@@ -235,17 +304,17 @@ func (gm *GoldMgr) getUser(uid uint64) (*userGold, error) {
 	if uid == 0 {
 		return nil, nil
 	}
-	u, ok := gm.userList.Load(uid)
+	u, ok := gm.userList[uid]
 	if !ok {
 		return gm.getUserFromCacheOrDB(uid)
 	}
-	return u.(*userGold), nil
+	return u, nil
 }
 
 // 新建用户
 func (gm *GoldMgr) newUser(uid uint64, m map[int16]int64) *userGold {
 	n := newUserGold(uid, m)
-	gm.userList.Store(uid, n)
+	gm.userList[uid] = n
 	return n
 }
 

@@ -50,6 +50,7 @@ func LoadGoldFromRedis(uid uint64) (map[int16]int64, error) {
 		list[int16(t)] = g
 	}
 
+	logrus.Debugf("LoadGoldFromRedis win: uid=%d, list=%v", uid, list)
 	return list, nil
 }
 

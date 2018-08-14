@@ -17,6 +17,7 @@ type userGold struct {
 	lastSeqList map[string]bool  // 最近交易序列号
 	lastSeqList2 map[string]bool // 最近交易序列号缓存,双环存，先填第一个，第一个满后，填第2个，第2个满后，清空第一个.
 	bFirstSeqList bool			 // 是否是第一个消息队列
+	lastVisitTime 	int64		// 最后访问时间,unix时间戳, LRU淘汰
 }
 
 // 新建一个userGold

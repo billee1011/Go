@@ -15,7 +15,7 @@ func startTestGoldServer() {
 func testAddGold() {
 
 	begin := time.Now().UnixNano()
-	uid := uint64(11)
+	uid := uint64(18)
 	v , err := goldclient.GetGold(uid, 1)
 	logrus.Infof("getGold=%d, err=%v++++++++++", v, err)
 

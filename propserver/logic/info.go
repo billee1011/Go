@@ -1,6 +1,8 @@
 package logic
 
-import "fmt"
+import (
+	"fmt"
+)
 
 /*
  功能： 用户金币结构
@@ -25,20 +27,22 @@ const SEQ_LIST_HALF  =  SEQ_LIST_FULL/2
 
 // 道具信息
 type propsInfo struct {
-	propID   uint32		`json:"propID"`		// 属性类型
-	attrType  int32		`json:"attrType"`		// 属性类型
-	attrId    uint64	`json:"attrID"`		// 类型ID
-	attrValue int64		`json:"attrValue"`	// 属性值
-	attrLimit int64		`json:"attrLimit"`	// 叠加上限
+	PropID   uint64		`json:"propID"`		// 道具ID
+	//Name   	string		`json:"name"`		// 道具名称
+	AttrType  int32		`json:"attrType"`		// 属性类型
+	AttrId    uint64	`json:"attrID"`		// 类型ID
+	AttrValue int64		`json:"attrValue"`	// 属性值
+	AttrLimit int64		`json:"attrLimit"`	// 叠加上限
 }
 
 
 type userProps struct {
-	uid      uint64          		// 玩家ID
-	propsList map[uint64]int64 		// 道具列表
-	lastSeqList map[string]bool  	// 最近交易序列号
-	lastSeqList2 map[string]bool 	// 最近交易序列号缓存,双环存，先填第一个，第一个满后，填第2个，第2个满后，清空第一个.
-	bFirstSeqList bool			 	// 是否是第一个消息队列
+	uid      		uint64          	// 玩家ID
+	propsList 		map[uint64]int64 	// 道具列表
+	lastSeqList 	map[string]bool  	// 最近交易序列号
+	lastSeqList2 	map[string]bool 	// 最近交易序列号缓存,双环存，先填第一个，第一个满后，填第2个，第2个满后，清空第一个.
+	bFirstSeqList 	bool			 	// 是否是第一个消息队列
+	lastVisitTime 	int64				// 最后访问时间,unix时间戳, LRU淘汰
 }
 
 // 新建一个userProps

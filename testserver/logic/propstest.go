@@ -19,8 +19,8 @@ func testPropsGold() {
 	logrus.Infof("GetUserProps=%d, err=%v++++++++++", v, err)
 
 	m := make(map[uint64]int64)
-	m[1001] = 100
-	m[1002] = 105
+	m[1] = 100
+	m[2] = 105
 	err = propsclient.AddUserProps(uid, m, 1, 100, 0, 0)
 	logrus.Debugf("uid=%d, AddGold=%d, err=%v",uid, uid,   err)
 	v , err = propsclient.GetUserProps(uid, 0)

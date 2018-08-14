@@ -8,6 +8,7 @@ import (
 	"steve/server_pb/gold"
 	"steve/gold/server"
 	"steve/client_pb/msgid"
+	"steve/gold/logic"
 )
 
 
@@ -72,7 +73,7 @@ entry.WithError(err).Errorln("发布消息失败")
 /////////////////////////////[6.服务初始化配置]////////////////////////////////////////////
 // 比如从DB或文件加载配置
 func InitServer() error {
-
+	logic.GetGoldMgr().Init()
 	return nil
 }
 
