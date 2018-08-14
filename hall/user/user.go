@@ -18,6 +18,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
+	"github.com/spf13/viper"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 )
@@ -50,6 +51,8 @@ func HandleGetPlayerInfoReq(playerID uint64, header *steve_proto_gaterpc.Header,
 		} else {
 			response.RealnameStatus = proto.Uint32(0)
 		}
+		realNameReward := viper.GetInt("real_name_reward")
+		response.RealnameReward = proto.Uint64(uint64(realNameReward))
 	}
 
 	// 获取玩家货币信息

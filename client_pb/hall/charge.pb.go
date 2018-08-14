@@ -7,6 +7,8 @@ Package hall is a generated protocol buffer package.
 It is generated from these files:
 	charge.proto
 	hall.proto
+	password.proto
+	phone.proto
 
 It has these top-level messages:
 	ChargeItem
@@ -26,6 +28,22 @@ It has these top-level messages:
 	HallRealNameRsp
 	HallGetPlayerGameInfoReq
 	HallGetPlayerGameInfoRsp
+	CheckPasswordReq
+	CheckPasswordRsp
+	ChangePasswordReq
+	ChangePasswordRsp
+	ResetPasswordReq
+	ResetPasswordRsp
+	AuthCodeReq
+	AuthCodeRsp
+	CheckAuthCodeReq
+	CheckAuthCodeRsp
+	GetBindPhoneRewardInfoReq
+	GetBindPhoneRewardInfoRsp
+	BindPhoneReq
+	BindPhoneRsp
+	ChangePhoneReq
+	ChangePhoneRsp
 */
 package hall
 
