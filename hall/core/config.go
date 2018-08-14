@@ -32,9 +32,6 @@ func InitServer() error {
 	// 初始化游戏场次配置
 	go logic.InitGameConfig(ctx)
 
-	// 初始化charge配置
-	go logic.InitChargeConfig(ctx)
-
 	return nil
 }
 
