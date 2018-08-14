@@ -80,6 +80,30 @@ func (pds *PlayerDataService) GetPlayerInfo(ctx context.Context, req *user.GetPl
 		rsp.NickName, rsp.Avatar = player.Nickname, player.Avatar
 		rsp.ChannelId, rsp.ProvinceId, rsp.CityId = uint32(player.Channelid), uint32(player.Provinceid), uint32(player.Cityid)
 	}
+	logrus.Debugf("GetPlayerInfo rsp : (%v)", rsp)
+	return
+}
+
+// InitRobotPlayerState 初始化机器人状态
+func (pds *PlayerDataService) InitRobotPlayerState(ctx context.Context, req *user.InitRobotPlayerStateReq) (rsp *user.InitRobotPlayerStateRsp, err error) {
+	logrus.Debugf("GetPlayerGameInfo Batch req : (%v)", *req)
+
+	// 默认返回消息
+	rsp, err = &user.InitRobotPlayerStateRsp{
+		ErrCode: int32(user.ErrCode_EC_FAIL),
+	}, nil
+
+	// 请求参数
+	robotIDs := req.GetRobotIds()
+
+	// 逻辑处理
+	successPids, err := data.InitRobotPlayerState(robotIDs...)
+
+	// 返回消息
+	if err == nil {
+		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+		rsp.SuccessRobotId = successPids
+	}
 
 	return
 }
@@ -197,6 +221,9 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 	newState := uint32(req.GetNewState())
 	gameID := uint32(req.GetGameId())
 	levelID := uint32(req.GetLevelId())
+	serverType := uint32(req.GetServerType())
+	serverAddr := req.GetServerAddr()
+
 	// 校验入参
 	correct := validateUserSate(oldState, newState)
 	if !correct {
@@ -204,14 +231,20 @@ func (pds *PlayerDataService) UpdatePlayerState(ctx context.Context, req *user.U
 		return
 	}
 
-	// 逻辑处理
-	result, err := data.UpdatePlayerState(playerID, oldState, newState, gameID, levelID)
+	// 更新状态
+	result, err := false, nil
+	if oldState != 0 && newState != 0 {
+		result, err = data.UpdatePlayerState(playerID, oldState, newState, gameID, levelID)
 
-	// 返回消息
+	}
+	// 更新服务地址
+	if serverType != 0 {
+		result, err = data.UpdatePlayerServerAddr(playerID, uint32(serverType), serverAddr)
+	}
+
 	if result && err == nil {
 		rsp.Result, rsp.ErrCode = true, int32(user.ErrCode_EC_SUCCESS)
 	}
-
 	return
 }
 
@@ -279,46 +312,30 @@ func (pds *PlayerDataService) UpdatePlayerServerAddr(ctx context.Context, req *u
 	return
 }
 
-// GetGameListInfo 获取玩家游戏列表信息
-func (pds *PlayerDataService) GetGameListInfo(ctx context.Context, req *user.GetGameListInfoReq) (rsp *user.GetGameListInfoRsp, err error) {
-	logrus.Debugf("GetGameListInfo req :(%v)", *req)
-
-	// 默认返回消息
-	rsp, err = &user.GetGameListInfoRsp{
-		ErrCode:         int32(user.ErrCode_EC_FAIL),
-		GameConfig:      []*user.GameConfig{},
-		GameLevelConfig: []*user.GameLevelConfig{},
-	}, nil
-
-	// 逻辑处理
-	gameConfig, gameLevelConfig, err := data.GetGameInfoList()
-	// 返回消息
-	if err == nil {
-		rsp.GameConfig, rsp.GameLevelConfig = DBGameConfig2Server(gameConfig), DBGamelevelConfig2Sercer(gameLevelConfig)
-		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
-	}
-	return
-}
-
 // createPlayer 创建玩家
 func createPlayer(accID uint64) (uint64, error) {
 	showUID := data.AllocShowUID()
-	playerID := uint64(showUID)
+	playerID := data.AllocPlayerID()
 
 	if playerID == 0 {
 		return 0, fmt.Errorf("分配玩家 ID 失败")
 	}
+
+	if has, err := data.ExistPlayerID(playerID); err != nil || has {
+		return 0, fmt.Errorf("初始化玩家(%d)数据失败: %v", playerID, err)
+	}
+
 	if err := data.InitPlayerData(db.TPlayer{
 		Accountid:    int64(accID),
-		Playerid:     int64(showUID),
+		Playerid:     int64(playerID),
 		Showuid:      showUID,
 		Type:         1,
-		Channelid:    0,                                // TODO ，渠道 ID
+		Channelid:    1,                                // TODO ，渠道 ID
 		Nickname:     fmt.Sprintf("player%d", showUID), // TODO,昵称
 		Gender:       2,
 		Avatar:       getRandomAvator(), // TODO , 头像
-		Provinceid:   0,                 // TODO， 省ID
-		Cityid:       0,                 // TODO 市ID
+		Provinceid:   1,                 // TODO， 省ID
+		Cityid:       1,                 // TODO 市ID
 		Name:         "",                // TODO: 真实姓名
 		Phone:        "",                // TODO: 电话
 		Idcard:       "",                // TODO 身份证
@@ -381,6 +398,9 @@ func validatePlayerInfoArgs() bool {
 
 // validateUserSate 校验更新玩家状态入参
 func validateUserSate(oldState, newState uint32) bool {
+	if oldState == 0 && newState == 0 {
+		return true
+	}
 	userState := map[user.PlayerState]bool{
 		user.PlayerState_PS_IDIE:     true,
 		user.PlayerState_PS_MATCHING: true,
