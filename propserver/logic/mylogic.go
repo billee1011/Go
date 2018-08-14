@@ -6,6 +6,7 @@ import (
 	"steve/propserver/define"
 	"sync"
 	"steve/external/configclient"
+	"encoding/json"
 )
 
 /*
@@ -30,7 +31,7 @@ type PropsMgr struct {
 func (gm *PropsMgr) Init() error {
 	//goldMgr.userList = make(map[uint64]*userGold)
 	gm.muLock = make(map[uint64]*sync.RWMutex)
-	gm.propsList = make(map[uint64]*propsInfo, 10)
+
 
 	return gm.getPropsListFromDB()
 }
@@ -47,6 +48,16 @@ func (gm *PropsMgr) getPropsListFromDB() error {
 }
 
 func (gm *PropsMgr) parseJsonPropsList(strJson string) error {
+
+	jsonObject := make([]*propsInfo,0,2)
+	err := json.Unmarshal([]byte(strJson), &jsonObject)
+	if err != nil {
+		return nil
+	}
+	gm.propsList = make(map[uint64]*propsInfo, 10)
+	for _, one := range  jsonObject {
+		gm.propsList[one.PropID] = one
+	}
 
 	return nil
 }
@@ -253,6 +264,5 @@ func (gm *PropsMgr) checkPropId(propId uint64) bool {
 		return true
 	}
 	// 先不判断道具是否存在
-	return true
 	return false
 }

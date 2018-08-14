@@ -25,11 +25,12 @@ const SEQ_LIST_HALF  =  SEQ_LIST_FULL/2
 
 // 道具信息
 type propsInfo struct {
-	propID   uint32		`json:"propID"`		// 属性类型
-	attrType  int32		`json:"attrType"`		// 属性类型
-	attrId    uint64	`json:"attrID"`		// 类型ID
-	attrValue int64		`json:"attrValue"`	// 属性值
-	attrLimit int64		`json:"attrLimit"`	// 叠加上限
+	PropID   uint64		`json:"propID"`		// 道具ID
+	//Name   	string		`json:"name"`		// 道具名称
+	AttrType  int32		`json:"attrType"`		// 属性类型
+	AttrId    uint64	`json:"attrID"`		// 类型ID
+	AttrValue int64		`json:"attrValue"`	// 属性值
+	AttrLimit int64		`json:"attrLimit"`	// 叠加上限
 }
 
 
