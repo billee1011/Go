@@ -23,7 +23,7 @@ func init() {
 		Passwd:               "Sdf123esdf",
 		Net:                  "tcp",
 		Addr:                 "192.168.7.108:3306",
-		DBName:               "config",
+		DBName:               "player",
 		AllowNativePasswords: true,
 		Params:               map[string]string{"charset": "utf8"},
 	}
@@ -101,6 +101,10 @@ func TestGetPlayerIDByAccountID(t *testing.T) {
 	assert.True(t, exist)
 	assert.NotNil(t, playerID)
 	assert.Nil(t, err)
+}
+
+func TestExistPlayerID(t *testing.T) {
+	ExistPlayerID(uint64(2000))
 }
 
 // TestInitPlayerData 初始化玩家
@@ -230,6 +234,25 @@ func TestSetPlayerState(t *testing.T) {
 	playerState, _ := GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
 	fmt.Printf("%v", playerState)
 	result, err := UpdatePlayerState(playerID, 0, 1, 0, 0)
+	playerState, _ = GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+}
+
+func TestUpdatePlayerServerAddr(t *testing.T) {
+	viper.SetDefault("node", 200)
+	playerID := AllocPlayerID()
+	assert.NotZero(t, playerID)
+
+	alloc, err := gutils.NewNode(300)
+	assert.Nil(t, err)
+	accID := uint64(alloc.Generate().Int64())
+
+	NewPlayerData(accID, playerID)
+	playerState, _ := GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
+	fmt.Printf("%v", playerState)
+	playerID = uint64(123134141241)
+	result, err := UpdatePlayerServerAddr(playerID, 1, "127.0.0.1")
 	playerState, _ = GetPlayerState(playerID, []string{cache.GameState, cache.GameID}...)
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)

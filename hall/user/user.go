@@ -12,6 +12,7 @@ import (
 	"steve/entity/db"
 	"steve/external/goldclient"
 	"steve/hall/data"
+	"steve/hall/logic"
 	"steve/server_pb/gold"
 	"steve/structs/exchanger"
 	"steve/structs/proto/gate_rpc"
@@ -183,17 +184,10 @@ func HandleGetGameInfoReq(playerID uint64, header *steve_proto_gaterpc.Header, r
 		},
 	}
 
-	// 逻辑处理
-	gameInfos, gameLevelInfos, err := data.GetGameInfoList()
-
 	// 返回结果
-	if err == nil {
-		response.GameConfig = DBGameConfig2Client(gameInfos)
-		response.GameLevelConfig = DBGamelevelConfig2Client(gameLevelInfos)
-		response.ErrCode = proto.Uint32(0)
-		return
-	}
-	logrus.Debugf("Handle get game info rsp: (%v),err :(%v) ", response, err.Error())
+	response.GameConfig = DBGameConfig2Client(logic.GameConf)
+	response.GameLevelConfig = DBGamelevelConfig2Client(logic.LevelConf)
+	response.ErrCode = proto.Uint32(0)
 
 	return
 }
