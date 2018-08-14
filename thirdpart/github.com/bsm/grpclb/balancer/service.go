@@ -42,7 +42,7 @@ func (s *service) Close() {
 }
 
 func (s *service) loop(discoveryInterval time.Duration) {
-	t := time.NewTicker(discoveryInterval)
+	t := time.NewTimer(discoveryInterval)
 	defer t.Stop()
 
 	for {
@@ -53,6 +53,7 @@ func (s *service) loop(discoveryInterval time.Duration) {
 			return
 		case <-t.C:
 			err := s.updateBackends()
+			t.Reset(discoveryInterval)
 			if err != nil {
 				grpclog.Printf("error on service discovery of %s: %s", s.target, err)
 			}

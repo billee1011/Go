@@ -127,7 +127,7 @@ func (b *backends) connect(addr string) error {
 }
 
 func (b *backends) loop(queryInterval time.Duration) {
-	t := time.NewTicker(queryInterval)
+	t := time.NewTimer(queryInterval)
 	defer t.Stop()
 
 	for {
@@ -139,6 +139,7 @@ func (b *backends) loop(queryInterval time.Duration) {
 			if err := b.updateBackendScores(); err != nil {
 				grpclog.Printf("failed to update backend load scores: %s", err)
 			}
+			t.Reset(queryInterval)
 		}
 	}
 }
