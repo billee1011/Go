@@ -16,15 +16,6 @@ message GameWinRate {
     int32 win_rate = 2;          // 胜率
 }
 
-//RobotPlayerInfo 机器人玩家信息
-message RobotPlayerInfo {
-    string nick_name = 1;         // 玩家昵称
-    string avatar = 2;            // 玩家头像
-    uint64 coin = 3;              // 玩家金币数
-    RobotPlayerState state = 4;   // 玩家状态
-    GameWinRate game_win_rate = 5;    //游戏对应的胜率
-}
-
 // WinRateRange 胜率范围
 message WinRateRange {
    int32 high = 1; //高
@@ -42,7 +33,6 @@ message GetLeisureRobotInfoReq {
     GameConfig   game               = 1; // 游戏
     WinRateRange win_rate_range     = 2; //胜率范围
     CoinsRange   coins_range        = 3; //金币范围
-    RobotPlayerState new_state      = 4; //获取成功时设置的状态
 }
 
 //GetLeisureRobotInfoRsp 获取空闲机器人信息响应
@@ -50,36 +40,32 @@ message GetLeisureRobotInfoRsp {
     uint64 robot_player_id = 1;    // 机器人玩家id
     int64  coin            = 2;    // 玩家金币数
     double  win_rate       = 3;    // 胜率
-    int32  err_code        = 4;    // 错误信息
+    ErrCode  err_code        = 4;    // 错误信息
 }
 
 //SetRobotPlayerStateReq 設置机器人玩家状态請求
 message SetRobotPlayerStateReq {
     uint64 robot_player_id     = 1;  // 机器人玩家id
-    RobotPlayerState new_state = 2;  // 新机器人玩家状态
-    RobotPlayerState old_state = 3;  // 旧机器人玩家状态
-    ServerType server_type     = 4;  // 服务类型
-    string server_addr         = 5;  // 服务地址
+    bool   new_state           = 2;  // 新机器人玩家状态,true 使用,false 空闲
 }
 
 //SetRobotPlayerStateRsp 設置机器人玩家状态响应
 message SetRobotPlayerStateRsp {
-    bool result = 1;              // 成功 true ,失敗 false
-    int32 err_code = 2;           // 错误信息
+    bool    result = 1;             // 成功 true ,失敗 false
+    ErrCode err_code = 2;           // 错误信息
 }
 
 //UpdataRobotGameWinRateReq 更新机器人胜率請求
 message UpdataRobotGameWinRateReq {
     uint64 robot_player_id     = 1;  // 机器人玩家id
     int32  game_id             = 2;  // 游戏ID
-    double  oldWinRate         = 3;  // 旧的胜率
-    double  newWinRate         = 4;  // 新的胜率
+    double  newWinRate         = 3;  // 新的胜率
 }
 
 //UpdataRobotGameWinRateRsp 更新机器人胜率响应
 message UpdataRobotGameWinRateRsp {
-    bool result = 1;              // 成功 true ,失敗 false
-    int32 err_code = 2;           // 错误信息
+    bool result = 1;                // 成功 true ,失敗 false
+    ErrCode err_code = 2;           // 错误信息
 }
 
 //IsRobotPlayerReq 判断是否时机器人請求

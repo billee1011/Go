@@ -7,8 +7,8 @@ import (
 type TLoginRecord struct {
 	Recordid       int64     `xorm:"not null pk comment('记录id') unique BIGINT(20)"`
 	Playerid       int64     `xorm:"not null comment('玩家ID') BIGINT(20)"`
-	Onlineduration int       `xorm:"default 0 comment('在线时长（分钟）') INT(11)"`
-	Gamingduration int       `xorm:"default 0 comment('游戏时长（分钟）') INT(11)"`
+	Onlineduration int       `xorm:"default 0 comment('在线时长（秒）') INT(11)"`
+	Gamingduration int       `xorm:"default 0 comment('游戏时长（秒）') INT(11)"`
 	Area           string    `xorm:"comment('所选地区') VARCHAR(64)"`
 	Loginchannel   int       `xorm:"comment('登录渠道：省ID + 渠道ID') INT(11)"`
 	Logintype      int       `xorm:"comment('登录方式') INT(11)"`

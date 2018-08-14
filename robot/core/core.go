@@ -30,7 +30,7 @@ func (r *RobotCore) Init(e *structs.Exposer, param ...string) error {
 		entry.WithError(err).Error("注册RPC服务处理器失败")
 		return err
 	}
-	err := data.InitRobotRedis() //从mysql获取到机器人,存到redis
+	err := data.GetRobotData() //从mysql获取到机器人,存到redis
 	entry.Debugf("RobotCoreserver init succeed ...")
 	return err
 }
