@@ -176,13 +176,12 @@ CREATE TABLE `t_player_mail` (
   PRIMARY KEY (`n_id`),
   UNIQUE KEY `t_player_mail_UN` (`n_playerid`,`n_mailID`),
   KEY `t_player_mail_n_playerid_IDX` (`n_playerid`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家邮件表'
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家邮件表';
 
 -- ----------------------------
 -- Table structure for t_player_props
 -- ----------------------------
 DROP TABLE IF EXISTS `t_player_props`;
->>>>>>> c28007e298171ece81956fba9d95aeffc84db699
 CREATE TABLE `t_player_props` (
   `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
   `propID` bigint(20) NOT NULL COMMENT '道具ID',
