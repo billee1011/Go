@@ -3,6 +3,7 @@ package robotservice
 import (
 	"context"
 	"fmt"
+	"steve/external/hallclient"
 	"steve/robot/data"
 	"steve/server_pb/robot"
 	"steve/server_pb/user"
@@ -53,7 +54,7 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 			if 50 > winRateRange.High || 50 < winRateRange.Low {
 				return false
 			}
-			logrus.Debugf("gameID(%d) 不存在 ，默认胜率50", gameID)
+			logrus.Debugf("playerID(%d) gameID(%d) 不存在 ，默认胜率50", playerID, gameID)
 		}
 		gold := robotPlayer.Gold
 		// 找到适合的
@@ -79,6 +80,11 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 	if l := len(notInitRobotMap); l > 0 {
 		i := 0 //防止死循环
 		for {
+			if len(notInitRobotMap) == 0 || i >= l {
+				logrus.Debugf("从未初始化中，找不到适合的机器人 notInitRobotMaplen(%d)", len(notInitRobotMap))
+				break
+			}
+			i++
 			suitRobot := make([]uint64, 0, 10)
 			for playerID, robotPlayer := range notInitRobotMap {
 				if checkFunc(playerID, robotPlayer) {
@@ -88,8 +94,19 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 					break
 				}
 			}
-			robotStateMap := make(map[uint64]user.PlayerState)                     //获取该10未初始化的状态,hall TODO
-			playerID, robotInfo := data.ToInitRobotMapReturnLeisure(robotStateMap) // 初始化
+			if len(suitRobot) == 0 { // 没有适合的机器人
+				continue
+			}
+			hallrsp, err := hallclient.InitRobotPlayerState(suitRobot)
+			if err != nil || hallrsp.GetErrCode() != int32(user.ErrCode_EC_SUCCESS) {
+				logrus.WithError(err).Errorf("hall-初始化机器人失败 %d", hallrsp.GetErrCode())
+				continue
+			}
+			if len(hallrsp.GetRobotState()) == 0 {
+				logrus.Warningf("hall-初始化机器人失败 hall get robotSate len %d", len(hallrsp.GetRobotState()))
+				continue
+			}
+			playerID, robotInfo := data.ToInitRobotMapReturnLeisure(hallrsp.GetRobotState()) // 初始化
 			if playerID > 0 && robotInfo != nil {
 				rsp.RobotPlayerId = playerID
 				rsp.Coin = robotInfo.Gold
@@ -97,11 +114,10 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 				rsp.ErrCode = robot.ErrCode_EC_SUCCESS
 				return rsp, data.UpdataRobotState(playerID, true)
 			}
-			if len(notInitRobotMap) == 0 || i >= l {
-				logrus.Debugln("从未初始化中，找不到适合的机器人")
-				break
-			}
+			notInitRobotMap = data.GetNoInitRobot()
 		}
+	} else {
+		logrus.Debugln("未初始化 notInitRobotMap 为0")
 	}
 	defer func() {
 		if rsp.ErrCode == robot.ErrCode_EC_SUCCESS {

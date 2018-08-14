@@ -3,6 +3,7 @@ package hallclient
 import (
 	"context"
 	"errors"
+	"steve/external/robotclient"
 	"steve/server_pb/user"
 	"steve/structs"
 	"steve/structs/common"
@@ -158,7 +159,13 @@ func UpdatePlayerState(uid uint64, oldState user.PlayerState, newState user.Play
 	if rsp.ErrCode != int32(user.ErrCode_EC_SUCCESS) {
 		return false, errors.New("update player state failed")
 	}
-
+	// 更改机器人为未使用
+	if newState == user.PlayerState_PS_IDIE { // 空闲
+		flag, _ := robotclient.IsRobotPlayer(uid)
+		if flag { // 是机器人
+			robotclient.SetRobotPlayerState(uid, false)
+		}
+	}
 	return true, nil
 }
 

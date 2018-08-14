@@ -75,8 +75,10 @@ func GetRobotInfoByPlayerID(playerID uint64) (*RobotInfo, error) {
 }
 
 //ToInitRobotMapReturnLeisure 初始化RobotMap
-func ToInitRobotMapReturnLeisure(playerStates map[uint64]user.PlayerState) (rplayerID uint64, robotInfo *RobotInfo) {
-	for playerID, state := range playerStates {
+func ToInitRobotMapReturnLeisure(playerStates []*user.RobotState) (rplayerID uint64, robotInfo *RobotInfo) {
+	for _, playerState := range playerStates {
+		playerID := playerState.RobotId
+		state := playerState.RobotState
 		if robot, isExist := robotsMap[playerID]; isExist { //判断未初始化的，是否存在
 			delete(robotsMap, playerID)
 			if state == user.PlayerState_PS_IDIE {
