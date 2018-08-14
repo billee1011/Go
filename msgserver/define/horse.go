@@ -22,9 +22,12 @@ package define
   `n_horse3` varchar(200) DEFAULT NULL COMMENT '跑马灯3',
   `n_horse4` varchar(200) DEFAULT NULL COMMENT '跑马灯4',
   `n_horse5` varchar(200) DEFAULT NULL COMMENT '跑马灯5',
+
+
 */
 
 type HorseContent struct {
+	IsUse      int8    			// 是否启用: 0=不启用, 1=启用
 	PlayType    int8          // 时间类型 1=循环播放, 2=指定时间
 	WeekDate    map[int8]bool // 周N列表, 循环播放时选择周列表
 	BeginDate   string        // 开始日期 2018-07-30
@@ -51,6 +54,7 @@ type HorseRace struct {
 }
 
 type HorseContentJson struct {
+	IsUse      int8   `json:"isOpen"`    // 是否启用: 0=不启用, 1=启用
 	PlayType  int8   `json:"playType"`  // 时间类型 1=循环播放, 2=指定时间
 	WeekDate  []int8 `json:"weekDate"`  // 周N列表, 循环播放时选择周列表,周日=0, 周1=1，周2=2，周6=6
 	BeginDate string `json:"beginDate"` // 开始日期 2018-07-30
@@ -58,9 +62,18 @@ type HorseContentJson struct {
 	BeginTime string `json:"beginTime"` // 开始时间 15:00
 	EndTime   string `json:"endTime"`   // 结束时间 20:00
 	Content   string `json:"content"`   // 跑马灯内容
+
 }
 
+
 type HorseRaceJson struct {
+	Id       	   int64                `json:"id"`       		  // 唯一编号
+	Channel        int64          		`json:"channel"`       // 渠道ID
+	Prov           int64          		`json:"prov"`     	  // 省份ID
+	City           int64          		`json:"city"`      	  // 城市ID
+	IsUse          int8           		`json:"isOpen"`      	  // 是否启用: 0=不启用, 1=启用
+	IsUseParent    int8            		`json:"isUseParent"`   // 是否启用上级配置: 0=不启用, 1=启用
+
 	TickTime       int32               `json:"tickTime"`       // 两条跑马灯播放间隔，秒
 	SleepTime      int32               `json:"sleepTime"`      // 一轮结束后等待时间,秒
 	Horse          []*HorseContentJson `json:"horse"`          // 跑马灯内容列表
