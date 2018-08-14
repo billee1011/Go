@@ -59,23 +59,21 @@ func GetLeisureRobotInfoByInfo(leisureRobotReqInfo LeisureRobotReqInfo) (uint64,
 		Game:         game,
 		CoinsRange:   coinsR,
 		WinRateRange: winR,
-		NewState:     robot.RobotPlayerState_RPS_MATCHING,
 	})
 	// 检测返回值
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	if rsp.ErrCode != int32(robot.ErrCode_EC_SUCCESS) {
+	if rsp.ErrCode != robot.ErrCode_EC_SUCCESS {
 		return 0, 0, 0, errors.New(" get leisure robot failed")
 	}
-
 	return rsp.GetRobotPlayerId(), rsp.GetCoin(), rsp.GetWinRate(), nil
 }
 
 // SetRobotPlayerState 更新机器人状态
 // param:  playerID,oldState 玩家当前状态， newState 要更新状态， serverType 服务类型，serverAddr 服务地址
 // return: 更新结果，错误信息
-func SetRobotPlayerState(playerID uint64, oldState, newState, serverType uint32, serverAddr string) (bool, error) {
+func SetRobotPlayerState(playerID uint64, newState bool) (bool, error) {
 	// 得到服务连接
 	con, err := getRobotServer()
 	if err != nil || con == nil {
@@ -87,16 +85,13 @@ func SetRobotPlayerState(playerID uint64, oldState, newState, serverType uint32,
 	// 调用RPC方法
 	rsp, err := client.SetRobotPlayerState(context.Background(), &robot.SetRobotPlayerStateReq{
 		RobotPlayerId: playerID,
-		NewState:      robot.RobotPlayerState(newState),
-		OldState:      robot.RobotPlayerState(oldState),
-		ServerType:    robot.ServerType(serverType),
-		ServerAddr:    serverAddr,
+		NewState:      newState,
 	})
 	// 检测返回值
 	if err != nil {
 		return false, err
 	}
-	if rsp.ErrCode != int32(robot.ErrCode_EC_NOTROBOT) && rsp.ErrCode != int32(robot.ErrCode_EC_SUCCESS) {
+	if rsp.ErrCode != robot.ErrCode_EC_SUCCESS {
 		return false, errors.New("update player state failed")
 	}
 	return rsp.Result, nil
@@ -105,7 +100,7 @@ func SetRobotPlayerState(playerID uint64, oldState, newState, serverType uint32,
 // UpdataRobotPlayerWinRate 更新机器人胜率
 // param:  playerID,oldWinRate 玩家当前胜率， newWinRate 要更新胜率，
 // return: 更新结果，错误信息
-func UpdataRobotPlayerWinRate(playerID uint64, gameID int32, oldWinRate, newWinRate float64) (bool, error) {
+func UpdataRobotPlayerWinRate(playerID uint64, gameID int32, newWinRate float64) (bool, error) {
 	// 得到服务连接
 	con, err := getRobotServer()
 	if err != nil || con == nil {
@@ -117,14 +112,13 @@ func UpdataRobotPlayerWinRate(playerID uint64, gameID int32, oldWinRate, newWinR
 	rsp, err := client.UpdataRobotGameWinRate(context.Background(), &robot.UpdataRobotGameWinRateReq{
 		RobotPlayerId: playerID,
 		GameId:        gameID,
-		OldWinRate:    oldWinRate,
 		NewWinRate:    newWinRate,
 	})
 	// 检测返回值
 	if err != nil {
 		return false, err
 	}
-	if rsp.ErrCode != int32(robot.ErrCode_EC_NOTROBOT) && rsp.ErrCode != int32(robot.ErrCode_EC_SUCCESS) {
+	if rsp.ErrCode != robot.ErrCode_EC_SUCCESS {
 		return false, errors.New("update player winRate failed")
 	}
 	return rsp.Result, nil

@@ -10,17 +10,3 @@ enum ErrCode {
     EC_EMPTY = 3;  // 数据为空
     EC_NOTROBOT =4; //不是机器人
 }
-
-// RobotPlayerState 机器人玩家状态
-enum RobotPlayerState{
-    RPS_IDIE = 0;     // 空闲中
-    RPS_MATCHING = 1; // 匹配中
-    RPS_GAMEING = 2;  // 游戏中
-}
-
-// ServerType 服务类型
-enum ServerType{
-    ST_GATE = 0;  // 网关服
-    ST_MATCH = 1; // 匹配服
-    ST_ROOM = 2;  // 房间服
-}

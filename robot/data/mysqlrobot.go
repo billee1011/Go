@@ -31,13 +31,8 @@ func getMysqlEngineByName(mysqlName string) (*xorm.Engine, error) {
 	return engine, nil
 }
 
-// Startlimit 分页
-var Startlimit int
-
-const limit int = 100 // 固定页数 100
-
 //IsMysqlRobot 判断是否时机器人
-func IsMysqlRobot(playerID int64) (bool, error) {
+func IsMysqlRobot(playerID uint64) (bool, error) {
 	engine, err := MysqlEnginefunc(MysqldbName)
 	if err != nil {
 		return false, err
@@ -56,8 +51,8 @@ func IsMysqlRobot(playerID int64) (bool, error) {
 	return p.Type == PlayerType, nil
 }
 
-//GetRobotInfoByPlayerID 根据玩家ID获取游戏信息
-func GetRobotInfoByPlayerID(playerID int64) ([]*db.TPlayerGame, error) {
+//GetMysqlRobotInfoByPlayerID 根据玩家ID获取游戏信息
+func GetMysqlRobotInfoByPlayerID(playerID uint64) ([]*db.TPlayerGame, error) {
 	engine, err := MysqlEnginefunc(MysqldbName)
 	if err != nil {
 		return nil, err
@@ -72,21 +67,16 @@ func GetRobotInfoByPlayerID(playerID int64) ([]*db.TPlayerGame, error) {
 }
 
 //获取机器人的的游戏ID和对应的胜率
-func getRobotInfo(engine *xorm.Engine) ([]*db.TPlayerGame, error) {
+func getMysqlRobotInfo(engine *xorm.Engine) ([]*db.TPlayerGame, error) {
 	// 游戏胜率
 	robotsPGs := make([]*db.TPlayerGame, 0)
 	idEqu := fmt.Sprintf("%v.playerID = %v.playerID", playerTableName, playerGameTableName)
 	where := fmt.Sprintf("type=%d", PlayerType)
 	Select := fmt.Sprintf("%v.playerID,%v.winningRate,%v.gameID", playerTableName, playerGameTableName, playerGameTableName)
-	session := engine.Table(playerTableName).Join("LEFT", playerGameTableName, idEqu).Where(where).Select(Select).Limit(limit, Startlimit)
+	session := engine.Table(playerTableName).Join("LEFT", playerGameTableName, idEqu).Where(where).Select(Select)
 	if err := session.Find(&robotsPGs); err != nil {
 		sql, _ := session.LastSQL()
 		return []*db.TPlayerGame{}, fmt.Errorf("err(%v),sql(%v)", err, sql)
-	}
-	Startlimit = Startlimit + len(robotsPGs)
-	if len(robotsPGs) != limit {
-		logrus.Debugf(" maxStartlimit (%d) \n", Startlimit)
-		Startlimit = 0
 	}
 	return robotsPGs, nil
 }
