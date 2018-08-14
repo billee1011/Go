@@ -105,11 +105,6 @@ CREATE TABLE `t_game_level_config`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> develop
 -- ----------------------------
 -- Table structure for t_horse_race
 -- ----------------------------
