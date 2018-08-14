@@ -12,6 +12,7 @@ type TGameSummary struct {
 	Scoreinfo     []int64         `json:" 	Scoreinfo     "`
 	Winnerids     []uint64        `json:"	Winnerids     "`
 	Roundcurrency []RoundCurrency `json:"	Roundcurrency "`
+	Gamestarttime time.Time       `json:"   Gamestarttime  "`
 	Gameovertime  time.Time       `json:"   GameoverTime  "`
 	Createtime    time.Time       `json:"	Createtime    "`
 	Createby      string          `json:"	Createby      "`

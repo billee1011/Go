@@ -3,9 +3,13 @@
 
 package majong
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	fmt "fmt"
+	math "math"
+	"time"
+
+	proto "github.com/golang/protobuf/proto"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -873,6 +877,7 @@ type MajongContext struct {
 	Option              *MajongCommonOption `protobuf:"bytes,254,opt,name=option" json:"option,omitempty"`
 	MajongOption        []byte              `protobuf:"bytes,255,opt,name=majong_option,json=majongOption,proto3" json:"majong_option,omitempty"`
 	TempData            *TempDatas          `protobuf:"bytes,256,opt,name=TempData" json:"TempData,omitempty"`
+	GameStartTime       time.Time
 }
 
 func (m *MajongContext) GetGameId() int32 {
@@ -1097,6 +1102,13 @@ func (m *MajongContext) GetTempData() *TempDatas {
 		return m.TempData
 	}
 	return nil
+}
+
+func (m *MajongContext) GetGameStartTime() time.Time {
+	if m != nil {
+		return m.GameStartTime
+	}
+	return time.Time{}
 }
 
 // MajongCommonOption 麻将通用玩法选项
