@@ -21,6 +21,14 @@ var robotsMap map[uint64]*RobotInfo
 // 已经初始  false 为使用，true,使用
 var initRobotsMap map[bool]map[uint64]*RobotInfo
 
+// 初始化
+func init() {
+	robotsMap = make(map[uint64]*RobotInfo)
+	initRobotsMap = make(map[bool]map[uint64]*RobotInfo)
+	initRobotsMap[false] = make(map[uint64]*RobotInfo)
+	initRobotsMap[true] = make(map[uint64]*RobotInfo)
+}
+
 //GetNoInitRobot 获取未初始化map
 func GetNoInitRobot() map[uint64]*RobotInfo {
 	return robotsMap
@@ -44,9 +52,8 @@ func getNotLeisureRobot() map[uint64]*RobotInfo {
 	return initRobotsMap[true]
 }
 
-//InitRobotRedis 初始化机器人redis
-func InitRobotRedis() error {
-	robotsMap = make(map[uint64]*RobotInfo) //先清空
+//GetRobotData 初始化机器人redis
+func GetRobotData() error {
 	if err := GetMysqlRobotFieldValuedAll(robotsMap); err != nil {
 		logrus.WithError(err).Errorln("初始化从mysql获取机器人失败")
 		return err
@@ -70,11 +77,11 @@ func GetRobotInfoByPlayerID(playerID uint64) (*RobotInfo, error) {
 //ToInitRobotMapReturnLeisure 初始化RobotMap
 func ToInitRobotMapReturnLeisure(playerStates map[uint64]user.PlayerState) (rplayerID uint64, robotInfo *RobotInfo) {
 	for playerID, state := range playerStates {
-		if robot, isExist := robotsMap[playerID]; isExist {
+		if robot, isExist := robotsMap[playerID]; isExist { //判断未初始化的，是否存在
 			delete(robotsMap, playerID)
 			if state == user.PlayerState_PS_IDIE {
 				initRobotsMap[false][playerID] = robot
-				if rplayerID == 0 {
+				if rplayerID == 0 { //返回随机空闲机器人
 					rplayerID = playerID
 					robotInfo = robot
 				}
@@ -92,14 +99,20 @@ func ToInitRobotMapReturnLeisure(playerStates map[uint64]user.PlayerState) (rpla
 func UpdataRobotState(playerID uint64, state bool) (err error) {
 	curr, isExist2 := initRobotsMap[!state]
 	if isExist2 && len(curr) != 0 {
-		if robot, isExist := curr[playerID]; isExist {
+		if robot, isExist := curr[playerID]; isExist && robot != nil {
 			delete(initRobotsMap[!state], playerID)
 			initRobotsMap[state][playerID] = robot
 		} else {
 			err = fmt.Errorf("playerID(%d) state(%v) initRobotsMap not Exist", playerID, state)
 		}
 	} else {
-		err = fmt.Errorf("state(%v) initRobotsMap len eq 0 or not Exist", state)
+		// 重启过,重新从未初始化到初始化
+		if robot, isExist := robotsMap[playerID]; isExist && robot != nil {
+			delete(robotsMap, playerID)
+			initRobotsMap[state][playerID] = robot
+		} else {
+			err = fmt.Errorf("state(%v) initRobotsMap len eq 0 or not Exist", !state)
+		}
 	}
 	return err
 }
@@ -109,6 +122,9 @@ func UpdataRobotWinRate(playerID uint64, gameID int, winrate float64) error {
 	robotInfo, err := GetRobotInfoByPlayerID(playerID)
 	if err != nil {
 		return err
+	}
+	if robotInfo == nil {
+		return fmt.Errorf("robotInfo eq nil playerID(%d)", playerID)
 	}
 	robotInfo.GameWinRates[gameID] = winrate
 	return nil
@@ -133,20 +149,22 @@ func GetMysqlRobotFieldValuedAll(currRobotMap map[uint64]*RobotInfo) error {
 		if playerID == 0 {
 			continue
 		}
-		rp, isExist := currRobotMap[uint64(playerID)]
-		if isExist {
+		rp := currRobotMap[uint64(playerID)]
+		if rp != nil {
 			rp.GameWinRates[robot.Gameid] = robot.Winningrate
+			currRobotMap[uint64(playerID)] = rp
 		} else {
-			rp.GameWinRates = map[int]float64{robot.Gameid: robot.Winningrate}
+			nrp := &RobotInfo{}
+			nrp.GameWinRates = map[int]float64{robot.Gameid: robot.Winningrate}
 			// 从金币服获取
 			gold, err := goldclient.GetGold(uint64(playerID), int16(gold.GoldType_GOLD_COIN))
 			if err != nil {
 				logrus.WithError(err).Errorf("获取金币失败 playerID(%v)", playerID)
 				continue
 			}
-			rp.Gold = gold
+			nrp.Gold = gold
+			currRobotMap[uint64(playerID)] = nrp
 		}
-		currRobotMap[uint64(playerID)] = rp
 	}
 	return nil
 }

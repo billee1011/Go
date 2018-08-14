@@ -60,7 +60,6 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 		if gold <= coinsRange.High && gold >= coinsRange.Low {
 			return true
 		}
-
 		return false
 	}
 	initRobotsMapFalse := data.GetLeisureRobot()
@@ -75,7 +74,7 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 			}
 		}
 	}
-	notInitRobotMap := data.GetNoInitRobot()
+	notInitRobotMap := data.GetNoInitRobot() //
 	if l := len(notInitRobotMap); l > 0 {
 		i := 0 //防止死循环
 		for {
@@ -97,7 +96,6 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 				rsp.ErrCode = robot.ErrCode_EC_SUCCESS
 				return rsp, data.UpdataRobotState(playerID, true)
 			}
-			i++
 			if len(notInitRobotMap) == 0 || i >= l {
 				break
 			}
@@ -117,7 +115,7 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 	return rsp, fmt.Errorf("找不到适合的机器人")
 }
 
-//SetRobotPlayerState 设置机器人玩家状态
+//SetRobotPlayerState 设置机器人玩家状态  先判断是否是机器人，是机器人，在判断是否是空闲状态
 func (r *Robotservice) SetRobotPlayerState(ctx context.Context, request *robot.SetRobotPlayerStateReq) (*robot.SetRobotPlayerStateRsp, error) {
 	logrus.Debugln("SetRobotPlayerState req", *request)
 	rsp := &robot.SetRobotPlayerStateRsp{
