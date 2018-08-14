@@ -157,7 +157,12 @@ message InitRobotPlayerStateReq {
 // InitRobotPlayerStateRsp 初始化机器人玩家状态返回
 message InitRobotPlayerStateRsp {
     int32 err_code = 1;                           // 错误信息
-    repeated uint64 success_robot_id = 2;         // 初始化成功的机器人ID  
+    repeated RobotState robot_state = 2;         //  机器人状态 
+}
+
+message RobotState {
+    uint64 robot_id = 1;                              // 机器人ID  
+    PlayerState robot_state = 2;                      // 机器人状态 
 }
 
 // PlayerData 玩家数据服务

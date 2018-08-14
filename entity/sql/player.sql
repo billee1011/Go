@@ -176,7 +176,7 @@ CREATE TABLE `t_player_mail` (
   PRIMARY KEY (`n_id`),
   UNIQUE KEY `t_player_mail_UN` (`n_playerid`,`n_mailID`),
   KEY `t_player_mail_n_playerid_IDX` (`n_playerid`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家邮件表'
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家邮件表';
 
 -- ----------------------------
 -- Table structure for t_player_props

@@ -71,7 +71,7 @@ func (manager *ModelManager) StopDeskModel(desk *desk.Desk) error {
 		model.Stop()
 	}
 
-	reportKey := cache.FmtGameReportKey(desk.GetGameId() /**/, 0) //临时0
+	reportKey := cache.FmtGameReportKey(desk.GetGameId() , int(desk.GetLevel())) //临时0
 	redisCli := redis.GetRedisClient()
 	redisCli.DecrBy(reportKey, int64(desk.GetConfig().Num))
 
