@@ -6,12 +6,7 @@ import (
 	"steve/entity/constant"
 	"steve/external/configclient"
 	"sync"
-
-	"github.com/Sirupsen/logrus"
 )
-
-// configGetter get config
-var configGetter = configclient.GetConfig
 
 // Item for json unmarshal
 /*
@@ -48,10 +43,10 @@ var (
 	maxChargeLock sync.RWMutex
 )
 
-// loadItemList load item list from configuration server
-func loadItemList() error {
+// LoadItemList load item list from configuration server
+func LoadItemList() error {
 	var _itemLists platformItems
-	itemListJSON, err := configGetter(constant.ChargeItemListKey.Key, constant.ChargeItemListKey.SubKey)
+	itemListJSON, err := configclient.GetConfig(constant.ChargeItemListKey.Key, constant.ChargeItemListKey.SubKey)
 	if err != nil {
 		return fmt.Errorf("获取商品列表失败:%s", err.Error())
 	}
@@ -64,8 +59,9 @@ func loadItemList() error {
 	return nil
 }
 
-func loadMaxCharge() error {
-	maxChargeJSON, err := configGetter(constant.ChargeDayMaxKey.Key, constant.ChargeDayMaxKey.SubKey)
+// LoadMaxCharge load max charge from configuration server
+func LoadMaxCharge() error {
+	maxChargeJSON, err := configclient.GetConfig(constant.ChargeDayMaxKey.Key, constant.ChargeDayMaxKey.SubKey)
 	if err != nil {
 		return fmt.Errorf("获取每日最大充值数失败：%s", err.Error())
 	}
@@ -111,11 +107,11 @@ func getItemList(city int, platform int) ([]Item, error) {
 	return items, nil
 }
 
-func init() {
-	if err := loadItemList(); err != nil {
-		logrus.Panicln(err)
-	}
-	if err := loadMaxCharge(); err != nil {
-		logrus.Panicln(err)
-	}
-}
+// func init() {
+// 	if err := loadItemList(); err != nil {
+// 		logrus.Panicln(err)
+// 	}
+// 	if err := loadMaxCharge(); err != nil {
+// 		logrus.Panicln(err)
+// 	}
+// }

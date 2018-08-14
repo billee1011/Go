@@ -5,7 +5,7 @@ log_prefix: propserver
 log_stderr: true 
 
 #RPC服务地址
-rpc_addr: 192.168.8.17
+rpc_addr: 127.0.0.1
 #RPC服务监听Port
 rpc_port: 36371
 #RPC服务健康监控Port
@@ -19,10 +19,10 @@ rpc_lb: hash
 
 
 #consul 服务中心配置
-consul_addr: 192.168.7.108:8500
+consul_addr: 127.0.0.1:8500
 
 #redis 配置
-redis_addr: 192.168.7.108:6379
+redis_addr: 127.0.0.1:6379
 redis_passwd:
 
 # mysql 数据库列表, db用户名和密码中不能带@符号
@@ -43,6 +43,6 @@ mysql_list:
       charset: utf8
 
 #nsq 消息队列配置
-nsqd_addr: 192.168.7.108:4150
-nsqlookupd_addrs:
-  - 192.168.7.108:4161
+nsqd_addr: 127.0.0.1:4150
+nsqlookupd_addrs: 
+  - 127.0.0.1:4161
