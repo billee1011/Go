@@ -90,21 +90,27 @@ func (pds *PlayerDataService) InitRobotPlayerState(ctx context.Context, req *use
 
 	// 默认返回消息
 	rsp, err = &user.InitRobotPlayerStateRsp{
-		ErrCode: int32(user.ErrCode_EC_FAIL),
+		ErrCode:    int32(user.ErrCode_EC_FAIL),
+		RobotState: make([]*user.RobotState, 0),
 	}, nil
 
 	// 请求参数
 	robotIDs := req.GetRobotIds()
 
 	// 逻辑处理
-	successPids, err := data.InitRobotPlayerState(robotIDs...)
+	robotStates, err := data.InitRobotPlayerState(robotIDs...)
 
 	// 返回消息
-	if err == nil {
-		rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
-		rsp.SuccessRobotId = successPids
+	if err != nil {
+		return
 	}
-
+	rsp.ErrCode = int32(user.ErrCode_EC_SUCCESS)
+	for robotID, robotState := range robotStates {
+		rsp.RobotState = append(rsp.RobotState, &user.RobotState{
+			RobotId:    robotID,
+			RobotState: robotState,
+		})
+	}
 	return
 }
 
