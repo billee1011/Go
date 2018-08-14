@@ -182,7 +182,6 @@ CREATE TABLE `t_player_mail` (
 -- Table structure for t_player_props
 -- ----------------------------
 DROP TABLE IF EXISTS `t_player_props`;
->>>>>>> c28007e298171ece81956fba9d95aeffc84db699
 CREATE TABLE `t_player_props` (
   `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
   `propID` bigint(20) NOT NULL COMMENT '道具ID',
