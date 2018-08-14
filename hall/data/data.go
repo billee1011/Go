@@ -196,7 +196,7 @@ func GetPlayerGameInfo(playerID uint64, gameID uint32, fields ...string) (exist 
 }
 
 // InitRobotPlayerState c初始化机器人状态
-func InitRobotPlayerState(playerIDs ...uint64) (successPids []uint64, err error) {
+func InitRobotPlayerState(playerIDs ...uint64) (robotSatte map[uint64]user.PlayerState, err error) {
 	enrty := logrus.WithFields(logrus.Fields{
 		"func_name": InitRobotPlayerState,
 		"playerIDs": playerIDs,
@@ -207,8 +207,8 @@ func InitRobotPlayerState(playerIDs ...uint64) (successPids []uint64, err error)
 	if err != nil {
 		return nil, err
 	}
-	// 初始化成功的机器人id
-	successPids = make([]uint64, 0)
+	// 初始化机器人
+	robotSatte = make(map[uint64]user.PlayerState, 0)
 
 	for _, playerID := range playerIDs {
 		sql := fmt.Sprintf("select type from t_player  where playerID='%d';", playerID)
@@ -216,18 +216,18 @@ func InitRobotPlayerState(playerIDs ...uint64) (successPids []uint64, err error)
 		if err != nil && len(res) != 1 {
 			continue
 		}
-		err = initRootPlayerStateToRedis(playerID)
+		userState, err := initRootPlayerStateToRedis(playerID)
 		if err != nil {
+			robotSatte[playerID] = user.PlayerState_PS_NIL
 			continue
 		}
-		successPids = append(successPids, playerID)
+		robotSatte[playerID] = userState
 	}
 	enrty.Debugln("init Robot Player State finish")
-
-	return successPids, nil
+	return robotSatte, nil
 }
 
-func initRootPlayerStateToRedis(playerID uint64) error {
+func initRootPlayerStateToRedis(playerID uint64) (user.PlayerState, error) {
 	playerInfoKey := cache.FmtPlayerIDKey(uint64(playerID))
 
 	// 初始化机器人玩家状态到redis
@@ -237,18 +237,21 @@ func initRootPlayerStateToRedis(playerID uint64) error {
 
 	redisCli, err := redisCliGetter(playerRedisName, 0)
 	if err != nil {
-		return fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
+		return user.PlayerState_PS_NIL, fmt.Errorf("获取 redis 客户端失败(%s)。", err.Error())
 	}
 
+	currentState := 0
 	err = redisCli.Watch(func(tx *redis.Tx) error {
-		currentState, rerr := tx.HGet(playerInfoKey, cache.GameState).Result()
+		currentStateStr, rerr := tx.HGet(playerInfoKey, cache.GameState).Result()
 		if rerr == nil {
-			err = fmt.Errorf("初始化机器人游戏状态出错，state:(%s)已存在", currentState)
+			logrus.Debugf("初始化机器人游戏状态出错，state:(%s)已存在", currentStateStr)
+			currentState, err = strconv.Atoi(currentStateStr)
 			return err
 		}
 
 		_, err = tx.Pipelined(func(pipe redis.Pipeliner) error {
 			pipe.HMSet(playerInfoKey, kv)
+			currentState = int(user.PlayerState_PS_IDIE)
 			return nil
 		})
 		return err
@@ -256,7 +259,7 @@ func initRootPlayerStateToRedis(playerID uint64) error {
 	if err == nil {
 		redisCli.Expire(playerInfoKey, redisTimeOut)
 	}
-	return nil
+	return user.PlayerState(int32(currentState)), err
 }
 
 // GetPlayerState 获取游戏状态,游戏id,ip地址
