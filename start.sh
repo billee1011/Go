@@ -7,14 +7,14 @@ function startserver() {
     cname=$3
     pushd $path 
     serviceloader $name --config=config.yml &
-    x=`consul catalog services | grep $cname | wc -l`
-    while [[ $x -eq 0 ]]; do
-        echo 等待 $name 启动完成$x
+    # x=`consul catalog services | grep $cname | wc -l`
+    # while [[ $x -eq 0 ]]; do
+    #     echo 等待 $name 启动完成$x
 
-        sleep 1
-        x=`consul catalog services | grep $cname | wc -l` 
-    done 
-    sleep 1
+    #     sleep 1
+    #     x=`consul catalog services | grep $cname | wc -l` 
+    # done 
+    # sleep 1
     echo $name 启动完成$x
     popd 
 }

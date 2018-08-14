@@ -2,15 +2,17 @@ package configclient
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	entityConf "steve/entity/config"
+	"steve/entity/constant"
 	"steve/server_pb/config"
 	"steve/structs"
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
+	nsq "github.com/nsqio/go-nsq"
+	"github.com/spf13/viper"
 )
 
 // ConfigCliGetter config client 获取
@@ -78,57 +80,39 @@ func GetConfigUntilSucc(key, subkey string, maxRetry int, retryInterval time.Dur
 	return val, nil
 }
 
-func ParseToGameLevelConfigMap(jsonStr string) (conf []entityConf.GameLevelConfig) {
-	if err := json.Unmarshal([]byte(jsonStr), &conf); err != nil {
-		logrus.Errorf("游戏配置数据反序列化失败：%s", err.Error())
-	}
-	return
+// ConfigChangeHandle 配置变化处理器
+type ConfigChangeHandle func(key, subkey, val string) error
+
+type nsqHandler struct {
+	handlerFunc ConfigChangeHandle
 }
 
-//获取救济金配置
-func GetAlmsConfigMap() (conf []entityConf.AlmsConfig, err error) {
-	almsStr, err := GetConfig("game", "alms")
-	if err != nil {
-		logrus.WithError(err).Errorln("获取救济金配置失败")
-		return nil, err
+func (nh *nsqHandler) HandleMessage(message *nsq.Message) error {
+	cfg := config.ConfigUpdate{}
+	if err := proto.Unmarshal(message.Body, &cfg); err != nil {
+		logrus.WithError(err).Errorln("反序列化失败")
+		return fmt.Errorf("反序列化失败:%s", err.Error())
 	}
-	if err := json.Unmarshal([]byte(almsStr), &conf); err != nil {
-		logrus.WithError(err).Errorf("游戏配置数据反序列化失败：%s", err.Error())
-		return nil, err
-	}
-	return
+	return nh.handlerFunc(cfg.GetKey(), cfg.GetSubkey(), cfg.GetVal())
 }
 
-// GetGameConfigMap 获取游戏配置信息
-func GetGameConfigMap() (gameConf []entityConf.GameConfig, err error) {
-	gameStr, err := GetConfig("game", "config")
-	if err != nil {
-		logrus.WithError(err).Errorln("获取游戏配置失败")
-		return nil, err
-	}
-
-	if err := json.Unmarshal([]byte(gameStr), &gameConf); err != nil {
-		logrus.WithError(err).Errorf("游戏配置数据反序列化失败：%s", err.Error())
-		return nil, err
-	}
-
-	return
+// SubConfigChangeCustom 使用自定义通道订阅配置变化
+func SubConfigChangeCustom(key, subkey, channel string, handle ConfigChangeHandle) error {
+	exposer := structs.GetGlobalExposer()
+	return exposer.Subscriber.Subscribe(constant.UpdateConfig, channel, &nsqHandler{
+		handlerFunc: handle,
+	})
 }
 
-// GetGameLevelConfigMap 获取游戏级别配置信息
-func GetGameLevelConfigMap() (levelConf []entityConf.GameLevelConfig, err error) {
-	levelStr, err := GetConfig("game", "levelconfig")
-	if err != nil {
-		logrus.WithError(err).Errorln("获取游戏级别配置失败")
-		return nil, err
-	}
+// SubConfigChange 订阅配置改变
+// 使用 [rpc_server_name]+[node] 作为 channel， 对于没有配置 rpc_server_name 的服务，要使用 SubConfigChangeCustom 来订阅
+func SubConfigChange(key, subkey string, handle ConfigChangeHandle) error {
+	exposer := structs.GetGlobalExposer()
+	channel := fmt.Sprintf("%s_%d", viper.GetString("rpc_server_name"), viper.GetInt("node"))
 
-	if err := json.Unmarshal([]byte(levelStr), &levelConf); err != nil {
-		logrus.WithError(err).Errorf("游戏级别配置数据反序列化失败：%s", err.Error())
-		return nil, err
-	}
-
-	return
+	return exposer.Subscriber.Subscribe(constant.UpdateConfig, channel, &nsqHandler{
+		handlerFunc: handle,
+	})
 }
 
 // 根据金币服的路由策略生成服务连接获取方式

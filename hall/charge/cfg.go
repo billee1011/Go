@@ -6,6 +6,9 @@ import (
 	"steve/entity/constant"
 	"steve/external/configclient"
 	"sync"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // Item for json unmarshal
@@ -34,42 +37,54 @@ type cityItems map[string][]Item
 type platformItems map[string]cityItems
 
 var (
-	itemLists     platformItems
+	itemLists     = platformItems{}
 	itemListsLock sync.RWMutex
 	// 每日最大充值数
-	maxCharge struct {
+	maxCharge = struct {
 		MaxChargeVal uint64 `json:"max_charge"`
-	}
+	}{MaxChargeVal: 200000}
 	maxChargeLock sync.RWMutex
 )
 
-// LoadItemList load item list from configuration server
-func LoadItemList() error {
-	var _itemLists platformItems
-	itemListJSON, err := configclient.GetConfig(constant.ChargeItemListKey.Key, constant.ChargeItemListKey.SubKey)
+// loadItemList load item list from configuration server
+func loadItemList(retry int) error {
+	itemListJSON, err := configclient.GetConfigUntilSucc(constant.ChargeItemListKey.Key, constant.ChargeItemListKey.SubKey, retry, 5*time.Second)
 	if err != nil {
 		return fmt.Errorf("获取商品列表失败:%s", err.Error())
 	}
-	if err := json.Unmarshal([]byte(itemListJSON), &_itemLists); err != nil {
+	return parseItemList(itemListJSON)
+}
+
+// 解析商品列表
+func parseItemList(config string) error {
+	var _itemLists platformItems
+	if err := json.Unmarshal([]byte(config), &_itemLists); err != nil {
 		return fmt.Errorf("反序列化失败：%s", err.Error())
 	}
 	itemListsLock.Lock()
 	itemLists = _itemLists
+	logrus.Debugf("充值配置解析成功: %#v", _itemLists)
 	itemListsLock.Unlock()
 	return nil
 }
 
-// LoadMaxCharge load max charge from configuration server
-func LoadMaxCharge() error {
-	maxChargeJSON, err := configclient.GetConfig(constant.ChargeDayMaxKey.Key, constant.ChargeDayMaxKey.SubKey)
+// loadMaxCharge load max charge from configuration server
+func loadMaxCharge(retry int) error {
+	maxChargeJSON, err := configclient.GetConfigUntilSucc(constant.ChargeDayMaxKey.Key, constant.ChargeDayMaxKey.SubKey, retry, 5*time.Second)
 	if err != nil {
 		return fmt.Errorf("获取每日最大充值数失败：%s", err.Error())
 	}
+	return parseMaxCharge(maxChargeJSON)
+}
+
+// parseMaxCharge 解析日最大充值配置
+func parseMaxCharge(config string) error {
 	maxChargeLock.Lock()
-	if err := json.Unmarshal([]byte(maxChargeJSON), &maxCharge); err != nil {
+	if err := json.Unmarshal([]byte(config), &maxCharge); err != nil {
 		maxChargeLock.Unlock()
 		return fmt.Errorf("反序列化失败：%s", err.Error())
 	}
+	logrus.Debugf("日最大充值配置解析成功: %d", maxCharge.MaxChargeVal)
 	maxChargeLock.Unlock()
 	return nil
 }
@@ -107,11 +122,21 @@ func getItemList(city int, platform int) ([]Item, error) {
 	return items, nil
 }
 
-// func init() {
-// 	if err := loadItemList(); err != nil {
-// 		logrus.Panicln(err)
-// 	}
-// 	if err := loadMaxCharge(); err != nil {
-// 		logrus.Panicln(err)
-// 	}
-// }
+func init() {
+	loadItemList(20)
+	loadMaxCharge(20)
+
+	configclient.SubConfigChange(constant.ChargeItemListKey.Key, constant.ChargeItemListKey.SubKey, func(key, subkey, val string) error {
+		if err := parseItemList(val); err != nil {
+			logrus.WithField("val", val).WithError(err).Errorln("商品列表配置解析失败")
+		}
+		return nil
+	})
+
+	configclient.SubConfigChange(constant.ChargeDayMaxKey.Key, constant.ChargeDayMaxKey.SubKey, func(key, subkey, val string) error {
+		if err := parseMaxCharge(val); err != nil {
+			logrus.WithField("val", val).WithError(err).Errorln("日最大充值配置解析失败")
+		}
+		return nil
+	})
+}

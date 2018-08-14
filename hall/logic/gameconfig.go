@@ -4,7 +4,6 @@ import (
 	"context"
 	entityConf "steve/entity/config"
 	"steve/external/configclient"
-	"steve/hall/charge"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -33,29 +32,6 @@ func InitGameConfig(ctx context.Context) {
 				continue
 			}
 			logrus.Debugf("hall服启动加载的游戏玩法，GameConf:(%v)\n，LevelConf：（%v）", GameConf, LevelConf)
-			return
-		}
-	}
-}
-
-// InitChargeConfig 初始化charge配置
-func InitChargeConfig(ctx context.Context) {
-	var err error
-	for {
-		select {
-		case <-ctx.Done():
-			logrus.Debugf("hall服启动始化charge配置失败")
-			return
-		default:
-			err = charge.LoadItemList()
-			if err != nil {
-				continue
-			}
-			err = charge.LoadMaxCharge()
-			if err != nil {
-				continue
-			}
-			logrus.Debugf("hall服启动始化charge配置成功")
 			return
 		}
 	}
