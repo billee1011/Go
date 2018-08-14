@@ -222,7 +222,6 @@ func UpdatePlayeServerAddr(uid uint64, serverType user.ServerType, serverAddr st
 		ServerType: serverType,
 		ServerAddr: serverAddr,
 	})
-
 	// 检测返回值
 	if err != nil {
 		return false, err
