@@ -3,7 +3,6 @@ package scxlai
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	"steve/common/mjoption"
 	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/ai"
@@ -42,13 +41,19 @@ func (h *zixunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 		return
 	}
 	var aiEvent ai.AIEvent
-	switch mjContext.GetZixunType() {
-	case majong.ZixunType_ZXT_PENG, majong.ZixunType_ZXT_CHI:
-		aiEvent = h.handleOtherZixun(player, mjContext)
-	case majong.ZixunType_ZXT_NORMAL:
-		aiEvent = h.handleNormalZixun(player, mjContext, params)
-	default:
-		return
+	switch params.AIType {
+	case ai.OverTimeAI, ai.SpecialOverTimeAI, ai.TuoGuangAI:
+		if viper.GetBool("ai.test") {
+			aiEvent = h.generateRobot(player, mjContext)
+		} else {
+			aiEvent = h.getNormalZiXunAIEvent(player, mjContext)
+		}
+	case ai.RobotAI:
+		aiEvent = h.generateRobot(player, mjContext)
+	case ai.TingAI:
+		aiEvent = h.getNormalZiXunTingStateAIEvent(player, mjContext)
+	case ai.HuAI:
+		aiEvent = h.getNormalZiXunHuStateAIEvent(player, mjContext)
 	}
 
 	result, err = ai.AIEventGenerateResult{
@@ -57,71 +62,6 @@ func (h *zixunStateAI) GenerateAIEvent(params ai.AIEventGenerateParams) (result 
 
 	result.Events = append(result.Events, aiEvent)
 	return
-}
-
-func (h *zixunStateAI) handleNormalZixun(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) (aiEvent ai.AIEvent) {
-	switch params.AIType {
-	case ai.OverTimeAI, ai.SpecialOverTimeAI:
-		if viper.GetBool("ai.test") {
-			aiEvent = h.generateRobot(player, mjContext)
-		} else {
-			aiEvent = h.generateOverTime(player, mjContext)
-		}
-	case ai.TuoGuangAI:
-		if viper.GetBool("ai.test") {
-			aiEvent = h.generateRobot(player, mjContext)
-		} else {
-			aiEvent = h.generateTuoGuang(player, mjContext)
-		}
-	case ai.RobotAI:
-		aiEvent = h.generateRobot(player, mjContext)
-	case ai.TingAI:
-		aiEvent = h.generateTing(player, mjContext)
-	case ai.HuAI:
-		aiEvent = h.generateHu(player, mjContext)
-	}
-	return aiEvent
-}
-
-func (h *zixunStateAI) handleOtherZixun(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	//有定缺牌，出最大的定缺牌
-	handCards := player.GetHandCards()
-	//优先出定缺牌
-	for i := len(handCards) - 1; i >= 0; i-- {
-		hc := handCards[i]
-		if mjoption.GetXingpaiOption(int(mjContext.GetXingpaiOptionId())).EnableDingque &&
-			hc.GetColor() == player.GetDingqueColor() {
-			aiEvent = h.chupai(player, hc)
-			return
-		}
-	}
-
-	aiEvent = h.chupai(player, handCards[len(handCards)-1])
-	return
-}
-
-func (h *zixunStateAI) generateOverTime(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	// 生成超时AI事件
-	// 超时时，可以胡就是胡，否则是出牌
-	return h.getNormalZiXunAIEvent(player, mjContext)
-}
-
-func (h *zixunStateAI) generateTuoGuang(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	// 生成托管AI事件
-	// 无状态下才会托管，因此托管就是出牌
-	return h.getNormalZiXunAIEvent(player, mjContext)
-}
-
-func (h *zixunStateAI) generateTing(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	// 生成听AI事件
-	// 听状态下，能胡不做操作等玩家自行选择或者等超时事件，不能胡就打出摸到的牌
-	return h.getNormalZiXunTingStateAIEvent(player, mjContext)
-}
-
-func (h *zixunStateAI) generateHu(player *majong.Player, mjContext *majong.MajongContext) (aiEvent ai.AIEvent) {
-	// 生成胡AI事件
-	// 胡状态下，能胡直接让胡，不能胡就打出摸到的牌
-	return h.getNormalZiXunHuStateAIEvent(player, mjContext)
 }
 
 func (h *zixunStateAI) checkAIEvent(player *majong.Player, mjContext *majong.MajongContext, params ai.AIEventGenerateParams) error {

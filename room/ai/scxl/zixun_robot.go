@@ -7,6 +7,7 @@ import (
 	"steve/entity/majong"
 	"steve/gutils"
 	"steve/room/ai"
+	"steve/room/majong/global"
 	"steve/room/majong/utils"
 	"strconv"
 )
@@ -39,13 +40,11 @@ func (h *zixunStateAI) generateRobot(player *majong.Player, mjContext *majong.Ma
 		logEntry.Infoln("中级AI自摸胡牌")
 		return
 	}
-	moCard := mjContext.LastMopaiCard
-	for _, pengCard := range NonPointer(utils.TransPengCard(player.PengCards)) {
-		if pengCard == *moCard {
-			aiEvent = h.gang(player, &pengCard)
-			logEntry.WithField("摸牌", moCard).Infoln("中级AI补杠")
-			return
-		}
+	if len(zxRecord.EnableBugangCards) > 0 {
+		buGangCard := global.ToMJCard(int(zxRecord.EnableBugangCards[0]))
+		aiEvent = h.gang(player, &buGangCard)
+		logEntry.WithField("杠牌", buGangCard).Infoln("中级AI补杠")
+		return
 	}
 	if gang {
 		aiEvent = h.gang(player, &outCard)
