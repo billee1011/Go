@@ -10,11 +10,12 @@ type Desk struct {
 	// Cancel    context.CancelFunc // 取消事件处理
 }
 
-func NewDesk(uid uint64, gameId int, playerIds []uint64, config *DeskConfig) Desk {
+func NewDesk(uid uint64, gameId int,levelId int32, playerIds []uint64, config *DeskConfig) Desk {
 	desk := Desk{uid: uid,
 		gameID:    gameId,
 		config:    config,
 		playerIds: playerIds,
+		level:levelId,
 	}
 
 	return desk

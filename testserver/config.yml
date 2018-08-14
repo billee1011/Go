@@ -16,7 +16,7 @@ rpc_server_name: testserver
 health_port: 36317
 
 #consul 服务中心配置
-consul_addr: 127.0.0.1:8500
+consul_addr: 192.168.7.108:8500
 
 #redis 配置
 #redis_addr: 192.168.7.108:6379

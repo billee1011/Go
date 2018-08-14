@@ -564,6 +564,8 @@ func (manager *matchManager) getGoldRange(goldNum int64, inteval int64) (minGold
 	//金币匹配范围最大值
 	maxGold = int64(float64(goldNum) * float64(1+goldValue))
 
+	//logrus.Debugf("传入的金币值:%v, 时间间隔:%v, 范围最小值:%v, 范围最大值:%v", goldNum, inteval, minGold, maxGold)
+
 	return
 }
 
@@ -1626,6 +1628,12 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 
 				// 金币范围
 				minGold, maxGold := manager.getGoldRange(desk.aveGold, interval)
+				if minGold < globalInfo.minGold {
+					minGold = globalInfo.minGold
+				}
+				if maxGold > globalInfo.maxGold {
+					maxGold = globalInfo.maxGold
+				}
 
 				reqRobot := robotclient.LeisureRobotReqInfo{
 					CoinHigh:    maxGold,

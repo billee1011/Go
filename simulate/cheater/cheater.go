@@ -23,6 +23,15 @@ func SetPlayerCoin(playerID uint64, coin uint64) error {
 	return nil
 }
 
+// ClearAllMatch 清空所有的匹配
+func ClearAllMatch() error {
+	url := fmt.Sprintf("%s/clear_all_match?", config.GetMatchHTTPAddr())
+	if _, err := http.DefaultClient.Get(url); err != nil {
+		return fmt.Errorf("清空所有的匹配失败:%v", err)
+	}
+	return nil
+}
+
 // MockConfigClient mock config client
 func MockConfigClient() error {
 	configGRPCCliInit.Do(func() {

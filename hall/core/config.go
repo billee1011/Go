@@ -1,8 +1,11 @@
 package core
 
 import (
+	"context"
 	"fmt"
+	"steve/hall/logic"
 	"steve/structs"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -19,7 +22,19 @@ func InitServer() error {
 	if err != nil {
 		return fmt.Errorf("InitServer 获取 redis 客户端失败(%s)", err.Error())
 	}
-	redisCli.Set(showUID, 10000*10000*10, -1)
+	_, err = redisCli.Get(showUID).Result()
+	if err != nil {
+		redisCli.Set(showUID, 10000*10000*10, -1)
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+
+	// 初始化游戏场次配置
+	go logic.InitGameConfig(ctx)
+
+	// 初始化charge配置
+	go logic.InitChargeConfig(ctx)
+
 	return nil
 }
 

@@ -4,17 +4,18 @@ import (
 	"steve/client_pb/match"
 	"steve/client_pb/msgid"
 	"steve/client_pb/room"
+	"steve/common/constant"
 	propclient "steve/common/data/prop"
-	"steve/entity/constant"
 	"steve/external/goldclient"
+	"steve/external/propsclient"
 	"steve/gutils"
 	"steve/room/models"
-	"steve/structs/exchanger"
-	"steve/structs/proto/gate_rpc"
-
 	modelmanager "steve/room/models"
 	player2 "steve/room/player"
 	"steve/room/util"
+	"steve/server_pb/gold"
+	"steve/structs/exchanger"
+	"steve/structs/proto/gate_rpc"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -195,7 +196,10 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 
 	// 使用道具
 	if prop.Count > 0 {
-		err = propclient.AddPlayerProp(playerID, propID, -1)
+		propsList := map[uint64]int64{
+			uint64(propID): -1,
+		}
+		err = propsclient.AddUserProps(playerID, propsList, int32(constant.PFGAMEUSE), 0, int32(req.GetGameId()), req.GetLevelId())
 		if err != nil {
 			logEntry.WithError(err).Debugln("增加玩家道具失败")
 			return
@@ -207,9 +211,9 @@ func HandleUsePropReq(playerID uint64, header *steve_proto_gaterpc.Header, req r
 			return
 		}
 
-		coin, err := goldclient.GetGold(playerID, constant.GOLD_COIN)
+		coin, err := goldclient.GetGold(playerID, int16(gold.GoldType_GOLD_COIN))
 		if coin >= propConfig.Limit {
-			goldclient.AddGold(playerID, constant.GOLD_COIN, propConfig.Value, 0, 0, int32(desk.GetGameId()), desk.GetLevel())
+			goldclient.AddGold(playerID, int16(gold.GoldType_GOLD_COIN), propConfig.Value, 0, 0, int32(desk.GetGameId()), desk.GetLevel())
 		} else {
 			logEntry.WithError(err).Debugf("玩家金币数不足, limit: %d, coin: %d", propConfig.Limit, coin)
 			errDesc = "金币不足，无法使用该道具"

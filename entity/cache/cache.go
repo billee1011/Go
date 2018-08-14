@@ -104,3 +104,11 @@ func FmtPlayerChargeKey(playerID uint64) string {
 func FmtGameReportKey(gameId int, level int) string {
 	return fmt.Sprintf("gamereport:%v-%v", gameId, level)
 }
+
+func FmtGameReportKeyGame() string {
+	return fmt.Sprintf("gamereport:")
+}
+
+func FmtRedisLockKeyReport() string {
+	return "datareportlock"
+}

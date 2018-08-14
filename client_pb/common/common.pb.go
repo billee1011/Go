@@ -113,20 +113,20 @@ func (LocSourceType) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, 
 type PlayerState int32
 
 const (
-	PlayerState_PS_IDLE     PlayerState = 0
-	PlayerState_PS_GAMEING  PlayerState = 1
-	PlayerState_PS_MATCHING PlayerState = 2
+	PlayerState_PS_IDLE     PlayerState = 1
+	PlayerState_PS_GAMEING  PlayerState = 2
+	PlayerState_PS_MATCHING PlayerState = 3
 )
 
 var PlayerState_name = map[int32]string{
-	0: "PS_IDLE",
-	1: "PS_GAMEING",
-	2: "PS_MATCHING",
+	1: "PS_IDLE",
+	2: "PS_GAMEING",
+	3: "PS_MATCHING",
 }
 var PlayerState_value = map[string]int32{
-	"PS_IDLE":     0,
-	"PS_GAMEING":  1,
-	"PS_MATCHING": 2,
+	"PS_IDLE":     1,
+	"PS_GAMEING":  2,
+	"PS_MATCHING": 3,
 }
 
 func (x PlayerState) Enum() *PlayerState {

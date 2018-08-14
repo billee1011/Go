@@ -18,28 +18,6 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for t_currency_record
--- ----------------------------
-DROP TABLE IF EXISTS `t_currency_record`;
-CREATE TABLE `t_currency_record` ( 
-  `tradeID` varchar(64) NOT NULL COMMENT '流水ID',
-  `playerID` bigint(20) NOT NULL COMMENT '玩家ID',
-  `channel` int(11) DEFAULT NULL COMMENT '渠道ID',
-  `currencyType` int(11) DEFAULT NULL COMMENT '货币类型: 1=金币, 2=元宝（钻石）， 3=房卡',
-  `amount` int(11) DEFAULT NULL COMMENT '加减值',
-  `beforeBalance` int(11) DEFAULT NULL COMMENT '操作前金币值',
-  `afterBalance` int(11) DEFAULT NULL COMMENT '操作后金币值',
-  `tradeTime` datetime DEFAULT NULL COMMENT '创建时间',
-  `status` tinyint(1) DEFAULT NULL COMMENT '操作结果： 1=成功，0=失败',
-  `remark` varchar(256) DEFAULT NULL COMMENT '备注',
-  `gameId` bigint(20) DEFAULT NULL COMMENT '游戏ID',
-  `level` int(11) DEFAULT NULL COMMENT '场次ID',
-  `funcId` int(11) DEFAULT NULL COMMENT '行为ID或功能ID',
-  PRIMARY KEY (`tradeID`),
-  UNIQUE KEY `t_currency_record_tradeID_uindex` (`tradeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='金币流水表';
-
--- ----------------------------
 -- Table structure for t_hall_info
 -- ----------------------------
 DROP TABLE IF EXISTS `t_hall_info`;
@@ -61,8 +39,9 @@ CREATE TABLE `t_hall_info` (
   `createBy` varchar(64) DEFAULT NULL COMMENT '创建人',
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=752 DEFAULT CHARSET=utf8 COMMENT='大厅信息表';
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `t_hall_info_1_UN` (`playerID`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='大厅信息表';
 
 -- ----------------------------
 -- Table structure for t_mail
@@ -115,7 +94,10 @@ CREATE TABLE `t_player` (
   `createBy` varchar(64) DEFAULT NULL COMMENT '创建人',
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `t_player_1_UN_playerID` (`playerID`),
+  UNIQUE KEY `t_player_1_UN_showUID` (`showUID`),
+  UNIQUE KEY `t_player_1_UN_ACCOUTID` (`accountID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家表';
 
 -- ----------------------------
@@ -137,7 +119,8 @@ CREATE TABLE `t_player_currency` (
   `createBy` varchar(64) DEFAULT NULL COMMENT '创建人',
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `t_player_currency_1_UN_playerID` (`playerID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='玩家货币表';
 
 -- ----------------------------
