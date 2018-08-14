@@ -11,7 +11,6 @@ import (
 	"steve/simulate/interfaces"
 	"steve/simulate/utils"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -43,9 +42,6 @@ func TestClearAllMatch(t *testing.T) {
 		_, err = utils.ApplyJoinDesk(player, common.GameId_GAMEID_XUELIU)
 		assert.Nil(t, err)
 	}
-
-	// 暂停1秒
-	time.Sleep(time.Millisecond * 1000)
 
 	// 清空所有的匹配
 	ClearAllMatch()
