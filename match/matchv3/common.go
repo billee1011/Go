@@ -3,10 +3,14 @@ package matchv3
 import (
 	"fmt"
 	"net"
+	"steve/client_pb/match"
+	"steve/client_pb/msgid"
+	"steve/external/gateclient"
 	"strconv"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 	"github.com/spf13/viper"
 )
 
@@ -53,3 +57,23 @@ func GetServerAddr() string {
 
 	return localAddr
 }
+
+// NotifyCancelMatch 通知指定的玩家:取消匹配,目前发送取消匹配成功的回复
+func NotifyCancelMatch(playersID []uint64) {
+
+	// 取消匹配成功的回复
+	response := match.CancelMatchRsp{
+		ErrCode: proto.Int32(int32(match.MatchError_EC_SUCCESS)),
+		ErrDesc: proto.String("成功"),
+	}
+
+	// 所有的玩家
+	for _, playerID := range playersID {
+		gateclient.SendPackageByPlayerID(playerID, uint32(msgid.MsgID_CANCEL_MATCH_RSP), &response)
+	}
+}
+
+// match有关消息
+const (
+	ClearMatch = iota // 清空所有的匹配
+)

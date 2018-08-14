@@ -14,3 +14,8 @@ type MatchService struct {
 func (ms *MatchService) AddContinueDesk(ctx context.Context, request *match.AddContinueDeskReq) (response *match.AddContinueDeskRsp, err error) {
 	return matchv3.AddContinueDesk(request), nil
 }
+
+// ClearAllMatch 清空所有的匹配
+func (ms *MatchService) ClearAllMatch(ctx context.Context, request *match.ClearAllMatchReq) (response *match.ClearAllMatchRsp, err error) {
+	return matchv3.ClearAllMatch(request), nil
+}
