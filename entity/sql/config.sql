@@ -34,7 +34,7 @@ CREATE TABLE `t_alms_config` (
   `updateTime` datetime DEFAULT NULL,
   `updateBy` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='救济金场配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='救济金场配置表';
 
 -- ----------------------------
 -- Table structure for t_common_config
@@ -47,7 +47,7 @@ CREATE TABLE `t_common_config` (
   `value` text COMMENT 'config context, json format',
   PRIMARY KEY (`id`),
   UNIQUE KEY `key` (`key`,`subkey`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='通用配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='通用配置表';
 
 -- ----------------------------
 -- Table structure for t_game_config
@@ -70,7 +70,7 @@ CREATE TABLE `t_game_config` (
   `updateTime` datetime DEFAULT NULL COMMENT '更新时间',
   `updateBy` varchar(64) DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='游戏配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='游戏配置表';
 
 -- ----------------------------
 -- Table structure for t_game_level_config
@@ -96,7 +96,7 @@ CREATE TABLE `t_game_level_config`  (
   `updateTime` datetime(0) NULL DEFAULT NULL,
   `updateBy` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '游戏场次配置表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '游戏场次配置表' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -114,26 +114,6 @@ CREATE TABLE `t_horse_race` (
   `n_horseData` text COMMENT 'json格式的跑马灯配置，具体格式参考相关说明文件',
   PRIMARY KEY (`n_id`),
   KEY `t_horse_race_n_channel_IDX` (`n_channel`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='跑马灯表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='跑马灯表';
 
 SET FOREIGN_KEY_CHECKS = 1;
-
-
--- ----------------------------
--- Table structure for t_alms_config
--- ----------------------------
-DROP TABLE IF EXISTS `t_alms_config`;
-CREATE TABLE `t_alms_config`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `almsCountDonw` int(11) NULL DEFAULT NULL COMMENT '救济倒计时，时间是秒',
-  `depositCountDonw` int(11) NULL DEFAULT NULL COMMENT '快充倒计时，时间是秒',
-  `getNorm` int(11) NULL DEFAULT NULL COMMENT '救济线',
-  `getTimes` int(11) NULL DEFAULT NULL COMMENT '救济领取次数',
-  `getNumber` int(11) NULL DEFAULT NULL COMMENT '领取数量',
-  `version` int(11) NULL DEFAULT NULL COMMENT '配置版本号，每次改变增加1,初始1',
-  `createTime` datetime(0) NULL DEFAULT NULL,
-  `createBy` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `updateTime` datetime(0) NULL DEFAULT NULL,
-  `updateBy` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '救济金场配置表' ROW_FORMAT = Dynamic;
