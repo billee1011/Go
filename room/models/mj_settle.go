@@ -759,8 +759,9 @@ func (majongSettle *MajongSettle) genGameSummary(desk *desk.Desk, summaryID int6
 		Deskid:   int64(desk.GetUid()),
 		Gameid:   desk.GetGameId(),
 		// Levelid: todo,
-		Playerids:    desk.GetPlayerIds(),
-		Gameovertime: time.Now(),
+		Playerids:     desk.GetPlayerIds(),
+		Gameovertime:  time.Now(),
+		Gamestarttime: desk.GetConfig().Context.(*contexts.MajongDeskContext).MjContext.GetGameStartTime(),
 	}
 	// scoreinfo and winners
 	gameSummary.Scoreinfo, gameSummary.Winnerids = majongSettle.getScoreinfoWinners(desk)
