@@ -291,6 +291,35 @@ func GetPlayerGameInfo(uid uint64, gameID uint32) (*user.GetPlayerGameInfoRsp, e
 	return rsp, nil
 }
 
+// InitRobotPlayerState 初始化机器人玩家状态
+func InitRobotPlayerState(robotPids []uint64) (*user.InitRobotPlayerStateRsp, error) {
+	// 得到服务连接
+	con, err := getHallServer()
+	if err != nil || con == nil {
+		return nil, errors.New("no hall connection")
+	}
+
+	// 新建Client
+	client := user.NewPlayerDataClient(con)
+
+	// 调用RPC方法
+	rsp, err := client.InitRobotPlayerState(context.Background(), &user.InitRobotPlayerStateReq{
+		RobotIds: robotPids,
+	})
+
+	// 检测返回值
+	if err != nil || rsp == nil {
+		return nil, err
+	}
+
+	if rsp.ErrCode != int32(user.ErrCode_EC_SUCCESS) {
+		return nil, errors.New("InitRobotPlayerState() ，但rsp.ErrCode显示失败")
+	}
+
+	return rsp, nil
+
+}
+
 func getHallServer() (*grpc.ClientConn, error) {
 	e := structs.GetGlobalExposer()
 	// 对uid进行一致性hash路由策略.
