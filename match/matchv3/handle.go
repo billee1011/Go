@@ -102,7 +102,7 @@ func HandleMatchReq(playerID uint64, header *steve_proto_gaterpc.Header, req mat
 		response.ErrCode = proto.Int32(int32(common.ErrCode_EC_FAIL))
 		response.ErrDesc = &errString
 
-		logEntry.Errorf("内部错误，处理客户端的请求匹配失败，请求匹配的游戏ID:%v，场次ID:%v \n", reqGameID, reqLevelID)
+		logEntry.Errorf("处理客户端的请求匹配失败，请求匹配的游戏ID:%v，场次ID:%v \n", reqGameID, reqLevelID)
 		return
 	}
 
@@ -222,4 +222,16 @@ func AddContinueDesk(request *server_pb_match.AddContinueDeskReq) *server_pb_mat
 	//matchMgr.addContinueDesk(players, int(request.GetGameId()), request.GetFixBanker(), int(request.GetBankerSeat()))
 
 	return response
+}
+
+// ClearAllMatch 清空所有的匹配
+func ClearAllMatch(req *server_pb_match.ClearAllMatchReq) *server_pb_match.ClearAllMatchRsp {
+
+	logrus.Debugln("开始处理玩家清空所有匹配的请求")
+
+	rsp := &server_pb_match.ClearAllMatchRsp{}
+
+	matchMgr.ClearAllMatch()
+
+	return rsp
 }

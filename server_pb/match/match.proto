@@ -22,6 +22,15 @@ message AddContinueDeskReq {
 message AddContinueDeskRsp {
 }
 
+// ClearAllMatchReq 请求清空所有的匹配
+message ClearAllMatchReq {
+}
+
+// ClearAllMatchRsp 应答清空所有的匹配
+message ClearAllMatchRsp {
+}
+
 service Match {
     rpc AddContinueDesk(AddContinueDeskReq) returns (AddContinueDeskRsp) {}
+    rpc ClearAllMatch(ClearAllMatchReq) returns (ClearAllMatchRsp) {}
 }

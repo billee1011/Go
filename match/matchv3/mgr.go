@@ -25,6 +25,12 @@ type reqMatchPlayer struct {
 	IP       uint32 // IP地址
 }
 
+// 其他请求消息
+type reqMsg struct {
+	msgID  uint32      // 消息ID
+	param1 interface{} // 消息参数1
+}
+
 // playerOffline 玩家离线
 type playerLogin struct {
 	playerID uint64 // 玩家 ID
@@ -81,7 +87,8 @@ type levelGlobalInfo struct {
 
 // gameInfo 单个游戏的匹配信息
 type gameInfo struct {
-	allLevelChan map[uint32]chan reqMatchPlayer // 本levelID戏所有场次的匹配/取消匹配通道,Key:场次ID, Value:该场次的匹配/取消匹配通道
+	allLevelChan map[uint32]chan reqMatchPlayer // 所有场次的匹配/取消匹配通道,Key:场次ID, Value:该场次的匹配/取消匹配通道
+	otherMsgChan map[uint32]chan reqMsg         // 所有场次的其他消息通道
 	config       gameConfig                     // 游levelID配置数据
 }
 
@@ -261,7 +268,8 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 
 		// 加入该游戏
 		manager.allGame[uint32(pGameConf.GameID)] = gameInfo{
-			allLevelChan: map[uint32]chan reqMatchPlayer{},
+			allLevelChan: map[uint32]chan reqMatchPlayer{}, // 所有场次的匹配/取消匹配通道,Key:场次ID, Value:该场次的匹配/取消匹配通道
+			otherMsgChan: map[uint32]chan reqMsg{},         // 所有场次的其他消息通道
 			config:       newGameConf}
 	}
 
@@ -305,6 +313,8 @@ func (manager *matchManager) requestGameLevelConfig() bool {
 
 		// 该场次的申请通道
 		gInfo.allLevelChan[uint32(pLevelConf.LevelID)] = make(chan reqMatchPlayer, 1024)
+		// 该场次的消息通道
+		gInfo.otherMsgChan[uint32(pLevelConf.LevelID)] = make(chan reqMsg, 1024)
 	}
 
 	logrus.Debugf("读取到的游戏配置信息结束，配置如下：%v", manager.allGame)
@@ -1009,7 +1019,13 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 
 	reqMatchChan, exist := gameInfo.allLevelChan[levelID]
 	if !exist {
-		logEntry.Errorln("游戏场次不存在！退出")
+		logEntry.Errorln("游戏场次的匹配通道不存在！退出")
+		return
+	}
+
+	msgChan, exist := gameInfo.otherMsgChan[levelID]
+	if !exist {
+		logEntry.Errorln("游戏场次的消息通道不存在！退出")
 		return
 	}
 
@@ -1036,6 +1052,10 @@ func (manager *matchManager) startLevelMatch(gameID uint32, levelID uint32) {
 		case <-sucTimer.C: // 匹配成功超时定时器
 			{
 				manager.checkSucTimeout(&globalInfo)
+			}
+		case reqMsg := <-msgChan: // 消息通道
+			{
+				manager.dealLevelMsg(&reqMsg, &globalInfo)
 			}
 		}
 	}
@@ -1086,12 +1106,12 @@ func (manager *matchManager) dispatchMatchReq(playerID uint64, gameID uint32, le
 
 	// 金币范围检测
 	if playerGold < levelConfig.minGold {
-		logrus.Errorln("玩家金币数小于游戏场次金币要求最小值，最小值：%v，玩家金币:%v", levelConfig.minGold, playerGold)
+		logrus.Errorf("玩家金币数小于游戏场次金币要求最小值，要求最小值：%v，玩家金币:%v", levelConfig.minGold, playerGold)
 		return fmt.Sprintf("玩家金币数小于游戏场次金币要求最小值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
 	if playerGold > levelConfig.maxGold {
-		logrus.Errorf("玩家金币数大于游戏场次金币要求最大值，最大值：%v，玩家金币:%v", levelConfig.maxGold, playerGold)
+		logrus.Errorf("玩家金币数大于游戏场次金币要求最大值，要求最大值：%v，玩家金币:%v", levelConfig.maxGold, playerGold)
 		return fmt.Sprintf("玩家金币数大于游戏场次金币要求最大值，请求匹配的游戏ID:%v，场次ID:%v，玩家ID:%v", gameID, levelID, playerID)
 	}
 
@@ -1618,12 +1638,13 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 
 				logEntry.Debugf("请求的机器人参数:%v", reqRobot)
 
-				// 从hall服获取一个空闲的机器人
+				// 从robot服获取一个空闲的机器人
 				robotPlayerID, robotGold, robotRate, err := robotclient.GetLeisureRobotInfoByInfo(reqRobot)
 				if err != nil {
 					logEntry.WithError(err).Error("从hall服获取机器人失败,继续下一个桌子")
 					continue
 				}
+				logEntry.Debugf("从robot服获取机器人成功，playerID:%v，金币数:%v，胜率:%v ", robotPlayerID, robotGold, robotRate)
 
 				// 新建一个匹配玩家(机器人)
 				newMatchPlayer := matchPlayer{
@@ -1639,25 +1660,25 @@ func (manager *matchManager) checkDeskTimeout(globalInfo *levelGlobalInfo) {
 				bSuc, err := hallclient.UpdatePlayerState(robotPlayerID, user.PlayerState_PS_IDIE, user.PlayerState_PS_MATCHING, globalInfo.gameID, globalInfo.levelID)
 				if err != nil || !bSuc {
 					logEntry.WithError(err).Errorf("内部错误，通知hall服设置机器人状态为匹配状态时失败，游戏ID:%v，场次ID:%v，机器人玩家ID:%v", globalInfo.gameID, globalInfo.levelID, robotPlayerID)
+					continue
 				}
 
 				// 更新机器人所在的服务器类型和地址
 				bSuc, err = hallclient.UpdatePlayeServerAddr(robotPlayerID, user.ServerType_ST_MATCH, GetServerAddr())
 				if err != nil || !bSuc {
 					logEntry.WithError(err).Errorf("内部错误，通知hall服设置机器人的服务器类型及地址时失败，游戏ID:%v，场次ID:%v，机器人玩家ID:%v", globalInfo.gameID, globalInfo.levelID, robotPlayerID)
+					continue
 				}
-
-				logEntry.Debugf("从hall服获取机器人成功，playerID:%v，金币数:%v，胜率:%v ", robotPlayerID, robotGold, robotRate)
 
 				// 把机器人加入桌子
 				if manager.addPlayerToDesk(&newMatchPlayer, desk, globalInfo) {
 
-					logEntry.Debugf("请求到的机器人%v加入了桌子%v，桌子满员，桌子已删除", newMatchPlayer, desk)
+					logEntry.Debugf("请求到的机器人%v加入了桌子%v，桌子当前人数:%v，已满员，桌子已删除", newMatchPlayer, desk, len(desk.players))
 
 					// 桌子已满，则删除
 					globalInfo.allRateDesks[index].Remove(iter)
 				} else {
-					logEntry.Debugf("请求到的机器人%v加入了桌子%v，桌子未满员，继续匹配", newMatchPlayer, desk)
+					logEntry.Debugf("请求到的机器人%v加入了桌子%v，桌子当前人数:%v，未满员，继续匹配", newMatchPlayer, desk, len(desk.players))
 				}
 			}
 		}
@@ -1711,4 +1732,81 @@ func (manager *matchManager) checkSucTimeout(globalInfo *levelGlobalInfo) {
 	globalInfo.sucPlayers = newSucPlayers
 
 	// logEntry.Debugln("离开匹配成功超时检测函数")
+}
+
+// dealLevelMsg 处理指定场次的其他消息
+func (manager *matchManager) dealLevelMsg(pMsg *reqMsg, globalInfo *levelGlobalInfo) {
+	if pMsg == nil || globalInfo == nil {
+		logrus.Errorln("dealLevelMsg(),参数错误, pMsg == nil || globalInfo == nil")
+		return
+	}
+
+	switch pMsg.msgID {
+	case ClearMatch: // 清空该场次的所有匹配
+		{
+			manager.clearMatch(globalInfo)
+		}
+	}
+}
+
+// clearMatch 清空指定游戏场次的匹配
+func (manager *matchManager) clearMatch(globalInfo *levelGlobalInfo) {
+
+	// 参数检测
+	if globalInfo == nil {
+		logrus.Errorln("clearMatch()，参数错误，globalInfo == nil，返回")
+		return
+	}
+
+	// 所有的概率
+	for i := 0; i <= 100; i++ {
+		// 该概率下所有的桌子
+		for iter := globalInfo.allRateDesks[i].Front(); iter != nil; iter = iter.Next() {
+			desk := *(iter.Value.(**matchDesk))
+
+			logrus.Debugf("clearMatch()，清空了游戏ID:{%v},场次ID:{%v}的桌子{%v}", globalInfo.gameID, globalInfo.levelID, desk)
+
+			// 通知桌内的所有真实玩家
+			playersID := make([]uint64, 0, 10)
+			for j := 0; j < len(desk.players); j++ {
+				if desk.players[j].robotLv == 0 {
+					playersID = append(playersID, desk.players[j].playerID)
+				}
+			}
+
+			// 通知这些玩家,取消匹配成功
+			NotifyCancelMatch(playersID)
+		}
+	}
+
+	// 其他信息不需要重置
+	globalInfo.allRateDesks = make([]list.List, 101) // 胜率1% - 100%的所有匹配桌子
+	globalInfo.sucPlayers = map[uint64]uint64{}      // 已成功匹配的玩家，Key:玩家ID，Value:桌子ID
+	globalInfo.sucDesks = map[uint64]*sucDesk{}      // 已成功匹配的桌子，Key:桌子ID，Value:桌子信息
+}
+
+// ClearAllMatch 清空所有的匹配
+func (manager *matchManager) ClearAllMatch() {
+
+	logrus.Debugln("清空所有的匹配")
+
+	// 所有的游戏
+	for gID, gInfo := range manager.allGame {
+
+		// 所有的场次
+		for lID, _ := range gInfo.config.levelConfig {
+
+			// 该场次的消息通道
+			msgChan, exist := gInfo.otherMsgChan[lID]
+			if !exist {
+				logrus.Errorf("内部错误，清空匹配时，发现游戏ID:%v存在，场次ID:%v不存在，但找不到该场次的申请通道 \n", gID, lID)
+			}
+
+			// 压入通道
+			msgChan <- reqMsg{
+				msgID:  ClearMatch, // 取消匹配
+				param1: 0,          // 参数1
+			}
+		}
+	}
 }

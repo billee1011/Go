@@ -3,8 +3,11 @@ package web
 import (
 	"fmt"
 	"net/http"
+	"steve/external/matchclient"
 	"strconv"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // web配置信息
@@ -104,20 +107,29 @@ func GetLimitLastSameDesk() bool {
 	return configs.bLimitLastSameDesk
 }
 
+// 处理客户端的修改
+// d 			要修改的值
+// min			最小值
+// max			最大值
+// r			http请求
+// formField	要修改的字段名
 func handleChangeDurationVal(d *time.Duration, min, max time.Duration, w http.ResponseWriter, r *http.Request, formField string) {
 
 	// 给客户端的回复
 	result := "OK"
+
 	defer func() {
 		w.Write([]byte(result))
 	}()
 
-	// 设置的值，转换为数字
+	// 要设置的值，字符串转换为数字
 	val, err := strconv.Atoi(r.FormValue(formField))
 	if err != nil {
 		result = fmt.Sprintf("参数[%s]错误", formField)
 		return
 	}
+
+	// 要设置的值,time.Duration
 	requestD := time.Duration(val) * time.Millisecond
 	if requestD < min {
 		minString := min.String()
@@ -129,6 +141,8 @@ func handleChangeDurationVal(d *time.Duration, min, max time.Duration, w http.Re
 		result = fmt.Sprintf("[%s]时间大于[%s]， 更新为[%s]", formField, maxString, maxString)
 		requestD = max
 	}
+
+	// 更改
 	*d = requestD
 	return
 }
@@ -155,6 +169,7 @@ func handleChangeRobotContinueRate(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(result))
 	}()
 
+	// 失败时的续局概率
 	lossRateString := r.FormValue("loss_rate")
 	if lossRateString != "" {
 		val, err := strconv.ParseFloat(lossRateString, 32)
@@ -166,6 +181,7 @@ func handleChangeRobotContinueRate(w http.ResponseWriter, r *http.Request) {
 		result = fmt.Sprintf("%s修改机器人失败时续局概率为 %.2f \r\n", result, val)
 	}
 
+	// 成功时的续局概率
 	winRateString := r.FormValue("win_rate")
 	if winRateString != "" {
 		val, err := strconv.ParseFloat(winRateString, 32)
@@ -178,9 +194,25 @@ func handleChangeRobotContinueRate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handleClearAllMatch 清空所有的匹配
+func handleClearAllMatch(w http.ResponseWriter, r *http.Request) {
+	logrus.Debugln("match服的web收到请求:清空所有的匹配")
+
+	// 给客户端的回复
+	result := "OK"
+
+	defer func() {
+		w.Write([]byte(result))
+	}()
+
+	// 清空所有场次的所有匹配
+	matchclient.ClearAllMatch()
+}
+
 func init() {
 	http.HandleFunc("/set_robot_join_time", handleChangeRobotJoinTime)             // 设置机器人加入时间
 	http.HandleFunc("/set_continue_dismiss_time", handleChangeContinueDismissTime) // 设置续局牌桌解散时间
 	http.HandleFunc("/set_continue_robot_time", handleChangeContinueRobotTime)     // 设置机器人续局决策时间
 	http.HandleFunc("/set_robot_continue_rate", handleChangeRobotContinueRate)     // 设置机器人续局概率
+	http.HandleFunc("/clear_all_match", handleClearAllMatch)                       // 清空所有的匹配
 }

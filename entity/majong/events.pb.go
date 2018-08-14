@@ -1,5 +1,7 @@
 package majong
 
+import "strconv"
+
 // EventID 事件 ID
 type EventID int32
 
@@ -102,6 +104,14 @@ var EventID_value = map[string]int32{
 	"event_xingpai_buhua_finish":   31,
 	"event_chi_finish":             32,
 	"event_chi_request":            33,
+}
+
+func (x EventID) String() string {
+	s, ok := StateID_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
 }
 
 // RequestEventHead 请求事件通用头
