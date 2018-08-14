@@ -61,7 +61,7 @@ func (mgr *DeskManager) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 		playerIDs[seat] = pbPlayer.GetPlayerId()
 		robotLvs[seat] = int(pbPlayer.GetRobotLevel())
 	}
-	desk, err := mgr.CreateDeskObj(req.GetDeskId(), length, playerIDs, int(req.GetGameId()), int(req.GetLevelId()), robotLvs, req)
+	desk, err := mgr.CreateDeskObj(req.GetDeskId(), length, playerIDs, int(req.GetGameId()), int32(req.GetLevelId()), robotLvs, req)
 	if err != nil {
 		entry.WithError(err).Errorln("创建桌子失败")
 		rsp.ErrCode = roommgr.RoomError_FAILED // 默认是失败的
@@ -96,7 +96,7 @@ func (mgr *DeskManager) CreateDesk(ctx context.Context, req *roommgr.CreateDeskR
 
 	entry.Infoln("牌桌创建成功")
 
-	reportKey := cache.FmtGameReportKey(int(req.GetGameId()) /**/, 0) //临时0
+	reportKey := cache.FmtGameReportKey(int(req.GetGameId()) ,int(desk.GetLevel())) //临时0
 	redisCli := redis.GetRedisClient()
 	redisCli.IncrBy(reportKey, int64(length))
 	return
@@ -147,17 +147,17 @@ func (mgr *DeskManager) createDeskConfig(gameID int, players []uint64, req *room
 }
 
 // CreateDeskObj 创建桌子并初始化所有model
-func (mgr *DeskManager) CreateDeskObj(deskID uint64, length int, players []uint64, gameID int, levelID int, robotLvs []int, req *roommgr.CreateDeskRequest) (*deskpkg.Desk, error) {
+func (mgr *DeskManager) CreateDeskObj(deskID uint64, length int, players []uint64, gameID int, levelID int32, robotLvs []int, req *roommgr.CreateDeskRequest) (*deskpkg.Desk, error) {
 	config, err := mgr.createDeskConfig(gameID, players, req)
 	if err != nil {
 		return nil, fmt.Errorf("create desk config failed:%v", err)
 	}
 
 	config.PlayerIds = players
-	desk := deskpkg.NewDesk(deskID, gameID, players, &config)
+	desk := deskpkg.NewDesk(deskID, gameID,levelID, players, &config)
 
 	player.GetPlayerMgr().InitDeskData(players, 2, robotLvs)
-	player.GetPlayerMgr().BindPlayerRoomAddr(players, gameID, levelID)
+	player.GetPlayerMgr().BindPlayerRoomAddr(players, gameID, int(levelID))
 	GetModelManager().InitDeskModel(desk.GetUid(), desk.GetConfig().Models, &desk)
 	return &desk, nil
 }
