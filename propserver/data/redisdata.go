@@ -40,10 +40,13 @@ func LoadPropsFromRedis(uid uint64) (map[uint64]int64, error) {
 	}
 	list := make(map[uint64]int64, len(m))
 	for k, v := range m {
-
 		t, err := strconv.ParseInt(k, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("LoadPropsFromRedis ret err1:%v", m)
+		}
+		if t == 0 {
+			logrus.Errorf("prop id = 0 err: uid=%d", uid)
+			continue
 		}
 		g, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
@@ -52,6 +55,7 @@ func LoadPropsFromRedis(uid uint64) (map[uint64]int64, error) {
 		list[uint64(t)] = g
 	}
 
+	logrus.Debugf("LoadPropsFromRedis win: uid=%d, propslist=%v ", uid, list)
 	return list, nil
 }
 

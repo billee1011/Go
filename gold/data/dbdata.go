@@ -94,6 +94,8 @@ func LoadGoldFromDB(uid uint64) (map[int16]int64, error) {
 		m[id] = value
 	}
 
+	logrus.Debugf("LoadGoldFromDB win: uid=%d, list=%v", uid, m)
+
 	return m, nil
 }
 

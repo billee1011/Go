@@ -1,7 +1,7 @@
 package logic
 
 func StartTestCase() {
-	//startTestGoldServer()
+	startTestGoldServer()
 	//startTestRobotServer()
-	startTestPropsServer()
+	//startTestPropsServer()
 }

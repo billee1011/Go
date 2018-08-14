@@ -25,10 +25,7 @@ import (
 
 // 是否是主节点
 var isMasterNode = false
-// 清理过期邮件开始点数
-var clearBeginHour = 4
-// 清理过期邮件结束点数
-var clearEndHour = 6
+
 
 // 邮件列表
 var mailList map[uint64]*define.MailInfo
@@ -332,6 +329,10 @@ func getDataFromDB() error {
 
 // 主节点每日半夜4-6点，清理过期邮件
 var thisDay = 0
+// 清理过期邮件开始点数
+var clearBeginHour = 2
+// 清理过期邮件结束点数
+var clearEndHour = 3
 func clearExpiredEmail() {
 	if !isMasterNode {
 		// 非主节点，直接返回
@@ -343,10 +344,13 @@ func clearExpiredEmail() {
 	if thisDay == now.YearDay() {
 		return
 	}
+
 	if now.Hour() >= clearBeginHour && now.Hour() < clearEndHour {
-		data.ClearExpiredEmailFromDB()
-		data.ClearExpiredUserEmailFromDB()
 		thisDay = now.YearDay()
+		logrus.Infof("begin clearExpiredEmail work ...")
+		//data.ClearExpiredEmailFromDB()
+		data.ClearExpiredUserEmailFromDB()
+		logrus.Infof("end clearExpiredEmail work ...")
 	}
 }
 
