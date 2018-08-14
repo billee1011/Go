@@ -74,7 +74,8 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 			}
 		}
 	}
-	notInitRobotMap := data.GetNoInitRobot() //
+	logrus.Debugln("从未初始化中，查找适合的机器人")
+	notInitRobotMap := data.GetNoInitRobot() //未初始化
 	if l := len(notInitRobotMap); l > 0 {
 		i := 0 //防止死循环
 		for {
@@ -97,6 +98,7 @@ func (r *Robotservice) GetLeisureRobotInfoByInfo(ctx context.Context, request *r
 				return rsp, data.UpdataRobotState(playerID, true)
 			}
 			if len(notInitRobotMap) == 0 || i >= l {
+				logrus.Debugln("从未初始化中，找不到适合的机器人")
 				break
 			}
 		}

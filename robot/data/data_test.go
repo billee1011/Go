@@ -26,23 +26,22 @@ func Test_data(t *testing.T) {
 		2: user.PlayerState_PS_MATCHING,
 		3: user.PlayerState_PS_GAMEING,
 	}
+	fmt.Printf("robotsMap(%v)\n", robotsMap)
 	playerID, rinfo := ToInitRobotMapReturnLeisure(usermap)
 	fmt.Printf("playerID(%d)\n", playerID)
 	fmt.Printf("rinfo(%v)\n", *rinfo)
 
-	fmt.Printf("robotsMap(%v)\n", robotsMap)
-
 	fmt.Printf("initRobotsMapFalse(%v)\n", initRobotsMap[false])
 	fmt.Printf("initRobotsMapTrue(%v)\n", initRobotsMap[true])
 
-	UpdataRobotState(1, true)
-	fmt.Printf("2 initRobotsMapFalse(%v)\n", initRobotsMap[false])
-	fmt.Printf("2 initRobotsMapTrue(%v)\n", initRobotsMap[true])
+	fmt.Printf("%v\n", UpdataRobotState(1, true))
+	fmt.Printf("2 initRobotsMapFalse(%v) \n", initRobotsMap[false])
+	fmt.Printf("2 initRobotsMapTrue(%v) \n", initRobotsMap[true])
 
-	UpdataRobotState(2, false)
-	UpdataRobotState(3, false)
-	fmt.Printf("3 initRobotsMapFalse(%v)\n", initRobotsMap[false])
-	fmt.Printf("3 initRobotsMapTrue(%v)\n", initRobotsMap[true])
+	fmt.Printf("%v\n", UpdataRobotState(2, false))
+	fmt.Printf("%v\n", UpdataRobotState(3, false))
+	fmt.Printf("3 initRobotsMapFalse(%v) \n", initRobotsMap[false])
+	fmt.Printf("3 initRobotsMapTrue(%v) \n", initRobotsMap[true])
 
 	UpdataRobotWinRate(2, 2, 90)
 	fmt.Printf("4 initRobotsMapFalse robotInfo(%v)\n", *initRobotsMap[false][2])

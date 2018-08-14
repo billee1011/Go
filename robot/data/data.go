@@ -98,20 +98,17 @@ func ToInitRobotMapReturnLeisure(playerStates map[uint64]user.PlayerState) (rpla
 // UpdataRobotState 更新机器人状态 true 空闲到使用，false 使用到空闲
 func UpdataRobotState(playerID uint64, state bool) (err error) {
 	curr, isExist2 := initRobotsMap[!state]
-	if isExist2 && len(curr) != 0 {
-		if robot, isExist := curr[playerID]; isExist && robot != nil {
-			delete(initRobotsMap[!state], playerID)
-			initRobotsMap[state][playerID] = robot
-		} else {
-			err = fmt.Errorf("playerID(%d) state(%v) initRobotsMap not Exist", playerID, state)
-		}
+	if isExist2 && curr[playerID] != nil {
+		robot := curr[playerID]
+		delete(initRobotsMap[!state], playerID)
+		initRobotsMap[state][playerID] = robot
 	} else {
-		// 重启过,重新从未初始化到初始化
+		// 可能重启过,重新从未初始化到初始化
 		if robot, isExist := robotsMap[playerID]; isExist && robot != nil {
 			delete(robotsMap, playerID)
 			initRobotsMap[state][playerID] = robot
 		} else {
-			err = fmt.Errorf("state(%v) initRobotsMap len eq 0 or not Exist", !state)
+			err = fmt.Errorf("state(%v) initRobotsMap playerID(%d) not Exist", !state, playerID)
 		}
 	}
 	return err
