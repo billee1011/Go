@@ -1,9 +1,11 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"steve/hall/logic"
 	"steve/structs"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -25,11 +27,13 @@ func InitServer() error {
 		redisCli.Set(showUID, 10000*10000*10, -1)
 	}
 
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+
 	// 初始化游戏场次配置
-	go logic.InitGameConfig()
+	go logic.InitGameConfig(ctx)
 
 	// 初始化charge配置
-	go logic.InitChargeConfig()
+	go logic.InitChargeConfig(ctx)
 
 	return nil
 }
