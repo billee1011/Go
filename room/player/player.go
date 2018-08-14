@@ -81,7 +81,7 @@ func (dp *Player) SetEcoin(coin uint64) {
 func (p *Player) SetMaxOverTime(time int) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	p.overTime = time
+	p.maxOverTime = time
 }
 
 func (p *Player) SetRobotLv(lv int) {
@@ -104,6 +104,8 @@ func (dp *Player) OnPlayerOverTime() {
 	dp.mu.Lock()
 	defer dp.mu.Unlock()
 	dp.overTime++
+
+	logrus.WithFields(logrus.Fields{"player_id": dp.PlayerID, "over_time_count": dp.overTime}).Debugln("玩家超时")
 
 	if dp.overTime >= dp.maxOverTime && !dp.tuoguan {
 		dp.tuoguan = true
@@ -146,6 +148,7 @@ func (dp *Player) notifyTuoguan(playerID uint64, tuoguan bool) {
 	util.SendMessageToPlayer(playerID, msgid.MsgID_ROOM_TUOGUAN_NTF, &room.RoomTuoGuanNtf{
 		Tuoguan: proto.Bool(tuoguan),
 	})
+	logrus.WithFields(logrus.Fields{"player_id": playerID, "tuoguan": tuoguan}).Debugln("通知托管")
 }
 
 // AddBrokerCount 增加破产次数
