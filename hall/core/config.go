@@ -25,11 +25,12 @@ func InitServer() error {
 		redisCli.Set(showUID, 10000*10000*10, -1)
 	}
 
-	// 初始化游戏配置
-	err = logic.InitGameConfig()
-	if err != nil {
-		return fmt.Errorf("InitGameConfig失败(%s)", err.Error())
-	}
+	// 初始化游戏场次配置
+	go logic.InitGameConfig()
+
+	// 初始化charge配置
+	go logic.InitChargeConfig()
+
 	return nil
 }
 

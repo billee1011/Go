@@ -5,12 +5,14 @@ import (
 	"steve/server_pb/user"
 	"steve/structs"
 	"steve/structs/service"
+	"sync"
 
 	"github.com/Sirupsen/logrus"
 )
 
 type hallCore struct {
-	e *structs.Exposer
+	e         *structs.Exposer
+	waitGroup sync.WaitGroup //定义一个同步等待的组
 }
 
 // NewService 创建服务
