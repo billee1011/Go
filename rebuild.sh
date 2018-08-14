@@ -53,6 +53,10 @@ pushd mailserver
 sh ./build.sh
 popd
 
+pushd propserver
+sh ./build.sh
+popd
+
 
 sh ./simulate/packtests.sh
 

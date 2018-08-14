@@ -13,6 +13,13 @@ popd
 
 sleep 1s
 
+echo "propserver---------------------------------\n"
+pushd propserver
+sh ./start.sh
+popd
+
+sleep 1s
+
 echo "gateway------------------------------------\n"
 pushd gateway
 sh ./start.sh
@@ -66,6 +73,9 @@ echo "mailserver---------------------------------\n"
 pushd mailserver
 sh ./start.sh
 popd
+
+
+
 
 sleep 1s
 
