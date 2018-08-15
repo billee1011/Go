@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"steve/external/configclient"
 )
 
 /*
@@ -19,8 +20,87 @@ import (
 
 const dbName = "config"
 
+// 从Config加载跑马灯
+func LoadHorseFromConfig() (map[int64]*define.HorseRace, error) {
+	strJson, err := configclient.GetConfig("horse", "config")
+	if err != nil {
+		logrus.Errorf("LoadHorseFromConfig  err:", err)
+		return nil,  err
+	}
+
+	if len(strJson) == 0 {
+		logrus.Errorf("parseHorseConfig config is empty err")
+		return nil,  fmt.Errorf("parseHorseConfig config is empty err")
+	}
+
+	hList := parseHorseConfig(strJson)
+	if hList == nil {
+		logrus.Errorf("parseHorseConfig parse err:")
+		return nil,  fmt.Errorf("parseHorseConfig parse err")
+	}
+
+	return hList, nil
+}
+
+// 解析跑马灯 config json
+func parseHorseConfig(strJson string) map[int64]*define.HorseRace {
+
+	jsonList := make([]*define.HorseRaceJson, 0, 5)
+	err := json.Unmarshal([]byte(strJson), &jsonList)
+	if err != nil {
+		return nil
+	}
+	list := make(map[int64]*define.HorseRace)
+
+	for _, jsonObject := range jsonList {
+
+		horse := new(define.HorseRace)
+		horse.Id = jsonObject.Id
+		horse.IsUse = jsonObject.IsUse
+		horse.Prov = jsonObject.Prov
+		horse.Channel = jsonObject.Channel
+		horse.City = jsonObject.City
+		horse.IsUseParent = jsonObject.IsUseParent
+
+		horse.TickTime = jsonObject.TickTime
+		horse.SleepTime = jsonObject.SleepTime
+		horse.LastUpdateTime = jsonObject.LastUpdateTime
+
+		for _, v := range jsonObject.Horse {
+			if v.IsUse == 0 {
+				continue
+			}
+			hc := new(define.HorseContent)
+			hc.PlayType = v.PlayType
+			hc.BeginDate = v.BeginDate
+			hc.EndDate = v.EndDate
+			hc.BeginTime = v.BeginTime
+			hc.EndTime = v.EndTime
+			hc.Content = v.Content
+			hc.IsUse = v.IsUse
+
+
+			hc.WeekDate = make(map[int8]bool, len(v.WeekDate))
+			for _, t := range v.WeekDate {
+				hc.WeekDate[t] = true
+			}
+			horse.Content = append(horse.Content, hc)
+
+			logrus.Debugf("LoadHorseFromDB add content: %v", *hc)
+		}
+		list[horse.Id] = horse
+	}
+
+	logrus.Debugf("parseHorseConfig win:sum=%d", len(list))
+
+	return list
+}
+
+
 // 从DB加载跑马灯
 func LoadHorseFromDB() (map[int64]*define.HorseRace, error) {
+
+	return LoadHorseFromConfig()
 
 	exposer := structs.GetGlobalExposer()
 	engine, err := exposer.MysqlEngineMgr.GetEngine(dbName)
@@ -92,8 +172,6 @@ func parseHorseJson(horse *define.HorseRace, strJson string) bool {
 		horse.Content = append(horse.Content, hc)
 		logrus.Debugf("LoadHorseFromDB add content: %v", *hc)
 	}
-
-
 
 	return true
 }

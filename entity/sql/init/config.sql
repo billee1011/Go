@@ -410,7 +410,197 @@ VALUES
 "tag":null,
 "isAlms":1,
 "remark":null
-}]'); 
+}]');
+
+
+INSERT INTO `t_common_config` (`key`, `subkey`, `value`)
+VALUES
+  ( 'horse', 'config', '[
+    {
+        "id": 1,
+        "prov": 1,
+        "city": 0,
+        "channel": 0,
+        "isOpen": 1,
+        "isUseParent": 1,
+        "tickTime": 5,
+        "sleepTime": 100,
+        "horse": [
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯1"
+            },
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯2"
+            },
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯3"
+            },
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯4"
+            },
+            {
+                "isOpen": 1,
+                "playType": 2,
+                "weekDate": [],
+                "beginDate": "2018-07-30",
+                "endDate": "2018-09-15",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "指定时间播放"
+            }
+        ],
+        "lastUpdateTime": "2018-08-07 12:08:22"
+    },
+    {
+        "id": 2,
+        "prov": 2,
+        "city": 0,
+        "channel": 0,
+        "isOpen": 1,
+        "isUseParent": 1,
+        "tickTime": 5,
+        "sleepTime": 105,
+        "horse": [
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯1"
+            },
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯2"
+            },
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯3"
+            },
+            {
+                "isOpen": 1,
+                "playType": 1,
+                "weekDate": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "beginDate": "",
+                "endDate": "",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "循环播放:跑马灯4"
+            },
+            {
+                "isOpen": 1,
+                "playType": 2,
+                "weekDate": [],
+                "beginDate": "2018-07-30",
+                "endDate": "2018-09-15",
+                "beginTime": "02:00",
+                "endTime": "22:00",
+                "content": "指定时间播放"
+            }
+        ],
+        "lastUpdateTime": "2018-08-07 12:08:22"
+    }
+]');
+
+
 
 /*游戏配置*/ 
 INSERT INTO `t_game_config` VALUES (1, 1, '血流麻将', 1, 4, 4, NULL, NULL, NULL, NULL, NULL, '2018-08-07 19:01:33', NULL, NULL, NULL);
